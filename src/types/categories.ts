@@ -1,16 +1,4 @@
-export type CategoryType = {
-  id: string;
-  name: string;
-  icon: string;
-  subcategories: SubCategory[];
-};
-
-export type SubCategory = {
-  id: string;
-  name: string;
-};
-
-export const categories: CategoryType[] = [
+export const categories = [
   {
     id: "vehicles",
     name: "Vehicles",
@@ -19,18 +7,7 @@ export const categories: CategoryType[] = [
       { id: "cars", name: "Cars" },
       { id: "motorcycles", name: "Motorcycles" },
       { id: "trucks", name: "Trucks" },
-      { id: "boats", name: "Boats" },
-      { id: "other-vehicles", name: "Other Vehicles" }
-    ]
-  },
-  {
-    id: "mobile",
-    name: "Mobile",
-    icon: "Smartphone",
-    subcategories: [
-      { id: "smartphones", name: "Smartphones" },
-      { id: "tablets", name: "Tablets" },
-      { id: "accessories", name: "Accessories" }
+      { id: "auto-parts", name: "Auto Parts" }
     ]
   },
   {
@@ -45,25 +22,45 @@ export const categories: CategoryType[] = [
     ]
   },
   {
+    id: "mobile",
+    name: "Mobile",
+    icon: "Smartphone",
+    subcategories: [
+      { id: "phones", name: "Phones" },
+      { id: "tablets", name: "Tablets" },
+      { id: "accessories", name: "Accessories" }
+    ]
+  },
+  {
+    id: "electronics",
+    name: "Electronics",
+    icon: "Tv",
+    subcategories: [
+      { id: "laptops", name: "Laptops" },
+      { id: "tvs", name: "TVs" },
+      { id: "cameras", name: "Cameras" },
+      { id: "gaming", name: "Gaming" }
+    ]
+  },
+  {
     id: "jobs",
     name: "Jobs",
     icon: "Briefcase",
     subcategories: [
-      { id: "it", name: "IT & Software" },
+      { id: "it", name: "IT" },
       { id: "sales", name: "Sales" },
       { id: "marketing", name: "Marketing" },
-      { id: "education", name: "Education" }
+      { id: "other-jobs", name: "Other Jobs" }
     ]
   },
   {
     id: "fashion",
     name: "Fashion",
-    icon: "ShoppingBag",
+    icon: "Shirt",
     subcategories: [
       { id: "clothing", name: "Clothing" },
       { id: "shoes", name: "Shoes" },
-      { id: "accessories", name: "Accessories" },
-      { id: "watches", name: "Watches" }
+      { id: "accessories", name: "Accessories" }
     ]
   },
   {
@@ -71,21 +68,12 @@ export const categories: CategoryType[] = [
     name: "Furniture",
     icon: "Sofa",
     subcategories: [
-      { id: "living-room", name: "Living Room" },
+      { id: "living", name: "Living Room" },
       { id: "bedroom", name: "Bedroom" },
       { id: "kitchen", name: "Kitchen" },
       { id: "office", name: "Office" }
     ]
-  },
-  {
-    id: "electronics",
-    name: "Electronics",
-    icon: "Laptop",
-    subcategories: [
-      { id: "laptops", name: "Laptops" },
-      { id: "desktops", name: "Desktops" },
-      { id: "cameras", name: "Cameras" },
-      { id: "gaming", name: "Gaming" }
-    ]
   }
 ];
+
+export type ProductCondition = "new" | "excellent" | "good" | "moderate";

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button } from "./ui/button";
 import { categories } from "@/types/categories";
-import * as Icons from "lucide-react";
+import * as LucideIcons from "lucide-react";
 import {
   Popover,
   PopoverContent,
@@ -15,7 +15,7 @@ const CategoryFilter = () => {
     <div className="space-y-4">
       <div className="flex items-center space-x-2 overflow-x-auto pb-2 scrollbar-hide">
         {categories.map(({ id, name, icon }) => {
-          const Icon = Icons[icon as keyof typeof Icons];
+          const IconComponent = LucideIcons[icon as keyof typeof LucideIcons];
           return (
             <Popover key={id}>
               <PopoverTrigger asChild>
@@ -24,7 +24,7 @@ const CategoryFilter = () => {
                   className="whitespace-nowrap rounded-full px-4 py-2 flex items-center gap-2"
                   onClick={() => setSelectedCategory(id)}
                 >
-                  <Icon className="h-4 w-4" />
+                  <IconComponent className="h-4 w-4" />
                   <span className="hidden sm:inline">{name}</span>
                 </Button>
               </PopoverTrigger>

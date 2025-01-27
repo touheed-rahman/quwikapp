@@ -5,6 +5,7 @@ import ProductCard from "@/components/ProductCard";
 import { Button } from "@/components/ui/button";
 import { ChevronDown } from "lucide-react";
 import { categories } from "@/types/categories";
+import HeroSearch from "@/components/HeroSearch";
 
 const ITEMS_PER_PAGE = 20;
 
@@ -17,6 +18,8 @@ const mockProducts = [
     image: "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b",
     date: "Today",
     featured: true,
+    condition: "excellent",
+    categoryId: "vehicles",
   },
   {
     id: 2,
@@ -25,6 +28,8 @@ const mockProducts = [
     location: "San Francisco, CA",
     image: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158",
     date: "2 days ago",
+    condition: "new",
+    categoryId: "mobile",
   },
   {
     id: 3,
@@ -34,6 +39,8 @@ const mockProducts = [
     image: "https://images.unsplash.com/photo-1487058792275-0ad4aaf24ca7",
     date: "3 days ago",
     featured: true,
+    condition: "good",
+    categoryId: "property",
   },
   {
     id: 4,
@@ -42,6 +49,8 @@ const mockProducts = [
     location: "Chicago, IL",
     image: "https://images.unsplash.com/photo-1498050108023-c5249f4df085",
     date: "1 week ago",
+    condition: "excellent",
+    categoryId: "electronics",
   },
   {
     id: 5,
@@ -50,6 +59,8 @@ const mockProducts = [
     location: "Miami, FL",
     image: "https://images.unsplash.com/photo-1581092795360-fd1ca04f0952",
     date: "2 weeks ago",
+    condition: "good",
+    categoryId: "electronics",
   },
 ];
 
@@ -65,6 +76,7 @@ const Index = () => {
       <Header />
       <main className="container mx-auto px-4 pt-24">
         <div className="space-y-8">
+          <HeroSearch />
           <CategoryFilter />
           
           {/* Featured Products */}
@@ -107,8 +119,8 @@ const Index = () => {
             <section key={category.id}>
               <h2 className="text-2xl font-bold mb-4">{category.name}</h2>
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                {mockProducts
-                  .filter((product) => product.category === category.id)
+                {displayedProducts
+                  .filter((product) => product.categoryId === category.id)
                   .slice(0, 4)
                   .map((product) => (
                     <ProductCard key={product.id} {...product} />
