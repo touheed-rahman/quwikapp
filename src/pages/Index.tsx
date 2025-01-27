@@ -1,6 +1,12 @@
+import { useState } from "react";
 import Header from "@/components/Header";
 import CategoryFilter from "@/components/CategoryFilter";
 import ProductCard from "@/components/ProductCard";
+import { Button } from "@/components/ui/button";
+import { ChevronDown } from "lucide-react";
+import { categories } from "@/types/categories";
+
+const ITEMS_PER_PAGE = 20;
 
 const mockProducts = [
   {
@@ -48,17 +54,68 @@ const mockProducts = [
 ];
 
 const Index = () => {
+  const [showAllProducts, setShowAllProducts] = useState(false);
+
+  const displayedProducts = showAllProducts
+    ? mockProducts
+    : mockProducts.slice(0, ITEMS_PER_PAGE);
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
       <main className="container mx-auto px-4 pt-24">
         <div className="space-y-8">
           <CategoryFilter />
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {mockProducts.map((product) => (
-              <ProductCard key={product.id} {...product} />
-            ))}
-          </div>
+          
+          {/* Featured Products */}
+          <section>
+            <h2 className="text-2xl font-bold mb-4">Featured Listings</h2>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              {displayedProducts
+                .filter((product) => product.featured)
+                .map((product) => (
+                  <ProductCard key={product.id} {...product} />
+                ))}
+            </div>
+          </section>
+
+          {/* Recent Listings */}
+          <section>
+            <h2 className="text-2xl font-bold mb-4">Recent Listings</h2>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              {displayedProducts.map((product) => (
+                <ProductCard key={product.id} {...product} />
+              ))}
+            </div>
+            
+            {!showAllProducts && mockProducts.length > ITEMS_PER_PAGE && (
+              <div className="flex justify-center mt-8">
+                <Button
+                  onClick={() => setShowAllProducts(true)}
+                  variant="outline"
+                  className="gap-2"
+                >
+                  See All Listings
+                  <ChevronDown className="h-4 w-4" />
+                </Button>
+              </div>
+            )}
+          </section>
+
+          {/* Category-wise Listings */}
+          {categories.map((category) => (
+            <section key={category.id}>
+              <h2 className="text-2xl font-bold mb-4">{category.name}</h2>
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                {mockProducts
+                  .filter((product) => product.category === category.id)
+                  .slice(0, 4)
+                  .map((product) => (
+                    <ProductCard key={product.id} {...product} />
+                  ))}
+              </div>
+            </section>
+          ))}
         </div>
       </main>
     </div>

@@ -21,7 +21,7 @@ const ProductCard = ({ title, price, location, image, date, featured }: ProductC
   return (
     <Card className="group overflow-hidden transition-all duration-300 hover:shadow-lg animate-fade-up">
       <CardHeader className="p-0">
-        <div className="relative aspect-[4/3] overflow-hidden">
+        <div className="relative aspect-square overflow-hidden">
           <img
             src={image}
             alt={title}
@@ -35,25 +35,25 @@ const ProductCard = ({ title, price, location, image, date, featured }: ProductC
             <Heart className="h-5 w-5" />
           </Button>
           {featured && (
-            <Badge className="absolute top-2 left-2" variant="secondary">
+            <Badge className="absolute top-2 left-2 bg-primary text-primary-foreground" variant="default">
               Featured
             </Badge>
           )}
         </div>
       </CardHeader>
       <CardContent className="p-4">
-        <h3 className="font-semibold text-lg line-clamp-2">{title}</h3>
-        <p className="text-2xl font-bold text-primary mt-2">${price.toLocaleString()}</p>
+        <h3 className="font-semibold text-base sm:text-lg line-clamp-2 mb-2">{title}</h3>
+        <p className="text-xl sm:text-2xl font-bold text-primary">${price.toLocaleString()}</p>
       </CardContent>
       <CardFooter className="p-4 pt-0">
-        <div className="flex items-center justify-between w-full text-sm text-muted-foreground">
+        <div className="flex items-center justify-between w-full text-xs sm:text-sm text-muted-foreground">
           <div className="flex items-center gap-1">
-            <MapPin className="h-4 w-4" />
+            <MapPin className="h-3 w-3 sm:h-4 sm:w-4" />
             <span>{location}</span>
           </div>
           {date && (
             <div className="flex items-center gap-1">
-              <Clock className="h-4 w-4" />
+              <Clock className="h-3 w-3 sm:h-4 sm:w-4" />
               <span>{date}</span>
             </div>
           )}
