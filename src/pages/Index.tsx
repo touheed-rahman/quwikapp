@@ -4,7 +4,7 @@ import CategoryFilter from "@/components/CategoryFilter";
 import ProductCard from "@/components/ProductCard";
 import { Button } from "@/components/ui/button";
 import { ChevronDown } from "lucide-react";
-import { categories } from "@/types/categories";
+import { categories, ProductCondition } from "@/types/categories";
 import HeroSearch from "@/components/HeroSearch";
 
 const ITEMS_PER_PAGE = 20;
@@ -18,7 +18,7 @@ const mockProducts = [
     image: "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b",
     date: "Today",
     featured: true,
-    condition: "excellent",
+    condition: "excellent" as ProductCondition,
     categoryId: "vehicles",
   },
   {
@@ -28,7 +28,7 @@ const mockProducts = [
     location: "San Francisco, CA",
     image: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158",
     date: "2 days ago",
-    condition: "new",
+    condition: "new" as ProductCondition,
     categoryId: "mobile",
   },
   {
@@ -82,7 +82,7 @@ const Index = () => {
           {/* Featured Products */}
           <section>
             <h2 className="text-2xl font-bold mb-4">Featured Listings</h2>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
               {displayedProducts
                 .filter((product) => product.featured)
                 .map((product) => (
@@ -94,7 +94,7 @@ const Index = () => {
           {/* Recent Listings */}
           <section>
             <h2 className="text-2xl font-bold mb-4">Recent Listings</h2>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
               {displayedProducts.map((product) => (
                 <ProductCard key={product.id} {...product} />
               ))}
@@ -118,7 +118,7 @@ const Index = () => {
           {categories.map((category) => (
             <section key={category.id}>
               <h2 className="text-2xl font-bold mb-4">{category.name}</h2>
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
                 {displayedProducts
                   .filter((product) => product.categoryId === category.id)
                   .slice(0, 4)

@@ -1,6 +1,5 @@
-import { Search, MapPin, Bell, MessageSquare, Plus, User } from "lucide-react";
+import { MapPin, Bell, MessageSquare, User } from "lucide-react";
 import { Button } from "./ui/button";
-import SearchBar from "./SearchBar";
 import { Link } from "react-router-dom";
 
 const Header = () => {
@@ -17,7 +16,6 @@ const Header = () => {
             <MapPin className="h-4 w-4" />
             <span>Select Location</span>
           </div>
-          <SearchBar />
         </div>
         <div className="flex items-center gap-2">
           <Button variant="ghost" size="icon" className="hidden md:inline-flex">
@@ -29,10 +27,9 @@ const Header = () => {
           <Button variant="ghost" size="icon">
             <User className="h-5 w-5" />
           </Button>
-          <Button className="hidden sm:inline-flex">
-            <Plus className="h-4 w-4" />
-            <span>Sell</span>
-          </Button>
+          <Link to="/sell">
+            <Button>Sell Now</Button>
+          </Link>
         </div>
       </div>
     </header>
