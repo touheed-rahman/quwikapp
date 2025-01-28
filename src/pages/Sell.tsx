@@ -10,8 +10,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { categories } from "@/types/categories";
-import { Upload, X } from "lucide-react";
+import { Upload, X, ChevronRight, MapPin } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
+import { Card } from "@/components/ui/card";
 
 const Sell = () => {
   const [images, setImages] = useState<File[]>([]);
@@ -20,9 +21,9 @@ const Sell = () => {
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
-    if (files.length + images.length > 8) {
+    if (files.length + images.length > 12) {
       toast({
-        title: "Maximum 8 images allowed",
+        title: "Maximum 12 images allowed",
         variant: "destructive",
       });
       return;
@@ -43,121 +44,177 @@ const Sell = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background pt-24 pb-24">
-      <div className="container max-w-3xl mx-auto px-4">
-        <h1 className="text-3xl font-bold mb-8">List Your Item</h1>
+    <div className="min-h-screen bg-background pt-16 pb-24">
+      <div className="container max-w-2xl mx-auto px-4">
+        <h1 className="text-2xl font-bold mb-6 text-center">POST YOUR AD</h1>
         
-        <form className="space-y-8">
-          <div className="space-y-4">
-            <h2 className="text-xl font-semibold">Basic Information</h2>
-            
+        <form className="space-y-6">
+          <Card className="p-4">
+            <h2 className="text-lg font-semibold mb-4">CHOOSE A CATEGORY</h2>
             <div className="space-y-2">
-              <label htmlFor="title" className="text-sm font-medium">Title</label>
-              <Input id="title" placeholder="Enter a descriptive title" />
+              {categories.map((category) => (
+                <Button
+                  key={category.id}
+                  variant="ghost"
+                  className="w-full justify-between text-left h-12 px-4"
+                >
+                  <span>{category.name}</span>
+                  <ChevronRight className="h-5 w-5" />
+                </Button>
+              ))}
             </div>
+          </Card>
 
-            <div className="space-y-2">
-              <label htmlFor="category" className="text-sm font-medium">Category</label>
-              <Select>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select a category" />
-                </SelectTrigger>
-                <SelectContent>
-                  {categories.map((category) => (
-                    <SelectItem key={category.id} value={category.id}>
-                      {category.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+          <Card className="p-4">
+            <h2 className="text-lg font-semibold mb-4">INCLUDE SOME DETAILS</h2>
+            <div className="space-y-4">
+              <div>
+                <label className="text-sm font-medium mb-1 block">
+                  Ad title *
+                </label>
+                <Input placeholder="Mention the key features of your item (e.g. brand, model, age, type)" />
+                <p className="text-xs text-muted-foreground mt-1">0 / 70</p>
+              </div>
+
+              <div>
+                <label className="text-sm font-medium mb-1 block">
+                  Description *
+                </label>
+                <Textarea 
+                  placeholder="Include condition, features and reason for selling"
+                  className="min-h-[120px]"
+                />
+                <p className="text-xs text-muted-foreground mt-1">0 / 4096</p>
+              </div>
+
+              <div>
+                <label className="text-sm font-medium mb-1 block">
+                  Condition *
+                </label>
+                <Select>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select condition" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="new">New</SelectItem>
+                    <SelectItem value="excellent">Excellent</SelectItem>
+                    <SelectItem value="good">Good</SelectItem>
+                    <SelectItem value="moderate">Moderate</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
+          </Card>
 
-            <div className="space-y-2">
-              <label htmlFor="condition" className="text-sm font-medium">Condition</label>
-              <Select>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select condition" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="new">New</SelectItem>
-                  <SelectItem value="excellent">Excellent</SelectItem>
-                  <SelectItem value="good">Good</SelectItem>
-                  <SelectItem value="moderate">Moderate</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <label htmlFor="price" className="text-sm font-medium">Price</label>
-              <Input id="price" type="number" placeholder="Enter price" />
-            </div>
-          </div>
-
-          <div className="space-y-4">
-            <h2 className="text-xl font-semibold">Description</h2>
-            <Textarea
-              placeholder="Describe your item in detail"
-              className="min-h-[150px]"
-            />
-          </div>
-
-          <div className="space-y-4">
-            <h2 className="text-xl font-semibold">Images</h2>
-            <div className="border-2 border-dashed rounded-lg p-8">
-              <input
-                type="file"
-                multiple
-                accept="image/*"
-                className="hidden"
-                id="images"
-                onChange={handleImageUpload}
-              />
-              <label
-                htmlFor="images"
-                className="cursor-pointer flex flex-col items-center gap-2"
-              >
-                <Upload className="h-8 w-8 text-muted-foreground" />
-                <span className="text-muted-foreground">
-                  Click to upload images (max 8)
-                </span>
+          <Card className="p-4">
+            <h2 className="text-lg font-semibold mb-4">SET A PRICE</h2>
+            <div>
+              <label className="text-sm font-medium mb-1 block">
+                Price *
               </label>
-              {previewUrls.length > 0 && (
-                <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-4">
-                  {previewUrls.map((url, index) => (
-                    <div key={index} className="relative aspect-square rounded-lg overflow-hidden group">
-                      <img
-                        src={url}
-                        alt={`Preview ${index + 1}`}
-                        className="w-full h-full object-cover"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => removeImage(index)}
-                        className="absolute top-2 right-2 bg-black/50 rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2">₹</span>
+                <Input className="pl-8" type="number" placeholder="Enter price" />
+              </div>
+            </div>
+          </Card>
+
+          <Card className="p-4">
+            <h2 className="text-lg font-semibold mb-4">UPLOAD UP TO 12 PHOTOS</h2>
+            <div className="grid grid-cols-3 sm:grid-cols-4 gap-4">
+              {[...Array(12)].map((_, index) => {
+                const preview = previewUrls[index];
+                return (
+                  <div
+                    key={index}
+                    className="aspect-square border-2 border-dashed rounded-lg relative overflow-hidden"
+                  >
+                    {preview ? (
+                      <>
+                        <img
+                          src={preview}
+                          alt={`Preview ${index + 1}`}
+                          className="w-full h-full object-cover"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => removeImage(index)}
+                          className="absolute top-1 right-1 bg-black/50 rounded-full p-1"
+                        >
+                          <X className="h-4 w-4 text-white" />
+                        </button>
+                      </>
+                    ) : (
+                      <label
+                        className="w-full h-full flex flex-col items-center justify-center cursor-pointer"
                       >
-                        <X className="h-4 w-4 text-white" />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
+                        <input
+                          type="file"
+                          className="hidden"
+                          accept="image/*"
+                          onChange={handleImageUpload}
+                        />
+                        <Upload className="h-6 w-6 text-muted-foreground" />
+                        <span className="text-xs text-muted-foreground mt-1">
+                          Add Photo
+                        </span>
+                      </label>
+                    )}
+                  </div>
+                );
+              })}
             </div>
-          </div>
+            <p className="text-xs text-destructive mt-2">This field is mandatory</p>
+          </Card>
 
-          <div className="space-y-4">
-            <h2 className="text-xl font-semibold">Contact Information</h2>
-            <div className="space-y-2">
-              <label htmlFor="location" className="text-sm font-medium">Location</label>
-              <Input id="location" placeholder="Enter your location" />
+          <Card className="p-4">
+            <h2 className="text-lg font-semibold mb-4">CONFIRM YOUR LOCATION</h2>
+            <div className="space-y-4">
+              <div className="flex gap-4 border-b pb-2">
+                <Button variant="ghost" className="flex-1 justify-start">
+                  LIST
+                </Button>
+                <Button variant="ghost" className="flex-1 justify-start">
+                  CURRENT LOCATION
+                </Button>
+              </div>
+              <div>
+                <label className="text-sm font-medium mb-1 block">
+                  State *
+                </label>
+                <Select>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select state" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="ka">Karnataka</SelectItem>
+                    <SelectItem value="mh">Maharashtra</SelectItem>
+                    <SelectItem value="dl">Delhi</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
-            <div className="space-y-2">
-              <label htmlFor="phone" className="text-sm font-medium">Phone Number</label>
-              <Input id="phone" type="tel" placeholder="Enter your phone number" />
-            </div>
-          </div>
+          </Card>
 
-          <Button type="submit" className="w-full">
-            Publish Listing
+          <Card className="p-4">
+            <h2 className="text-lg font-semibold mb-4">REVIEW YOUR DETAILS</h2>
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-gray-200 rounded-full overflow-hidden">
+                <img
+                  src="https://via.placeholder.com/48"
+                  alt="Profile"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <div className="flex-1">
+                <Input defaultValue="John Doe" className="mb-2" />
+                <Input defaultValue="+91 9876543210" />
+              </div>
+            </div>
+          </Card>
+
+          <Button type="submit" className="w-full" size="lg">
+            Post now
           </Button>
         </form>
       </div>

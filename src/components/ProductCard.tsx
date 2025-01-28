@@ -53,16 +53,11 @@ const ProductCard = ({
         >
           <Heart className="h-4 w-4" />
         </Button>
-        <div className="absolute top-2 left-2 flex gap-1">
-          {featured && (
-            <Badge variant="default" className="bg-yellow-500 text-white">
-              Featured
-            </Badge>
-          )}
-          {condition && (
-            <Badge className={getConditionColor(condition)}>{condition}</Badge>
-          )}
-        </div>
+        {featured && (
+          <Badge variant="default" className="absolute top-2 left-2 bg-yellow-500 text-white">
+            Featured
+          </Badge>
+        )}
       </div>
       <CardContent className="p-2">
         <p className="text-lg font-bold text-primary">
@@ -71,9 +66,16 @@ const ProductCard = ({
         <h3 className="text-sm font-medium line-clamp-2 mb-1 text-foreground/80">
           {title}
         </h3>
-        <div className="flex items-center gap-1 text-xs text-muted-foreground">
-          <MapPin className="h-3 w-3" />
-          <span>{location}</span>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-1 text-xs text-muted-foreground">
+            <MapPin className="h-3 w-3" />
+            <span>{location}</span>
+          </div>
+          {condition && (
+            <Badge className={getConditionColor(condition)}>
+              {condition}
+            </Badge>
+          )}
         </div>
       </CardContent>
     </Card>
