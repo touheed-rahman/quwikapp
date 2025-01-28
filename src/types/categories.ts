@@ -1,77 +1,89 @@
 export const categories = [
   {
     id: "vehicles",
-    name: "Vehicles",
-    icon: "Car",
+    name: "Cars & Bikes",
+    icon: "car",
     subcategories: [
       { id: "cars", name: "Cars" },
-      { id: "motorcycles", name: "Motorcycles" },
-      { id: "trucks", name: "Trucks" },
-      { id: "auto-parts", name: "Auto Parts" }
+      { id: "bikes", name: "Bikes & Scooters" },
+      { id: "commercial", name: "Commercial Vehicles" },
+      { id: "spare-parts", name: "Spare Parts" }
     ]
   },
   {
     id: "property",
-    name: "Property",
-    icon: "Home",
+    name: "Properties",
+    icon: "home",
     subcategories: [
-      { id: "houses", name: "Houses" },
-      { id: "apartments", name: "Apartments" },
-      { id: "land", name: "Land" },
-      { id: "commercial", name: "Commercial" }
+      { id: "sale", name: "For Sale: Houses & Apartments" },
+      { id: "rent", name: "For Rent: Houses & Apartments" },
+      { id: "land", name: "Land & Plots" },
+      { id: "commercial", name: "Commercial Property" }
     ]
   },
   {
     id: "mobile",
-    name: "Mobile",
-    icon: "Smartphone",
+    name: "Mobiles",
+    icon: "smartphone",
     subcategories: [
-      { id: "phones", name: "Phones" },
+      { id: "phones", name: "Mobile Phones" },
       { id: "tablets", name: "Tablets" },
-      { id: "accessories", name: "Accessories" }
+      { id: "accessories", name: "Mobile Accessories" },
+      { id: "wearables", name: "Smart Watches & Bands" }
     ]
   },
   {
     id: "electronics",
     name: "Electronics",
-    icon: "Tv",
+    icon: "monitor",
     subcategories: [
-      { id: "laptops", name: "Laptops" },
-      { id: "tvs", name: "TVs" },
-      { id: "cameras", name: "Cameras" },
-      { id: "gaming", name: "Gaming" }
+      { id: "laptops", name: "Laptops & Computers" },
+      { id: "tv", name: "TVs & Home Entertainment" },
+      { id: "cameras", name: "Cameras & Photography" },
+      { id: "gaming", name: "Gaming Consoles" }
     ]
   },
   {
     id: "jobs",
     name: "Jobs",
-    icon: "Briefcase",
+    icon: "briefcase",
     subcategories: [
-      { id: "it", name: "IT" },
-      { id: "sales", name: "Sales" },
-      { id: "marketing", name: "Marketing" },
-      { id: "other-jobs", name: "Other Jobs" }
-    ]
-  },
-  {
-    id: "fashion",
-    name: "Fashion",
-    icon: "Shirt",
-    subcategories: [
-      { id: "clothing", name: "Clothing" },
-      { id: "shoes", name: "Shoes" },
-      { id: "accessories", name: "Accessories" }
+      { id: "tech", name: "Technology" },
+      { id: "sales", name: "Sales & Marketing" },
+      { id: "office", name: "Office Jobs" },
+      { id: "other", name: "Other Jobs" }
     ]
   },
   {
     id: "furniture",
     name: "Furniture",
-    icon: "Sofa",
+    icon: "sofa",
     subcategories: [
-      { id: "living", name: "Living Room" },
-      { id: "bedroom", name: "Bedroom" },
-      { id: "kitchen", name: "Kitchen" },
-      { id: "office", name: "Office" }
+      { id: "home", name: "Home Furniture" },
+      { id: "office", name: "Office Furniture" },
+      { id: "decor", name: "Home Decor" },
+      { id: "garden", name: "Garden & Outdoor" }
+    ]
+  },
+  {
+    id: "fashion",
+    name: "Fashion",
+    icon: "shirt",
+    subcategories: [
+      { id: "men", name: "Men's Fashion" },
+      { id: "women", name: "Women's Fashion" },
+      { id: "kids", name: "Kids Fashion" },
+      { id: "accessories", name: "Accessories" }
+    ]
+  },
+  {
+    id: "travel",
+    name: "Travel",
+    icon: "travel",
+    subcategories: [
+      { id: "packages", name: "Holiday Packages" },
+      { id: "hotels", name: "Hotels & Resorts" },
+      { id: "tickets", name: "Flight Tickets" }
     ]
   }
 ];
