@@ -12,41 +12,41 @@ const CategoryFilter = () => {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center space-x-2 overflow-x-auto pb-2 scrollbar-hide">
-        {categories.map(({ id, name, icon }) => {
-          const Icon = Icons[icon as keyof typeof Icons];
-          return (
-            <Popover key={id}>
-              <PopoverTrigger asChild>
-                <Button
-                  variant={selectedCategory === id ? "default" : "secondary"}
-                  className="whitespace-nowrap rounded-full px-4 py-2 flex items-center gap-2"
-                  onClick={() => setSelectedCategory(id)}
-                >
-                  {Icon && <Icon className="h-4 w-4" />}
-                  <span className="hidden sm:inline">{name}</span>
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-48">
-                <div className="grid gap-2">
-                  {categories
-                    .find((cat) => cat.id === id)
-                    ?.subcategories.map((sub) => (
-                      <Button
-                        key={sub.id}
-                        variant="ghost"
-                        className="w-full justify-start"
-                      >
-                        {sub.name}
-                      </Button>
-                    ))}
-                </div>
-              </PopoverContent>
-            </Popover>
-          );
-        })}
-      </div>
+    <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-8 lg:grid-cols-10 gap-2 py-4">
+      {categories.map(({ id, name, icon }) => {
+        const LucideIcon = Icons[icon as keyof typeof Icons];
+        return (
+          <Popover key={id}>
+            <PopoverTrigger asChild>
+              <Button
+                variant={selectedCategory === id ? "default" : "ghost"}
+                className="h-auto flex-col gap-1 py-3 px-2 hover:bg-accent/50 w-full"
+                onClick={() => setSelectedCategory(id)}
+              >
+                {LucideIcon && <LucideIcon className="h-6 w-6 text-primary" />}
+                <span className="text-xs font-normal text-muted-foreground">
+                  {name}
+                </span>
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-48">
+              <div className="grid gap-2">
+                {categories
+                  .find((cat) => cat.id === id)
+                  ?.subcategories.map((sub) => (
+                    <Button
+                      key={sub.id}
+                      variant="ghost"
+                      className="w-full justify-start"
+                    >
+                      {sub.name}
+                    </Button>
+                  ))}
+              </div>
+            </PopoverContent>
+          </Popover>
+        );
+      })}
     </div>
   );
 };
