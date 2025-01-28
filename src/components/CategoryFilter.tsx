@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button } from "./ui/button";
 import { categories } from "@/types/categories";
-import { Car, Home, Smartphone, Briefcase, Bicycle, Monitor, Sofa, Shirt, Book, Paw, Settings } from "lucide-react";
+import { Car, Home, Smartphone, Briefcase, Monitor, Sofa, Shirt, Book, Settings } from "lucide-react";
 import {
   Popover,
   PopoverContent,
@@ -13,12 +13,10 @@ const iconMap = {
   home: Home,
   smartphone: Smartphone,
   briefcase: Briefcase,
-  bicycle: Bicycle,
   monitor: Monitor,
   sofa: Sofa,
   shirt: Shirt,
   book: Book,
-  paw: Paw,
   settings: Settings,
 };
 
