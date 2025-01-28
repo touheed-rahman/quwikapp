@@ -75,25 +75,16 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      <main className="container mx-auto px-4 pt-20">
+      <main className="container mx-auto px-4 pt-20 pb-24">
         <div className="space-y-6">
           <HeroSearch />
-          
-          <div className="flex justify-center">
-            <Link to="/sell">
-              <Button size="lg" className="gap-2">
-                <Plus className="h-5 w-5" />
-                Sell Now
-              </Button>
-            </Link>
-          </div>
 
           <CategoryFilter />
           
           {/* Featured Products */}
           <section>
             <h2 className="text-xl font-bold mb-4">Featured Listings</h2>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
               {displayedProducts
                 .filter((product) => product.featured)
                 .map((product) => (
@@ -114,7 +105,7 @@ const Index = () => {
           {/* Recent Listings */}
           <section>
             <h2 className="text-xl font-bold mb-4">Fresh Recommendations</h2>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
               {displayedProducts.map((product) => (
                 <ProductCard
                   key={product.id}
@@ -152,7 +143,7 @@ const Index = () => {
                   View All
                 </Button>
               </div>
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
                 {displayedProducts
                   .filter((product) => product.categoryId === category.id)
                   .slice(0, 4)
@@ -172,6 +163,17 @@ const Index = () => {
             </section>
           ))}
         </div>
+
+        {/* Mobile Floating Sell Button */}
+        <Link
+          to="/sell"
+          className="md:hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-50"
+        >
+          <Button size="lg" className="shadow-lg rounded-full px-8 gap-2">
+            <Plus className="h-5 w-5" />
+            Sell Now
+          </Button>
+        </Link>
       </main>
     </div>
   );

@@ -10,13 +10,40 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { categories } from "@/types/categories";
-import { Upload } from "lucide-react";
+import { Upload, X } from "lucide-react";
+import { useToast } from "@/components/ui/use-toast";
 
 const Sell = () => {
-  const [images, setImages] = useState<FileList | null>(null);
+  const [images, setImages] = useState<File[]>([]);
+  const [previewUrls, setPreviewUrls] = useState<string[]>([]);
+  const { toast } = useToast();
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length + images.length > 8) {
+      toast({
+        title: "Maximum 8 images allowed",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const newImages = [...images, ...files];
+    setImages(newImages);
+
+    const newPreviewUrls = files.map((file) => URL.createObjectURL(file));
+    setPreviewUrls([...previewUrls, ...newPreviewUrls]);
+  };
+
+  const removeImage = (index: number) => {
+    const newImages = images.filter((_, i) => i !== index);
+    const newPreviewUrls = previewUrls.filter((_, i) => i !== index);
+    setImages(newImages);
+    setPreviewUrls(newPreviewUrls);
+  };
 
   return (
-    <div className="min-h-screen bg-background pt-24">
+    <div className="min-h-screen bg-background pt-24 pb-24">
       <div className="container max-w-3xl mx-auto px-4">
         <h1 className="text-3xl font-bold mb-8">List Your Item</h1>
         
@@ -76,14 +103,14 @@ const Sell = () => {
 
           <div className="space-y-4">
             <h2 className="text-xl font-semibold">Images</h2>
-            <div className="border-2 border-dashed rounded-lg p-8 text-center">
+            <div className="border-2 border-dashed rounded-lg p-8">
               <input
                 type="file"
                 multiple
                 accept="image/*"
                 className="hidden"
                 id="images"
-                onChange={(e) => setImages(e.target.files)}
+                onChange={handleImageUpload}
               />
               <label
                 htmlFor="images"
@@ -94,15 +121,22 @@ const Sell = () => {
                   Click to upload images (max 8)
                 </span>
               </label>
-              {images && (
+              {previewUrls.length > 0 && (
                 <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-4">
-                  {Array.from(images).map((image, index) => (
-                    <div key={index} className="aspect-square rounded-lg overflow-hidden">
+                  {previewUrls.map((url, index) => (
+                    <div key={index} className="relative aspect-square rounded-lg overflow-hidden group">
                       <img
-                        src={URL.createObjectURL(image)}
+                        src={url}
                         alt={`Preview ${index + 1}`}
                         className="w-full h-full object-cover"
                       />
+                      <button
+                        type="button"
+                        onClick={() => removeImage(index)}
+                        className="absolute top-2 right-2 bg-black/50 rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <X className="h-4 w-4 text-white" />
+                      </button>
                     </div>
                   ))}
                 </div>
@@ -123,7 +157,7 @@ const Sell = () => {
           </div>
 
           <Button type="submit" className="w-full">
-            List Item
+            Publish Listing
           </Button>
         </form>
       </div>

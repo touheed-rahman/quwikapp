@@ -14,7 +14,7 @@ const CategoryFilter = () => {
   return (
     <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-8 lg:grid-cols-10 gap-2 py-4">
       {categories.map(({ id, name, icon }) => {
-        const LucideIcon = Icons[icon as keyof typeof Icons];
+        const IconComponent = Icons[icon as keyof typeof Icons];
         return (
           <Popover key={id}>
             <PopoverTrigger asChild>
@@ -23,7 +23,7 @@ const CategoryFilter = () => {
                 className="h-auto flex-col gap-1 py-3 px-2 hover:bg-accent/50 w-full"
                 onClick={() => setSelectedCategory(id)}
               >
-                {LucideIcon && <LucideIcon className="h-6 w-6 text-primary" />}
+                {IconComponent && <IconComponent className="h-6 w-6 text-primary" />}
                 <span className="text-xs font-normal text-muted-foreground">
                   {name}
                 </span>
