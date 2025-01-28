@@ -1,68 +1,62 @@
+export type ProductCondition = "new" | "excellent" | "good" | "moderate";
+
 export const categories = [
+  {
+    id: "mobile",
+    name: "Mobile Phones",
+    icon: "smartphone",
+    subcategories: [
+      { id: "smartphones", name: "Smartphones" },
+      { id: "feature-phones", name: "Feature Phones" },
+      { id: "tablets", name: "Tablets" },
+      { id: "accessories", name: "Mobile Accessories" },
+      { id: "other", name: "Other Mobile Items" }
+    ]
+  },
   {
     id: "vehicles",
     name: "Cars & Bikes",
     icon: "car",
     subcategories: [
       { id: "cars", name: "Cars" },
-      { id: "bikes", name: "Bikes & Scooters" },
+      { id: "motorcycles", name: "Motorcycles" },
+      { id: "scooters", name: "Scooters" },
       { id: "commercial", name: "Commercial Vehicles" },
       { id: "spare-parts", name: "Spare Parts" }
     ]
   },
   {
-    id: "property",
-    name: "Properties",
-    icon: "home",
-    subcategories: [
-      { id: "sale", name: "For Sale: Houses & Apartments" },
-      { id: "rent", name: "For Rent: Houses & Apartments" },
-      { id: "land", name: "Land & Plots" },
-      { id: "commercial", name: "Commercial Property" }
-    ]
-  },
-  {
-    id: "mobile",
-    name: "Mobiles",
-    icon: "smartphone",
-    subcategories: [
-      { id: "phones", name: "Mobile Phones" },
-      { id: "tablets", name: "Tablets" },
-      { id: "accessories", name: "Mobile Accessories" },
-      { id: "wearables", name: "Smart Watches & Bands" }
-    ]
-  },
-  {
     id: "electronics",
     name: "Electronics",
-    icon: "monitor",
+    icon: "tv",
     subcategories: [
-      { id: "laptops", name: "Laptops & Computers" },
-      { id: "tv", name: "TVs & Home Entertainment" },
-      { id: "cameras", name: "Cameras & Photography" },
-      { id: "gaming", name: "Gaming Consoles" }
+      { id: "tv", name: "TVs" },
+      { id: "laptops", name: "Laptops" },
+      { id: "gaming", name: "Gaming Consoles" },
+      { id: "cameras", name: "Cameras" },
+      { id: "accessories", name: "Accessories" }
     ]
   },
   {
-    id: "jobs",
-    name: "Jobs",
-    icon: "briefcase",
+    id: "property",
+    name: "Real Estate",
+    icon: "building2",
     subcategories: [
-      { id: "tech", name: "Technology" },
-      { id: "sales", name: "Sales & Marketing" },
-      { id: "office", name: "Office Jobs" },
-      { id: "other", name: "Other Jobs" }
+      { id: "sale", name: "Houses for Sale" },
+      { id: "rent", name: "Apartments for Rent" },
+      { id: "plots", name: "Plots" },
+      { id: "commercial", name: "Commercial Properties" }
     ]
   },
   {
-    id: "furniture",
-    name: "Furniture",
+    id: "home",
+    name: "Home & Garden",
     icon: "sofa",
     subcategories: [
-      { id: "home", name: "Home Furniture" },
-      { id: "office", name: "Office Furniture" },
-      { id: "decor", name: "Home Decor" },
-      { id: "garden", name: "Garden & Outdoor" }
+      { id: "furniture", name: "Furniture" },
+      { id: "decor", name: "Decor" },
+      { id: "kitchen", name: "Kitchenware" },
+      { id: "garden", name: "Gardening Tools" }
     ]
   },
   {
@@ -70,22 +64,54 @@ export const categories = [
     name: "Fashion",
     icon: "shirt",
     subcategories: [
-      { id: "men", name: "Men's Fashion" },
-      { id: "women", name: "Women's Fashion" },
-      { id: "kids", name: "Kids Fashion" },
-      { id: "accessories", name: "Accessories" }
+      { id: "clothing", name: "Clothing" },
+      { id: "footwear", name: "Footwear" },
+      { id: "watches", name: "Watches" },
+      { id: "jewelry", name: "Jewelry" }
     ]
   },
   {
-    id: "travel",
-    name: "Travel",
-    icon: "travel",
+    id: "jobs",
+    name: "Jobs",
+    icon: "briefcase",
     subcategories: [
-      { id: "packages", name: "Holiday Packages" },
-      { id: "hotels", name: "Hotels & Resorts" },
-      { id: "tickets", name: "Flight Tickets" }
+      { id: "full-time", name: "Full-time Jobs" },
+      { id: "part-time", name: "Part-time Jobs" },
+      { id: "internships", name: "Internships" },
+      { id: "remote", name: "Work-from-Home" }
+    ]
+  },
+  {
+    id: "services",
+    name: "Services",
+    icon: "wrench",
+    subcategories: [
+      { id: "tutors", name: "Tutors" },
+      { id: "events", name: "Event Planners" },
+      { id: "repair", name: "Repair Services" },
+      { id: "cleaning", name: "Cleaning Services" }
+    ]
+  },
+  {
+    id: "hobbies",
+    name: "Hobbies & Sports",
+    icon: "dumbbell",
+    subcategories: [
+      { id: "music", name: "Musical Instruments" },
+      { id: "sports", name: "Sports Equipment" },
+      { id: "toys", name: "Toys" },
+      { id: "books", name: "Books" }
+    ]
+  },
+  {
+    id: "business",
+    name: "Business",
+    icon: "briefcase",
+    subcategories: [
+      { id: "machinery", name: "Machinery" },
+      { id: "tools", name: "Tools" },
+      { id: "office", name: "Office Equipment" },
+      { id: "materials", name: "Raw Materials" }
     ]
   }
 ];
-
-export type ProductCondition = "new" | "excellent" | "good" | "moderate";
