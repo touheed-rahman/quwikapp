@@ -21,6 +21,7 @@ export const categories = [
       { id: "cars", name: "Cars" },
       { id: "motorcycles", name: "Motorcycles" },
       { id: "scooters", name: "Scooters" },
+      { id: "bicycles", name: "Bicycles" },
       { id: "commercial", name: "Commercial Vehicles" },
       { id: "spare-parts", name: "Spare Parts" }
     ]
@@ -31,10 +32,12 @@ export const categories = [
     icon: "tv",
     subcategories: [
       { id: "tv", name: "TVs" },
-      { id: "laptops", name: "Laptops" },
-      { id: "gaming", name: "Gaming Consoles" },
+      { id: "ac", name: "ACs" },
+      { id: "washing-machines", name: "Washing Machines" },
+      { id: "refrigerators", name: "Refrigerators" },
       { id: "cameras", name: "Cameras" },
-      { id: "accessories", name: "Accessories" }
+      { id: "laptops", name: "Laptops" },
+      { id: "gaming", name: "Gaming Consoles" }
     ]
   },
   {
@@ -56,7 +59,42 @@ export const categories = [
       { id: "clothing", name: "Clothing" },
       { id: "footwear", name: "Footwear" },
       { id: "watches", name: "Watches" },
-      { id: "jewelry", name: "Jewelry" }
+      { id: "jewelry", name: "Jewelry" },
+      { id: "cosmetics", name: "Cosmetics" }
+    ]
+  },
+  {
+    id: "jobs",
+    name: "Jobs",
+    icon: "briefcase",
+    subcategories: [
+      { id: "full-time", name: "Full-time Jobs" },
+      { id: "part-time", name: "Part-time Jobs" },
+      { id: "internships", name: "Internships" },
+      { id: "remote", name: "Work-from-Home" }
+    ]
+  },
+  {
+    id: "education",
+    name: "Education",
+    icon: "book",
+    subcategories: [
+      { id: "courses", name: "Courses" },
+      { id: "tuitions", name: "Tuitions" },
+      { id: "books", name: "Books" },
+      { id: "study-materials", name: "Study Materials" }
+    ]
+  },
+  {
+    id: "pets",
+    name: "Pets",
+    icon: "pawprint",
+    subcategories: [
+      { id: "dogs", name: "Dogs" },
+      { id: "cats", name: "Cats" },
+      { id: "fish", name: "Fish" },
+      { id: "birds", name: "Birds" },
+      { id: "accessories", name: "Pet Accessories" }
     ]
   }
 ];

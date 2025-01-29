@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button } from "./ui/button";
 import { categories } from "@/types/categories";
-import { Smartphone, Car, Tv, Building2, Shirt } from "lucide-react";
+import { Smartphone, Car, Tv, Building2, Shirt, Briefcase, Book, PawPrint } from "lucide-react";
 import {
   Popover,
   PopoverContent,
@@ -14,6 +14,9 @@ const iconMap = {
   tv: Tv,
   house: Building2,
   tshirt: Shirt,
+  briefcase: Briefcase,
+  book: Book,
+  pawprint: PawPrint,
 };
 
 const CategoryFilter = ({ onSelectCategory }: { onSelectCategory?: (category: string, subcategory: string) => void }) => {
@@ -32,13 +35,13 @@ const CategoryFilter = ({ onSelectCategory }: { onSelectCategory?: (category: st
             <PopoverTrigger asChild>
               <Button
                 variant={selectedCategory === id ? "default" : "ghost"}
-                className="h-32 flex-col gap-3 py-6 px-4 hover:bg-accent/50 w-full group transition-all duration-300"
+                className="h-28 flex-col gap-2 py-4 px-3 hover:bg-primary hover:text-white w-full transition-colors"
                 onClick={() => setSelectedCategory(id)}
               >
-                <div className="bg-primary/10 p-6 rounded-xl group-hover:bg-primary/20 transition-colors">
-                  {Icon && <Icon className="h-10 w-10 text-primary" />}
+                <div className="bg-primary/10 p-4 rounded-lg hover:bg-primary/20 transition-colors">
+                  {Icon && <Icon className="h-8 w-8" />}
                 </div>
-                <span className="text-sm font-medium text-foreground/80 text-center line-clamp-2">
+                <span className="text-sm font-medium text-center line-clamp-2">
                   {name}
                 </span>
               </Button>
@@ -49,7 +52,7 @@ const CategoryFilter = ({ onSelectCategory }: { onSelectCategory?: (category: st
                   <Button
                     key={sub.id}
                     variant="ghost"
-                    className="w-full justify-start font-normal"
+                    className="w-full justify-start font-normal hover:bg-primary hover:text-white"
                     onClick={() => handleSubcategorySelect(id, sub.id)}
                   >
                     {sub.name}

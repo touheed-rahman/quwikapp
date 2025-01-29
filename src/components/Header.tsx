@@ -1,10 +1,10 @@
-import { MapPin, Bell, MessageSquare, User } from "lucide-react";
+import { MapPin, Bell, MessageSquare, User, HelpCircle } from "lucide-react";
 import { Button } from "./ui/button";
 import { Link } from "react-router-dom";
 
 const Header = () => {
   return (
-    <header className="fixed top-0 left-0 right-0 bg-background/80 backdrop-blur-md border-b z-50 animate-fade-down">
+    <header className="fixed top-0 left-0 right-0 bg-background/80 backdrop-blur-md border-b z-50">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between gap-4">
         <div className="flex items-center gap-8 flex-1">
           <Link to="/" className="shrink-0">
@@ -27,8 +27,11 @@ const Header = () => {
           <Button variant="ghost" size="icon">
             <User className="h-5 w-5" />
           </Button>
+          <Button variant="ghost" size="icon">
+            <HelpCircle className="h-5 w-5" />
+          </Button>
           <Link to="/sell" className="hidden md:block">
-            <Button>Sell Now</Button>
+            <Button className="hover:bg-primary hover:text-white">Sell Now</Button>
           </Link>
         </div>
       </div>
