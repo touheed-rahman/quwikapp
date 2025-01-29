@@ -1,18 +1,7 @@
 import { useState } from "react";
 import { Button } from "./ui/button";
 import { categories } from "@/types/categories";
-import {
-  Car,
-  Building2,
-  Smartphone,
-  Briefcase,
-  Monitor,
-  Sofa,
-  Shirt,
-  Wrench,
-  Dumbbell,
-  Tv
-} from "lucide-react";
+import { Smartphone, Car, Tv, Building2, Shirt } from "lucide-react";
 import {
   Popover,
   PopoverContent,
@@ -20,16 +9,11 @@ import {
 } from "@/components/ui/popover";
 
 const iconMap = {
-  car: Car,
-  home: Building2,
   smartphone: Smartphone,
-  briefcase: Briefcase,
-  monitor: Monitor,
-  sofa: Sofa,
-  shirt: Shirt,
-  wrench: Wrench,
-  dumbbell: Dumbbell,
+  car: Car,
   tv: Tv,
+  house: Building2,
+  tshirt: Shirt,
 };
 
 const CategoryFilter = ({ onSelectCategory }: { onSelectCategory?: (category: string, subcategory: string) => void }) => {
@@ -48,11 +32,11 @@ const CategoryFilter = ({ onSelectCategory }: { onSelectCategory?: (category: st
             <PopoverTrigger asChild>
               <Button
                 variant={selectedCategory === id ? "default" : "ghost"}
-                className="h-28 flex-col gap-3 py-4 px-2 hover:bg-accent/50 w-full group transition-all duration-300"
+                className="h-32 flex-col gap-3 py-6 px-4 hover:bg-accent/50 w-full group transition-all duration-300"
                 onClick={() => setSelectedCategory(id)}
               >
-                <div className="bg-primary/10 p-4 rounded-lg group-hover:bg-primary/20 transition-colors">
-                  {Icon && <Icon className="h-8 w-8 text-primary" />}
+                <div className="bg-primary/10 p-6 rounded-xl group-hover:bg-primary/20 transition-colors">
+                  {Icon && <Icon className="h-10 w-10 text-primary" />}
                 </div>
                 <span className="text-sm font-medium text-foreground/80 text-center line-clamp-2">
                   {name}
