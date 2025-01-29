@@ -3,7 +3,7 @@ import Header from "@/components/Header";
 import CategoryFilter from "@/components/CategoryFilter";
 import ProductCard from "@/components/ProductCard";
 import { Button } from "@/components/ui/button";
-import { ChevronDown, Plus } from "lucide-react";
+import { ChevronDown, Plus, Home, MessageSquare, ListOrdered, Heart } from "lucide-react";
 import { categories, ProductCondition } from "@/types/categories";
 import HeroSearch from "@/components/HeroSearch";
 import { Link } from "react-router-dom";
@@ -164,12 +164,41 @@ const Index = () => {
           ))}
         </div>
 
-        {/* Mobile Floating Sell Button */}
+        {/* Mobile Bottom Navigation */}
+        <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t flex items-center justify-between px-6 py-2 z-50">
+          <Link to="/" className="flex flex-col items-center gap-1">
+            <Home className="h-6 w-6 text-primary" />
+            <span className="text-xs">Home</span>
+          </Link>
+          <Link to="/chats" className="flex flex-col items-center gap-1">
+            <MessageSquare className="h-6 w-6 text-muted-foreground" />
+            <span className="text-xs">Chats</span>
+          </Link>
+          <Link
+            to="/sell"
+            className="flex flex-col items-center -mt-8"
+          >
+            <div className="bg-primary rounded-full p-4 shadow-lg">
+              <Plus className="h-6 w-6 text-white" />
+            </div>
+            <span className="text-xs mt-1">Sell Now</span>
+          </Link>
+          <Link to="/my-ads" className="flex flex-col items-center gap-1">
+            <ListOrdered className="h-6 w-6 text-muted-foreground" />
+            <span className="text-xs">My Ads</span>
+          </Link>
+          <Link to="/wishlist" className="flex flex-col items-center gap-1">
+            <Heart className="h-6 w-6 text-muted-foreground" />
+            <span className="text-xs">Wishlist</span>
+          </Link>
+        </div>
+
+        {/* Desktop Sell Button */}
         <Link
           to="/sell"
-          className="md:hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-50"
+          className="hidden md:block fixed bottom-6 right-6 z-50"
         >
-          <Button size="lg" className="shadow-lg rounded-full px-8 gap-2">
+          <Button size="lg" className="shadow-lg rounded-full px-8 gap-2 bg-primary hover:bg-primary/90">
             <Plus className="h-5 w-5" />
             Sell Now
           </Button>
