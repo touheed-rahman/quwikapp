@@ -29,26 +29,26 @@ const ProductCard = ({
   const getConditionColor = (condition?: ProductCondition) => {
     switch (condition) {
       case "new":
-        return "bg-green-500/10 text-green-500 hover:bg-green-500/20";
+        return "bg-green-500 text-white";
       case "excellent":
-        return "bg-blue-500/10 text-blue-500 hover:bg-blue-500/20";
+        return "bg-primary text-white";
       case "good":
-        return "bg-yellow-500/10 text-yellow-500 hover:bg-yellow-500/20";
+        return "bg-yellow-500 text-white";
       case "moderate":
-        return "bg-orange-500/10 text-orange-500 hover:bg-orange-500/20";
+        return "bg-orange-500 text-white";
       default:
-        return "bg-gray-500/10 text-gray-500 hover:bg-gray-500/20";
+        return "bg-gray-500 text-white";
     }
   };
 
   return (
     <Link to={`/product/${id}`}>
-      <Card className="group overflow-hidden transition-all duration-300 hover:shadow-lg animate-fade-up border-0 bg-transparent">
+      <Card className="overflow-hidden border-0 bg-transparent">
         <div className="relative aspect-[4/3] overflow-hidden rounded-lg">
           <img
             src={image}
             alt={title}
-            className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-105"
+            className="object-cover w-full h-full"
           />
           <Button
             variant="ghost"

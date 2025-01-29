@@ -1,7 +1,11 @@
 import { useState } from "react";
 import { Button } from "./ui/button";
 import { categories } from "@/types/categories";
-import { Smartphone, Car, Tv, Building2, Shirt, Briefcase, Book, PawPrint } from "lucide-react";
+import { 
+  Smartphone, Car, Tv, Building2, Sofa, Shirt, 
+  Briefcase, Wrench, Book, Factory, PawPrint, 
+  GraduationCap, Users, Heart, Wheat 
+} from "lucide-react";
 import {
   Popover,
   PopoverContent,
@@ -13,10 +17,17 @@ const iconMap = {
   car: Car,
   tv: Tv,
   house: Building2,
+  sofa: Sofa,
   tshirt: Shirt,
   briefcase: Briefcase,
+  wrench: Wrench,
   book: Book,
+  factory: Factory,
   pawprint: PawPrint,
+  education: GraduationCap,
+  community: Users,
+  health: Heart,
+  agriculture: Wheat,
 };
 
 const CategoryFilter = ({ onSelectCategory }: { onSelectCategory?: (category: string, subcategory: string) => void }) => {
@@ -27,7 +38,7 @@ const CategoryFilter = ({ onSelectCategory }: { onSelectCategory?: (category: st
   };
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 py-6">
+    <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2 sm:gap-4 py-4">
       {categories.map(({ id, name, icon, subcategories }) => {
         const Icon = iconMap[icon as keyof typeof iconMap];
         return (
@@ -35,13 +46,13 @@ const CategoryFilter = ({ onSelectCategory }: { onSelectCategory?: (category: st
             <PopoverTrigger asChild>
               <Button
                 variant={selectedCategory === id ? "default" : "ghost"}
-                className="h-28 flex-col gap-2 py-4 px-3 hover:bg-primary hover:text-white w-full transition-colors"
+                className="h-24 sm:h-28 flex-col gap-1 sm:gap-2 py-2 px-2 hover:bg-primary group w-full transition-none"
                 onClick={() => setSelectedCategory(id)}
               >
-                <div className="bg-primary/10 p-4 rounded-lg hover:bg-primary/20 transition-colors">
-                  {Icon && <Icon className="h-8 w-8" />}
+                <div className="bg-primary/10 p-3 rounded-lg group-hover:bg-primary/20 transition-none">
+                  {Icon && <Icon className="h-6 w-6 sm:h-8 sm:w-8" />}
                 </div>
-                <span className="text-sm font-medium text-center line-clamp-2">
+                <span className="text-xs sm:text-sm font-medium text-center line-clamp-2 group-hover:text-white">
                   {name}
                 </span>
               </Button>
@@ -52,7 +63,7 @@ const CategoryFilter = ({ onSelectCategory }: { onSelectCategory?: (category: st
                   <Button
                     key={sub.id}
                     variant="ghost"
-                    className="w-full justify-start font-normal hover:bg-primary hover:text-white"
+                    className="w-full justify-start font-normal hover:bg-primary hover:text-white transition-none"
                     onClick={() => handleSubcategorySelect(id, sub.id)}
                   >
                     {sub.name}
