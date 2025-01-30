@@ -36,7 +36,6 @@ const CategoryFilter = ({ onSelectCategory, maxItems = 6 }: { onSelectCategory?:
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const visibleCategories = categories.slice(0, maxItems);
   const hasMoreCategories = categories.length > maxItems;
-  const isMobile = window.innerWidth < 768;
 
   const handleSubcategorySelect = (categoryId: string, subcategoryId: string) => {
     onSelectCategory?.(categoryId, subcategoryId);
@@ -52,13 +51,13 @@ const CategoryFilter = ({ onSelectCategory, maxItems = 6 }: { onSelectCategory?:
               <PopoverTrigger asChild>
                 <Button
                   variant="ghost"
-                  className="h-20 sm:h-24 flex-col gap-2 py-3 px-2 bg-[#E5F4FB] hover:bg-primary group w-full transition-colors rounded-lg border border-primary/10"
+                  className="h-24 flex-col gap-2 py-3 px-2 bg-[#E5F4FB] hover:bg-primary group w-full transition-colors rounded-lg border border-primary/10"
                   onClick={() => setSelectedCategory(id)}
                 >
-                  <div className="bg-white/80 p-2.5 rounded-lg group-hover:bg-primary/20">
-                    {Icon && <Icon className="h-5 w-5 sm:h-6 sm:w-6 text-primary group-hover:text-white" />}
+                  <div className="bg-white/80 p-2 rounded-lg group-hover:bg-primary/20">
+                    {Icon && <Icon className="h-5 w-5 text-primary group-hover:text-white" />}
                   </div>
-                  <span className="text-xs sm:text-sm font-medium text-center line-clamp-2 group-hover:text-white">
+                  <span className="text-[11px] sm:text-sm font-medium text-center leading-tight line-clamp-2 group-hover:text-white">
                     {name}
                   </span>
                 </Button>
@@ -82,18 +81,17 @@ const CategoryFilter = ({ onSelectCategory, maxItems = 6 }: { onSelectCategory?:
         })}
       </div>
       
-      {(hasMoreCategories && isMobile) && (
-        <div className="flex justify-center md:hidden">
-          <Link to="/categories">
-            <Button 
-              size="lg"
-              className="bg-primary hover:bg-primary/90 text-white px-8 py-6 text-base rounded-full"
-            >
-              Explore More
-            </Button>
-          </Link>
-        </div>
-      )}
+      <div className="flex justify-center">
+        <Link to="/categories" className="hidden md:block">
+          <Button 
+            variant="outline"
+            size="lg"
+            className="gap-2 px-8"
+          >
+            Explore All Categories
+          </Button>
+        </Link>
+      </div>
     </div>
   );
 };
