@@ -12,6 +12,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Link } from "react-router-dom";
+import { cn } from "@/lib/utils";
 
 const iconMap = {
   smartphone: Smartphone,
@@ -35,6 +36,7 @@ const CategoryFilter = ({ onSelectCategory, maxItems = 6 }: { onSelectCategory?:
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const visibleCategories = categories.slice(0, maxItems);
   const hasMoreCategories = categories.length > maxItems;
+  const isMobile = window.innerWidth < 768;
 
   const handleSubcategorySelect = (categoryId: string, subcategoryId: string) => {
     onSelectCategory?.(categoryId, subcategoryId);
@@ -42,7 +44,7 @@ const CategoryFilter = ({ onSelectCategory, maxItems = 6 }: { onSelectCategory?:
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-3 gap-4 sm:gap-6">
+      <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-3 gap-3">
         {visibleCategories.map(({ id, name, icon, subcategories }) => {
           const Icon = iconMap[icon as keyof typeof iconMap];
           return (
@@ -50,13 +52,13 @@ const CategoryFilter = ({ onSelectCategory, maxItems = 6 }: { onSelectCategory?:
               <PopoverTrigger asChild>
                 <Button
                   variant="ghost"
-                  className="h-32 sm:h-36 flex-col gap-3 py-4 px-2 bg-[#E5F4FB] hover:bg-primary group w-full transition-colors"
+                  className="h-24 sm:h-28 flex-col gap-2 py-3 px-2 bg-[#E5F4FB] hover:bg-primary group w-full transition-colors"
                   onClick={() => setSelectedCategory(id)}
                 >
-                  <div className="bg-white/80 p-4 rounded-lg group-hover:bg-primary/20">
-                    {Icon && <Icon className="h-8 w-8 sm:h-10 sm:w-10 text-primary group-hover:text-white" />}
+                  <div className="bg-white/80 p-3 rounded-lg group-hover:bg-primary/20">
+                    {Icon && <Icon className="h-6 w-6 sm:h-8 sm:w-8 text-primary group-hover:text-white" />}
                   </div>
-                  <span className="text-sm sm:text-base font-medium text-center line-clamp-2 group-hover:text-white">
+                  <span className="text-xs sm:text-sm font-medium text-center line-clamp-2 group-hover:text-white">
                     {name}
                   </span>
                 </Button>
@@ -80,12 +82,12 @@ const CategoryFilter = ({ onSelectCategory, maxItems = 6 }: { onSelectCategory?:
         })}
       </div>
       
-      {hasMoreCategories && (
-        <div className="flex justify-center">
+      {(hasMoreCategories && isMobile) && (
+        <div className="flex justify-center md:hidden">
           <Link to="/categories">
             <Button 
               size="lg"
-              className="bg-primary hover:bg-primary/90 text-white px-12 py-6 text-lg rounded-full"
+              className="bg-primary hover:bg-primary/90 text-white px-8 py-6 text-base rounded-full"
             >
               Explore More
             </Button>

@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { Button } from "../ui/button";
 import { categories } from "@/types/categories";
-import { Upload, X } from "lucide-react";
+import { Upload, X, ChevronRight } from "lucide-react";
 import { useToast } from "../ui/use-toast";
+import { cn } from "@/lib/utils";
 
 interface SellStepOneProps {
   onNext: (data: { category: string; subcategory: string; images: File[] }) => void;
@@ -64,33 +65,53 @@ const SellStepOne = ({ onNext }: SellStepOneProps) => {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="grid grid-cols-2 gap-4">
-        {categories.map((category) => (
-          <Button
-            key={category.id}
-            variant={selectedCategory === category.id ? "default" : "outline"}
-            className="h-24 flex-col gap-2"
-            onClick={() => {
-              setSelectedCategory(category.id);
-              setSelectedSubcategory("");
-            }}
-          >
-            <span className="text-sm font-medium">{category.name}</span>
-          </Button>
-        ))}
+    <div className="space-y-8 max-w-3xl mx-auto">
+      <div className="space-y-4">
+        <h3 className="text-lg md:text-xl font-semibold">Select Category</h3>
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+          {categories.map((category) => (
+            <Button
+              key={category.id}
+              variant={selectedCategory === category.id ? "default" : "outline"}
+              className={cn(
+                "h-auto py-4 flex-col gap-2 relative group transition-all",
+                selectedCategory === category.id ? "bg-primary text-white" : "hover:border-primary"
+              )}
+              onClick={() => {
+                setSelectedCategory(category.id);
+                setSelectedSubcategory("");
+              }}
+            >
+              <div className="w-12 h-12 rounded-full bg-background/10 flex items-center justify-center mb-2">
+                {category.icon && (
+                  <span className="text-2xl text-primary group-hover:text-primary">
+                    {category.icon}
+                  </span>
+                )}
+              </div>
+              <span className="text-sm font-medium text-center line-clamp-2">
+                {category.name}
+              </span>
+              <ChevronRight className="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity" />
+            </Button>
+          ))}
+        </div>
       </div>
 
       {selectedCategory && (
-        <div className="space-y-2">
-          <h3 className="text-lg font-semibold">Select Subcategory</h3>
-          <div className="grid grid-cols-2 gap-2">
+        <div className="space-y-4 animate-fade-up">
+          <h3 className="text-lg md:text-xl font-semibold">Select Subcategory</h3>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             {categories
               .find((c) => c.id === selectedCategory)
               ?.subcategories.map((sub) => (
                 <Button
                   key={sub.id}
                   variant={selectedSubcategory === sub.id ? "default" : "outline"}
+                  className={cn(
+                    "h-12 justify-start px-4",
+                    selectedSubcategory === sub.id ? "bg-primary text-white" : "hover:border-primary"
+                  )}
                   onClick={() => setSelectedSubcategory(sub.id)}
                 >
                   {sub.name}
@@ -101,14 +122,15 @@ const SellStepOne = ({ onNext }: SellStepOneProps) => {
       )}
 
       <div className="space-y-4">
-        <h3 className="text-lg font-semibold">Upload Images</h3>
-        <div className="grid grid-cols-3 gap-4">
+        <h3 className="text-lg md:text-xl font-semibold">Upload Images</h3>
+        <p className="text-sm text-muted-foreground">Add up to 12 photos. First photo will be the cover image.</p>
+        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3">
           {[...Array(12)].map((_, index) => {
             const preview = previewUrls[index];
             return (
               <div
                 key={index}
-                className="aspect-square border-2 border-dashed rounded-lg relative overflow-hidden"
+                className="aspect-square border rounded-lg relative overflow-hidden group hover:border-primary transition-colors"
               >
                 {preview ? (
                   <>
@@ -120,20 +142,20 @@ const SellStepOne = ({ onNext }: SellStepOneProps) => {
                     <button
                       type="button"
                       onClick={() => removeImage(index)}
-                      className="absolute top-1 right-1 bg-black/50 rounded-full p-1"
+                      className="absolute top-1 right-1 bg-black/50 rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
                     >
                       <X className="h-4 w-4 text-white" />
                     </button>
                   </>
                 ) : (
-                  <label className="w-full h-full flex flex-col items-center justify-center cursor-pointer">
+                  <label className="w-full h-full flex flex-col items-center justify-center cursor-pointer hover:bg-primary/5 transition-colors">
                     <input
                       type="file"
                       className="hidden"
                       accept="image/*"
                       onChange={handleImageUpload}
                     />
-                    <Upload className="h-6 w-6 text-muted-foreground" />
+                    <Upload className="h-6 w-6 text-primary" />
                     <span className="text-xs text-muted-foreground mt-1">
                       Add Photo
                     </span>
@@ -145,7 +167,11 @@ const SellStepOne = ({ onNext }: SellStepOneProps) => {
         </div>
       </div>
 
-      <Button onClick={handleNext} className="w-full" size="lg">
+      <Button 
+        onClick={handleNext} 
+        className="w-full md:w-auto md:min-w-[200px] md:mx-auto block"
+        size="lg"
+      >
         Next
       </Button>
     </div>
