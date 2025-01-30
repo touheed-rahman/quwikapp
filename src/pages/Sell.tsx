@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/components/ui/use-toast";
 import SellStepOne from "@/components/sell/SellStepOne";
+import Header from "@/components/Header";
 
 const Sell = () => {
   const [step, setStep] = useState(1);
@@ -24,7 +25,6 @@ const Sell = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle form submission
     toast({
       title: "Ad posted successfully!",
       description: "Your ad will be visible after review.",
@@ -32,41 +32,35 @@ const Sell = () => {
   };
 
   if (step === 1) {
-    return (
-      <div className="min-h-screen bg-background pt-16 pb-24">
-        <div className="container max-w-2xl mx-auto px-4">
-          <h1 className="text-2xl font-bold mb-6">POST YOUR AD</h1>
-          <SellStepOne onNext={handleStepOneComplete} />
-        </div>
-      </div>
-    );
+    return <SellStepOne onNext={handleStepOneComplete} />;
   }
 
   return (
-    <div className="min-h-screen bg-background pt-16 pb-24">
-      <div className="container max-w-2xl mx-auto px-4">
+    <div className="min-h-screen bg-background">
+      <Header />
+      <div className="container max-w-2xl mx-auto px-4 pt-20 pb-24">
         <h1 className="text-2xl font-bold mb-6">ITEM DETAILS</h1>
         <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="space-y-4">
+          <div className="bg-white rounded-lg shadow-sm border p-4 md:p-6 space-y-6">
             <div>
-              <label className="text-sm font-medium mb-1 block">
+              <label className="text-sm font-medium mb-1.5 block">
                 Ad title *
               </label>
               <Input placeholder="Mention the key features of your item (e.g. brand, model, age, type)" />
             </div>
 
             <div>
-              <label className="text-sm font-medium mb-1 block">
+              <label className="text-sm font-medium mb-1.5 block">
                 Description *
               </label>
               <Textarea 
                 placeholder="Include condition, features and reason for selling"
-                className="min-h-[120px]"
+                className="min-h-[120px] resize-none"
               />
             </div>
 
             <div>
-              <label className="text-sm font-medium mb-1 block">
+              <label className="text-sm font-medium mb-1.5 block">
                 Condition *
               </label>
               <Select>
@@ -83,17 +77,17 @@ const Sell = () => {
             </div>
 
             <div>
-              <label className="text-sm font-medium mb-1 block">
+              <label className="text-sm font-medium mb-1.5 block">
                 Price *
               </label>
               <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2">₹</span>
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">₹</span>
                 <Input className="pl-8" type="number" placeholder="Enter price" />
               </div>
             </div>
 
             <div>
-              <label className="text-sm font-medium mb-1 block">
+              <label className="text-sm font-medium mb-1.5 block">
                 Location *
               </label>
               <Select>
@@ -118,7 +112,7 @@ const Sell = () => {
             >
               Back
             </Button>
-            <Button type="submit" className="flex-1">
+            <Button type="submit" className="flex-1 bg-primary hover:bg-primary/90">
               Post Ad
             </Button>
           </div>
