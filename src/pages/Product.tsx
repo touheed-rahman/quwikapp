@@ -2,6 +2,8 @@ import { useState } from "react";
 import { useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import Header from "@/components/Header";
+import ProductCard from "@/components/ProductCard";
 import {
   Heart,
   Share2,
@@ -37,7 +39,21 @@ const ProductPage = () => {
       memberSince: "2023",
       listings: 5,
     },
+    category: "vehicles",
   };
+
+  // Mock related products
+  const relatedProducts = [
+    {
+      id: 2,
+      title: "2020 Honda Accord Sport",
+      price: 2400000,
+      location: "Bengaluru, KA",
+      image: "https://images.unsplash.com/photo-1498050108023-c5249f4df085",
+      condition: "excellent" as ProductCondition,
+    },
+    // ... Add more related products
+  ];
 
   const nextImage = () => {
     setCurrentImageIndex((prev) =>
@@ -52,8 +68,9 @@ const ProductPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background pt-20 pb-24">
-      <div className="container max-w-6xl mx-auto px-4">
+    <div className="min-h-screen bg-background">
+      <Header />
+      <main className="container mx-auto px-4 pt-20 pb-24">
         <div className="grid lg:grid-cols-2 gap-8">
           {/* Image Gallery */}
           <div className="relative aspect-4/3 rounded-lg overflow-hidden bg-black/5">
@@ -125,7 +142,7 @@ const ProductPage = () => {
               </div>
             </div>
 
-            <Badge className="bg-green-500/10 text-green-500 hover:bg-green-500/20">
+            <Badge className="bg-primary/10 text-primary hover:bg-primary/20">
               {product.condition}
             </Badge>
 
@@ -151,7 +168,7 @@ const ProductPage = () => {
             </Card>
 
             <div className="flex gap-4">
-              <Button className="flex-1 h-12">
+              <Button className="flex-1 h-12 bg-primary hover:bg-primary/90">
                 <MessageCircle className="h-5 w-5 mr-2" />
                 Chat with Seller
               </Button>
@@ -161,7 +178,20 @@ const ProductPage = () => {
             </div>
           </div>
         </div>
-      </div>
+
+        {/* Related Products */}
+        <section className="mt-12">
+          <h2 className="text-2xl font-bold mb-6">Similar Products</h2>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+            {relatedProducts.map((product) => (
+              <ProductCard
+                key={product.id}
+                {...product}
+              />
+            ))}
+          </div>
+        </section>
+      </main>
     </div>
   );
 };

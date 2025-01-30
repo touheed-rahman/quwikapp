@@ -11,6 +11,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { Link } from "react-router-dom";
 
 const iconMap = {
   smartphone: Smartphone,
@@ -30,50 +31,67 @@ const iconMap = {
   agriculture: Wheat,
 };
 
-const CategoryFilter = ({ onSelectCategory }: { onSelectCategory?: (category: string, subcategory: string) => void }) => {
+const CategoryFilter = ({ onSelectCategory, maxItems = 6 }: { onSelectCategory?: (category: string, subcategory: string) => void, maxItems?: number }) => {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const visibleCategories = categories.slice(0, maxItems);
+  const hasMoreCategories = categories.length > maxItems;
 
   const handleSubcategorySelect = (categoryId: string, subcategoryId: string) => {
     onSelectCategory?.(categoryId, subcategoryId);
   };
 
   return (
-    <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2 sm:gap-4 py-4">
-      {categories.map(({ id, name, icon, subcategories }) => {
-        const Icon = iconMap[icon as keyof typeof iconMap];
-        return (
-          <Popover key={id}>
-            <PopoverTrigger asChild>
-              <Button
-                variant={selectedCategory === id ? "default" : "ghost"}
-                className="h-24 sm:h-28 flex-col gap-1 sm:gap-2 py-2 px-2 hover:bg-primary group w-full transition-none"
-                onClick={() => setSelectedCategory(id)}
-              >
-                <div className="bg-primary/10 p-3 rounded-lg group-hover:bg-primary/20 transition-none">
-                  {Icon && <Icon className="h-6 w-6 sm:h-8 sm:w-8" />}
+    <div className="space-y-6">
+      <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-3 gap-4 sm:gap-6">
+        {visibleCategories.map(({ id, name, icon, subcategories }) => {
+          const Icon = iconMap[icon as keyof typeof iconMap];
+          return (
+            <Popover key={id}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="ghost"
+                  className="h-32 sm:h-36 flex-col gap-3 py-4 px-2 bg-[#E5F4FB] hover:bg-primary group w-full transition-colors"
+                  onClick={() => setSelectedCategory(id)}
+                >
+                  <div className="bg-white/80 p-4 rounded-lg group-hover:bg-primary/20">
+                    {Icon && <Icon className="h-8 w-8 sm:h-10 sm:w-10 text-primary group-hover:text-white" />}
+                  </div>
+                  <span className="text-sm sm:text-base font-medium text-center line-clamp-2 group-hover:text-white">
+                    {name}
+                  </span>
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-64 p-2" align="start">
+                <div className="grid gap-1">
+                  {subcategories.map((sub) => (
+                    <Button
+                      key={sub.id}
+                      variant="ghost"
+                      className="w-full justify-start font-normal hover:bg-primary hover:text-white"
+                      onClick={() => handleSubcategorySelect(id, sub.id)}
+                    >
+                      {sub.name}
+                    </Button>
+                  ))}
                 </div>
-                <span className="text-xs sm:text-sm font-medium text-center line-clamp-2 group-hover:text-white">
-                  {name}
-                </span>
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-64 p-2" align="start">
-              <div className="grid gap-1">
-                {subcategories.map((sub) => (
-                  <Button
-                    key={sub.id}
-                    variant="ghost"
-                    className="w-full justify-start font-normal hover:bg-primary hover:text-white transition-none"
-                    onClick={() => handleSubcategorySelect(id, sub.id)}
-                  >
-                    {sub.name}
-                  </Button>
-                ))}
-              </div>
-            </PopoverContent>
-          </Popover>
-        );
-      })}
+              </PopoverContent>
+            </Popover>
+          );
+        })}
+      </div>
+      
+      {hasMoreCategories && (
+        <div className="flex justify-center">
+          <Link to="/categories">
+            <Button 
+              size="lg"
+              className="bg-primary hover:bg-primary/90 text-white px-12 py-6 text-lg rounded-full"
+            >
+              Explore More
+            </Button>
+          </Link>
+        </div>
+      )}
     </div>
   );
 };
