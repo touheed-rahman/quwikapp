@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button } from "../ui/button";
 import { categories } from "@/types/categories";
-import { Upload, X, ChevronRight } from "lucide-react";
+import { Upload, X } from "lucide-react";
 import { useToast } from "../ui/use-toast";
 import { cn } from "@/lib/utils";
 
@@ -66,71 +66,74 @@ const SellStepOne = ({ onNext }: SellStepOneProps) => {
 
   return (
     <div className="space-y-8 max-w-3xl mx-auto">
-      <div className="space-y-4">
-        <h3 className="text-lg md:text-xl font-semibold">Select Category</h3>
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-          {categories.map((category) => (
-            <Button
-              key={category.id}
-              variant={selectedCategory === category.id ? "default" : "outline"}
-              className={cn(
-                "h-auto py-4 flex-col gap-2 relative group transition-all",
-                selectedCategory === category.id ? "bg-primary text-white" : "hover:border-primary"
-              )}
-              onClick={() => {
-                setSelectedCategory(category.id);
-                setSelectedSubcategory("");
-              }}
-            >
-              <div className="w-12 h-12 rounded-full bg-background/10 flex items-center justify-center mb-2">
-                {category.icon && (
-                  <span className="text-2xl text-primary group-hover:text-primary">
-                    {category.icon}
-                  </span>
+      <div className="bg-white rounded-lg shadow-sm border p-6 space-y-6">
+        <div className="space-y-4">
+          <h3 className="text-xl font-semibold text-gray-900">Choose a Category</h3>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+            {categories.map((category) => (
+              <Button
+                key={category.id}
+                variant={selectedCategory === category.id ? "default" : "outline"}
+                className={cn(
+                  "h-auto py-4 flex-col gap-2 relative transition-all text-sm",
+                  selectedCategory === category.id 
+                    ? "bg-primary text-white shadow-md" 
+                    : "hover:border-primary hover:bg-primary/5"
                 )}
-              </div>
-              <span className="text-sm font-medium text-center line-clamp-2">
-                {category.name}
-              </span>
-              <ChevronRight className="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity" />
-            </Button>
-          ))}
-        </div>
-      </div>
-
-      {selectedCategory && (
-        <div className="space-y-4 animate-fade-up">
-          <h3 className="text-lg md:text-xl font-semibold">Select Subcategory</h3>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-            {categories
-              .find((c) => c.id === selectedCategory)
-              ?.subcategories.map((sub) => (
-                <Button
-                  key={sub.id}
-                  variant={selectedSubcategory === sub.id ? "default" : "outline"}
-                  className={cn(
-                    "h-12 justify-start px-4",
-                    selectedSubcategory === sub.id ? "bg-primary text-white" : "hover:border-primary"
-                  )}
-                  onClick={() => setSelectedSubcategory(sub.id)}
-                >
-                  {sub.name}
-                </Button>
-              ))}
+                onClick={() => {
+                  setSelectedCategory(category.id);
+                  setSelectedSubcategory("");
+                }}
+              >
+                <span className="font-medium text-center line-clamp-2">
+                  {category.name}
+                </span>
+              </Button>
+            ))}
           </div>
         </div>
-      )}
 
-      <div className="space-y-4">
-        <h3 className="text-lg md:text-xl font-semibold">Upload Images</h3>
-        <p className="text-sm text-muted-foreground">Add up to 12 photos. First photo will be the cover image.</p>
+        {selectedCategory && (
+          <div className="space-y-4 animate-fade-up">
+            <h3 className="text-xl font-semibold text-gray-900">Select Subcategory</h3>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              {categories
+                .find((c) => c.id === selectedCategory)
+                ?.subcategories.map((sub) => (
+                  <Button
+                    key={sub.id}
+                    variant={selectedSubcategory === sub.id ? "default" : "outline"}
+                    className={cn(
+                      "h-12 justify-start px-4 text-sm",
+                      selectedSubcategory === sub.id 
+                        ? "bg-primary text-white shadow-md" 
+                        : "hover:border-primary hover:bg-primary/5"
+                    )}
+                    onClick={() => setSelectedSubcategory(sub.id)}
+                  >
+                    {sub.name}
+                  </Button>
+                ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      <div className="bg-white rounded-lg shadow-sm border p-6 space-y-4">
+        <div className="space-y-2">
+          <h3 className="text-xl font-semibold text-gray-900">Upload Images</h3>
+          <p className="text-sm text-muted-foreground">Add up to 12 photos. First photo will be the cover image.</p>
+        </div>
         <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3">
           {[...Array(12)].map((_, index) => {
             const preview = previewUrls[index];
             return (
               <div
                 key={index}
-                className="aspect-square border rounded-lg relative overflow-hidden group hover:border-primary transition-colors"
+                className={cn(
+                  "aspect-square border-2 border-dashed rounded-lg relative overflow-hidden group transition-colors",
+                  preview ? "border-solid border-primary/20" : "hover:border-primary/50"
+                )}
               >
                 {preview ? (
                   <>
@@ -169,7 +172,7 @@ const SellStepOne = ({ onNext }: SellStepOneProps) => {
 
       <Button 
         onClick={handleNext} 
-        className="w-full md:w-auto md:min-w-[200px] md:mx-auto block"
+        className="w-full md:w-auto md:min-w-[200px] md:mx-auto block bg-primary hover:bg-primary/90 text-white"
         size="lg"
       >
         Next

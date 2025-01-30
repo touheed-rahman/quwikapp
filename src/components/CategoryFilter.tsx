@@ -52,11 +52,11 @@ const CategoryFilter = ({ onSelectCategory, maxItems = 6 }: { onSelectCategory?:
               <PopoverTrigger asChild>
                 <Button
                   variant="ghost"
-                  className="h-24 sm:h-28 flex-col gap-2 py-3 px-2 bg-[#E5F4FB] hover:bg-primary group w-full transition-colors"
+                  className="h-20 sm:h-24 flex-col gap-2 py-3 px-2 bg-[#E5F4FB] hover:bg-primary group w-full transition-colors rounded-lg border border-primary/10"
                   onClick={() => setSelectedCategory(id)}
                 >
-                  <div className="bg-white/80 p-3 rounded-lg group-hover:bg-primary/20">
-                    {Icon && <Icon className="h-6 w-6 sm:h-8 sm:w-8 text-primary group-hover:text-white" />}
+                  <div className="bg-white/80 p-2.5 rounded-lg group-hover:bg-primary/20">
+                    {Icon && <Icon className="h-5 w-5 sm:h-6 sm:w-6 text-primary group-hover:text-white" />}
                   </div>
                   <span className="text-xs sm:text-sm font-medium text-center line-clamp-2 group-hover:text-white">
                     {name}
