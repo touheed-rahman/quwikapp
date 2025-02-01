@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,10 +13,31 @@ import {
 import { useToast } from "@/components/ui/use-toast";
 import SellStepOne from "@/components/sell/SellStepOne";
 import Header from "@/components/Header";
+import { Search } from "lucide-react";
+
+const cities = [
+  {
+    id: "bangalore",
+    name: "Bangalore",
+    areas: ["Koramangala", "Indiranagar", "HSR Layout", "Whitefield", "JP Nagar", "Electronic City"]
+  },
+  {
+    id: "mumbai",
+    name: "Mumbai",
+    areas: ["Andheri", "Bandra", "Colaba", "Juhu", "Powai", "Worli"]
+  },
+  {
+    id: "delhi",
+    name: "Delhi",
+    areas: ["Connaught Place", "Hauz Khas", "Dwarka", "Saket", "Rohini", "Lajpat Nagar"]
+  }
+];
 
 const Sell = () => {
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState<any>({});
+  const [selectedCity, setSelectedCity] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
   const { toast } = useToast();
 
   const handleStepOneComplete = (data: any) => {
@@ -30,6 +52,14 @@ const Sell = () => {
       description: "Your ad will be visible after review.",
     });
   };
+
+  const filteredAreas = selectedCity
+    ? cities
+        .find((city) => city.id === selectedCity)
+        ?.areas.filter((area) =>
+          area.toLowerCase().includes(searchTerm.toLowerCase())
+        ) || []
+    : [];
 
   if (step === 1) {
     return <SellStepOne onNext={handleStepOneComplete} />;
@@ -86,20 +116,56 @@ const Sell = () => {
               </div>
             </div>
 
-            <div>
-              <label className="text-sm font-medium mb-1.5 block">
-                Location *
-              </label>
-              <Select>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select location" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="bangalore">Bangalore</SelectItem>
-                  <SelectItem value="mumbai">Mumbai</SelectItem>
-                  <SelectItem value="delhi">Delhi</SelectItem>
-                </SelectContent>
-              </Select>
+            <div className="space-y-4">
+              <div>
+                <label className="text-sm font-medium mb-1.5 block">
+                  City *
+                </label>
+                <Select value={selectedCity} onValueChange={setSelectedCity}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select city" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {cities.map((city) => (
+                      <SelectItem key={city.id} value={city.id}>
+                        {city.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {selectedCity && (
+                <div>
+                  <label className="text-sm font-medium mb-1.5 block">
+                    Area *
+                  </label>
+                  <div className="space-y-2">
+                    <div className="relative">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        type="text"
+                        placeholder="Search area..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="pl-9"
+                      />
+                    </div>
+                    <Select>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select area" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {filteredAreas.map((area) => (
+                          <SelectItem key={area} value={area}>
+                            {area}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 

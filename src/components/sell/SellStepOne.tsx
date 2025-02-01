@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "../ui/button";
 import { categories } from "@/types/categories";
@@ -130,49 +131,44 @@ const SellStepOne = ({ onNext }: SellStepOneProps) => {
               <h3 className="text-lg font-semibold text-foreground">Upload Images</h3>
               <p className="text-sm text-muted-foreground">Add up to 12 photos. First photo will be the cover image.</p>
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-              {[...Array(12)].map((_, index) => {
-                const preview = previewUrls[index];
-                return (
-                  <div
-                    key={index}
-                    className={cn(
-                      "aspect-square border-2 border-dashed rounded-lg relative overflow-hidden group transition-colors",
-                      preview ? "border-solid border-primary/20" : "hover:border-primary/50"
-                    )}
-                  >
-                    {preview ? (
-                      <>
-                        <img
-                          src={preview}
-                          alt={`Preview ${index + 1}`}
-                          className="w-full h-full object-cover"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => removeImage(index)}
-                          className="absolute top-1 right-1 bg-black/50 rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                        >
-                          <X className="h-4 w-4 text-white" />
-                        </button>
-                      </>
-                    ) : (
-                      <label className="w-full h-full flex flex-col items-center justify-center cursor-pointer hover:bg-primary/5 transition-colors">
-                        <input
-                          type="file"
-                          className="hidden"
-                          accept="image/*"
-                          onChange={handleImageUpload}
-                        />
-                        <Upload className="h-6 w-6 text-primary" />
-                        <span className="text-xs text-muted-foreground mt-1 text-center px-2">
-                          Add Photo
-                        </span>
-                      </label>
-                    )}
+            
+            <div className="grid grid-cols-4 gap-3">
+              <div className="col-span-1">
+                <div className="aspect-square border-2 border-dashed rounded-lg relative overflow-hidden hover:border-primary/50 transition-colors">
+                  <label className="w-full h-full flex flex-col items-center justify-center cursor-pointer hover:bg-primary/5 transition-colors">
+                    <input
+                      type="file"
+                      className="hidden"
+                      accept="image/*"
+                      multiple
+                      onChange={handleImageUpload}
+                    />
+                    <Upload className="h-6 w-6 text-primary" />
+                    <span className="text-xs text-muted-foreground mt-1 text-center px-2">
+                      Add Photos
+                    </span>
+                  </label>
+                </div>
+              </div>
+              
+              {previewUrls.map((preview, index) => (
+                <div key={index} className="col-span-1">
+                  <div className="aspect-square border-2 border-solid border-primary/20 rounded-lg relative overflow-hidden group">
+                    <img
+                      src={preview}
+                      alt={`Preview ${index + 1}`}
+                      className="w-full h-full object-cover"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removeImage(index)}
+                      className="absolute top-1 right-1 bg-black/50 rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <X className="h-4 w-4 text-white" />
+                    </button>
                   </div>
-                );
-              })}
+                </div>
+              ))}
             </div>
           </div>
 
