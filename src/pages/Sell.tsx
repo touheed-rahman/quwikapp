@@ -76,13 +76,13 @@ const Sell = () => {
     <div className="min-h-screen bg-background">
       <Header />
       <div className="container max-w-2xl mx-auto px-4 pt-20 pb-24">
-        <h1 className="text-2xl font-bold mb-6 text-foreground hover:text-primary transition-colors">
+        <h1 className="text-2xl font-bold mb-6 text-foreground hover:text-white transition-colors">
           ITEM DETAILS
         </h1>
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="bg-white rounded-lg shadow-sm border p-4 md:p-6 space-y-6">
             <div>
-              <label className="text-sm font-medium mb-1.5 block hover:text-primary transition-colors">
+              <label className="text-sm font-medium mb-1.5 block hover:text-white transition-colors">
                 Ad title *
               </label>
               <Input placeholder="Mention the key features of your item (e.g. brand, model, age, type)" />
@@ -127,11 +127,11 @@ const Sell = () => {
 
             <div className="space-y-4">
               <div>
-                <label className="text-sm font-medium mb-1.5 block hover:text-primary transition-colors">
+                <label className="text-sm font-medium mb-1.5 block hover:text-white transition-colors">
                   City *
                 </label>
                 <Select value={selectedCity} onValueChange={setSelectedCity}>
-                  <SelectTrigger>
+                  <SelectTrigger className="hover:text-white">
                     <SelectValue placeholder="Select city" />
                   </SelectTrigger>
                   <SelectContent>
@@ -146,7 +146,7 @@ const Sell = () => {
 
               {selectedCity && (
                 <div>
-                  <label className="text-sm font-medium mb-1.5 block hover:text-primary transition-colors">
+                  <label className="text-sm font-medium mb-1.5 block hover:text-white transition-colors">
                     Area *
                   </label>
                   <div className="space-y-2">
@@ -157,11 +157,11 @@ const Sell = () => {
                         placeholder="Search area..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="pl-9"
+                        className="pl-9 hover:text-white"
                       />
                     </div>
                     <Select>
-                      <SelectTrigger>
+                      <SelectTrigger className="hover:text-white">
                         <SelectValue placeholder="Select area" />
                       </SelectTrigger>
                       <SelectContent>
@@ -182,12 +182,12 @@ const Sell = () => {
             <Button
               type="button"
               variant="outline"
-              className="flex-1 hover:text-white"
+              className="flex-1 hover:bg-primary hover:text-white"
               onClick={() => setStep(1)}
             >
               Back
             </Button>
-            <Button type="submit" className="flex-1 bg-primary hover:bg-primary/90 text-white">
+            <Button type="submit" className="flex-1 bg-primary hover:bg-primary/90 hover:text-white">
               Post Ad
             </Button>
           </div>
