@@ -7,6 +7,7 @@ import { ChevronDown, Plus, Home, MessageSquare, ListOrdered, Heart } from "luci
 import { categories, ProductCondition } from "@/types/categories";
 import HeroSearch from "@/components/HeroSearch";
 import { Link } from "react-router-dom";
+import ChatWindow from "@/components/chat/ChatWindow";
 
 const ITEMS_PER_PAGE = 20;
 
@@ -67,6 +68,7 @@ const mockProducts = [
 
 const Index = () => {
   const [showAllProducts, setShowAllProducts] = useState(false);
+  const [isChatOpen, setIsChatOpen] = useState(false);
 
   const displayedProducts = showAllProducts
     ? mockProducts
@@ -170,10 +172,13 @@ const Index = () => {
             <Home className="h-6 w-6 text-primary" />
             <span className="text-xs">Home</span>
           </Link>
-          <Link to="/chats" className="flex flex-col items-center gap-1">
-            <MessageSquare className="h-6 w-6 text-muted-foreground" />
-            <span className="text-xs">Chats</span>
-          </Link>
+          <button 
+            onClick={() => setIsChatOpen(true)}
+            className="flex flex-col items-center gap-1"
+          >
+            <MessageSquare className="h-6 w-6 text-muted-foreground hover:text-white transition-colors" />
+            <span className="text-xs hover:text-white transition-colors">Chats</span>
+          </button>
           <Link
             to="/sell"
             className="flex flex-col items-center -mt-8"
@@ -184,12 +189,12 @@ const Index = () => {
             <span className="text-xs mt-1">Sell Now</span>
           </Link>
           <Link to="/my-ads" className="flex flex-col items-center gap-1">
-            <ListOrdered className="h-6 w-6 text-muted-foreground" />
-            <span className="text-xs">My Ads</span>
+            <ListOrdered className="h-6 w-6 text-muted-foreground hover:text-white transition-colors" />
+            <span className="text-xs hover:text-white transition-colors">My Ads</span>
           </Link>
           <Link to="/wishlist" className="flex flex-col items-center gap-1">
-            <Heart className="h-6 w-6 text-muted-foreground" />
-            <span className="text-xs">Wishlist</span>
+            <Heart className="h-6 w-6 text-muted-foreground hover:text-white transition-colors" />
+            <span className="text-xs hover:text-white transition-colors">Wishlist</span>
           </Link>
         </div>
 
@@ -203,6 +208,8 @@ const Index = () => {
             Sell Now
           </Button>
         </Link>
+
+        <ChatWindow isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} />
       </main>
     </div>
   );

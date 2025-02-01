@@ -89,7 +89,7 @@ const Sell = () => {
             </div>
 
             <div>
-              <label className="text-sm font-medium mb-1.5 block hover:text-primary transition-colors">
+              <label className="text-sm font-medium mb-1.5 block hover:text-white transition-colors">
                 Description *
               </label>
               <Textarea 
@@ -99,11 +99,11 @@ const Sell = () => {
             </div>
 
             <div>
-              <label className="text-sm font-medium mb-1.5 block hover:text-primary transition-colors">
+              <label className="text-sm font-medium mb-1.5 block hover:text-white transition-colors">
                 Condition *
               </label>
               <Select>
-                <SelectTrigger>
+                <SelectTrigger className="hover:text-white transition-colors">
                   <SelectValue placeholder="Select condition" />
                 </SelectTrigger>
                 <SelectContent>
@@ -131,7 +131,7 @@ const Sell = () => {
                   City *
                 </label>
                 <Select value={selectedCity} onValueChange={setSelectedCity}>
-                  <SelectTrigger className="hover:text-white">
+                  <SelectTrigger className="hover:text-white transition-colors">
                     <SelectValue placeholder="Select city" />
                   </SelectTrigger>
                   <SelectContent>
@@ -151,17 +151,17 @@ const Sell = () => {
                   </label>
                   <div className="space-y-2">
                     <div className="relative">
-                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-hover:text-white" />
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                       <Input
                         type="text"
                         placeholder="Search area..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="pl-9 hover:text-white"
+                        className="pl-9 hover:text-white transition-colors"
                       />
                     </div>
                     <Select>
-                      <SelectTrigger className="hover:text-white">
+                      <SelectTrigger className="hover:text-white transition-colors">
                         <SelectValue placeholder="Select area" />
                       </SelectTrigger>
                       <SelectContent>
@@ -182,12 +182,12 @@ const Sell = () => {
             <Button
               type="button"
               variant="outline"
-              className="flex-1 hover:bg-primary hover:text-white"
+              className="flex-1 hover:text-white transition-colors"
               onClick={() => setStep(1)}
             >
               Back
             </Button>
-            <Button type="submit" className="flex-1 bg-primary hover:bg-primary/90 hover:text-white">
+            <Button type="submit" className="flex-1 bg-primary hover:bg-primary/90 text-white">
               Post Ad
             </Button>
           </div>

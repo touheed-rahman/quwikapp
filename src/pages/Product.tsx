@@ -15,10 +15,12 @@ import {
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { ProductCondition } from "@/types/categories";
+import ChatWindow from "@/components/chat/ChatWindow";
 
 const ProductPage = () => {
   const { id } = useParams();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [isChatOpen, setIsChatOpen] = useState(false);
 
   // Mock product data - in a real app, this would come from an API
   const product = {
@@ -168,11 +170,14 @@ const ProductPage = () => {
             </Card>
 
             <div className="flex gap-4">
-              <Button className="flex-1 h-12 bg-primary hover:bg-primary/90">
+              <Button 
+                className="flex-1 h-12 bg-primary hover:bg-primary/90"
+                onClick={() => setIsChatOpen(true)}
+              >
                 <MessageCircle className="h-5 w-5 mr-2" />
                 Chat with Seller
               </Button>
-              <Button variant="outline" className="flex-1 h-12">
+              <Button variant="outline" className="flex-1 h-12 hover:text-white transition-colors">
                 Make Offer
               </Button>
             </div>
@@ -192,6 +197,7 @@ const ProductPage = () => {
           </div>
         </section>
       </main>
+      <ChatWindow isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} />
     </div>
   );
 };
