@@ -1,10 +1,11 @@
+
 import { useState } from "react";
 import { Button } from "./ui/button";
 import { categories } from "@/types/categories";
 import { 
   Smartphone, Car, Tv, Building2, Sofa, Shirt, 
   Briefcase, Wrench, Book, Factory, PawPrint, 
-  GraduationCap, Users, Heart, Wheat 
+  GraduationCap, Users, Heart, Wheat, ChevronRight
 } from "lucide-react";
 import {
   Popover,
@@ -12,7 +13,6 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Link } from "react-router-dom";
-import { cn } from "@/lib/utils";
 
 const iconMap = {
   smartphone: Smartphone,
@@ -35,7 +35,6 @@ const iconMap = {
 const CategoryFilter = ({ onSelectCategory, maxItems = 6 }: { onSelectCategory?: (category: string, subcategory: string) => void, maxItems?: number }) => {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const visibleCategories = categories.slice(0, maxItems);
-  const hasMoreCategories = categories.length > maxItems;
 
   const handleSubcategorySelect = (categoryId: string, subcategoryId: string) => {
     onSelectCategory?.(categoryId, subcategoryId);
@@ -51,13 +50,13 @@ const CategoryFilter = ({ onSelectCategory, maxItems = 6 }: { onSelectCategory?:
               <PopoverTrigger asChild>
                 <Button
                   variant="ghost"
-                  className="h-24 flex-col gap-2 py-3 px-2 bg-[#E5F4FB] hover:bg-primary group w-full transition-colors rounded-lg border border-primary/10"
+                  className="h-20 sm:h-24 flex-col gap-2 py-3 px-2 bg-[#8B5CF6]/10 hover:bg-[#8B5CF6] group w-full transition-colors rounded-lg border border-[#8B5CF6]/20"
                   onClick={() => setSelectedCategory(id)}
                 >
-                  <div className="bg-white/80 p-2 rounded-lg group-hover:bg-primary/20">
-                    {Icon && <Icon className="h-5 w-5 text-primary group-hover:text-white" />}
+                  <div className="bg-white/90 p-2 rounded-lg group-hover:bg-[#8B5CF6]/20">
+                    {Icon && <Icon className="h-4 w-4 sm:h-5 sm:w-5 text-[#8B5CF6] group-hover:text-white" />}
                   </div>
-                  <span className="text-[11px] sm:text-sm font-medium text-center leading-tight line-clamp-2 group-hover:text-white">
+                  <span className="text-[10px] sm:text-xs font-medium text-center leading-tight line-clamp-2 text-[#8B5CF6] group-hover:text-white">
                     {name}
                   </span>
                 </Button>
@@ -68,7 +67,7 @@ const CategoryFilter = ({ onSelectCategory, maxItems = 6 }: { onSelectCategory?:
                     <Button
                       key={sub.id}
                       variant="ghost"
-                      className="w-full justify-start font-normal hover:bg-primary hover:text-white"
+                      className="w-full justify-start font-normal hover:bg-[#8B5CF6] hover:text-white"
                       onClick={() => handleSubcategorySelect(id, sub.id)}
                     >
                       {sub.name}
@@ -82,13 +81,14 @@ const CategoryFilter = ({ onSelectCategory, maxItems = 6 }: { onSelectCategory?:
       </div>
       
       <div className="flex justify-center">
-        <Link to="/categories" className="hidden md:block">
+        <Link to="/categories" className="w-full md:w-auto">
           <Button 
             variant="outline"
             size="lg"
-            className="gap-2 px-8"
+            className="w-full md:w-auto gap-2 px-8 border-[#8B5CF6] text-[#8B5CF6] hover:bg-[#8B5CF6] hover:text-white"
           >
             Explore All Categories
+            <ChevronRight className="h-4 w-4" />
           </Button>
         </Link>
       </div>
