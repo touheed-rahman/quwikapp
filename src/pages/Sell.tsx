@@ -13,7 +13,8 @@ import {
 import { useToast } from "@/components/ui/use-toast";
 import SellStepOne from "@/components/sell/SellStepOne";
 import Header from "@/components/Header";
-import { Search } from "lucide-react";
+import { Search, X } from "lucide-react";
+import ChatWindow from "@/components/chat/ChatWindow";
 
 const cities = [
   {
@@ -38,6 +39,7 @@ const Sell = () => {
   const [formData, setFormData] = useState<any>({});
   const [selectedCity, setSelectedCity] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
+  const [isChatOpen, setIsChatOpen] = useState(false);
   const { toast } = useToast();
 
   const handleStepOneComplete = (data: any) => {
@@ -62,25 +64,32 @@ const Sell = () => {
     : [];
 
   if (step === 1) {
-    return <SellStepOne onNext={handleStepOneComplete} />;
+    return (
+      <>
+        <SellStepOne onNext={handleStepOneComplete} />
+        <ChatWindow isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} />
+      </>
+    );
   }
 
   return (
     <div className="min-h-screen bg-background">
       <Header />
       <div className="container max-w-2xl mx-auto px-4 pt-20 pb-24">
-        <h1 className="text-2xl font-bold mb-6">ITEM DETAILS</h1>
+        <h1 className="text-2xl font-bold mb-6 text-foreground hover:text-primary transition-colors">
+          ITEM DETAILS
+        </h1>
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="bg-white rounded-lg shadow-sm border p-4 md:p-6 space-y-6">
             <div>
-              <label className="text-sm font-medium mb-1.5 block">
+              <label className="text-sm font-medium mb-1.5 block hover:text-primary transition-colors">
                 Ad title *
               </label>
               <Input placeholder="Mention the key features of your item (e.g. brand, model, age, type)" />
             </div>
 
             <div>
-              <label className="text-sm font-medium mb-1.5 block">
+              <label className="text-sm font-medium mb-1.5 block hover:text-primary transition-colors">
                 Description *
               </label>
               <Textarea 
@@ -90,7 +99,7 @@ const Sell = () => {
             </div>
 
             <div>
-              <label className="text-sm font-medium mb-1.5 block">
+              <label className="text-sm font-medium mb-1.5 block hover:text-primary transition-colors">
                 Condition *
               </label>
               <Select>
@@ -107,7 +116,7 @@ const Sell = () => {
             </div>
 
             <div>
-              <label className="text-sm font-medium mb-1.5 block">
+              <label className="text-sm font-medium mb-1.5 block hover:text-primary transition-colors">
                 Price *
               </label>
               <div className="relative">
@@ -118,7 +127,7 @@ const Sell = () => {
 
             <div className="space-y-4">
               <div>
-                <label className="text-sm font-medium mb-1.5 block">
+                <label className="text-sm font-medium mb-1.5 block hover:text-primary transition-colors">
                   City *
                 </label>
                 <Select value={selectedCity} onValueChange={setSelectedCity}>
@@ -137,12 +146,12 @@ const Sell = () => {
 
               {selectedCity && (
                 <div>
-                  <label className="text-sm font-medium mb-1.5 block">
+                  <label className="text-sm font-medium mb-1.5 block hover:text-primary transition-colors">
                     Area *
                   </label>
                   <div className="space-y-2">
                     <div className="relative">
-                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-hover:text-white" />
                       <Input
                         type="text"
                         placeholder="Search area..."
@@ -173,17 +182,18 @@ const Sell = () => {
             <Button
               type="button"
               variant="outline"
-              className="flex-1"
+              className="flex-1 hover:text-white"
               onClick={() => setStep(1)}
             >
               Back
             </Button>
-            <Button type="submit" className="flex-1 bg-primary hover:bg-primary/90">
+            <Button type="submit" className="flex-1 bg-primary hover:bg-primary/90 text-white">
               Post Ad
             </Button>
           </div>
         </form>
       </div>
+      <ChatWindow isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} />
     </div>
   );
 };
