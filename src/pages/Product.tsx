@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import Header from "@/components/Header";
@@ -19,6 +19,7 @@ import ChatWindow from "@/components/chat/ChatWindow";
 
 const ProductPage = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isChatOpen, setIsChatOpen] = useState(false);
 
@@ -70,7 +71,7 @@ const ProductPage = () => {
   };
 
   const handleChatWithSeller = () => {
-    setIsChatOpen(true);
+    navigate(`/chat/${id}`);
   };
 
   return (

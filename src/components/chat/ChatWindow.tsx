@@ -1,5 +1,5 @@
-
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar } from "@/components/ui/avatar";
@@ -52,6 +52,7 @@ interface ChatMessage {
 }
 
 const ChatWindow = ({ isOpen, onClose, initialSeller }: ChatWindowProps) => {
+  const navigate = useNavigate();
   const [messages, setMessages] = useState<ChatMessage[]>([
     ...(initialSeller ? [{
       id: "1",
@@ -128,6 +129,11 @@ const ChatWindow = ({ isOpen, onClose, initialSeller }: ChatWindowProps) => {
 
   const toggleRecording = () => {
     setIsRecording(!isRecording);
+  };
+
+  const handleAvatarClick = (messageId: string) => {
+    onClose();
+    navigate(`/chat/${messageId}`);
   };
 
   if (!isOpen) return null;
@@ -220,6 +226,7 @@ const ChatWindow = ({ isOpen, onClose, initialSeller }: ChatWindowProps) => {
                   "px-4 py-3 hover:bg-muted/50 transition-colors cursor-pointer",
                   index !== messages.length - 1 && "border-b"
                 )}
+                onClick={() => handleAvatarClick(message.id)}
               >
                 <div className="flex items-start gap-3">
                   <Avatar className="h-12 w-12">
