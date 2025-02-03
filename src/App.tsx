@@ -10,6 +10,7 @@ import Product from "./pages/Product";
 import Categories from "./pages/Categories";
 import ChatDetail from "./pages/ChatDetail";
 import Profile from "./pages/Profile";
+import AdminPanel from "./pages/Admin";
 
 const queryClient = new QueryClient();
 
@@ -26,6 +27,7 @@ const App = () => (
           <Route path="/categories" element={<Categories />} />
           <Route path="/chat/:id" element={<ChatDetail />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/admin" element={<AdminPanel />} />
         </Routes>
       </BrowserRouter>
     </TooltipProvider>
