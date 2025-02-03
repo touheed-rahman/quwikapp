@@ -1,3 +1,4 @@
+
 import { MapPin, Bell, MessageSquare, User, HelpCircle } from "lucide-react";
 import { Button } from "./ui/button";
 import { Link } from "react-router-dom";
@@ -24,9 +25,11 @@ const Header = () => {
           <Button variant="ghost" size="icon" className="hidden md:inline-flex">
             <MessageSquare className="h-5 w-5" />
           </Button>
-          <Button variant="ghost" size="icon">
-            <User className="h-5 w-5" />
-          </Button>
+          <Link to="/profile">
+            <Button variant="ghost" size="icon">
+              <User className="h-5 w-5" />
+            </Button>
+          </Link>
           <Button variant="ghost" size="icon">
             <HelpCircle className="h-5 w-5" />
           </Button>
