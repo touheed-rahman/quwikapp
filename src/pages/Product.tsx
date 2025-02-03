@@ -69,6 +69,10 @@ const ProductPage = () => {
     );
   };
 
+  const handleChatWithSeller = () => {
+    setIsChatOpen(true);
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -172,7 +176,7 @@ const ProductPage = () => {
             <div className="flex gap-4">
               <Button 
                 className="flex-1 h-12 bg-primary hover:bg-primary/90"
-                onClick={() => setIsChatOpen(true)}
+                onClick={handleChatWithSeller}
               >
                 <MessageCircle className="h-5 w-5 mr-2" />
                 Chat with Seller
@@ -197,7 +201,18 @@ const ProductPage = () => {
           </div>
         </section>
       </main>
-      <ChatWindow isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} />
+      <ChatWindow 
+        isOpen={isChatOpen} 
+        onClose={() => setIsChatOpen(false)} 
+        initialSeller={{
+          name: product.seller.name,
+          isVerified: true,
+          productInfo: {
+            title: product.title,
+            price: product.price.toString()
+          }
+        }}
+      />
     </div>
   );
 };

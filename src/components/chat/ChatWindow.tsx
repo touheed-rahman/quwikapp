@@ -12,7 +12,9 @@ import {
   Search,
   MoreVertical,
   Check,
-  Phone
+  Phone,
+  Image,
+  Smile
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -21,6 +23,14 @@ import { Badge } from "@/components/ui/badge";
 interface ChatWindowProps {
   isOpen: boolean;
   onClose: () => void;
+  initialSeller?: {
+    name: string;
+    isVerified?: boolean;
+    productInfo?: {
+      title: string;
+      price?: string;
+    }
+  };
 }
 
 interface ChatMessage {
@@ -41,10 +51,20 @@ interface ChatMessage {
   };
 }
 
-const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
+const ChatWindow = ({ isOpen, onClose, initialSeller }: ChatWindowProps) => {
   const [messages, setMessages] = useState<ChatMessage[]>([
-    {
+    ...(initialSeller ? [{
       id: "1",
+      text: `Hello, I'm interested in your product`,
+      sender: "user",
+      timestamp: new Date(),
+      senderInfo: {
+        name: "You"
+      },
+      productInfo: initialSeller.productInfo
+    }] : []),
+    {
+      id: "2",
       text: "KTM Duke 200 bs6",
       sender: "other",
       timestamp: new Date(),
@@ -59,22 +79,12 @@ const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
       }
     },
     {
-      id: "2",
+      id: "3",
       text: "Is this bike still available?",
       sender: "user",
       timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000),
       senderInfo: {
         name: "You"
-      }
-    },
-    {
-      id: "3",
-      text: "Yes, it's available. Would you like to schedule a viewing?",
-      sender: "other",
-      timestamp: new Date(Date.now() - 23 * 60 * 60 * 1000),
-      senderInfo: {
-        name: "Ram",
-        isVerified: true
       }
     }
   ]);
@@ -161,19 +171,19 @@ const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
               <TabsList className="w-full justify-start gap-2 h-auto p-1">
                 <TabsTrigger 
                   value="all" 
-                  className="data-[state=active]:bg-primary data-[state=active]:text-white flex-1"
+                  className="data-[state=active]:bg-primary data-[state=active]:text-white hover:text-white flex-1"
                 >
                   ALL
                 </TabsTrigger>
                 <TabsTrigger 
                   value="buying"
-                  className="data-[state=active]:bg-primary data-[state=active]:text-white flex-1"
+                  className="data-[state=active]:bg-primary data-[state=active]:text-white hover:text-white flex-1"
                 >
                   BUYING
                 </TabsTrigger>
                 <TabsTrigger 
                   value="selling"
-                  className="data-[state=active]:bg-primary data-[state=active]:text-white flex-1"
+                  className="data-[state=active]:bg-primary data-[state=active]:text-white hover:text-white flex-1"
                 >
                   SELLING
                 </TabsTrigger>
@@ -191,7 +201,7 @@ const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
                     "rounded-full",
                     activeFilter === filter.id 
                       ? "bg-primary/10 text-primary border-primary" 
-                      : "hover:bg-primary/5 hover:text-primary hover:border-primary"
+                      : "hover:bg-primary/5 hover:text-white hover:border-primary"
                   )}
                   onClick={() => setActiveFilter(filter.id)}
                 >
@@ -254,29 +264,29 @@ const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
           </div>
 
           {/* Input Area */}
-          <div className="p-4 border-t">
+          <div className="p-4 border-t bg-white">
             <div className="flex items-center gap-2">
-              <Input
-                value={newMessage}
-                onChange={(e) => setNewMessage(e.target.value)}
-                onKeyDown={handleKeyPress}
-                placeholder="Type a message..."
-                className="flex-1"
-              />
-              <div className="flex gap-1">
+              <div className="flex gap-2">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="hover:bg-primary hover:text-white rounded-full h-10 w-10"
+                >
+                  <Smile className="h-5 w-5" />
+                </Button>
                 <Button
                   variant="ghost"
                   size="icon"
                   onClick={toggleRecording}
                   className={cn(
-                    "hover:bg-primary hover:text-white",
+                    "hover:bg-primary hover:text-white rounded-full h-10 w-10",
                     isRecording && "text-destructive"
                   )}
                 >
                   {isRecording ? (
-                    <MicOff className="h-4 w-4" />
+                    <MicOff className="h-5 w-5" />
                   ) : (
-                    <Mic className="h-4 w-4" />
+                    <Mic className="h-5 w-5" />
                   )}
                 </Button>
                 <label>
@@ -289,24 +299,31 @@ const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="hover:bg-primary hover:text-white"
+                    className="hover:bg-primary hover:text-white rounded-full h-10 w-10"
                     type="button"
                     asChild
                   >
                     <span>
-                      <Upload className="h-4 w-4" />
+                      <Image className="h-5 w-5" />
                     </span>
                   </Button>
                 </label>
-                <Button
-                  onClick={handleSend}
-                  size="icon"
-                  className="bg-primary hover:bg-primary/90 text-white"
-                  disabled={!newMessage.trim() || isSending}
-                >
-                  <Send className="h-4 w-4" />
-                </Button>
               </div>
+              <Input
+                value={newMessage}
+                onChange={(e) => setNewMessage(e.target.value)}
+                onKeyDown={handleKeyPress}
+                placeholder="Message..."
+                className="flex-1 rounded-full bg-muted/50"
+              />
+              <Button
+                onClick={handleSend}
+                size="icon"
+                className="bg-primary hover:bg-primary/90 text-white rounded-full h-10 w-10"
+                disabled={!newMessage.trim() || isSending}
+              >
+                <Send className="h-5 w-5" />
+              </Button>
             </div>
           </div>
         </div>
