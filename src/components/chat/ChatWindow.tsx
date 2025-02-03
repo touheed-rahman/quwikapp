@@ -56,7 +56,7 @@ const ChatWindow = ({ isOpen, onClose, initialSeller }: ChatWindowProps) => {
     ...(initialSeller ? [{
       id: "1",
       text: `Hello, I'm interested in your product`,
-      sender: "user",
+      sender: "user" as const,
       timestamp: new Date(),
       senderInfo: {
         name: "You"
@@ -66,7 +66,7 @@ const ChatWindow = ({ isOpen, onClose, initialSeller }: ChatWindowProps) => {
     {
       id: "2",
       text: "KTM Duke 200 bs6",
-      sender: "other",
+      sender: "other" as const,
       timestamp: new Date(),
       productInfo: {
         title: "KTM Duke 200 bs6",
@@ -81,7 +81,7 @@ const ChatWindow = ({ isOpen, onClose, initialSeller }: ChatWindowProps) => {
     {
       id: "3",
       text: "Is this bike still available?",
-      sender: "user",
+      sender: "user" as const,
       timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000),
       senderInfo: {
         name: "You"
@@ -100,7 +100,7 @@ const ChatWindow = ({ isOpen, onClose, initialSeller }: ChatWindowProps) => {
     const message: ChatMessage = {
       id: Date.now().toString(),
       text: newMessage,
-      sender: "user",
+      sender: "user" as const,
       timestamp: new Date(),
       senderInfo: {
         name: "You"
