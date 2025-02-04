@@ -1,9 +1,10 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { supabase } from "./integrations/supabase/client";
 import Index from "./pages/Index";
 import Sell from "./pages/Sell";
 import Product from "./pages/Product";
@@ -14,6 +15,36 @@ import AdminPanel from "./pages/Admin";
 
 const queryClient = new QueryClient();
 
+const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
+  const [session, setSession] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setLoading(false);
+    });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  if (!session) {
+    return <Navigate to="/profile" />;
+  }
+
+  return <>{children}</>;
+};
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
@@ -22,12 +53,33 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
-          <Route path="/sell" element={<Sell />} />
+          <Route
+            path="/sell"
+            element={
+              <PrivateRoute>
+                <Sell />
+              </PrivateRoute>
+            }
+          />
           <Route path="/product/:id" element={<Product />} />
           <Route path="/categories" element={<Categories />} />
-          <Route path="/chat/:id" element={<ChatDetail />} />
+          <Route
+            path="/chat/:id"
+            element={
+              <PrivateRoute>
+                <ChatDetail />
+              </PrivateRoute>
+            }
+          />
           <Route path="/profile" element={<Profile />} />
-          <Route path="/admin" element={<AdminPanel />} />
+          <Route
+            path="/admin"
+            element={
+              <PrivateRoute>
+                <AdminPanel />
+              </PrivateRoute>
+            }
+          />
         </Routes>
       </BrowserRouter>
     </TooltipProvider>

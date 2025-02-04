@@ -1,22 +1,16 @@
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import AuthForm from "@/components/auth/AuthForm";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { 
-  UserRound, 
-  Mail, 
-  MapPin, 
+  UserRound,
+  Mail,
+  MapPin,
   Edit,
   Settings,
   Shield,
@@ -24,28 +18,111 @@ import {
   BellRing,
   Share2,
   Lock,
-  BookMarked
+  BookMarked,
 } from "lucide-react";
 
 const Profile = () => {
-  const { toast } = useToast();
-  const [name, setName] = useState("John Doe");
-  const [email, setEmail] = useState("john@example.com");
-  const [location, setLocation] = useState("");
+  const [session, setSession] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [profile, setProfile] = useState<any>(null);
   const [isEditing, setIsEditing] = useState(false);
-  const [isAdmin] = useState(true); // This would come from your auth context in a real app
+  const { toast } = useToast();
+  const navigate = useNavigate();
 
-  const handleSave = () => {
-    setIsEditing(false);
-    toast({
-      title: "Profile Updated",
-      description: "Your profile has been updated successfully.",
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      if (session) {
+        fetchProfile(session.user.id);
+      }
+      setLoading(false);
     });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+      if (session) {
+        fetchProfile(session.user.id);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const fetchProfile = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", userId)
+        .single();
+
+      if (error) throw error;
+      setProfile(data);
+    } catch (error: any) {
+      console.error("Error fetching profile:", error.message);
+    }
   };
+
+  const handleLogout = async () => {
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+      navigate("/");
+      toast({
+        title: "Logged out successfully",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error logging out",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleUpdateProfile = async () => {
+    try {
+      const { error } = await supabase
+        .from("profiles")
+        .update({
+          full_name: profile.full_name,
+          location: profile.location,
+        })
+        .eq("id", session.user.id);
+
+      if (error) throw error;
+
+      setIsEditing(false);
+      toast({
+        title: "Profile updated successfully",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error updating profile",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
+  if (loading) {
+    return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
+  }
+
+  if (!session) {
+    return (
+      <div className="min-h-screen bg-gray-50 py-12">
+        <div className="container mx-auto px-4">
+          <AuthForm />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
       <header className="bg-background/80 backdrop-blur-md border-b">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2">
@@ -73,8 +150,8 @@ const Profile = () => {
                     <Edit className="h-4 w-4" />
                   </Button>
                 </div>
-                <h2 className="mt-4 font-semibold text-lg">{name}</h2>
-                <p className="text-sm text-muted-foreground">{email}</p>
+                <h2 className="mt-4 font-semibold text-lg">{profile?.full_name}</h2>
+                <p className="text-sm text-muted-foreground">{profile?.email}</p>
               </div>
               
               <div className="space-y-1">
@@ -94,7 +171,7 @@ const Profile = () => {
                   <BookMarked className="mr-2 h-4 w-4" />
                   Saved Items
                 </Button>
-                {isAdmin && (
+                {profile?.isAdmin && (
                   <Link to="/admin">
                     <Button variant="ghost" className="w-full justify-start" size="sm">
                       <Shield className="mr-2 h-4 w-4" />
@@ -102,7 +179,7 @@ const Profile = () => {
                     </Button>
                   </Link>
                 )}
-                <Button variant="ghost" className="w-full justify-start text-red-600" size="sm">
+                <Button variant="ghost" className="w-full justify-start text-red-600" size="sm" onClick={handleLogout}>
                   <LogOut className="mr-2 h-4 w-4" />
                   Logout
                 </Button>
@@ -132,8 +209,8 @@ const Profile = () => {
                   </Label>
                   <Input
                     id="name"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
+                    value={profile?.full_name}
+                    onChange={(e) => setProfile({ ...profile, full_name: e.target.value })}
                     disabled={!isEditing}
                     className="bg-white"
                   />
@@ -147,8 +224,8 @@ const Profile = () => {
                   <Input
                     id="email"
                     type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    value={profile?.email}
+                    onChange={(e) => setProfile({ ...profile, email: e.target.value })}
                     disabled={!isEditing}
                     className="bg-white"
                   />
@@ -159,28 +236,19 @@ const Profile = () => {
                     <MapPin className="w-4 h-4" />
                     Location
                   </Label>
-                  <Select
-                    value={location}
-                    onValueChange={setLocation}
+                  <Input
+                    id="location"
+                    value={profile?.location}
+                    onChange={(e) => setProfile({ ...profile, location: e.target.value })}
                     disabled={!isEditing}
-                  >
-                    <SelectTrigger className="bg-white">
-                      <SelectValue placeholder="Select your location" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="bangalore">Bangalore</SelectItem>
-                      <SelectItem value="mumbai">Mumbai</SelectItem>
-                      <SelectItem value="delhi">Delhi</SelectItem>
-                      <SelectItem value="hyderabad">Hyderabad</SelectItem>
-                      <SelectItem value="chennai">Chennai</SelectItem>
-                    </SelectContent>
-                  </Select>
+                    className="bg-white"
+                  />
                 </div>
 
                 {isEditing && (
                   <div className="pt-4">
                     <Button 
-                      onClick={handleSave}
+                      onClick={handleUpdateProfile}
                       className="w-full"
                     >
                       Save Changes
@@ -224,4 +292,3 @@ const Profile = () => {
 };
 
 export default Profile;
-
