@@ -16,13 +16,58 @@ const AuthForm = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
 
+  const validateForm = () => {
+    if (!email || !password) {
+      toast({
+        title: "Error",
+        description: "Please fill in all required fields",
+        variant: "destructive",
+      });
+      return false;
+    }
+
+    if (!email.includes("@")) {
+      toast({
+        title: "Error",
+        description: "Please enter a valid email address",
+        variant: "destructive",
+      });
+      return false;
+    }
+
+    if (password.length < 6) {
+      toast({
+        title: "Error",
+        description: "Password must be at least 6 characters long",
+        variant: "destructive",
+      });
+      return false;
+    }
+
+    if (isSignUp && !fullName) {
+      toast({
+        title: "Error",
+        description: "Please enter your full name",
+        variant: "destructive",
+      });
+      return false;
+    }
+
+    return true;
+  };
+
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!validateForm()) return;
+    
     setLoading(true);
+    console.log("Starting authentication process...");
 
     try {
       if (isSignUp) {
-        const { error } = await supabase.auth.signUp({
+        console.log("Attempting signup with email:", email);
+        const { data, error } = await supabase.auth.signUp({
           email,
           password,
           options: {
@@ -34,18 +79,26 @@ const AuthForm = () => {
 
         if (error) throw error;
 
+        console.log("Signup successful:", data);
         toast({
           title: "Success!",
           description: "Please check your email to verify your account.",
         });
       } else {
-        const { error } = await supabase.auth.signInWithPassword({
+        console.log("Attempting signin with email:", email);
+        const { data, error } = await supabase.auth.signInWithPassword({
           email,
           password,
         });
 
-        if (error) throw error;
+        if (error) {
+          if (error.message === "Invalid login credentials") {
+            throw new Error("Invalid email or password. Please try again or sign up if you don't have an account.");
+          }
+          throw error;
+        }
 
+        console.log("Signin successful:", data);
         toast({
           title: "Welcome back!",
           description: "You have successfully logged in.",
@@ -53,6 +106,7 @@ const AuthForm = () => {
         navigate("/");
       }
     } catch (error: any) {
+      console.error("Authentication error:", error);
       toast({
         title: "Error",
         description: error.message,
