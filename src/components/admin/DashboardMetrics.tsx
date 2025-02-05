@@ -8,10 +8,10 @@ const DashboardMetrics = () => {
     queryKey: ['admin-metrics'],
     queryFn: async () => {
       const [totalListings, pendingListings, approvedListings, totalUsers] = await Promise.all([
-        supabase.from('listings').count(),
-        supabase.from('listings').count().eq('status', 'pending'),
-        supabase.from('listings').count().eq('status', 'approved'),
-        supabase.from('profiles').count()
+        supabase.from('listings').select('*', { count: 'exact', head: true }),
+        supabase.from('listings').select('*', { count: 'exact', head: true }).eq('status', 'pending'),
+        supabase.from('listings').select('*', { count: 'exact', head: true }).eq('status', 'approved'),
+        supabase.from('profiles').select('*', { count: 'exact', head: true })
       ]);
 
       return {

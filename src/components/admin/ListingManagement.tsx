@@ -23,7 +23,10 @@ const ListingManagement = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('listings')
-        .select('*, profiles(full_name)')
+        .select(`
+          *,
+          seller:profiles!listings_user_id_fkey(full_name)
+        `)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -93,7 +96,7 @@ const ListingManagement = () => {
                 <TableCell className="font-medium">{listing.title}</TableCell>
                 <TableCell>{listing.category}</TableCell>
                 <TableCell>₹{listing.price.toLocaleString()}</TableCell>
-                <TableCell>{listing.profiles?.full_name}</TableCell>
+                <TableCell>{listing.seller?.full_name}</TableCell>
                 <TableCell>{listing.status}</TableCell>
                 <TableCell className="text-right">
                   <div className="flex items-center justify-end gap-2">
