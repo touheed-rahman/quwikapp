@@ -25,7 +25,7 @@ const ListingManagement = () => {
         .from('listings')
         .select(`
           *,
-          seller:profiles(full_name)
+          seller:profiles!listings_user_id_fkey(full_name)
         `)
         .order('created_at', { ascending: false });
 
