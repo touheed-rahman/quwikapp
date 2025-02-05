@@ -14,6 +14,17 @@ import { Input } from "@/components/ui/input";
 import { Search, CheckCircle2, XCircle } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 
+interface Listing {
+  id: string;
+  title: string;
+  category: string;
+  price: number;
+  status: string;
+  seller: {
+    full_name: string | null;
+  } | null;
+}
+
 const ListingManagement = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const { toast } = useToast();
@@ -21,20 +32,27 @@ const ListingManagement = () => {
   const { data: listings, isLoading, refetch } = useQuery({
     queryKey: ['admin-listings'],
     queryFn: async () => {
+      console.log('Fetching admin listings...');
       const { data, error } = await supabase
         .from('listings')
         .select(`
           *,
-          seller:profiles!listings_user_id_fkey(full_name)
+          seller:profiles(full_name)
         `)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
-      return data;
+      if (error) {
+        console.error('Error fetching listings:', error);
+        throw error;
+      }
+      
+      console.log('Fetched listings:', data);
+      return data as Listing[];
     }
   });
 
   const handleStatusUpdate = async (listingId: string, status: string) => {
+    console.log('Updating listing status:', { listingId, status });
     const { error } = await supabase
       .from('listings')
       .update({ 
@@ -45,6 +63,7 @@ const ListingManagement = () => {
       .eq('id', listingId);
 
     if (error) {
+      console.error('Error updating listing status:', error);
       toast({
         title: "Error",
         description: "Failed to update listing status",
@@ -96,7 +115,7 @@ const ListingManagement = () => {
                 <TableCell className="font-medium">{listing.title}</TableCell>
                 <TableCell>{listing.category}</TableCell>
                 <TableCell>₹{listing.price.toLocaleString()}</TableCell>
-                <TableCell>{listing.seller?.full_name}</TableCell>
+                <TableCell>{listing.seller?.full_name || 'Unknown'}</TableCell>
                 <TableCell>{listing.status}</TableCell>
                 <TableCell className="text-right">
                   <div className="flex items-center justify-end gap-2">
