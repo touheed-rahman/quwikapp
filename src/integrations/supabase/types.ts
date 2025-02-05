@@ -9,8 +9,33 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      admins: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["admin_role"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["admin_role"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["admin_role"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       listings: {
         Row: {
+          admin_notes: string | null
           category: string
           condition: string
           created_at: string
@@ -19,6 +44,8 @@ export type Database = {
           images: string[]
           location: string | null
           price: number
+          reviewed_at: string | null
+          reviewed_by: string | null
           status: string | null
           subcategory: string
           title: string
@@ -26,6 +53,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          admin_notes?: string | null
           category: string
           condition: string
           created_at?: string
@@ -34,6 +62,8 @@ export type Database = {
           images: string[]
           location?: string | null
           price: number
+          reviewed_at?: string | null
+          reviewed_by?: string | null
           status?: string | null
           subcategory: string
           title: string
@@ -41,6 +71,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          admin_notes?: string | null
           category?: string
           condition?: string
           created_at?: string
@@ -49,6 +80,8 @@ export type Database = {
           images?: string[]
           location?: string | null
           price?: number
+          reviewed_at?: string | null
+          reviewed_by?: string | null
           status?: string | null
           subcategory?: string
           title?: string
@@ -92,10 +125,15 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      is_admin: {
+        Args: {
+          user_uid: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      admin_role: "super_admin" | "admin" | "moderator"
     }
     CompositeTypes: {
       [_ in never]: never
