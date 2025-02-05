@@ -28,7 +28,7 @@ const ListingManagement = () => {
       }
       
       console.log('Fetched listings:', listingsData);
-      return listingsData as Listing[];
+      return listingsData as unknown as Listing[];
     }
   });
 
