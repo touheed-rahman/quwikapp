@@ -1,24 +1,10 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Search, CheckCircle2, XCircle } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
-import { Database } from "@/integrations/supabase/types";
-
-type Profile = Database['public']['Tables']['profiles']['Row'];
-type Listing = Database['public']['Tables']['listings']['Row'] & {
-  seller: Profile | null;
-};
+import ListingSearchBar from "./ListingSearchBar";
+import ListingTable from "./ListingTable";
+import { type Listing } from "./types";
 
 const ListingManagement = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -81,64 +67,16 @@ const ListingManagement = () => {
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-4">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-          <Input
-            placeholder="Search listings..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-9"
-          />
-        </div>
+        <ListingSearchBar 
+          searchTerm={searchTerm}
+          onSearchChange={setSearchTerm}
+        />
       </div>
 
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Title</TableHead>
-              <TableHead>Category</TableHead>
-              <TableHead>Price</TableHead>
-              <TableHead>Seller</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filteredListings?.map((listing) => (
-              <TableRow key={listing.id}>
-                <TableCell className="font-medium">{listing.title}</TableCell>
-                <TableCell>{listing.category}</TableCell>
-                <TableCell>₹{listing.price.toLocaleString()}</TableCell>
-                <TableCell>{listing.seller?.full_name || 'Unknown'}</TableCell>
-                <TableCell>{listing.status}</TableCell>
-                <TableCell className="text-right">
-                  <div className="flex items-center justify-end gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="bg-green-50 hover:bg-green-100 text-green-700"
-                      onClick={() => handleStatusUpdate(listing.id, 'approved')}
-                    >
-                      <CheckCircle2 className="h-4 w-4 mr-1" />
-                      Approve
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="bg-red-50 hover:bg-red-100 text-red-700"
-                      onClick={() => handleStatusUpdate(listing.id, 'rejected')}
-                    >
-                      <XCircle className="h-4 w-4 mr-1" />
-                      Reject
-                    </Button>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
+      <ListingTable 
+        listings={filteredListings || []}
+        onStatusUpdate={handleStatusUpdate}
+      />
     </div>
   );
 };
