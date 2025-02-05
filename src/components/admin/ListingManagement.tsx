@@ -4,7 +4,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import ListingSearchBar from "./ListingSearchBar";
 import ListingTable from "./ListingTable";
-import { type Listing } from "./types";
+import { Database } from "@/integrations/supabase/types";
+
+type Profile = Database['public']['Tables']['profiles']['Row'];
+type Listing = Database['public']['Tables']['listings']['Row'] & {
+  seller: Profile | null;
+};
 
 const ListingManagement = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -14,7 +19,7 @@ const ListingManagement = () => {
     queryKey: ['admin-listings'],
     queryFn: async () => {
       console.log('Fetching admin listings...');
-      const { data, error } = await supabase
+      const { data: listingsData, error } = await supabase
         .from('listings')
         .select(`
           *,
@@ -27,8 +32,8 @@ const ListingManagement = () => {
         throw error;
       }
       
-      console.log('Fetched listings:', data);
-      return data as Listing[];
+      console.log('Fetched listings:', listingsData);
+      return listingsData as Listing[];
     }
   });
 
@@ -63,6 +68,10 @@ const ListingManagement = () => {
     listing.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
     listing.category.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  if (isLoading) {
+    return <div>Loading listings...</div>;
+  }
 
   return (
     <div className="space-y-4">
