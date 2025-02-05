@@ -13,17 +13,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search, CheckCircle2, XCircle } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
+import { Database } from "@/integrations/supabase/types";
 
-interface Listing {
-  id: string;
-  title: string;
-  category: string;
-  price: number;
-  status: string;
-  seller: {
-    full_name: string | null;
-  } | null;
-}
+type Profile = Database['public']['Tables']['profiles']['Row'];
+type Listing = Database['public']['Tables']['listings']['Row'] & {
+  seller: Profile | null;
+};
 
 const ListingManagement = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -37,7 +32,7 @@ const ListingManagement = () => {
         .from('listings')
         .select(`
           *,
-          seller:profiles(full_name)
+          seller:profiles!listings_user_id_fkey(*)
         `)
         .order('created_at', { ascending: false });
 
