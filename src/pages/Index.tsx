@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -31,22 +30,44 @@ interface Listing {
 const Index = () => {
   const [showAllProducts, setShowAllProducts] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [selectedSubcategory, setSelectedSubcategory] = useState<string | null>(null);
 
   const { data: listings = [], isLoading, error } = useQuery({
-    queryKey: ['listings'],
+    queryKey: ['listings', selectedCategory, selectedSubcategory],
     queryFn: async () => {
-      const { data, error } = await supabase
+      console.log('Fetching listings with filters:', { selectedCategory, selectedSubcategory });
+      
+      let query = supabase
         .from('listings')
         .select('*')
-        .order('created_at', { ascending: false });
+        .eq('status', 'approved');
+
+      if (selectedCategory) {
+        query = query.eq('category', selectedCategory);
+      }
+      
+      if (selectedSubcategory) {
+        query = query.eq('subcategory', selectedSubcategory);
+      }
+
+      const { data, error } = await query.order('created_at', { ascending: false });
 
       if (error) {
+        console.error('Error fetching listings:', error);
         throw error;
       }
 
+      console.log('Fetched listings:', data);
       return data as Listing[];
     }
   });
+
+  const handleCategorySelect = (category: string, subcategory: string) => {
+    console.log('Category selected:', { category, subcategory });
+    setSelectedCategory(category);
+    setSelectedSubcategory(subcategory);
+  };
 
   // Get the URL for the first image in the array, or use a placeholder
   const getFirstImageUrl = (images: string[]) => {
@@ -62,7 +83,7 @@ const Index = () => {
       <main className="container mx-auto px-4 pt-20 pb-24">
         <div className="space-y-6">
           <HeroSearch />
-          <CategoryFilter />
+          <CategoryFilter onSelectCategory={handleCategorySelect} />
           
           <FeaturedListings 
             listings={listings}
