@@ -4,12 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import ListingSearchBar from "./ListingSearchBar";
 import ListingTable from "./ListingTable";
-import { Database } from "@/integrations/supabase/types";
-
-type Profile = Database['public']['Tables']['profiles']['Row'];
-type Listing = Database['public']['Tables']['listings']['Row'] & {
-  seller: Profile | null;
-};
+import { type Listing } from "./types";
 
 const ListingManagement = () => {
   const [searchTerm, setSearchTerm] = useState("");
