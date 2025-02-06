@@ -1,3 +1,4 @@
+
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Shield } from "lucide-react";
@@ -12,23 +13,37 @@ const AdminPanel = () => {
 
   useEffect(() => {
     const checkAdminAccess = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      if (!user) {
-        navigate('/profile');
-        return;
-      }
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        
+        if (!user) {
+          toast({
+            title: "Authentication Required",
+            description: "Please log in to access the admin panel",
+            variant: "destructive"
+          });
+          navigate('/profile');
+          return;
+        }
 
-      const { data: adminData, error } = await supabase
-        .from('admins')
-        .select('*')
-        .eq('user_id', user.id)
-        .single();
+        const { data: isAdmin, error: fnError } = await supabase
+          .rpc('is_admin', { user_uid: user.id });
 
-      if (error || !adminData) {
+        if (fnError || !isAdmin) {
+          console.error('Error checking admin status:', fnError);
+          toast({
+            title: "Access Denied",
+            description: "You don't have permission to access the admin panel",
+            variant: "destructive"
+          });
+          navigate('/');
+          return;
+        }
+      } catch (error) {
+        console.error('Error in admin check:', error);
         toast({
-          title: "Access Denied",
-          description: "You don't have permission to access the admin panel",
+          title: "Error",
+          description: "An error occurred while checking admin access",
           variant: "destructive"
         });
         navigate('/');

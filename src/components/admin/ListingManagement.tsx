@@ -15,9 +15,19 @@ const ListingManagement = () => {
     queryKey: ['admin-listings'],
     queryFn: async () => {
       console.log('Fetching admin listings...');
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      const { data: isAdmin } = await supabase.rpc('is_admin', { 
+        user_uid: user?.id 
+      });
+
+      if (!isAdmin) {
+        throw new Error('Unauthorized');
+      }
+
       const { data: listingsData, error } = await supabase
         .from('listings')
-        .select('*, seller:profiles(*)') // Updated join syntax
+        .select('*, seller:profiles(*)')
         .order('created_at', { ascending: false });
 
       if (error) {

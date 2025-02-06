@@ -1,5 +1,6 @@
+
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -25,30 +26,33 @@ interface Listing {
   created_at: string;
   condition: ProductCondition;
   category: string;
+  status: string;
 }
 
 const Index = () => {
+  const [searchParams] = useSearchParams();
   const [showAllProducts, setShowAllProducts] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [selectedSubcategory, setSelectedSubcategory] = useState<string | null>(null);
+  
+  const categoryFilter = searchParams.get('category');
+  const subcategoryFilter = searchParams.get('subcategory');
 
   const { data: listings = [], isLoading, error } = useQuery({
-    queryKey: ['listings', selectedCategory, selectedSubcategory],
+    queryKey: ['listings', categoryFilter, subcategoryFilter],
     queryFn: async () => {
-      console.log('Fetching listings with filters:', { selectedCategory, selectedSubcategory });
+      console.log('Fetching listings with filters:', { categoryFilter, subcategoryFilter });
       
       let query = supabase
         .from('listings')
         .select('*')
         .eq('status', 'approved');
 
-      if (selectedCategory) {
-        query = query.eq('category', selectedCategory);
+      if (categoryFilter) {
+        query = query.eq('category', categoryFilter);
       }
       
-      if (selectedSubcategory) {
-        query = query.eq('subcategory', selectedSubcategory);
+      if (subcategoryFilter) {
+        query = query.eq('subcategory', subcategoryFilter);
       }
 
       const { data, error } = await query.order('created_at', { ascending: false });
@@ -62,12 +66,6 @@ const Index = () => {
       return data as Listing[];
     }
   });
-
-  const handleCategorySelect = (category: string, subcategory: string) => {
-    console.log('Category selected:', { category, subcategory });
-    setSelectedCategory(category);
-    setSelectedSubcategory(subcategory);
-  };
 
   // Get the URL for the first image in the array, or use a placeholder
   const getFirstImageUrl = (images: string[]) => {
@@ -83,12 +81,14 @@ const Index = () => {
       <main className="container mx-auto px-4 pt-20 pb-24">
         <div className="space-y-6">
           <HeroSearch />
-          <CategoryFilter onSelectCategory={handleCategorySelect} />
+          <CategoryFilter />
           
-          <FeaturedListings 
-            listings={listings}
-            getFirstImageUrl={getFirstImageUrl}
-          />
+          {!categoryFilter && (
+            <FeaturedListings 
+              listings={listings}
+              getFirstImageUrl={getFirstImageUrl}
+            />
+          )}
 
           <RecentListings 
             listings={listings}
@@ -100,10 +100,12 @@ const Index = () => {
             itemsPerPage={ITEMS_PER_PAGE}
           />
 
-          <CategoryListings 
-            listings={listings}
-            getFirstImageUrl={getFirstImageUrl}
-          />
+          {!categoryFilter && (
+            <CategoryListings 
+              listings={listings}
+              getFirstImageUrl={getFirstImageUrl}
+            />
+          )}
         </div>
 
         <MobileNavigation onChatOpen={() => setIsChatOpen(true)} />
