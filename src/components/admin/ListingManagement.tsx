@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -16,10 +17,7 @@ const ListingManagement = () => {
       console.log('Fetching admin listings...');
       const { data: listingsData, error } = await supabase
         .from('listings')
-        .select(`
-          *,
-          seller:profiles!listings_user_id_fkey(*)
-        `)
+        .select('*, seller:profiles(*)') // Updated join syntax
         .order('created_at', { ascending: false });
 
       if (error) {
