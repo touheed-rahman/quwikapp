@@ -14,7 +14,7 @@ import {
 import { useToast } from "@/components/ui/use-toast";
 import SellStepOne from "@/components/sell/SellStepOne";
 import Header from "@/components/Header";
-import { Search, X, Loader2 } from "lucide-react";
+import { Search, Loader2 } from "lucide-react";
 import ChatWindow from "@/components/chat/ChatWindow";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -40,9 +40,14 @@ const Sell = () => {
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState<any>({});
   const [selectedCity, setSelectedCity] = useState("");
+  const [selectedArea, setSelectedArea] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [price, setPrice] = useState("");
+  const [condition, setCondition] = useState("");
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -53,6 +58,17 @@ const Sell = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validate form fields
+    if (!title || !description || !price || !condition || !selectedCity) {
+      toast({
+        title: "Missing Fields",
+        description: "Please fill in all required fields",
+        variant: "destructive"
+      });
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
@@ -69,17 +85,28 @@ const Sell = () => {
       }
 
       // Upload images to Supabase storage
-      const { data: { publicUrl } } = supabase.storage.from('listings').getPublicUrl(formData.images[0]);
+      const imageUploadPromises = formData.images.map(async (image: File) => {
+        const filename = `${crypto.randomUUID()}-${image.name}`;
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from('listings')
+          .upload(filename, image);
+
+        if (uploadError) throw uploadError;
+        return filename;
+      });
+
+      const uploadedImagePaths = await Promise.all(imageUploadPromises);
       
+      // Insert listing into database
       const { error } = await supabase.from('listings').insert({
-        title: formData.title,
-        description: formData.description,
-        price: parseFloat(formData.price),
+        title,
+        description,
+        price: parseFloat(price),
         category: formData.category,
         subcategory: formData.subcategory,
-        condition: formData.condition,
-        location: `${selectedCity}`,
-        images: formData.images,
+        condition,
+        location: `${selectedCity}${selectedArea ? `, ${selectedArea}` : ''}`,
+        images: uploadedImagePaths,
         user_id: user.id,
         status: 'pending'
       });
@@ -87,11 +114,11 @@ const Sell = () => {
       if (error) throw error;
 
       toast({
-        title: "Ad posted successfully!",
+        title: "Ad Posted Successfully!",
         description: "Your ad will be visible after review.",
       });
 
-      // Wait for 2 seconds to show the success message
+      // Show success state for 2 seconds before redirecting
       await new Promise(resolve => setTimeout(resolve, 2000));
       navigate('/');
 
@@ -128,34 +155,42 @@ const Sell = () => {
     <div className="min-h-screen bg-background">
       <Header />
       <div className="container max-w-2xl mx-auto px-4 pt-20 pb-24">
-        <h1 className="text-2xl font-bold mb-6 text-foreground hover:text-white transition-colors">
+        <h1 className="text-2xl font-bold mb-6 text-foreground">
           ITEM DETAILS
         </h1>
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="bg-white rounded-lg shadow-sm border p-4 md:p-6 space-y-6">
             <div>
-              <label className="text-sm font-medium mb-1.5 block hover:text-white transition-colors">
+              <label className="text-sm font-medium mb-1.5 block">
                 Ad title *
               </label>
-              <Input placeholder="Mention the key features of your item (e.g. brand, model, age, type)" />
-            </div>
-
-            <div>
-              <label className="text-sm font-medium mb-1.5 block hover:text-white transition-colors">
-                Description *
-              </label>
-              <Textarea 
-                placeholder="Include condition, features and reason for selling"
-                className="min-h-[120px] resize-none"
+              <Input 
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="Mention the key features of your item (e.g. brand, model, age, type)"
+                required 
               />
             </div>
 
             <div>
-              <label className="text-sm font-medium mb-1.5 block hover:text-white transition-colors">
+              <label className="text-sm font-medium mb-1.5 block">
+                Description *
+              </label>
+              <Textarea 
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="Include condition, features and reason for selling"
+                className="min-h-[120px] resize-none"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="text-sm font-medium mb-1.5 block">
                 Condition *
               </label>
-              <Select>
-                <SelectTrigger className="hover:text-white transition-colors">
+              <Select value={condition} onValueChange={setCondition}>
+                <SelectTrigger>
                   <SelectValue placeholder="Select condition" />
                 </SelectTrigger>
                 <SelectContent>
@@ -168,22 +203,29 @@ const Sell = () => {
             </div>
 
             <div>
-              <label className="text-sm font-medium mb-1.5 block hover:text-primary transition-colors">
+              <label className="text-sm font-medium mb-1.5 block">
                 Price *
               </label>
               <div className="relative">
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">₹</span>
-                <Input className="pl-8" type="number" placeholder="Enter price" />
+                <Input 
+                  type="number"
+                  value={price}
+                  onChange={(e) => setPrice(e.target.value)}
+                  className="pl-8" 
+                  placeholder="Enter price"
+                  required
+                />
               </div>
             </div>
 
             <div className="space-y-4">
               <div>
-                <label className="text-sm font-medium mb-1.5 block hover:text-white transition-colors">
+                <label className="text-sm font-medium mb-1.5 block">
                   City *
                 </label>
                 <Select value={selectedCity} onValueChange={setSelectedCity}>
-                  <SelectTrigger className="hover:text-white transition-colors">
+                  <SelectTrigger>
                     <SelectValue placeholder="Select city" />
                   </SelectTrigger>
                   <SelectContent>
@@ -198,7 +240,7 @@ const Sell = () => {
 
               {selectedCity && (
                 <div>
-                  <label className="text-sm font-medium mb-1.5 block hover:text-white transition-colors">
+                  <label className="text-sm font-medium mb-1.5 block">
                     Area *
                   </label>
                   <div className="space-y-2">
@@ -209,11 +251,11 @@ const Sell = () => {
                         placeholder="Search area..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="pl-9 hover:text-white transition-colors"
+                        className="pl-9"
                       />
                     </div>
-                    <Select>
-                      <SelectTrigger className="hover:text-white transition-colors">
+                    <Select value={selectedArea} onValueChange={setSelectedArea}>
+                      <SelectTrigger>
                         <SelectValue placeholder="Select area" />
                       </SelectTrigger>
                       <SelectContent>
@@ -234,7 +276,7 @@ const Sell = () => {
             <Button
               type="button"
               variant="outline"
-              className="flex-1 hover:text-white transition-colors"
+              className="flex-1"
               onClick={() => setStep(1)}
               disabled={isSubmitting}
             >
