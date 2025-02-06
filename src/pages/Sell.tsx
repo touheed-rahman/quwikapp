@@ -1,5 +1,6 @@
 
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -13,8 +14,9 @@ import {
 import { useToast } from "@/components/ui/use-toast";
 import SellStepOne from "@/components/sell/SellStepOne";
 import Header from "@/components/Header";
-import { Search, X } from "lucide-react";
+import { Search, X, Loader2 } from "lucide-react";
 import ChatWindow from "@/components/chat/ChatWindow";
+import { supabase } from "@/integrations/supabase/client";
 
 const cities = [
   {
@@ -40,19 +42,69 @@ const Sell = () => {
   const [selectedCity, setSelectedCity] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [isChatOpen, setIsChatOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const handleStepOneComplete = (data: any) => {
     setFormData({ ...formData, ...data });
     setStep(2);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    toast({
-      title: "Ad posted successfully!",
-      description: "Your ad will be visible after review.",
-    });
+    setIsSubmitting(true);
+
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        toast({
+          title: "Authentication required",
+          description: "Please log in to post an ad",
+          variant: "destructive"
+        });
+        navigate('/profile');
+        return;
+      }
+
+      // Upload images to Supabase storage
+      const { data: { publicUrl } } = supabase.storage.from('listings').getPublicUrl(formData.images[0]);
+      
+      const { error } = await supabase.from('listings').insert({
+        title: formData.title,
+        description: formData.description,
+        price: parseFloat(formData.price),
+        category: formData.category,
+        subcategory: formData.subcategory,
+        condition: formData.condition,
+        location: `${selectedCity}`,
+        images: formData.images,
+        user_id: user.id,
+        status: 'pending'
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Ad posted successfully!",
+        description: "Your ad will be visible after review.",
+      });
+
+      // Wait for 2 seconds to show the success message
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      navigate('/');
+
+    } catch (error) {
+      console.error('Error posting ad:', error);
+      toast({
+        title: "Error",
+        description: "Failed to post your ad. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const filteredAreas = selectedCity
@@ -184,11 +236,23 @@ const Sell = () => {
               variant="outline"
               className="flex-1 hover:text-white transition-colors"
               onClick={() => setStep(1)}
+              disabled={isSubmitting}
             >
               Back
             </Button>
-            <Button type="submit" className="flex-1 bg-primary hover:bg-primary/90 text-white">
-              Post Ad
+            <Button 
+              type="submit" 
+              className="flex-1 bg-primary hover:bg-primary/90 text-white"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? (
+                <div className="flex items-center gap-2">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Posting Ad...
+                </div>
+              ) : (
+                'Post Ad'
+              )}
             </Button>
           </div>
         </form>

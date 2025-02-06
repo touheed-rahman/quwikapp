@@ -6,19 +6,24 @@ import { useToast } from "@/components/ui/use-toast";
 import ListingSearchBar from "./ListingSearchBar";
 import ListingTable from "./ListingTable";
 import { type Listing } from "./types";
+import { Loader2 } from "lucide-react";
 
 const ListingManagement = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const { toast } = useToast();
 
-  const { data: listings, isLoading, refetch } = useQuery({
+  const { data: listings, isLoading, error, refetch } = useQuery({
     queryKey: ['admin-listings'],
     queryFn: async () => {
       console.log('Fetching admin listings...');
       const { data: { user } } = await supabase.auth.getUser();
       
+      if (!user) {
+        throw new Error('Authentication required');
+      }
+
       const { data: isAdmin } = await supabase.rpc('is_admin', { 
-        user_uid: user?.id 
+        user_uid: user.id 
       });
 
       if (!isAdmin) {
@@ -72,8 +77,12 @@ const ListingManagement = () => {
     listing.category.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  if (isLoading) {
-    return <div>Loading listings...</div>;
+  if (error) {
+    return (
+      <div className="text-red-500 p-4">
+        Error loading listings. Please try again later.
+      </div>
+    );
   }
 
   return (
@@ -85,10 +94,20 @@ const ListingManagement = () => {
         />
       </div>
 
-      <ListingTable 
-        listings={filteredListings || []}
-        onStatusUpdate={handleStatusUpdate}
-      />
+      {isLoading ? (
+        <div className="flex items-center justify-center p-8">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      ) : listings?.length === 0 ? (
+        <div className="text-center p-8 text-muted-foreground">
+          No listings found
+        </div>
+      ) : (
+        <ListingTable 
+          listings={filteredListings || []}
+          onStatusUpdate={handleStatusUpdate}
+        />
+      )}
     </div>
   );
 };
