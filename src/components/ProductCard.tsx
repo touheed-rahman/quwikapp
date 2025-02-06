@@ -1,9 +1,13 @@
+
+import { useState, useEffect } from "react";
 import { Heart, MapPin } from "lucide-react";
 import { Button } from "./ui/button";
 import { Card, CardContent } from "./ui/card";
 import { Badge } from "./ui/badge";
 import { ProductCondition } from "@/types/categories";
 import { Link } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "./ui/use-toast";
 
 interface ProductCardProps {
   id?: string | number;
@@ -26,6 +30,84 @@ const ProductCard = ({
   featured,
   condition,
 }: ProductCardProps) => {
+  const [isWishlisted, setIsWishlisted] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
+
+  useEffect(() => {
+    const checkWishlistStatus = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data } = await supabase
+        .from('wishlists')
+        .select()
+        .eq('user_id', user.id)
+        .eq('listing_id', id)
+        .maybeSingle();
+
+      setIsWishlisted(!!data);
+    };
+
+    checkWishlistStatus();
+  }, [id]);
+
+  const handleWishlist = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    setIsLoading(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast({
+          title: "Authentication required",
+          description: "Please login to add items to your wishlist",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      if (isWishlisted) {
+        const { error } = await supabase
+          .from('wishlists')
+          .delete()
+          .eq('user_id', user.id)
+          .eq('listing_id', id);
+
+        if (error) throw error;
+        setIsWishlisted(false);
+        toast({
+          title: "Removed from wishlist",
+          description: "Item has been removed from your wishlist"
+        });
+      } else {
+        const { error } = await supabase
+          .from('wishlists')
+          .insert({
+            user_id: user.id,
+            listing_id: id
+          });
+
+        if (error) throw error;
+        setIsWishlisted(true);
+        toast({
+          title: "Added to wishlist",
+          description: "Item has been added to your wishlist"
+        });
+      }
+    } catch (error) {
+      console.error('Error updating wishlist:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update wishlist",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const getConditionColor = (condition?: ProductCondition) => {
     switch (condition) {
       case "new":
@@ -53,9 +135,13 @@ const ProductCard = ({
           <Button
             variant="ghost"
             size="icon"
-            className="absolute top-2 right-2 bg-white/80 backdrop-blur-sm hover:bg-white/90 h-8 w-8"
+            className={`absolute top-2 right-2 bg-white/80 backdrop-blur-sm hover:bg-white/90 h-8 w-8 ${
+              isWishlisted ? "text-red-500" : ""
+            } ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
+            onClick={handleWishlist}
+            disabled={isLoading}
           >
-            <Heart className="h-4 w-4" />
+            <Heart className="h-4 w-4" fill={isWishlisted ? "currentColor" : "none"} />
           </Button>
           {featured && (
             <Badge variant="default" className="absolute top-2 left-2 bg-yellow-500 text-white">

@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -12,6 +13,8 @@ import Categories from "./pages/Categories";
 import ChatDetail from "./pages/ChatDetail";
 import Profile from "./pages/Profile";
 import AdminPanel from "./pages/Admin";
+import MyAds from "./pages/MyAds";
+import Wishlist from "./pages/Wishlist";
 
 const queryClient = new QueryClient();
 
@@ -77,6 +80,22 @@ const App = () => (
             element={
               <PrivateRoute>
                 <AdminPanel />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/my-ads"
+            element={
+              <PrivateRoute>
+                <MyAds />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/wishlist"
+            element={
+              <PrivateRoute>
+                <Wishlist />
               </PrivateRoute>
             }
           />
