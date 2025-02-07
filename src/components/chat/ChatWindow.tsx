@@ -27,6 +27,7 @@ interface ChatWindowProps {
   isOpen: boolean;
   onClose: () => void;
   initialSeller?: {
+    id?: string; // Add id property
     name: string;
     isVerified?: boolean;
     productInfo?: {
