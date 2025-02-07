@@ -1,9 +1,11 @@
+
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import Header from "@/components/Header";
 import ProductCard from "@/components/ProductCard";
+import { useQuery } from "@tanstack/react-query";
 import {
   Heart,
   Share2,
@@ -12,10 +14,12 @@ import {
   ChevronLeft,
   ChevronRight,
   MessageCircle,
+  Loader2,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { ProductCondition } from "@/types/categories";
 import ChatWindow from "@/components/chat/ChatWindow";
+import { supabase } from "@/integrations/supabase/client";
 
 const ProductPage = () => {
   const { id } = useParams();
@@ -23,48 +27,78 @@ const ProductPage = () => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isChatOpen, setIsChatOpen] = useState(false);
 
-  // Mock product data - in a real app, this would come from an API
-  const product = {
-    id,
-    title: "2019 Toyota Camry XSE - Excellent Condition",
-    price: 2250000,
-    location: "Bengaluru, KA",
-    images: [
-      "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b",
-      "https://images.unsplash.com/photo-1498050108023-c5249f4df085",
-      "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158",
-    ],
-    description: "Excellent condition Toyota Camry XSE with all premium features...",
-    condition: "excellent" as ProductCondition,
-    postedDate: "2024-02-15",
-    seller: {
-      name: "John Doe",
-      memberSince: "2023",
-      listings: 5,
-    },
-    category: "vehicles",
+  // Fetch the product data
+  const { data: product, isLoading } = useQuery({
+    queryKey: ['product', id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('listings')
+        .select(`
+          *,
+          profiles:user_id (
+            full_name,
+            created_at
+          )
+        `)
+        .eq('id', id)
+        .single();
+
+      if (error) throw error;
+      if (!data) throw new Error('Product not found');
+
+      return {
+        ...data,
+        condition: data.condition as ProductCondition,
+        seller: {
+          name: data.profiles.full_name || 'Anonymous',
+          memberSince: new Date(data.profiles.created_at).getFullYear().toString(),
+          listings: 0, // We'll implement this count in a future iteration
+        }
+      };
+    }
+  });
+
+  // Fetch related products
+  const { data: relatedProducts = [] } = useQuery({
+    queryKey: ['related-products', product?.category],
+    enabled: !!product,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('listings')
+        .select('*')
+        .eq('category', product?.category)
+        .eq('status', 'approved')
+        .neq('id', id)
+        .limit(4);
+
+      if (error) throw error;
+
+      return data.map(item => ({
+        id: item.id,
+        title: item.title,
+        price: item.price,
+        location: item.location,
+        image: item.images[0] ? 
+          supabase.storage.from('listings').getPublicUrl(item.images[0]).data.publicUrl 
+          : "https://via.placeholder.com/300",
+        condition: item.condition as ProductCondition,
+      }));
+    }
+  });
+
+  const getImageUrl = (imagePath: string) => {
+    return supabase.storage.from('listings').getPublicUrl(imagePath).data.publicUrl;
   };
 
-  // Mock related products
-  const relatedProducts = [
-    {
-      id: "2", // Changed from number to string
-      title: "2020 Honda Accord Sport",
-      price: 2400000,
-      location: "Bengaluru, KA",
-      image: "https://images.unsplash.com/photo-1498050108023-c5249f4df085",
-      condition: "excellent" as ProductCondition,
-    },
-    // ... Add more related products
-  ];
-
   const nextImage = () => {
+    if (!product) return;
     setCurrentImageIndex((prev) =>
       prev === product.images.length - 1 ? 0 : prev + 1
     );
   };
 
   const prevImage = () => {
+    if (!product) return;
     setCurrentImageIndex((prev) =>
       prev === 0 ? product.images.length - 1 : prev - 1
     );
@@ -74,6 +108,38 @@ const ProductPage = () => {
     navigate(`/chat/${id}`);
   };
 
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header />
+        <main className="container mx-auto px-4 pt-20 pb-24">
+          <div className="flex items-center justify-center h-[60vh]">
+            <Loader2 className="h-8 w-8 animate-spin" />
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  if (!product) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header />
+        <main className="container mx-auto px-4 pt-20 pb-24">
+          <div className="text-center">
+            <h2 className="text-2xl font-bold">Product not found</h2>
+            <Button 
+              className="mt-4"
+              onClick={() => navigate('/')}
+            >
+              Back to Home
+            </Button>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -82,7 +148,7 @@ const ProductPage = () => {
           {/* Image Gallery */}
           <div className="relative aspect-4/3 rounded-lg overflow-hidden bg-black/5">
             <img
-              src={product.images[currentImageIndex]}
+              src={getImageUrl(product.images[currentImageIndex])}
               alt={product.title}
               className="w-full h-full object-cover"
             />
@@ -145,7 +211,7 @@ const ProductPage = () => {
               </div>
               <div className="flex items-center gap-1">
                 <Calendar className="h-4 w-4" />
-                <span>Posted on {new Date(product.postedDate).toLocaleDateString()}</span>
+                <span>Posted on {new Date(product.created_at).toLocaleDateString()}</span>
               </div>
             </div>
 
