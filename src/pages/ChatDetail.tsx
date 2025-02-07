@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,76 +9,164 @@ import {
   Phone,
   MoreVertical,
   Send,
-  Mic
+  Mic,
+  Loader2
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/components/ui/use-toast";
 
 interface Message {
   id: string;
-  text: string;
-  sender: "user" | "other";
-  timestamp: Date;
+  content: string;
+  sender_id: string;
+  created_at: string;
+}
+
+interface ConversationDetails {
+  seller: {
+    id: string;
+    full_name: string;
+  };
+  buyer: {
+    id: string;
+    full_name: string;
+  };
+  listing: {
+    title: string;
+    price: number;
+  };
 }
 
 const ChatDetail = () => {
   const navigate = useNavigate();
   const { id } = useParams();
+  const { toast } = useToast();
   const [newMessage, setNewMessage] = useState("");
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: "1",
-      text: "Hi, I am interested in your ad posting.",
-      sender: "user" as const,
-      timestamp: new Date(2024, 0, 31, 12, 26)
-    },
-    {
-      id: "2",
-      text: "how many months emi pending bro?",
-      sender: "user" as const,
-      timestamp: new Date(2024, 0, 31, 12, 26)
-    },
-    {
-      id: "3",
-      text: "130k emi pending",
-      sender: "other" as const,
-      timestamp: new Date(2024, 0, 31, 12, 27)
-    },
-    {
-      id: "4",
-      text: "U r paying emi from the bike amount?",
-      sender: "user" as const,
-      timestamp: new Date(2024, 0, 31, 17, 14)
-    },
-    {
-      id: "5",
-      text: "S",
-      sender: "other" as const,
-      timestamp: new Date(2024, 0, 31, 17, 51)
-    }
-  ]);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [sessionUser, setSessionUser] = useState<any>(null);
+  const [conversationDetails, setConversationDetails] = useState<ConversationDetails | null>(null);
 
-  const handleSend = () => {
-    if (!newMessage.trim()) return;
-    
-    const message: Message = {
-      id: Date.now().toString(),
-      text: newMessage,
-      sender: "user" as const,
-      timestamp: new Date()
+  useEffect(() => {
+    const getSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      setSessionUser(session?.user);
     };
-    
-    setMessages((prev) => [...prev, message]);
-    setNewMessage("");
+    getSession();
+  }, []);
+
+  useEffect(() => {
+    if (!id || !sessionUser) return;
+
+    const fetchConversationDetails = async () => {
+      const { data, error } = await supabase
+        .from('conversations')
+        .select(`
+          *,
+          seller:profiles!conversations_seller_id_fkey(id, full_name),
+          buyer:profiles!conversations_buyer_id_fkey(id, full_name),
+          listing:listings(title, price)
+        `)
+        .eq('id', id)
+        .single();
+
+      if (error) {
+        toast({
+          variant: "destructive",
+          title: "Error fetching conversation",
+          description: error.message
+        });
+        return;
+      }
+
+      setConversationDetails(data);
+    };
+
+    const fetchMessages = async () => {
+      const { data, error } = await supabase
+        .from('messages')
+        .select('*')
+        .eq('conversation_id', id)
+        .order('created_at', { ascending: true });
+
+      if (error) {
+        toast({
+          variant: "destructive",
+          title: "Error fetching messages",
+          description: error.message
+        });
+        return;
+      }
+
+      setMessages(data || []);
+      setIsLoading(false);
+    };
+
+    fetchConversationDetails();
+    fetchMessages();
+
+    // Subscribe to new messages
+    const channel = supabase
+      .channel('messages')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'messages',
+          filter: `conversation_id=eq.${id}`
+        },
+        (payload) => {
+          setMessages(prev => [...prev, payload.new as Message]);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [id, sessionUser, toast]);
+
+  const handleSend = async () => {
+    if (!newMessage.trim() || !sessionUser || !id) return;
+
+    try {
+      const { error } = await supabase
+        .from('messages')
+        .insert({
+          conversation_id: id,
+          sender_id: sessionUser.id,
+          content: newMessage
+        });
+
+      if (error) throw error;
+      setNewMessage("");
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Error sending message",
+        description: error.message
+      });
+    }
   };
 
-  const quickReplies = [
-    "Hello",
-    "Is it available?",
-    "Okay",
-    "No problem",
-    "Please reply",
-    "Not interested"
-  ];
+  if (!sessionUser) {
+    return (
+      <div className="flex flex-col items-center justify-center h-screen bg-background">
+        <p className="text-lg mb-4">Please sign in to view this chat</p>
+        <Button onClick={() => navigate('/auth')}>Sign In</Button>
+      </div>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-background">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col h-screen bg-background">
@@ -93,82 +181,69 @@ const ChatDetail = () => {
           <ChevronLeft className="h-6 w-6" />
         </Button>
         
-        <Avatar className="h-10 w-10">
-          <div className="w-full h-full rounded-full bg-primary flex items-center justify-center text-white">
-            R
-          </div>
-        </Avatar>
-        
-        <div className="flex-1">
-          <div className="flex items-center gap-2">
-            <span className="font-semibold">Ram</span>
-            <Badge variant="outline" className="h-5 bg-primary/10 text-primary border-primary">
-              Verified
-            </Badge>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-muted-foreground">KTM Duke 200 bs6</span>
-            <span className="text-sm font-medium">₹90,000</span>
-          </div>
-        </div>
+        {conversationDetails && (
+          <>
+            <Avatar className="h-10 w-10">
+              <div className="w-full h-full rounded-full bg-primary flex items-center justify-center text-white">
+                {conversationDetails.seller.full_name[0]}
+              </div>
+            </Avatar>
+            
+            <div className="flex-1">
+              <div className="flex items-center gap-2">
+                <span className="font-semibold">{conversationDetails.seller.full_name}</span>
+                <Badge variant="outline" className="h-5 bg-primary/10 text-primary border-primary">
+                  Verified
+                </Badge>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-muted-foreground">{conversationDetails.listing.title}</span>
+                <span className="text-sm font-medium">₹{conversationDetails.listing.price}</span>
+              </div>
+            </div>
 
-        <div className="flex items-center gap-2">
-          <Button variant="ghost" size="icon">
-            <Phone className="h-5 w-5" />
-          </Button>
-          <Button variant="ghost" size="icon">
-            <MoreVertical className="h-5 w-5" />
-          </Button>
-        </div>
+            <div className="flex items-center gap-2">
+              <Button variant="ghost" size="icon">
+                <Phone className="h-5 w-5" />
+              </Button>
+              <Button variant="ghost" size="icon">
+                <MoreVertical className="h-5 w-5" />
+              </Button>
+            </div>
+          </>
+        )}
       </div>
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50">
-        <div className="text-center text-sm text-muted-foreground">
-          Friday, 31 Jan
-        </div>
-        
         {messages.map((message) => (
           <div
             key={message.id}
-            className={`flex ${message.sender === "user" ? "justify-end" : "justify-start"}`}
+            className={`flex ${message.sender_id === sessionUser.id ? "justify-end" : "justify-start"}`}
           >
             <div
               className={`max-w-[70%] rounded-lg p-3 ${
-                message.sender === "user" 
+                message.sender_id === sessionUser.id 
                   ? "bg-blue-100 text-blue-900" 
                   : "bg-white border"
               }`}
             >
-              <p>{message.text}</p>
+              <p>{message.content}</p>
               <div className={`text-xs mt-1 ${
-                message.sender === "user" 
+                message.sender_id === sessionUser.id 
                   ? "text-blue-700" 
                   : "text-muted-foreground"
               }`}>
-                {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                {new Date(message.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
               </div>
             </div>
           </div>
         ))}
       </div>
 
-      {/* Quick Replies */}
+      {/* Input */}
       <div className="p-4 bg-white border-t">
-        <div className="flex gap-2 overflow-x-auto pb-4 scrollbar-hide">
-          {quickReplies.map((reply) => (
-            <Button
-              key={reply}
-              variant="outline"
-              className="whitespace-nowrap"
-              onClick={() => setNewMessage(reply)}
-            >
-              {reply}
-            </Button>
-          ))}
-        </div>
-
-        <div className="flex items-center gap-2 mt-2">
+        <div className="flex items-center gap-2">
           <Input
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}

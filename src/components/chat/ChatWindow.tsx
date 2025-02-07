@@ -1,4 +1,5 @@
-import { useState } from "react";
+
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,6 +20,8 @@ import {
 import { cn } from "@/lib/utils";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/components/ui/use-toast";
 
 interface ChatWindowProps {
   isOpen: boolean;
@@ -35,82 +38,157 @@ interface ChatWindowProps {
 
 interface ChatMessage {
   id: string;
-  text: string;
-  sender: "user" | "other";
-  timestamp: Date;
-  status?: "active" | "inactive";
-  productInfo?: {
-    title: string;
-    price?: string;
-    isVerified?: boolean;
-  };
-  senderInfo?: {
+  content: string;
+  sender_id: string;
+  created_at: string;
+  sender_info?: {
     name: string;
     avatar?: string;
     isVerified?: boolean;
   };
 }
 
+interface Conversation {
+  id: string;
+  listing_id: string;
+  last_message: string;
+  last_message_at: string;
+  seller_id: string;
+  buyer_id: string;
+  listing: {
+    title: string;
+    price: number;
+  };
+  seller: {
+    full_name: string;
+    avatar_url?: string;
+  };
+}
+
 const ChatWindow = ({ isOpen, onClose, initialSeller }: ChatWindowProps) => {
   const navigate = useNavigate();
-  const [messages, setMessages] = useState<ChatMessage[]>([
-    ...(initialSeller ? [{
-      id: "1",
-      text: `Hello, I'm interested in your product`,
-      sender: "user" as const,
-      timestamp: new Date(),
-      senderInfo: {
-        name: "You"
-      },
-      productInfo: initialSeller.productInfo
-    }] : []),
-    {
-      id: "2",
-      text: "KTM Duke 200 bs6",
-      sender: "other" as const,
-      timestamp: new Date(),
-      productInfo: {
-        title: "KTM Duke 200 bs6",
-        price: "160000",
-        isVerified: true
-      },
-      senderInfo: {
-        name: "Ram",
-        isVerified: true
-      }
-    },
-    {
-      id: "3",
-      text: "Is this bike still available?",
-      sender: "user" as const,
-      timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000),
-      senderInfo: {
-        name: "You"
-      }
-    }
-  ]);
+  const { toast } = useToast();
+  const [conversations, setConversations] = useState<Conversation[]>([]);
   const [newMessage, setNewMessage] = useState("");
   const [isRecording, setIsRecording] = useState(false);
   const [isSending, setIsSending] = useState(false);
   const [activeFilter, setActiveFilter] = useState("all");
+  const [sessionUser, setSessionUser] = useState<any>(null);
 
-  const handleSend = () => {
-    if (!newMessage.trim()) return;
+  useEffect(() => {
+    const getSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      setSessionUser(session?.user);
+    };
+    getSession();
+  }, []);
+
+  useEffect(() => {
+    if (!sessionUser) return;
+
+    const fetchConversations = async () => {
+      const { data, error } = await supabase
+        .from('conversations')
+        .select(`
+          *,
+          listing:listings(title, price),
+          seller:profiles!conversations_seller_id_fkey(full_name, avatar_url)
+        `)
+        .or(`buyer_id.eq.${sessionUser.id},seller_id.eq.${sessionUser.id}`)
+        .order('last_message_at', { ascending: false });
+
+      if (error) {
+        toast({
+          variant: "destructive",
+          title: "Error fetching conversations",
+          description: error.message
+        });
+        return;
+      }
+
+      setConversations(data || []);
+    };
+
+    fetchConversations();
+
+    // Subscribe to real-time updates
+    const channel = supabase
+      .channel('conversations')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'conversations',
+          filter: `buyer_id=eq.${sessionUser.id}`
+        },
+        (payload) => {
+          if (payload.eventType === 'UPDATE') {
+            setConversations(prev => 
+              prev.map(conv => 
+                conv.id === payload.new.id 
+                  ? { ...conv, ...payload.new }
+                  : conv
+              )
+            );
+          } else if (payload.eventType === 'INSERT') {
+            fetchConversations();
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [sessionUser, toast]);
+
+  const handleSend = async () => {
+    if (!newMessage.trim() || !sessionUser) return;
     
     setIsSending(true);
-    const message: ChatMessage = {
-      id: Date.now().toString(),
-      text: newMessage,
-      sender: "user" as const,
-      timestamp: new Date(),
-      senderInfo: {
-        name: "You"
-      }
-    };
     
-    setMessages((prev) => [...prev, message]);
-    setNewMessage("");
-    setIsSending(false);
+    try {
+      // First, ensure we have a conversation
+      let conversationId = conversations[0]?.id;
+      
+      if (!conversationId && initialSeller) {
+        // Create a new conversation
+        const { data: newConversation, error: convError } = await supabase
+          .from('conversations')
+          .insert({
+            listing_id: initialSeller.productInfo?.title,
+            buyer_id: sessionUser.id,
+            seller_id: initialSeller.id
+          })
+          .select()
+          .single();
+
+        if (convError) throw convError;
+        conversationId = newConversation.id;
+      }
+
+      // Send the message
+      const { error: messageError } = await supabase
+        .from('messages')
+        .insert({
+          conversation_id: conversationId,
+          sender_id: sessionUser.id,
+          content: newMessage
+        });
+
+      if (messageError) throw messageError;
+      
+      setNewMessage("");
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Error sending message",
+        description: error.message
+      });
+    } finally {
+      setIsSending(false);
+    }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -120,20 +198,13 @@ const ChatWindow = ({ isOpen, onClose, initialSeller }: ChatWindowProps) => {
     }
   };
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      console.log("File selected:", file);
-    }
-  };
-
   const toggleRecording = () => {
     setIsRecording(!isRecording);
   };
 
-  const handleAvatarClick = (messageId: string) => {
+  const handleAvatarClick = (conversationId: string) => {
     onClose();
-    navigate(`/chat/${messageId}`);
+    navigate(`/chat/${conversationId}`);
   };
 
   if (!isOpen) return null;
@@ -144,6 +215,19 @@ const ChatWindow = ({ isOpen, onClose, initialSeller }: ChatWindowProps) => {
     { id: "unread", label: "Unread" },
     { id: "important", label: "Important" },
   ];
+
+  if (!sessionUser) {
+    return (
+      <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50">
+        <div className="fixed right-0 top-0 h-full w-full max-w-md bg-white shadow-lg">
+          <div className="flex flex-col items-center justify-center h-full p-4">
+            <p className="text-lg mb-4">Please sign in to use chat</p>
+            <Button onClick={() => navigate('/auth')}>Sign In</Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50">
@@ -219,47 +303,43 @@ const ChatWindow = ({ isOpen, onClose, initialSeller }: ChatWindowProps) => {
 
           {/* Chat List */}
           <div className="flex-1 overflow-y-auto">
-            {messages.map((message, index) => (
+            {conversations.map((conversation, index) => (
               <div
-                key={message.id}
+                key={conversation.id}
                 className={cn(
                   "px-4 py-3 hover:bg-muted/50 transition-colors cursor-pointer",
-                  index !== messages.length - 1 && "border-b"
+                  index !== conversations.length - 1 && "border-b"
                 )}
-                onClick={() => handleAvatarClick(message.id)}
+                onClick={() => handleAvatarClick(conversation.id)}
               >
                 <div className="flex items-start gap-3">
                   <Avatar className="h-12 w-12">
                     <div className={cn(
                       "w-full h-full rounded-full flex items-center justify-center text-white",
-                      message.sender === "other" ? "bg-primary" : "bg-orange-500"
+                      sessionUser.id === conversation.buyer_id ? "bg-primary" : "bg-orange-500"
                     )}>
-                      {message.senderInfo?.name[0]}
+                      {conversation.seller.full_name[0]}
                     </div>
                   </Avatar>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <span className="font-medium">{message.senderInfo?.name}</span>
-                        {message.senderInfo?.isVerified && (
-                          <Badge variant="outline" className="h-5 text-xs bg-primary/10 text-primary border-primary">
-                            <Check className="h-3 w-3 mr-1" />
-                            Verified
-                          </Badge>
-                        )}
+                        <span className="font-medium">{conversation.seller.full_name}</span>
+                        <Badge variant="outline" className="h-5 text-xs bg-primary/10 text-primary border-primary">
+                          <Check className="h-3 w-3 mr-1" />
+                          Verified
+                        </Badge>
                       </div>
                       <span className="text-sm text-muted-foreground">
-                        {message.timestamp.toLocaleDateString()}
+                        {new Date(conversation.last_message_at).toLocaleDateString()}
                       </span>
                     </div>
-                    {message.productInfo && (
-                      <p className="text-sm font-medium text-primary mt-1">
-                        {message.productInfo.title}
-                        {message.productInfo.price && ` - ₹${message.productInfo.price}`}
-                      </p>
-                    )}
+                    <p className="text-sm font-medium text-primary mt-1">
+                      {conversation.listing.title}
+                      {conversation.listing.price && ` - ₹${conversation.listing.price}`}
+                    </p>
                     <p className="text-sm text-muted-foreground truncate mt-1">
-                      {message.text}
+                      {conversation.last_message}
                     </p>
                   </div>
                   <Button variant="ghost" size="icon" className="shrink-0">
