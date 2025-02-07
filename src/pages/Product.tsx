@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -79,6 +78,17 @@ const ProductPage = () => {
   });
 
   const handleChatWithSeller = () => {
+    if (!product) return;
+    
+    // Check if user is logged in
+    if (!session) {
+      // Save the product info to localStorage before redirecting
+      localStorage.setItem('intended_conversation', id || '');
+      navigate('/profile');
+      return;
+    }
+
+    // If logged in, navigate to chat
     navigate(`/chat/${id}`);
   };
 
@@ -94,6 +104,21 @@ const ProductPage = () => {
       </div>
     );
   }
+
+  const [session, setSession] = useState<any>(null);
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+    });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   if (!product) {
     return (

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -51,10 +50,18 @@ const ChatDetail = () => {
   useEffect(() => {
     const getSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
-      setSessionUser(session?.user);
+      if (!session) {
+        // Save the conversation ID to localStorage before redirecting
+        if (id) {
+          localStorage.setItem('intended_conversation', id);
+        }
+        navigate('/profile');
+        return;
+      }
+      setSessionUser(session.user);
     };
     getSession();
-  }, []);
+  }, [navigate, id]);
 
   useEffect(() => {
     if (!id || !sessionUser) return;
@@ -70,7 +77,7 @@ const ChatDetail = () => {
             listing:listings(title, price)
           `)
           .eq('id', id)
-          .maybeSingle(); // Changed from single() to maybeSingle()
+          .maybeSingle();
 
         if (error) {
           toast({
@@ -82,12 +89,59 @@ const ChatDetail = () => {
         }
 
         if (!data) {
+          // Check if this was a conversation we were trying to start
+          const storedId = localStorage.getItem('intended_conversation');
+          if (storedId === id) {
+            // Create the conversation
+            const { data: newConversation, error: createError } = await supabase
+              .from('conversations')
+              .insert({
+                id,
+                buyer_id: sessionUser.id,
+                // We'll need to get these from the listing details
+                seller_id: sessionUser.id, // This will be updated with actual seller ID
+                listing_id: id // This assumes the ID is the listing ID
+              })
+              .select(`
+                *,
+                seller:profiles!conversations_seller_id_fkey(id, full_name),
+                buyer:profiles!conversations_buyer_id_fkey(id, full_name),
+                listing:listings(title, price)
+              `)
+              .single();
+
+            if (createError) {
+              toast({
+                variant: "destructive",
+                title: "Error creating conversation",
+                description: createError.message
+              });
+              navigate('/');
+              return;
+            }
+
+            setConversationDetails(newConversation);
+            localStorage.removeItem('intended_conversation');
+            return;
+          }
+
           toast({
             variant: "destructive",
             title: "Conversation not found",
             description: "This conversation does not exist or you don't have access to it."
           });
-          navigate('/'); // Redirect to home if conversation not found
+          navigate('/');
+          return;
+        }
+
+        // Check if user has access to this conversation
+        if (data.buyer_id !== sessionUser.id && data.seller_id !== sessionUser.id) {
+          toast({
+            variant: "destructive",
+            title: "Access denied",
+            description: "You don't have access to this conversation."
+          });
+          navigate('/');
           return;
         }
 
@@ -174,7 +228,7 @@ const ChatDetail = () => {
     return (
       <div className="flex flex-col items-center justify-center h-screen bg-background">
         <p className="text-lg mb-4">Please sign in to view this chat</p>
-        <Button onClick={() => navigate('/auth')}>Sign In</Button>
+        <Button onClick={() => navigate('/profile')}>Sign In</Button>
       </div>
     );
   }
@@ -287,4 +341,3 @@ const ChatDetail = () => {
 };
 
 export default ChatDetail;
-
