@@ -60,47 +60,66 @@ const ChatDetail = () => {
     if (!id || !sessionUser) return;
 
     const fetchConversationDetails = async () => {
-      const { data, error } = await supabase
-        .from('conversations')
-        .select(`
-          *,
-          seller:profiles!conversations_seller_id_fkey(id, full_name),
-          buyer:profiles!conversations_buyer_id_fkey(id, full_name),
-          listing:listings(title, price)
-        `)
-        .eq('id', id)
-        .single();
+      try {
+        const { data, error } = await supabase
+          .from('conversations')
+          .select(`
+            *,
+            seller:profiles!conversations_seller_id_fkey(id, full_name),
+            buyer:profiles!conversations_buyer_id_fkey(id, full_name),
+            listing:listings(title, price)
+          `)
+          .eq('id', id)
+          .maybeSingle(); // Changed from single() to maybeSingle()
 
-      if (error) {
+        if (error) {
+          toast({
+            variant: "destructive",
+            title: "Error fetching conversation",
+            description: error.message
+          });
+          return;
+        }
+
+        if (!data) {
+          toast({
+            variant: "destructive",
+            title: "Conversation not found",
+            description: "This conversation does not exist or you don't have access to it."
+          });
+          navigate('/'); // Redirect to home if conversation not found
+          return;
+        }
+
+        setConversationDetails(data);
+      } catch (error: any) {
         toast({
           variant: "destructive",
-          title: "Error fetching conversation",
-          description: error.message
+          title: "Error",
+          description: "Failed to load conversation details"
         });
-        return;
       }
-
-      setConversationDetails(data);
     };
 
     const fetchMessages = async () => {
-      const { data, error } = await supabase
-        .from('messages')
-        .select('*')
-        .eq('conversation_id', id)
-        .order('created_at', { ascending: true });
+      try {
+        const { data, error } = await supabase
+          .from('messages')
+          .select('*')
+          .eq('conversation_id', id)
+          .order('created_at', { ascending: true });
 
-      if (error) {
+        if (error) throw error;
+        setMessages(data || []);
+      } catch (error: any) {
         toast({
           variant: "destructive",
           title: "Error fetching messages",
           description: error.message
         });
-        return;
+      } finally {
+        setIsLoading(false);
       }
-
-      setMessages(data || []);
-      setIsLoading(false);
     };
 
     fetchConversationDetails();
@@ -126,7 +145,7 @@ const ChatDetail = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [id, sessionUser, toast]);
+  }, [id, sessionUser, toast, navigate]);
 
   const handleSend = async () => {
     if (!newMessage.trim() || !sessionUser || !id) return;
@@ -268,3 +287,4 @@ const ChatDetail = () => {
 };
 
 export default ChatDetail;
+
