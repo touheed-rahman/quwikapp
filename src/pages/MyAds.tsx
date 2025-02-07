@@ -8,6 +8,7 @@ import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { Loader2 } from "lucide-react";
 import StatusTabs from "@/components/my-ads/StatusTabs";
 import ListingGrid from "@/components/my-ads/ListingGrid";
+import { ProductCondition } from "@/types/categories";
 
 const MyAds = () => {
   const { toast } = useToast();
@@ -27,7 +28,12 @@ const MyAds = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      return data;
+      
+      // Convert the condition to ProductCondition type
+      return data.map(listing => ({
+        ...listing,
+        condition: listing.condition as ProductCondition
+      }));
     }
   });
 

@@ -48,7 +48,7 @@ const ProductPage = () => {
   // Mock related products
   const relatedProducts = [
     {
-      id: 2,
+      id: "2", // Changed from number to string
       title: "2020 Honda Accord Sport",
       price: 2400000,
       location: "Bengaluru, KA",

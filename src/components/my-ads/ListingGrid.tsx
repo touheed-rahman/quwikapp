@@ -2,6 +2,7 @@
 import { Button } from "@/components/ui/button";
 import ProductCard from "@/components/ProductCard";
 import { ProductCondition } from "@/types/categories";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Listing {
   id: string;
