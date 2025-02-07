@@ -5,6 +5,7 @@ import Header from "@/components/Header";
 import ProductCard from "@/components/ProductCard";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2 } from "lucide-react";
+import { ProductCondition } from "@/types/categories";
 
 const Wishlist = () => {
   const { toast } = useToast();
@@ -25,7 +26,13 @@ const Wishlist = () => {
 
       if (wishlistError) throw wishlistError;
 
-      return wishlistItems.map(item => item.listings).filter(Boolean);
+      return wishlistItems
+        .map(item => item.listings)
+        .filter(Boolean)
+        .map(listing => ({
+          ...listing,
+          condition: listing.condition as ProductCondition
+        }));
     }
   });
 

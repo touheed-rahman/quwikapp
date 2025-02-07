@@ -3,11 +3,11 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useToast } from "@/components/ui/use-toast";
 import Header from "@/components/Header";
-import ProductCard from "@/components/ProductCard";
 import { supabase } from "@/integrations/supabase/client";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { Loader2 } from "lucide-react";
+import StatusTabs from "@/components/my-ads/StatusTabs";
+import ListingGrid from "@/components/my-ads/ListingGrid";
 
 const MyAds = () => {
   const { toast } = useToast();
@@ -52,13 +52,6 @@ const MyAds = () => {
     }
   };
 
-  const getFirstImageUrl = (images: string[]) => {
-    if (images && images.length > 0) {
-      return supabase.storage.from('listings').getPublicUrl(images[0]).data.publicUrl;
-    }
-    return "https://via.placeholder.com/300";
-  };
-
   return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -66,11 +59,7 @@ const MyAds = () => {
         <h1 className="text-2xl font-bold mb-6">My Ads</h1>
         
         <Tabs defaultValue={selectedTab} onValueChange={setSelectedTab}>
-          <TabsList className="mb-8">
-            <TabsTrigger value="pending">Under Review</TabsTrigger>
-            <TabsTrigger value="approved">Online</TabsTrigger>
-            <TabsTrigger value="sold">Sold</TabsTrigger>
-          </TabsList>
+          <StatusTabs selectedTab={selectedTab} />
 
           {isLoading ? (
             <div className="flex items-center justify-center py-8">
@@ -83,29 +72,11 @@ const MyAds = () => {
                   No listings found in this category
                 </p>
               ) : (
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-                  {listings.map((listing) => (
-                    <div key={listing.id} className="relative">
-                      <ProductCard
-                        id={listing.id}
-                        title={listing.title}
-                        price={listing.price}
-                        location={listing.location || "Location not specified"}
-                        image={getFirstImageUrl(listing.images)}
-                        condition={listing.condition}
-                      />
-                      {listing.status === 'approved' && (
-                        <Button
-                          className="absolute bottom-2 right-2 bg-primary"
-                          size="sm"
-                          onClick={() => markAsSold(listing.id)}
-                        >
-                          Mark as Sold
-                        </Button>
-                      )}
-                    </div>
-                  ))}
-                </div>
+                <ListingGrid
+                  listings={listings}
+                  onMarkAsSold={selectedTab === 'approved' ? markAsSold : undefined}
+                  showSoldButton={selectedTab === 'approved'}
+                />
               )}
             </TabsContent>
           )}

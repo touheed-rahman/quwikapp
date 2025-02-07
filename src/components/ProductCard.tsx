@@ -10,7 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "./ui/use-toast";
 
 interface ProductCardProps {
-  id?: string | number;
+  id: string;
   title: string;
   price: number;
   location: string;
@@ -22,7 +22,7 @@ interface ProductCardProps {
 }
 
 const ProductCard = ({
-  id = "1",
+  id,
   title,
   price,
   location,
@@ -84,10 +84,10 @@ const ProductCard = ({
       } else {
         const { error } = await supabase
           .from('wishlists')
-          .insert({
+          .insert([{
             user_id: user.id,
             listing_id: id
-          });
+          }]);
 
         if (error) throw error;
         setIsWishlisted(true);
@@ -162,7 +162,7 @@ const ProductCard = ({
               <span>{location}</span>
             </div>
             {condition && (
-              <Badge className={getConditionColor(condition)}>
+              <Badge className={getConditionColor(condition as ProductCondition)}>
                 {condition}
               </Badge>
             )}
