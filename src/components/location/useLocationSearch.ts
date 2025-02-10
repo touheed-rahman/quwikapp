@@ -11,29 +11,17 @@ export const useLocationSearch = (searchQuery: string) => {
 
   const getPlaceDetails = async (placeId: string): Promise<PlaceDetails | null> => {
     try {
-      const { data: apiKey } = await supabase.rpc('get_maps_api_key');
-
-      if (!apiKey) {
-        console.error('Maps API key not found');
-        return null;
-      }
-
-      const response = await fetch(
-        `https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&key=${apiKey}&fields=geometry,name,formatted_address&components=country:in`,
-        {
-          method: 'GET',
-          headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
-          }
+      const { data, error } = await supabase.functions.invoke('places', {
+        body: {
+          endpoint: 'details',
+          place_id: placeId
         }
-      );
+      });
 
-      if (!response.ok) {
-        throw new Error('Failed to fetch place details');
+      if (error) {
+        throw error;
       }
 
-      const data = await response.json();
       console.log('Place details response:', data);
       
       if (data.status === 'OK' && data.result) {
@@ -83,37 +71,17 @@ export const useLocationSearch = (searchQuery: string) => {
       try {
         setLoading(true);
         
-        const { data: apiKey } = await supabase.rpc('get_maps_api_key');
-
-        if (!apiKey) {
-          console.error('Maps API key not found');
-          toast({
-            title: "Error",
-            description: "Location services are not fully configured.",
-            variant: "destructive",
-          });
-          setPredictions([]);
-          return;
-        }
-
-        const response = await fetch(
-          `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${encodeURIComponent(
-            searchQuery
-          )}&components=country:in&key=${apiKey}&types=(cities)`,
-          {
-            method: 'GET',
-            headers: {
-              'Accept': 'application/json',
-              'Content-Type': 'application/json'
-            }
+        const { data, error } = await supabase.functions.invoke('places', {
+          body: {
+            endpoint: 'autocomplete',
+            input: searchQuery
           }
-        );
+        });
 
-        if (!response.ok) {
-          throw new Error('Failed to fetch predictions');
+        if (error) {
+          throw error;
         }
 
-        const data = await response.json();
         console.log('Predictions response:', data);
         
         if (data.status === 'OK' && Array.isArray(data.predictions)) {
