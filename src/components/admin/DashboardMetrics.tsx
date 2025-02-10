@@ -3,8 +3,10 @@ import { Card } from "@/components/ui/card";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Shield, Users, ListChecks, Clock, Star, XCircle } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const DashboardMetrics = () => {
+  const navigate = useNavigate();
   const { data: metrics, isLoading } = useQuery({
     queryKey: ['admin-metrics'],
     queryFn: async () => {
@@ -45,49 +47,59 @@ const DashboardMetrics = () => {
       value: metrics?.totalListings || 0,
       icon: ListChecks,
       color: "text-blue-600",
-      bgColor: "bg-blue-50"
+      bgColor: "bg-blue-50",
+      onClick: () => navigate('/admin', { state: { filter: 'all' } })
     },
     {
       title: "Pending Review",
       value: metrics?.pendingListings || 0,
       icon: Clock,
       color: "text-yellow-600",
-      bgColor: "bg-yellow-50"
+      bgColor: "bg-yellow-50",
+      onClick: () => navigate('/admin', { state: { filter: 'pending' } })
     },
     {
       title: "Approved Listings",
       value: metrics?.approvedListings || 0,
       icon: Shield,
       color: "text-green-600",
-      bgColor: "bg-green-50"
+      bgColor: "bg-green-50",
+      onClick: () => navigate('/admin', { state: { filter: 'approved' } })
     },
     {
       title: "Featured Listings",
       value: metrics?.featuredListings || 0,
       icon: Star,
       color: "text-purple-600",
-      bgColor: "bg-purple-50"
+      bgColor: "bg-purple-50",
+      onClick: () => navigate('/admin', { state: { filter: 'featured' } })
     },
     {
       title: "Rejected Listings",
       value: metrics?.rejectedListings || 0,
       icon: XCircle,
       color: "text-red-600",
-      bgColor: "bg-red-50"
+      bgColor: "bg-red-50",
+      onClick: () => navigate('/admin', { state: { filter: 'rejected' } })
     },
     {
       title: "Total Users",
       value: metrics?.totalUsers || 0,
       icon: Users,
       color: "text-indigo-600",
-      bgColor: "bg-indigo-50"
+      bgColor: "bg-indigo-50",
+      onClick: () => navigate('/admin', { state: { filter: 'users' } })
     }
   ];
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       {cards.map((card) => (
-        <Card key={card.title} className={`p-6 ${card.bgColor} border-none`}>
+        <Card 
+          key={card.title} 
+          className={`p-6 ${card.bgColor} border-none cursor-pointer transition-transform hover:scale-105`}
+          onClick={card.onClick}
+        >
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-muted-foreground">

@@ -1,14 +1,16 @@
 
 import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { Shield } from "lucide-react";
+import { useNavigate, useLocation } from "react-router-dom";
+import { Shield, LogOut } from "lucide-react";
 import DashboardMetrics from "@/components/admin/DashboardMetrics";
 import ListingManagement from "@/components/admin/ListingManagement";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
+import { Button } from "@/components/ui/button";
 
 const AdminPanel = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
 
   useEffect(() => {
@@ -43,12 +45,40 @@ const AdminPanel = () => {
     checkAdminAccess();
   }, [navigate, toast]);
 
+  const handleLogout = async () => {
+    try {
+      await supabase.auth.signOut();
+      toast({
+        title: "Logged out successfully",
+        description: "You have been logged out of the admin panel"
+      });
+      navigate('/admin/login');
+    } catch (error) {
+      console.error('Error logging out:', error);
+      toast({
+        title: "Error",
+        description: "Failed to log out. Please try again.",
+        variant: "destructive"
+      });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="container max-w-7xl mx-auto p-4 pt-8">
-        <div className="flex items-center gap-2 mb-8">
-          <Shield className="w-8 h-8 text-primary" />
-          <h1 className="text-3xl font-bold">Admin Panel</h1>
+        <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center gap-2">
+            <Shield className="w-8 h-8 text-primary" />
+            <h1 className="text-3xl font-bold">Admin Panel</h1>
+          </div>
+          <Button 
+            variant="outline" 
+            onClick={handleLogout}
+            className="flex items-center gap-2"
+          >
+            <LogOut className="w-4 h-4" />
+            Logout
+          </Button>
         </div>
 
         <div className="space-y-8">
