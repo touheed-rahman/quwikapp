@@ -1,3 +1,4 @@
+
 import {
   Table,
   TableBody,
@@ -6,15 +7,17 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
 import ListingActions from "./ListingActions";
 import { type Listing } from "./types";
 
 interface ListingTableProps {
   listings: Listing[];
   onStatusUpdate: (listingId: string, status: string) => Promise<void>;
+  onFeaturedToggle: (listingId: string, featured: boolean) => Promise<void>;
 }
 
-const ListingTable = ({ listings, onStatusUpdate }: ListingTableProps) => {
+const ListingTable = ({ listings, onStatusUpdate, onFeaturedToggle }: ListingTableProps) => {
   return (
     <div className="rounded-md border">
       <Table>
@@ -25,6 +28,7 @@ const ListingTable = ({ listings, onStatusUpdate }: ListingTableProps) => {
             <TableHead>Price</TableHead>
             <TableHead>Seller</TableHead>
             <TableHead>Status</TableHead>
+            <TableHead>Featured</TableHead>
             <TableHead className="text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
@@ -35,7 +39,22 @@ const ListingTable = ({ listings, onStatusUpdate }: ListingTableProps) => {
               <TableCell>{listing.category}</TableCell>
               <TableCell>₹{listing.price.toLocaleString()}</TableCell>
               <TableCell>{listing.seller?.full_name || 'Unknown'}</TableCell>
-              <TableCell>{listing.status}</TableCell>
+              <TableCell>
+                <Badge
+                  variant={listing.status === 'approved' ? 'success' : listing.status === 'rejected' ? 'destructive' : 'secondary'}
+                >
+                  {listing.status}
+                </Badge>
+              </TableCell>
+              <TableCell>
+                <Badge
+                  variant={listing.featured ? 'default' : 'outline'}
+                  className="cursor-pointer"
+                  onClick={() => onFeaturedToggle(listing.id, !listing.featured)}
+                >
+                  {listing.featured ? 'Featured' : 'Regular'}
+                </Badge>
+              </TableCell>
               <TableCell className="text-right">
                 <ListingActions
                   listingId={listing.id}

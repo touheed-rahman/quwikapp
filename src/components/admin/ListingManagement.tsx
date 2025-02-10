@@ -33,6 +33,7 @@ const ListingManagement = () => {
       const { data: listingsData, error } = await supabase
         .from('listings')
         .select('*, seller:profiles(*)')
+        .order('featured', { ascending: false })
         .order('created_at', { ascending: false });
 
       if (error) {
@@ -72,6 +73,29 @@ const ListingManagement = () => {
     }
   };
 
+  const handleFeaturedToggle = async (listingId: string, featured: boolean) => {
+    console.log('Updating featured status:', { listingId, featured });
+    const { error } = await supabase
+      .from('listings')
+      .update({ featured })
+      .eq('id', listingId);
+
+    if (error) {
+      console.error('Error updating featured status:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update featured status",
+        variant: "destructive"
+      });
+    } else {
+      toast({
+        title: "Success",
+        description: `Listing ${featured ? 'featured' : 'unfeatured'} successfully`,
+      });
+      refetch();
+    }
+  };
+
   const filteredListings = listings?.filter(listing =>
     listing.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
     listing.category.toLowerCase().includes(searchTerm.toLowerCase())
@@ -106,6 +130,7 @@ const ListingManagement = () => {
         <ListingTable 
           listings={filteredListings || []}
           onStatusUpdate={handleStatusUpdate}
+          onFeaturedToggle={handleFeaturedToggle}
         />
       )}
     </div>

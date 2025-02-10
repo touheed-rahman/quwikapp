@@ -17,12 +17,7 @@ const AdminPanel = () => {
         const { data: { user } } = await supabase.auth.getUser();
         
         if (!user) {
-          toast({
-            title: "Authentication Required",
-            description: "Please log in to access the admin panel",
-            variant: "destructive"
-          });
-          navigate('/profile');
+          navigate('/admin/login');
           return;
         }
 
@@ -36,17 +31,12 @@ const AdminPanel = () => {
             description: "You don't have permission to access the admin panel",
             variant: "destructive"
           });
-          navigate('/');
+          navigate('/admin/login');
           return;
         }
       } catch (error) {
         console.error('Error in admin check:', error);
-        toast({
-          title: "Error",
-          description: "An error occurred while checking admin access",
-          variant: "destructive"
-        });
-        navigate('/');
+        navigate('/admin/login');
       }
     };
 
