@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import Header from "@/components/Header";
@@ -133,10 +132,7 @@ const ProductPage = () => {
             />
 
             <SellerInfo
-              seller={{
-                full_name: seller?.full_name || 'Anonymous',
-                created_at: seller?.created_at || new Date().toISOString()
-              }}
+              seller={seller}
               onChatClick={() => handleChatWithSeller(session)}
               onMakeOffer={() => handleMakeOffer(session)}
             />

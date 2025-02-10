@@ -5,9 +5,8 @@ import { MessageCircle, Tag } from "lucide-react";
 
 interface SellerInfoProps {
   seller: {
-    name: string;
-    memberSince: string;
-    listings: number;
+    full_name: string;
+    created_at: string;
   };
   onChatClick: () => void;
   onMakeOffer: () => void;
@@ -20,13 +19,13 @@ const SellerInfo = ({ seller, onChatClick, onMakeOffer }: SellerInfoProps) => {
         <div className="flex items-center gap-4">
           <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
             <span className="text-lg font-semibold text-primary">
-              {seller.name[0]}
+              {seller.full_name ? seller.full_name[0].toUpperCase() : 'A'}
             </span>
           </div>
           <div>
-            <h3 className="font-semibold">{seller.name}</h3>
+            <h3 className="font-semibold">{seller.full_name}</h3>
             <p className="text-sm text-muted-foreground">
-              Member since {seller.memberSince} • {seller.listings} listings
+              Member since {new Date(seller.created_at).getFullYear()}
             </p>
           </div>
         </div>
