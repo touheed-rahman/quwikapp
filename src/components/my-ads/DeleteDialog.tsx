@@ -23,10 +23,11 @@ const DeleteDialog = ({ onDelete }: DeleteDialogProps) => {
       <AlertDialogTrigger asChild>
         <Button
           size="sm"
-          variant="ghost"
-          className="h-7 text-destructive hover:text-destructive hover:bg-destructive/10"
+          variant="destructive"
+          className="h-7 text-xs"
         >
-          <Trash2 className="w-3.5 h-3.5" />
+          <Trash2 className="w-3.5 h-3.5 mr-1" />
+          Delete
         </Button>
       </AlertDialogTrigger>
       <AlertDialogContent>
