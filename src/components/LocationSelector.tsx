@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/components/ui/use-toast";
 
 interface Location {
   id: string;
@@ -45,6 +46,7 @@ const LocationSelector = () => {
   const [open, setOpen] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState<Location | null>(null);
   const [apiKey, setApiKey] = useState<string | null>(null);
+  const { toast } = useToast();
 
   useEffect(() => {
     const fetchApiKey = async () => {
@@ -55,17 +57,37 @@ const LocationSelector = () => {
         
         if (error) {
           console.error('Error fetching API key:', error);
+          toast({
+            title: "Error",
+            description: "Could not load location services. Please try again later.",
+            variant: "destructive",
+          });
+          return;
+        }
+        
+        if (!data) {
+          console.warn('API key not found');
+          toast({
+            title: "Warning",
+            description: "Location services are not fully configured.",
+            variant: "warning",
+          });
           return;
         }
         
         setApiKey(data);
       } catch (error) {
         console.error('Failed to fetch API key:', error);
+        toast({
+          title: "Error",
+          description: "Could not load location services. Please try again later.",
+          variant: "destructive",
+        });
       }
     };
 
     fetchApiKey();
-  }, []);
+  }, [toast]);
 
   const locations: Location[] = cities.flatMap(city => 
     [
