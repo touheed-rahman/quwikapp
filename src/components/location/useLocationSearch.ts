@@ -11,9 +11,7 @@ export const useLocationSearch = (searchQuery: string) => {
 
   const getPlaceDetails = async (placeId: string): Promise<PlaceDetails | null> => {
     try {
-      const { data: apiKey } = await supabase.rpc('get_secret', {
-        name: 'OLA_MAPS_API_KEY'
-      });
+      const { data: apiKey } = await supabase.rpc('get_maps_api_key');
 
       if (!apiKey) {
         console.error('Maps API key not found');
@@ -85,9 +83,7 @@ export const useLocationSearch = (searchQuery: string) => {
       try {
         setLoading(true);
         
-        const { data: apiKey } = await supabase.rpc('get_secret', {
-          name: 'OLA_MAPS_API_KEY'
-        });
+        const { data: apiKey } = await supabase.rpc('get_maps_api_key');
 
         if (!apiKey) {
           console.error('Maps API key not found');
