@@ -1,17 +1,6 @@
 
-import { useState, useEffect } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Plus } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { ProductCondition } from "@/types/categories";
 import Header from "@/components/Header";
@@ -22,6 +11,9 @@ import FeaturedListings from "@/components/listings/FeaturedListings";
 import RecentListings from "@/components/listings/RecentListings";
 import CategoryListings from "@/components/listings/CategoryListings";
 import MobileNavigation from "@/components/navigation/MobileNavigation";
+import FloatingSellButton from "@/components/navigation/FloatingSellButton";
+import WelcomeDialog from "@/components/dialogs/WelcomeDialog";
+import { useSearchParams } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
 
 const ITEMS_PER_PAGE = 20;
@@ -58,11 +50,9 @@ const Index = () => {
       try {
         let query;
         if (selectedLocation) {
-          // Parse location string to get place_id
           const locationParts = selectedLocation.split('|');
           const placeId = locationParts[locationParts.length - 1];
           
-          // First get the location details from cache
           const { data: locationData } = await supabase
             .from('location_cache')
             .select('latitude, longitude')
@@ -77,13 +67,11 @@ const Index = () => {
               radius_km: 20
             });
           } else {
-            // Fallback to simple location query if coordinates not found
             query = supabase.rpc('get_listings_by_location', {
               location_query: placeId
             });
           }
         } else {
-          // No location selected, get all listings
           query = supabase.rpc('get_listings_by_location', {
             location_query: null,
             search_lat: null,
@@ -127,36 +115,10 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Dialog open={showWelcomePopup} onOpenChange={setShowWelcomePopup}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="text-2xl font-bold text-center text-primary">
-              Welcome to Quwik App Beta! 🚀
-            </DialogTitle>
-            <DialogDescription className="text-center pt-4 space-y-2">
-              <p className="text-lg">
-                We're excited to announce the launch of our Beta version!
-              </p>
-              <p>
-                While we're continuously improving, we'd love to hear your feedback on any issues you encounter during your experience.
-              </p>
-              <p className="text-sm text-muted-foreground">
-                Thank you for being part of our development journey.
-              </p>
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter className="sm:justify-center">
-            <Button 
-              variant="default"
-              size="lg"
-              onClick={() => setShowWelcomePopup(false)}
-              className="w-full sm:w-auto"
-            >
-              Got it, thanks!
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <WelcomeDialog 
+        open={showWelcomePopup} 
+        onOpenChange={setShowWelcomePopup} 
+      />
 
       <Header />
       <main className="container mx-auto px-4 pt-20 pb-24">
@@ -192,17 +154,7 @@ const Index = () => {
         </div>
 
         <MobileNavigation onChatOpen={() => setIsChatOpen(true)} />
-
-        <Link
-          to="/sell"
-          className="hidden md:block fixed bottom-6 right-6 z-50"
-        >
-          <Button size="lg" className="shadow-lg rounded-full px-8 gap-2 bg-primary hover:bg-primary/90">
-            <Plus className="h-5 w-5" />
-            Sell Now
-          </Button>
-        </Link>
-
+        <FloatingSellButton />
         <ChatWindow isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} />
       </main>
     </div>
@@ -210,4 +162,3 @@ const Index = () => {
 };
 
 export default Index;
-
