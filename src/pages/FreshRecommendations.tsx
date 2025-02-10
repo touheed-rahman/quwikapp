@@ -3,6 +3,7 @@ import { useListings } from "@/hooks/useListings";
 import ProductCard from "@/components/ProductCard";
 import Header from "@/components/Header";
 import { Loader2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 const FreshRecommendations = () => {
   const { data: listings = [], isLoading, error } = useListings({
@@ -13,7 +14,7 @@ const FreshRecommendations = () => {
 
   const getFirstImageUrl = (images: string[]) => {
     if (!images || images.length === 0) return "/placeholder.svg";
-    return images[0];
+    return supabase.storage.from('listings').getPublicUrl(images[0]).data.publicUrl;
   };
 
   if (isLoading) {

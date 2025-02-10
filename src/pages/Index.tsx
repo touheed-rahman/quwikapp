@@ -31,7 +31,7 @@ const Index = () => {
     categoryFilter,
     subcategoryFilter,
     selectedLocation,
-    featured: true // Add this to fetch featured listings
+    featured: true
   });
 
   // Subscribe to real-time updates for listings
@@ -61,7 +61,7 @@ const Index = () => {
     if (images && images.length > 0) {
       return supabase.storage.from('listings').getPublicUrl(images[0]).data.publicUrl;
     }
-    return "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b";
+    return "/placeholder.svg";
   };
 
   return (
