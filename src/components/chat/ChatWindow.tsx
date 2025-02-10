@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
+import { Button } from "@/components/ui/button"; // Add this import
 import { supabase } from "@/integrations/supabase/client";
 import { ChatFilters } from "./ChatFilters";
 import { ChatHeader } from "./ChatHeader";
@@ -129,3 +130,4 @@ const ChatWindow = ({ isOpen, onClose, initialSeller }: ChatWindowProps) => {
 };
 
 export default ChatWindow;
+
