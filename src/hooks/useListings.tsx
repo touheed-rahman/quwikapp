@@ -22,15 +22,16 @@ interface UseListingsProps {
   categoryFilter: string | null;
   subcategoryFilter: string | null;
   selectedLocation: string | null;
+  featured?: boolean; // Added this optional property
 }
 
-export const useListings = ({ categoryFilter, subcategoryFilter, selectedLocation }: UseListingsProps) => {
+export const useListings = ({ categoryFilter, subcategoryFilter, selectedLocation, featured }: UseListingsProps) => {
   const { toast } = useToast();
 
   return useQuery({
-    queryKey: ['listings', categoryFilter, subcategoryFilter, selectedLocation],
+    queryKey: ['listings', categoryFilter, subcategoryFilter, selectedLocation, featured],
     queryFn: async () => {
-      console.log('Fetching listings with filters:', { categoryFilter, subcategoryFilter, selectedLocation });
+      console.log('Fetching listings with filters:', { categoryFilter, subcategoryFilter, selectedLocation, featured });
       
       try {
         let query;
@@ -75,6 +76,10 @@ export const useListings = ({ categoryFilter, subcategoryFilter, selectedLocatio
         
         if (categoryFilter) {
           filteredListings = filteredListings.filter(listing => listing.category === categoryFilter);
+        }
+
+        if (featured) {
+          filteredListings = filteredListings.filter(listing => listing.featured);
         }
 
         console.log('Fetched listings:', filteredListings);
