@@ -22,7 +22,7 @@ interface UseListingsProps {
   categoryFilter: string | null;
   subcategoryFilter: string | null;
   selectedLocation: string | null;
-  featured?: boolean; // Added this optional property
+  featured?: boolean;
 }
 
 export const useListings = ({ categoryFilter, subcategoryFilter, selectedLocation, featured }: UseListingsProps) => {
@@ -58,11 +58,12 @@ export const useListings = ({ categoryFilter, subcategoryFilter, selectedLocatio
             });
           }
         } else {
-          query = supabase.rpc('get_listings_by_location', {
-            location_query: null,
-            search_lat: null,
-            search_long: null
-          });
+          // Modified this part to fetch approved listings by default
+          query = supabase
+            .from('listings')
+            .select('*')
+            .eq('status', 'approved')
+            .order('created_at', { ascending: false });
         }
 
         const { data, error } = await query;
