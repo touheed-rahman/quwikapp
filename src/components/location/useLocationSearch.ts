@@ -23,8 +23,10 @@ export const useLocationSearch = (searchQuery: string) => {
       const response = await fetch(
         `https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&key=${apiKey}&fields=geometry,name,formatted_address`,
         {
+          method: 'GET',
           headers: {
             'Accept': 'application/json',
+            'Content-Type': 'application/json'
           }
         }
       );
@@ -101,8 +103,10 @@ export const useLocationSearch = (searchQuery: string) => {
             searchQuery
           )}&components=country:in&key=${apiKey}&types=(cities)`,
           {
+            method: 'GET',
             headers: {
               'Accept': 'application/json',
+              'Content-Type': 'application/json'
             }
           }
         );
