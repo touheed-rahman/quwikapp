@@ -13,7 +13,7 @@ const StatusTabs = ({ selectedTab }: StatusTabsProps) => {
           value="pending" 
           className="data-[state=active]:bg-primary data-[state=active]:text-white hover:text-white w-full text-xs font-medium px-2 py-1.5"
         >
-          UNDER REVIEW
+          PENDING
         </TabsTrigger>
         <TabsTrigger 
           value="approved" 
@@ -39,3 +39,4 @@ const StatusTabs = ({ selectedTab }: StatusTabsProps) => {
 };
 
 export default StatusTabs;
+
