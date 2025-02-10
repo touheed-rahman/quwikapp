@@ -1,5 +1,5 @@
 
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import ChatDetailHeader from "@/components/chat/ChatDetailHeader";
@@ -9,6 +9,7 @@ import { useChat } from "@/hooks/use-chat";
 
 const ChatDetail = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const {
     messages,
     isLoading,
