@@ -45,6 +45,12 @@ const ProductPage = () => {
     return () => subscription.unsubscribe();
   }, []);
 
+  useEffect(() => {
+    if (currentConversationId) {
+      setIsChatOpen(true);
+    }
+  }, [currentConversationId]);
+
   if (isLoading) {
     return <ProductLoader />;
   }
@@ -89,7 +95,7 @@ const ProductPage = () => {
         isOpen={isChatOpen} 
         onClose={() => setIsChatOpen(false)} 
         initialSeller={{
-          name: product.seller.name,
+          name: product.seller.full_name || 'Anonymous',
           isVerified: true,
           productInfo: {
             title: product.title,

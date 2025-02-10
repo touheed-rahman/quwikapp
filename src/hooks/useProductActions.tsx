@@ -38,7 +38,7 @@ export const useProductActions = (productId: string | undefined, sellerId: strin
         .select('id')
         .eq('listing_id', productId)
         .eq('buyer_id', session.user.id)
-        .single();
+        .maybeSingle();
 
       if (conversationError && conversationError.code !== 'PGRST116') {
         throw conversationError;
