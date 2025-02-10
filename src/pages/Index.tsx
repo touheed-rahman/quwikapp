@@ -14,7 +14,6 @@ import FeaturedListings from "@/components/listings/FeaturedListings";
 import RecentListings from "@/components/listings/RecentListings";
 import CategoryListings from "@/components/listings/CategoryListings";
 import MobileNavigation from "@/components/navigation/MobileNavigation";
-import LocationSelector from "@/components/LocationSelector";
 import { useToast } from "@/components/ui/use-toast";
 
 const ITEMS_PER_PAGE = 20;
@@ -124,10 +123,6 @@ const Index = () => {
         <div className="space-y-6">
           <div className="flex flex-col gap-4">
             <HeroSearch />
-            <LocationSelector 
-              value={selectedLocation} 
-              onChange={setSelectedLocation}
-            />
           </div>
           <CategoryFilter />
           
