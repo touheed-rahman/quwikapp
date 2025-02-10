@@ -4,10 +4,11 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Shield, Users, ListChecks, Clock, Star, XCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useEffect } from "react";
 
 const DashboardMetrics = () => {
   const navigate = useNavigate();
-  const { data: metrics, isLoading } = useQuery({
+  const { data: metrics, isLoading, refetch } = useQuery({
     queryKey: ['admin-metrics'],
     queryFn: async () => {
       const [
@@ -36,6 +37,47 @@ const DashboardMetrics = () => {
       };
     }
   });
+
+  // Subscribe to real-time changes
+  useEffect(() => {
+    const channel = supabase
+      .channel('listings-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'listings'
+        },
+        () => {
+          console.log('Listings table changed, refetching metrics...');
+          refetch();
+        }
+      )
+      .subscribe();
+
+    // Also subscribe to profiles changes for user count
+    const profilesChannel = supabase
+      .channel('profiles-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'profiles'
+        },
+        () => {
+          console.log('Profiles table changed, refetching metrics...');
+          refetch();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+      supabase.removeChannel(profilesChannel);
+    };
+  }, [refetch]);
 
   if (isLoading) {
     return <div>Loading metrics...</div>;
