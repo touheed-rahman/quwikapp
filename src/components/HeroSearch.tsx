@@ -35,27 +35,52 @@ const HeroSearch = () => {
   };
 
   const handleSearch = async () => {
+    if (!searchQuery.trim()) {
+      toast({
+        title: "Search query required",
+        description: "Please enter what you're looking for.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsSearching(true);
     try {
+      // First, try exact match
       let query = supabase
         .from('listings')
-        .select('*')
+        .select('*, categories:category(*)')
         .eq('status', 'approved')
-        .ilike('title', `%${searchQuery}%`);
+        .eq('title', searchQuery.trim());
 
       if (selectedLocation) {
-        const locationParts = selectedLocation.split('|');
-        const placeId = locationParts[locationParts.length - 1];
         query = query.eq('location', selectedLocation);
       }
 
-      const { data: results, error } = await query;
+      let { data: exactMatches } = await query;
 
-      if (error) throw error;
+      // If exact match found and has category info, redirect to subcategory
+      if (exactMatches && exactMatches.length > 0 && exactMatches[0].category) {
+        navigate(`/category/${exactMatches[0].category}/subcategory/${exactMatches[0].subcategory}`);
+        return;
+      }
 
-      if (results && results.length > 0) {
+      // If no exact match, try fuzzy search
+      query = supabase
+        .from('listings')
+        .select('*')
+        .eq('status', 'approved')
+        .ilike('title', `%${searchQuery.trim()}%`);
+
+      if (selectedLocation) {
+        query = query.eq('location', selectedLocation);
+      }
+
+      const { data: fuzzyMatches } = await query;
+
+      if (fuzzyMatches && fuzzyMatches.length > 0) {
         const params = new URLSearchParams();
-        if (searchQuery) params.set('q', searchQuery);
+        params.set('q', searchQuery.trim());
         if (selectedLocation) {
           const displayLocation = selectedLocation.split(',')[0];
           params.set('location', displayLocation);
@@ -64,7 +89,7 @@ const HeroSearch = () => {
       } else {
         toast({
           title: "No results found",
-          description: "Try adjusting your search criteria.",
+          description: "We couldn't find any listings matching your search. Try different keywords or check your spelling.",
           variant: "destructive",
         });
       }
@@ -132,3 +157,4 @@ const HeroSearch = () => {
 };
 
 export default HeroSearch;
+
