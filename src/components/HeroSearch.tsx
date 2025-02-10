@@ -46,21 +46,35 @@ const HeroSearch = () => {
 
     setIsSearching(true);
     try {
+      const trimmedQuery = searchQuery.trim();
+      
+      // First try exact title match with minimal columns
       let query = supabase
         .from('listings')
-        .select('*')
+        .select('id, category, subcategory')
         .eq('status', 'approved')
-        .ilike('title', `%${searchQuery.trim()}%`);
+        .ilike('title', trimmedQuery)
+        .limit(1);
 
       if (selectedLocation) {
         query = query.eq('location', selectedLocation);
       }
 
-      const { data: results } = await query;
+      const { data: result, error } = await query;
 
-      if (results && results.length > 0) {
-        // Navigate to the category/subcategory page of the first result
-        navigate(`/category/${results[0].category}/subcategory/${results[0].subcategory}`);
+      if (error) throw error;
+
+      if (result && result.length > 0) {
+        // Navigate directly to the specific listing's category/subcategory
+        const params = new URLSearchParams({
+          q: trimmedQuery
+        });
+        
+        if (selectedLocation) {
+          params.set('location', selectedLocation);
+        }
+
+        navigate(`/category/${result[0].category}/subcategory/${result[0].subcategory}?${params.toString()}`);
       } else {
         toast({
           title: "No results found",
