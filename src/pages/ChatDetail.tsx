@@ -1,41 +1,14 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Avatar } from "@/components/ui/avatar";
-import { 
-  ChevronLeft,
-  Phone,
-  MoreVertical,
-  Send,
-  Mic,
-  Loader2
-} from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
-
-interface Message {
-  id: string;
-  content: string;
-  sender_id: string;
-  created_at: string;
-}
-
-interface ConversationDetails {
-  seller: {
-    id: string;
-    full_name: string;
-  };
-  buyer: {
-    id: string;
-    full_name: string;
-  };
-  listing: {
-    title: string;
-    price: number;
-  };
-}
+import ChatDetailHeader from "@/components/chat/ChatDetailHeader";
+import MessageList from "@/components/chat/MessageList";
+import ChatInput from "@/components/chat/ChatInput";
+import type { Message, ConversationDetails } from "@/components/chat/types/chat-detail";
 
 const ChatDetail = () => {
   const navigate = useNavigate();
@@ -51,7 +24,6 @@ const ChatDetail = () => {
     const getSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
-        // Save the conversation ID to localStorage before redirecting
         if (id) {
           localStorage.setItem('intended_conversation', id);
         }
@@ -79,37 +51,19 @@ const ChatDetail = () => {
           .eq('id', id)
           .maybeSingle();
 
-        if (error) {
-          toast({
-            variant: "destructive",
-            title: "Error fetching conversation",
-            description: error.message
-          });
-          return;
-        }
+        if (error) throw error;
 
         if (!data) {
-          // Check if this was a conversation we were trying to start
           const listingId = localStorage.getItem('intended_conversation');
           if (listingId) {
-            // Get the listing details first
             const { data: listing, error: listingError } = await supabase
               .from('listings')
               .select('*, profiles:user_id(*)')
               .eq('id', listingId)
               .single();
 
-            if (listingError) {
-              toast({
-                variant: "destructive",
-                title: "Error fetching listing",
-                description: listingError.message
-              });
-              navigate('/');
-              return;
-            }
+            if (listingError) throw listingError;
 
-            // Create the conversation
             const { data: newConversation, error: createError } = await supabase
               .from('conversations')
               .insert({
@@ -125,15 +79,7 @@ const ChatDetail = () => {
               `)
               .single();
 
-            if (createError) {
-              toast({
-                variant: "destructive",
-                title: "Error creating conversation",
-                description: createError.message
-              });
-              navigate('/');
-              return;
-            }
+            if (createError) throw createError;
 
             setConversationDetails(newConversation);
             localStorage.removeItem('intended_conversation');
@@ -149,7 +95,6 @@ const ChatDetail = () => {
           return;
         }
 
-        // Check if user has access to this conversation
         if (data.buyer_id !== sessionUser.id && data.seller_id !== sessionUser.id) {
           toast({
             variant: "destructive",
@@ -194,16 +139,13 @@ const ChatDetail = () => {
     fetchConversationDetails();
     fetchMessages();
 
-    // Mark messages as read when entering the chat
     const markMessagesAsRead = async () => {
       try {
-        const { error } = await supabase
+        await supabase
           .from('notifications')
           .update({ unread_count: 0 })
           .eq('conversation_id', id)
           .eq('user_id', sessionUser.id);
-
-        if (error) throw error;
       } catch (error: any) {
         console.error('Error marking messages as read:', error);
       }
@@ -211,7 +153,6 @@ const ChatDetail = () => {
 
     markMessagesAsRead();
 
-    // Update subscription to include both messages and notifications
     const channel = supabase
       .channel(`room:${id}`)
       .on(
@@ -226,7 +167,6 @@ const ChatDetail = () => {
           console.log('New message received:', payload);
           setMessages(prev => [...prev, payload.new as Message]);
           
-          // If the message is from the other user, mark it as read since we're in the chat
           if (payload.new.sender_id !== sessionUser.id) {
             markMessagesAsRead();
           }
@@ -283,101 +223,16 @@ const ChatDetail = () => {
 
   return (
     <div className="flex flex-col h-[100dvh] bg-background">
-      {/* Header */}
-      <div className="flex items-center gap-3 p-4 border-b bg-white">
-        <Button 
-          variant="ghost" 
-          size="icon"
-          onClick={() => navigate(-1)}
-          className="hover:bg-transparent md:hidden"
-        >
-          <ChevronLeft className="h-6 w-6" />
-        </Button>
-        
-        {conversationDetails && (
-          <>
-            <Avatar className="h-10 w-10">
-              <div className="w-full h-full rounded-full bg-primary flex items-center justify-center text-white">
-                {conversationDetails.seller.full_name[0]}
-              </div>
-            </Avatar>
-            
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2">
-                <span className="font-semibold truncate">{conversationDetails.seller.full_name}</span>
-                <Badge variant="outline" className="h-5 bg-primary/10 text-primary border-primary shrink-0">
-                  Verified
-                </Badge>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-muted-foreground truncate">{conversationDetails.listing.title}</span>
-                <span className="text-sm font-medium shrink-0">₹{conversationDetails.listing.price}</span>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <Button variant="ghost" size="icon" className="hidden md:inline-flex">
-                <Phone className="h-5 w-5" />
-              </Button>
-              <Button variant="ghost" size="icon">
-                <MoreVertical className="h-5 w-5" />
-              </Button>
-            </div>
-          </>
-        )}
-      </div>
-
-      {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50">
-        {messages.map((message) => (
-          <div
-            key={message.id}
-            className={`flex ${message.sender_id === sessionUser?.id ? "justify-end" : "justify-start"}`}
-          >
-            <div
-              className={`max-w-[85%] md:max-w-[70%] rounded-lg p-3 ${
-                message.sender_id === sessionUser?.id 
-                  ? "bg-blue-100 text-blue-900" 
-                  : "bg-white border"
-              }`}
-            >
-              <p className="break-words">{message.content}</p>
-              <div className={`text-xs mt-1 ${
-                message.sender_id === sessionUser?.id 
-                  ? "text-blue-700" 
-                  : "text-muted-foreground"
-              }`}>
-                {new Date(message.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Input */}
-      <div className="p-4 bg-white border-t">
-        <div className="flex items-center gap-2 max-w-4xl mx-auto">
-          <Input
-            value={newMessage}
-            onChange={(e) => setNewMessage(e.target.value)}
-            placeholder="Type here"
-            className="flex-1"
-            onKeyDown={(e) => e.key === "Enter" && handleSend()}
-          />
-          <Button variant="ghost" size="icon" className="hidden md:inline-flex">
-            <Mic className="h-5 w-5" />
-          </Button>
-          <Button 
-            onClick={handleSend}
-            disabled={!newMessage.trim()}
-            className="bg-primary hover:bg-primary/90"
-          >
-            <Send className="h-5 w-5" />
-          </Button>
-        </div>
-      </div>
+      <ChatDetailHeader conversationDetails={conversationDetails} />
+      <MessageList messages={messages} sessionUserId={sessionUser.id} />
+      <ChatInput
+        newMessage={newMessage}
+        setNewMessage={setNewMessage}
+        handleSend={handleSend}
+      />
     </div>
   );
 };
 
 export default ChatDetail;
+
