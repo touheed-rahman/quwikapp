@@ -150,14 +150,9 @@ export const useLocationSearch = (searchQuery: string) => {
         return {
           id: details.place_id,
           name: details.name,
-          area: details.area,
           place_id: details.place_id,
           latitude: details.latitude,
-          longitude: details.longitude,
-          structured_formatting: {
-            main_text: details.name,
-            secondary_text: details.area || ''
-          }
+          longitude: details.longitude
         };
       }
       return null;
@@ -170,7 +165,6 @@ export const useLocationSearch = (searchQuery: string) => {
   const locations: Location[] = predictions?.map(prediction => ({
     id: prediction.place_id,
     name: prediction.structured_formatting.main_text,
-    area: prediction.structured_formatting.secondary_text,
     place_id: prediction.place_id,
     description: prediction.description,
     structured_formatting: prediction.structured_formatting

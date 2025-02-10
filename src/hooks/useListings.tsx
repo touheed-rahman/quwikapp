@@ -41,32 +41,6 @@ export const useListings = ({ categoryFilter, subcategoryFilter, selectedLocatio
       console.log('Fetching listings with filters:', { categoryFilter, subcategoryFilter, selectedLocation, featured });
       
       try {
-        let locationQuery;
-        if (selectedLocation) {
-          const locationParts = selectedLocation.split('|');
-          const placeId = locationParts[locationParts.length - 1];
-          
-          const { data: locationData } = await supabase
-            .from('location_cache')
-            .select('latitude, longitude')
-            .eq('place_id', placeId)
-            .maybeSingle();
-
-          if (locationData) {
-            locationQuery = supabase.rpc('get_listings_by_location', {
-              location_query: null,
-              search_lat: locationData.latitude,
-              search_long: locationData.longitude,
-              radius_km: 20
-            });
-          } else {
-            locationQuery = supabase.rpc('get_listings_by_location', {
-              location_query: placeId
-            });
-          }
-        }
-
-        // Base query to fetch all approved, non-deleted listings
         let query = supabase
           .from('listings')
           .select()
@@ -81,8 +55,15 @@ export const useListings = ({ categoryFilter, subcategoryFilter, selectedLocatio
           query = query.eq('subcategory', subcategoryFilter);
         }
 
-        // Execute the appropriate query
-        const { data: listings, error } = await (locationQuery || query);
+        if (selectedLocation) {
+          query = query.eq('location', selectedLocation);
+        }
+
+        if (featured) {
+          query = query.eq('featured', true);
+        }
+
+        const { data: listings, error } = await query;
 
         if (error) {
           console.error('Error fetching listings:', error);
