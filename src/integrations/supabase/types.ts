@@ -275,6 +275,12 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_secret: {
+        Args: {
+          name: string
+        }
+        Returns: string
+      }
       is_admin: {
         Args: {
           user_uid: string

@@ -48,16 +48,20 @@ const LocationSelector = () => {
 
   useEffect(() => {
     const fetchApiKey = async () => {
-      const { data: { secret }, error } = await supabase.rpc('get_secret', {
-        name: 'OLA_MAPS_API_KEY'
-      });
-      
-      if (error) {
-        console.error('Error fetching API key:', error);
-        return;
+      try {
+        const { data, error } = await supabase.rpc('get_secret', {
+          name: 'OLA_MAPS_API_KEY'
+        });
+        
+        if (error) {
+          console.error('Error fetching API key:', error);
+          return;
+        }
+        
+        setApiKey(data);
+      } catch (error) {
+        console.error('Failed to fetch API key:', error);
       }
-      
-      setApiKey(secret);
     };
 
     fetchApiKey();
