@@ -18,6 +18,11 @@ import { Button } from "@/components/ui/button";
 import { Share2 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 
+interface Seller {
+  full_name: string;
+  created_at: string;
+}
+
 const ProductPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -88,6 +93,8 @@ const ProductPage = () => {
     return <ProductNotFound />;
   }
 
+  const seller = product.seller as Seller;
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -124,8 +131,8 @@ const ProductPage = () => {
 
             <SellerInfo
               seller={{
-                name: product.seller?.full_name || 'Anonymous',
-                memberSince: product.seller?.created_at ? new Date(product.seller.created_at).toLocaleDateString() : new Date().toLocaleDateString(),
+                name: seller?.full_name || 'Anonymous',
+                memberSince: seller?.created_at ? new Date(seller.created_at).toLocaleDateString() : new Date().toLocaleDateString(),
                 listings: 0
               }}
               onChatClick={() => handleChatWithSeller(session)}

@@ -24,10 +24,9 @@ const DeleteDialog = ({ onDelete }: DeleteDialogProps) => {
         <Button
           size="sm"
           variant="destructive"
-          className="h-7 text-xs gap-1.5"
+          className="h-7 text-xs"
         >
           <Trash2 className="w-3.5 h-3.5" />
-          Delete
         </Button>
       </AlertDialogTrigger>
       <AlertDialogContent>
