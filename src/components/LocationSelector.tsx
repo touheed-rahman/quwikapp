@@ -88,7 +88,7 @@ const LocationSelector = ({ value, onChange }: LocationSelectorProps) => {
 
         const data = await response.json();
         
-        if (data.status === 'OK') {
+        if (data.status === 'OK' && Array.isArray(data.predictions)) {
           setPredictions(data.predictions);
         } else {
           console.error('Error fetching predictions:', data.status);
@@ -171,11 +171,11 @@ const LocationSelector = ({ value, onChange }: LocationSelectorProps) => {
               Loading locations...
             </div>
           )}
-          {!loading && predictions.length === 0 && searchQuery && (
+          {!loading && (!predictions || predictions.length === 0) && searchQuery && (
             <CommandEmpty>No location found.</CommandEmpty>
           )}
           <CommandGroup>
-            {locations.map((location) => (
+            {locations && locations.map((location) => (
               <CommandItem
                 key={location.id}
                 value={location.id}
