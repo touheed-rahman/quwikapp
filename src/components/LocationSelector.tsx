@@ -22,6 +22,8 @@ interface Location {
   id: string;
   name: string;
   area?: string;
+  place_id?: string;
+  description?: string;
 }
 
 interface LocationSelectorProps {
@@ -29,86 +31,110 @@ interface LocationSelectorProps {
   onChange: (location: string | null) => void;
 }
 
-const cities = [
-  {
-    id: "bangalore",
-    name: "Bangalore",
-    areas: ["Koramangala", "Indiranagar", "HSR Layout", "Whitefield", "JP Nagar"]
-  },
-  {
-    id: "mumbai",
-    name: "Mumbai",
-    areas: ["Andheri", "Bandra", "Colaba", "Juhu", "Powai"]
-  },
-  {
-    id: "delhi",
-    name: "Delhi",
-    areas: ["Connaught Place", "Hauz Khas", "Dwarka", "Saket", "Rohini"]
-  }
-];
+interface PlacePrediction {
+  place_id: string;
+  description: string;
+  structured_formatting: {
+    main_text: string;
+    secondary_text: string;
+  };
+}
 
 const LocationSelector = ({ value, onChange }: LocationSelectorProps) => {
   const [open, setOpen] = useState(false);
-  const [apiKey, setApiKey] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [predictions, setPredictions] = useState<PlacePrediction[]>([]);
+  const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
-    const fetchApiKey = async () => {
+    if (!searchQuery) {
+      setPredictions([]);
+      return;
+    }
+
+    const fetchPredictions = async () => {
       try {
-        const { data, error } = await supabase.rpc('get_secret', {
+        setLoading(true);
+        
+        const { data: apiKey } = await supabase.rpc('get_secret', {
           name: 'OLA_MAPS_API_KEY'
         });
-        
-        if (error) {
-          console.error('Error fetching API key:', error);
+
+        if (!apiKey) {
+          console.error('Maps API key not found');
           toast({
             title: "Error",
-            description: "Could not load location services. Please try again later.",
+            description: "Location services are not fully configured.",
             variant: "destructive",
           });
           return;
         }
-        
-        if (!data) {
-          console.warn('API key not found');
-          toast({
-            title: "Warning",
-            description: "Location services are not fully configured.",
-            variant: "default",
-          });
-          return;
+
+        const response = await fetch(
+          `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${encodeURIComponent(
+            searchQuery
+          )}&components=country:in&key=${apiKey}&types=(cities)`,
+          {
+            headers: {
+              'Accept': 'application/json',
+            }
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch predictions');
         }
+
+        const data = await response.json();
         
-        setApiKey(data);
+        if (data.status === 'OK') {
+          setPredictions(data.predictions);
+        } else {
+          console.error('Error fetching predictions:', data.status);
+          setPredictions([]);
+        }
       } catch (error) {
-        console.error('Failed to fetch API key:', error);
+        console.error('Error fetching predictions:', error);
         toast({
           title: "Error",
-          description: "Could not load location services. Please try again later.",
+          description: "Could not fetch location suggestions. Please try again.",
           variant: "destructive",
         });
+        setPredictions([]);
+      } finally {
+        setLoading(false);
       }
     };
 
-    fetchApiKey();
-  }, [toast]);
+    const debounceTimeout = setTimeout(fetchPredictions, 300);
+    return () => clearTimeout(debounceTimeout);
+  }, [searchQuery, toast]);
 
-  const locations: Location[] = cities.flatMap(city => 
-    [
-      { id: city.id, name: city.name },
-      ...city.areas.map(area => ({
-        id: `${city.id}-${area.toLowerCase().replace(/\s+/g, '-')}`,
-        name: area,
-        area: city.name
-      }))
-    ]
-  );
+  const locations: Location[] = predictions.map(prediction => ({
+    id: prediction.place_id,
+    name: prediction.structured_formatting.main_text,
+    area: prediction.structured_formatting.secondary_text,
+    place_id: prediction.place_id,
+    description: prediction.description
+  }));
 
-  const selectedLocation = locations.find(location => 
-    location.area 
-      ? `${location.name}, ${location.area}` === value
-      : location.name === value
-  );
+  const selectedLocation = value 
+    ? locations.find(location => 
+        location.area 
+          ? `${location.name}, ${location.area}` === value
+          : location.name === value
+      )
+    : null;
+
+  const handleLocationSelect = (location: Location) => {
+    const newValue = location.area 
+      ? `${location.name}, ${location.area}`
+      : location.name;
+    onChange(newValue);
+    setOpen(false);
+    setSearchQuery('');
+  };
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -133,22 +159,27 @@ const LocationSelector = ({ value, onChange }: LocationSelectorProps) => {
           </div>
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-48 p-0">
-        <Command>
-          <CommandInput placeholder="Search location..." />
-          <CommandEmpty>No location found.</CommandEmpty>
+      <PopoverContent className="w-72 p-0">
+        <Command shouldFilter={false}>
+          <CommandInput 
+            placeholder="Search location..." 
+            value={searchQuery}
+            onValueChange={setSearchQuery}
+          />
+          {loading && (
+            <div className="py-6 text-center text-sm text-muted-foreground">
+              Loading locations...
+            </div>
+          )}
+          {!loading && predictions.length === 0 && searchQuery && (
+            <CommandEmpty>No location found.</CommandEmpty>
+          )}
           <CommandGroup>
             {locations.map((location) => (
               <CommandItem
                 key={location.id}
                 value={location.id}
-                onSelect={() => {
-                  const newValue = location.area 
-                    ? `${location.name}, ${location.area}`
-                    : location.name;
-                  onChange(newValue);
-                  setOpen(false);
-                }}
+                onSelect={() => handleLocationSelect(location)}
               >
                 <Check
                   className={cn(
@@ -160,11 +191,12 @@ const LocationSelector = ({ value, onChange }: LocationSelectorProps) => {
                       : "opacity-0"
                   )}
                 />
-                <span className="truncate">
-                  {location.area 
-                    ? `${location.name}, ${location.area}`
-                    : location.name}
-                </span>
+                <div className="flex flex-col">
+                  <span className="font-medium">{location.name}</span>
+                  {location.area && (
+                    <span className="text-sm text-muted-foreground">{location.area}</span>
+                  )}
+                </div>
               </CommandItem>
             ))}
           </CommandGroup>
