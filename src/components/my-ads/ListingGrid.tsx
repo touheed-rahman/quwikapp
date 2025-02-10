@@ -1,5 +1,6 @@
 
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import ProductCard from "@/components/ProductCard";
 import { ProductCondition } from "@/types/categories";
 import { supabase } from "@/integrations/supabase/client";
@@ -40,6 +41,14 @@ const ListingGrid = ({ listings, onMarkAsSold, showSoldButton }: ListingGridProp
             image={getFirstImageUrl(listing.images)}
             condition={listing.condition}
           />
+          {listing.status === 'rejected' && (
+            <Badge 
+              variant="destructive"
+              className="absolute top-2 right-2"
+            >
+              Rejected
+            </Badge>
+          )}
           {showSoldButton && onMarkAsSold && (
             <Button
               className="absolute bottom-2 right-2 bg-primary"
