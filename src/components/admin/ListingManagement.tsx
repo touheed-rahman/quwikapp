@@ -1,6 +1,7 @@
 
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import ListingSearchBar from "./ListingSearchBar";
@@ -11,11 +12,13 @@ import { Loader2 } from "lucide-react";
 const ListingManagement = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const { toast } = useToast();
+  const location = useLocation();
+  const filter = location.state?.filter || 'all';
 
   const { data: listings, isLoading, error, refetch } = useQuery({
-    queryKey: ['admin-listings'],
+    queryKey: ['admin-listings', filter],
     queryFn: async () => {
-      console.log('Fetching admin listings...');
+      console.log('Fetching admin listings with filter:', filter);
       const { data: { user } } = await supabase.auth.getUser();
       
       if (!user) {
@@ -30,11 +33,24 @@ const ListingManagement = () => {
         throw new Error('Unauthorized');
       }
 
-      const { data: listingsData, error } = await supabase
+      let query = supabase
         .from('listings')
-        .select('*, seller:profiles(*)')
+        .select('*, seller:profiles(*))')
         .order('featured', { ascending: false })
         .order('created_at', { ascending: false });
+
+      // Apply filters based on dashboard metrics selection
+      if (filter === 'pending') {
+        query = query.eq('status', 'pending');
+      } else if (filter === 'approved') {
+        query = query.eq('status', 'approved');
+      } else if (filter === 'rejected') {
+        query = query.eq('status', 'rejected');
+      } else if (filter === 'featured') {
+        query = query.eq('featured', true);
+      }
+
+      const { data: listingsData, error } = await query;
 
       if (error) {
         console.error('Error fetching listings:', error);
@@ -138,3 +154,4 @@ const ListingManagement = () => {
 };
 
 export default ListingManagement;
+

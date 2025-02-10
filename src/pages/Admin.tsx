@@ -63,6 +63,8 @@ const AdminPanel = () => {
     }
   };
 
+  const selectedFilter = location.state?.filter || 'all';
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="container max-w-7xl mx-auto p-4 pt-8">
@@ -84,7 +86,14 @@ const AdminPanel = () => {
         <div className="space-y-8">
           <DashboardMetrics />
           <div>
-            <h2 className="text-lg font-semibold mb-4">Listing Management</h2>
+            <h2 className="text-lg font-semibold mb-4">
+              {selectedFilter === 'all' && 'All Listings'}
+              {selectedFilter === 'pending' && 'Pending Listings'}
+              {selectedFilter === 'approved' && 'Approved Listings'}
+              {selectedFilter === 'rejected' && 'Rejected Listings'}
+              {selectedFilter === 'featured' && 'Featured Listings'}
+              {selectedFilter === 'users' && 'User Management'}
+            </h2>
             <ListingManagement />
           </div>
         </div>
@@ -94,3 +103,4 @@ const AdminPanel = () => {
 };
 
 export default AdminPanel;
+

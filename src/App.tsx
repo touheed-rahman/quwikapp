@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -17,6 +16,7 @@ import AdminPanel from "./pages/Admin";
 import MyAds from "./pages/MyAds";
 import Wishlist from "./pages/Wishlist";
 import Subcategory from "./pages/Subcategory";
+import AdminLogin from "./pages/AdminLogin";
 
 const queryClient = new QueryClient();
 
@@ -79,6 +79,7 @@ const App = () => (
               }
             />
             <Route path="/profile" element={<Profile />} />
+            <Route path="/admin/login" element={<AdminLogin />} />
             <Route
               path="/admin"
               element={
