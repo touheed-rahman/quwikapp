@@ -195,9 +195,9 @@ const ChatDetail = () => {
     fetchConversationDetails();
     fetchMessages();
 
-    // Subscribe to new messages
+    // Subscribe to new messages using the proper channel name
     const channel = supabase
-      .channel('messages')
+      .channel(`messages:${id}`)
       .on(
         'postgres_changes',
         {
@@ -207,10 +207,13 @@ const ChatDetail = () => {
           filter: `conversation_id=eq.${id}`
         },
         (payload) => {
+          console.log('New message received:', payload);
           setMessages(prev => [...prev, payload.new as Message]);
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        console.log('Subscription status:', status);
+      });
 
     return () => {
       supabase.removeChannel(channel);
@@ -357,4 +360,3 @@ const ChatDetail = () => {
 };
 
 export default ChatDetail;
-
