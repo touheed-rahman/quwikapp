@@ -26,6 +26,9 @@ export interface Conversation {
     full_name: string;
     avatar_url?: string;
   };
+  notifications?: Array<{
+    unread_count: number;
+  }>;
 }
 
 export interface ChatWindowProps {

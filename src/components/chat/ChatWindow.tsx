@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
-import { Button } from "@/components/ui/button"; // Add this import
+import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { ChatFilters } from "./ChatFilters";
 import { ChatHeader } from "./ChatHeader";
@@ -15,6 +15,7 @@ const ChatWindow = ({ isOpen, onClose, initialSeller }: ChatWindowProps) => {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [isSending, setIsSending] = useState(false);
   const [activeFilter, setActiveFilter] = useState("all");
+  const [activeTab, setActiveTab] = useState("all");
   const [sessionUser, setSessionUser] = useState<any>(null);
 
   useEffect(() => {
@@ -29,15 +30,35 @@ const ChatWindow = ({ isOpen, onClose, initialSeller }: ChatWindowProps) => {
     if (!sessionUser) return;
 
     const fetchConversations = async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from('conversations')
         .select(`
           *,
           listing:listings(title, price),
-          seller:profiles!conversations_seller_id_fkey(full_name, avatar_url)
+          seller:profiles!conversations_seller_id_fkey(full_name, avatar_url),
+          notifications!inner (unread_count)
         `)
-        .or(`buyer_id.eq.${sessionUser.id},seller_id.eq.${sessionUser.id}`)
-        .order('last_message_at', { ascending: false });
+        .or(`buyer_id.eq.${sessionUser.id},seller_id.eq.${sessionUser.id}`);
+
+      // Apply tab filters
+      if (activeTab === 'buying') {
+        query = query.eq('buyer_id', sessionUser.id);
+      } else if (activeTab === 'selling') {
+        query = query.eq('seller_id', sessionUser.id);
+      }
+
+      // Apply additional filters
+      if (activeFilter === 'unread') {
+        query = query.gt('notifications.unread_count', 0);
+      } else if (activeFilter === 'meeting') {
+        query = query.ilike('last_message', '%meeting%');
+      } else if (activeFilter === 'important') {
+        query = query.eq('notifications.unread_count', 0);
+      }
+
+      query = query.order('last_message_at', { ascending: false });
+
+      const { data, error } = await query;
 
       if (error) {
         toast({
@@ -53,7 +74,7 @@ const ChatWindow = ({ isOpen, onClose, initialSeller }: ChatWindowProps) => {
 
     fetchConversations();
 
-    // Subscribe to real-time updates for conversations
+    // Subscribe to real-time updates
     const channel = supabase
       .channel('conversations')
       .on(
@@ -64,18 +85,8 @@ const ChatWindow = ({ isOpen, onClose, initialSeller }: ChatWindowProps) => {
           table: 'conversations',
           filter: `buyer_id=eq.${sessionUser.id}`
         },
-        (payload) => {
-          if (payload.eventType === 'UPDATE') {
-            setConversations(prev => 
-              prev.map(conv => 
-                conv.id === payload.new.id 
-                  ? { ...conv, ...payload.new }
-                  : conv
-              )
-            );
-          } else if (payload.eventType === 'INSERT') {
-            fetchConversations();
-          }
+        () => {
+          fetchConversations();
         }
       )
       .subscribe();
@@ -83,7 +94,7 @@ const ChatWindow = ({ isOpen, onClose, initialSeller }: ChatWindowProps) => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [sessionUser, toast]);
+  }, [sessionUser, toast, activeFilter, activeTab]);
 
   const handleAvatarClick = async (conversationId: string) => {
     onClose();
@@ -110,9 +121,13 @@ const ChatWindow = ({ isOpen, onClose, initialSeller }: ChatWindowProps) => {
       <div className="fixed right-0 top-0 h-full w-full max-w-md bg-white shadow-lg animate-in slide-in-from-right">
         <div className="flex flex-col h-full">
           <ChatHeader onClose={onClose} />
-          <ChatFilters activeFilter={activeFilter} setActiveFilter={setActiveFilter} />
+          <ChatFilters 
+            activeFilter={activeFilter} 
+            setActiveFilter={setActiveFilter}
+            activeTab={activeTab}
+            setActiveTab={setActiveTab}
+          />
           
-          {/* Chat List */}
           <div className="flex-1 overflow-y-auto">
             {conversations.map((conversation) => (
               <ConversationItem
@@ -120,6 +135,7 @@ const ChatWindow = ({ isOpen, onClose, initialSeller }: ChatWindowProps) => {
                 conversation={conversation}
                 userId={sessionUser.id}
                 onClick={handleAvatarClick}
+                unreadCount={conversation.notifications?.[0]?.unread_count || 0}
               />
             ))}
           </div>
@@ -130,4 +146,3 @@ const ChatWindow = ({ isOpen, onClose, initialSeller }: ChatWindowProps) => {
 };
 
 export default ChatWindow;
-

@@ -307,7 +307,25 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      conversation_unread_counts: {
+        Row: {
+          conversation_id: string | null
+          conversation_type: string | null
+          last_message: string | null
+          last_message_at: string | null
+          unread_count: number | null
+          user_id: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       get_listings_by_location: {

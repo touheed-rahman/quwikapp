@@ -6,6 +6,8 @@ import { cn } from "@/lib/utils";
 interface ChatFiltersProps {
   activeFilter: string;
   setActiveFilter: (filter: string) => void;
+  activeTab: string;
+  setActiveTab: (tab: string) => void;
 }
 
 const filters = [
@@ -15,10 +17,15 @@ const filters = [
   { id: "important", label: "Important" }
 ];
 
-export const ChatFilters = ({ activeFilter, setActiveFilter }: ChatFiltersProps) => {
+export const ChatFilters = ({ 
+  activeFilter, 
+  setActiveFilter,
+  activeTab,
+  setActiveTab
+}: ChatFiltersProps) => {
   return (
     <>
-      <Tabs defaultValue="all" className="w-full">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <div className="px-4 pt-2">
           <TabsList className="w-full justify-start gap-2 h-auto p-1">
             <TabsTrigger 

@@ -10,13 +10,15 @@ interface ConversationItemProps {
   conversation: Conversation;
   userId: string;
   onClick: (conversationId: string) => void;
+  unreadCount: number;
 }
 
-export const ConversationItem = ({ conversation, userId, onClick }: ConversationItemProps) => {
+export const ConversationItem = ({ conversation, userId, onClick, unreadCount }: ConversationItemProps) => {
   return (
     <div
       className={cn(
-        "px-4 py-3 hover:bg-muted/50 transition-colors cursor-pointer border-b"
+        "px-4 py-3 hover:bg-muted/50 transition-colors cursor-pointer border-b",
+        unreadCount > 0 && "bg-primary/5"
       )}
       onClick={() => onClick(conversation.id)}
     >
@@ -37,6 +39,11 @@ export const ConversationItem = ({ conversation, userId, onClick }: Conversation
                 <Check className="h-3 w-3 mr-1" />
                 Verified
               </Badge>
+              {unreadCount > 0 && (
+                <Badge variant="default" className="bg-primary text-white">
+                  {unreadCount}
+                </Badge>
+              )}
             </div>
             <span className="text-sm text-muted-foreground">
               {new Date(conversation.last_message_at).toLocaleDateString()}
