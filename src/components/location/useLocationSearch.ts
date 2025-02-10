@@ -21,7 +21,7 @@ export const useLocationSearch = (searchQuery: string) => {
       }
 
       const response = await fetch(
-        `https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&key=${apiKey}&fields=geometry,name,formatted_address`,
+        `https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&key=${apiKey}&fields=geometry,name,formatted_address&components=country:in`,
         {
           method: 'GET',
           headers: {
