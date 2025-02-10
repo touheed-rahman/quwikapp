@@ -1,12 +1,15 @@
 
-import { useChatAuth } from './use-chat-auth';
-import { useChatMessages } from './use-chat-messages';
+import { useSessionUser } from './use-session-user';
+import { useConversationDetails } from './use-conversation-details';
+import { useMessageList } from './use-message-list';
+import { useMessageSender } from './use-message-sender';
 import { useChatNotifications } from './use-chat-notifications';
 
 export function useChat(conversationId: string | undefined) {
-  const { sessionUser, conversationDetails } = useChatAuth(conversationId);
-  const { messages, isLoading, newMessage, setNewMessage, handleSend } = 
-    useChatMessages(conversationId, sessionUser?.id);
+  const sessionUser = useSessionUser(conversationId);
+  const conversationDetails = useConversationDetails(conversationId, sessionUser);
+  const { messages, isLoading } = useMessageList(conversationId, sessionUser?.id);
+  const { newMessage, setNewMessage, handleSend } = useMessageSender(conversationId, sessionUser?.id);
   
   useChatNotifications(conversationId, sessionUser?.id);
 
