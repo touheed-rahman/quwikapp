@@ -1,17 +1,15 @@
 
-import { MapPin, Bell, MessageSquare, User, HelpCircle, ListOrdered } from "lucide-react";
+import { Bell, MessageSquare, User, HelpCircle, ListOrdered } from "lucide-react";
 import { Button } from "./ui/button";
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import LocationSelector from "./LocationSelector";
 import { Badge } from "./ui/badge";
 import { useIsMobile } from "@/hooks/use-mobile";
 import ChatWindow from "@/components/chat/ChatWindow";
 
 const Header = () => {
   const [session, setSession] = useState<any>(null);
-  const [selectedLocation, setSelectedLocation] = useState<string | null>(null);
   const [unreadCount, setUnreadCount] = useState(0);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const isMobile = useIsMobile();
@@ -79,13 +77,6 @@ const Header = () => {
             Quwik
           </h1>
         </Link>
-        
-        <div className="w-48 shrink-0 md:w-64">
-          <LocationSelector 
-            value={selectedLocation}
-            onChange={setSelectedLocation}
-          />
-        </div>
 
         <div className="flex items-center gap-2 ml-auto">
           {session ? (
@@ -155,4 +146,3 @@ const Header = () => {
 };
 
 export default Header;
-

@@ -1,73 +1,25 @@
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Search } from "lucide-react";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import LocationSelector from "./LocationSelector";
-import { supabase } from "@/integrations/supabase/client";
+import { useLocation } from "@/contexts/LocationContext";
 import { useToast } from "./ui/use-toast";
 
 const HeroSearch = () => {
-  const [selectedLocation, setSelectedLocation] = useState<string | null>(null);
+  const { selectedLocation, setSelectedLocation } = useLocation();
   const { toast } = useToast();
-
-  useEffect(() => {
-    const loadUserLocation = async () => {
-      try {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) return;
-
-        const { data: locationPref } = await supabase
-          .from('user_location_preferences')
-          .select('place_id')
-          .single();
-
-        if (locationPref?.place_id) {
-          // Get location details from cache
-          const { data: locationDetails } = await supabase
-            .from('location_cache')
-            .select('name, area')
-            .eq('place_id', locationPref.place_id)
-            .single();
-
-          if (locationDetails) {
-            setSelectedLocation(`${locationDetails.name}${locationDetails.area ? `, ${locationDetails.area}` : ''}|${locationPref.place_id}`);
-          }
-        }
-      } catch (error) {
-        console.error('Error loading user location:', error);
-      }
-    };
-
-    loadUserLocation();
-  }, []);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const handleLocationChange = async (location: string | null) => {
-    setSelectedLocation(location);
-    
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
-      if (location) {
-        const placeId = location.split('|')[1];
-        
-        const { error } = await supabase
-          .from('user_location_preferences')
-          .upsert({
-            user_id: user.id,
-            place_id: placeId
-          }, {
-            onConflict: 'user_id'
-          });
-
-        if (error) throw error;
-
-        toast({
-          title: "Location updated",
-          description: "Your preferred location has been saved.",
-        });
-      }
+      await setSelectedLocation(location);
+      
+      toast({
+        title: "Location updated",
+        description: "Your preferred location has been saved.",
+      });
     } catch (error) {
       console.error('Error saving location preference:', error);
       toast({
@@ -95,6 +47,8 @@ const HeroSearch = () => {
                 type="text"
                 placeholder="What are you looking for?"
                 className="pl-10 pr-4 h-12 text-sm md:text-base w-full border-[#8B5CF6]/20 focus-visible:ring-[#8B5CF6]/20"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
               />
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-[#8B5CF6]" />
             </div>

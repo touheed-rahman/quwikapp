@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { supabase } from "./integrations/supabase/client";
+import { LocationProvider } from "./contexts/LocationContext";
 import Index from "./pages/Index";
 import Sell from "./pages/Sell";
 import Product from "./pages/Product";
@@ -52,57 +53,59 @@ const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/category/:category/:subcategory" element={<Subcategory />} />
-          <Route
-            path="/sell"
-            element={
-              <PrivateRoute>
-                <Sell />
-              </PrivateRoute>
-            }
-          />
-          <Route path="/product/:id" element={<Product />} />
-          <Route path="/categories" element={<Categories />} />
-          <Route
-            path="/chat/:id"
-            element={
-              <PrivateRoute>
-                <ChatDetail />
-              </PrivateRoute>
-            }
-          />
-          <Route path="/profile" element={<Profile />} />
-          <Route
-            path="/admin"
-            element={
-              <PrivateRoute>
-                <AdminPanel />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/my-ads"
-            element={
-              <PrivateRoute>
-                <MyAds />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/wishlist"
-            element={
-              <PrivateRoute>
-                <Wishlist />
-              </PrivateRoute>
-            }
-          />
-        </Routes>
-      </BrowserRouter>
+      <LocationProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/category/:category/:subcategory" element={<Subcategory />} />
+            <Route
+              path="/sell"
+              element={
+                <PrivateRoute>
+                  <Sell />
+                </PrivateRoute>
+              }
+            />
+            <Route path="/product/:id" element={<Product />} />
+            <Route path="/categories" element={<Categories />} />
+            <Route
+              path="/chat/:id"
+              element={
+                <PrivateRoute>
+                  <ChatDetail />
+                </PrivateRoute>
+              }
+            />
+            <Route path="/profile" element={<Profile />} />
+            <Route
+              path="/admin"
+              element={
+                <PrivateRoute>
+                  <AdminPanel />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/my-ads"
+              element={
+                <PrivateRoute>
+                  <MyAds />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/wishlist"
+              element={
+                <PrivateRoute>
+                  <Wishlist />
+                </PrivateRoute>
+              }
+            />
+          </Routes>
+        </BrowserRouter>
+      </LocationProvider>
     </TooltipProvider>
   </QueryClientProvider>
 );

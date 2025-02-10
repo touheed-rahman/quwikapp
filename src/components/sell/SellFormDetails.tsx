@@ -5,6 +5,7 @@ import ConditionSelect from "./ConditionSelect";
 import PriceInput from "./PriceInput";
 import FormActions from "./FormActions";
 import LocationSelector from "@/components/LocationSelector";
+import { useLocation } from "@/contexts/LocationContext";
 
 interface SellFormDetailsProps {
   title: string;
@@ -37,6 +38,8 @@ const SellFormDetails = ({
   onBack,
   onSubmit
 }: SellFormDetailsProps) => {
+  const { selectedLocation } = useLocation();
+
   return (
     <form onSubmit={onSubmit} className="space-y-6">
       <div className="bg-white rounded-lg shadow-sm border p-4 md:p-6 space-y-6">
@@ -48,7 +51,10 @@ const SellFormDetails = ({
           <label className="text-sm font-medium mb-1.5 block">
             Location *
           </label>
-          <LocationSelector value={location} onChange={setLocation} />
+          <LocationSelector 
+            value={selectedLocation} 
+            onChange={setLocation}
+          />
         </div>
       </div>
       <FormActions isSubmitting={isSubmitting} onBack={onBack} />
