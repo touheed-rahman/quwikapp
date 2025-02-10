@@ -16,8 +16,6 @@ interface SellFormDetailsProps {
   setPrice: (value: string) => void;
   condition: string;
   setCondition: (value: string) => void;
-  location: string;
-  setLocation: (value: string) => void;
   isSubmitting: boolean;
   onBack: () => void;
   onSubmit: (e: React.FormEvent) => void;
@@ -32,18 +30,11 @@ const SellFormDetails = ({
   setPrice,
   condition,
   setCondition,
-  location,
-  setLocation,
   isSubmitting,
   onBack,
   onSubmit
 }: SellFormDetailsProps) => {
   const { selectedLocation, setSelectedLocation } = useLocation();
-
-  const handleLocationChange = async (newLocation: string) => {
-    await setSelectedLocation(newLocation);
-    setLocation(newLocation);
-  };
 
   return (
     <form onSubmit={onSubmit} className="space-y-6">
@@ -58,7 +49,7 @@ const SellFormDetails = ({
           </label>
           <LocationSelector 
             value={selectedLocation} 
-            onChange={handleLocationChange}
+            onChange={setSelectedLocation}
           />
         </div>
       </div>

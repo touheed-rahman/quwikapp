@@ -7,17 +7,18 @@ import SellFormDetails from "@/components/sell/SellFormDetails";
 import Header from "@/components/Header";
 import ChatWindow from "@/components/chat/ChatWindow";
 import { supabase } from "@/integrations/supabase/client";
+import { useLocation } from "@/contexts/LocationContext";
 
 const Sell = () => {
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState<any>({});
-  const [location, setLocation] = useState("");
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
   const [condition, setCondition] = useState("");
+  const { selectedLocation, setSelectedLocation } = useLocation();
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -63,10 +64,10 @@ const Sell = () => {
       return false;
     }
     
-    if (!location.trim()) {
+    if (!selectedLocation) {
       toast({
         title: "Missing Location",
-        description: "Please enter your location",
+        description: "Please select your location",
         variant: "destructive"
       });
       return false;
@@ -134,7 +135,7 @@ const Sell = () => {
         category: formData.category,
         subcategory: formData.subcategory,
         condition,
-        location,
+        location: selectedLocation,
         images: uploadedImagePaths,
         user_id: user.id,
         status: 'pending'
@@ -187,8 +188,6 @@ const Sell = () => {
           setPrice={setPrice}
           condition={condition}
           setCondition={setCondition}
-          location={location}
-          setLocation={setLocation}
           isSubmitting={isSubmitting}
           onBack={() => setStep(1)}
           onSubmit={handleSubmit}

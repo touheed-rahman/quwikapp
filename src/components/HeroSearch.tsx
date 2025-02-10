@@ -53,29 +53,16 @@ const HeroSearch = () => {
         .from('listings')
         .select('id, title, category, subcategory')
         .eq('status', 'approved')
-        .eq('title', trimmedQuery);
+        .ilike('title', `%${trimmedQuery}%`);
 
       if (selectedLocation) {
         query = query.eq('location', selectedLocation);
       }
 
-      const { data: exactMatch } = await query;
+      const { data: matches } = await query;
 
-      if (exactMatch && exactMatch.length > 0) {
-        navigate(`/category/${exactMatch[0].category}/subcategory/${exactMatch[0].subcategory}?q=${encodeURIComponent(trimmedQuery)}`);
-        return;
-      }
-
-      // Try partial match
-      const { data: partialMatches } = await supabase
-        .from('listings')
-        .select('id, title, category, subcategory')
-        .eq('status', 'approved')
-        .ilike('title', `%${trimmedQuery}%`)
-        .limit(1);
-
-      if (partialMatches && partialMatches.length > 0) {
-        navigate(`/category/${partialMatches[0].category}/subcategory/${partialMatches[0].subcategory}?q=${encodeURIComponent(trimmedQuery)}`);
+      if (matches && matches.length > 0) {
+        navigate(`/category/${matches[0].category}/${matches[0].subcategory}?q=${encodeURIComponent(trimmedQuery)}`);
       } else {
         toast({
           title: "No results found",
