@@ -24,6 +24,11 @@ interface Location {
   area?: string;
 }
 
+interface LocationSelectorProps {
+  value: string | null;
+  onChange: (location: string | null) => void;
+}
+
 const cities = [
   {
     id: "bangalore",
@@ -42,9 +47,8 @@ const cities = [
   }
 ];
 
-const LocationSelector = () => {
+const LocationSelector = ({ value, onChange }: LocationSelectorProps) => {
   const [open, setOpen] = useState(false);
-  const [selectedLocation, setSelectedLocation] = useState<Location | null>(null);
   const [apiKey, setApiKey] = useState<string | null>(null);
   const { toast } = useToast();
 
@@ -70,7 +74,7 @@ const LocationSelector = () => {
           toast({
             title: "Warning",
             description: "Location services are not fully configured.",
-            variant: "default",  // Changed from "warning" to "default"
+            variant: "default",
           });
           return;
         }
@@ -100,6 +104,12 @@ const LocationSelector = () => {
     ]
   );
 
+  const selectedLocation = locations.find(location => 
+    location.area 
+      ? `${location.name}, ${location.area}` === value
+      : location.name === value
+  );
+
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
@@ -107,7 +117,7 @@ const LocationSelector = () => {
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className="w-48 justify-between text-muted-foreground hover:text-foreground"
+          className="w-full justify-between text-muted-foreground hover:text-foreground"
         >
           <div className="flex items-center gap-2 truncate">
             <MapPin className="h-4 w-4" />
@@ -133,14 +143,19 @@ const LocationSelector = () => {
                 key={location.id}
                 value={location.id}
                 onSelect={() => {
-                  setSelectedLocation(location);
+                  const newValue = location.area 
+                    ? `${location.name}, ${location.area}`
+                    : location.name;
+                  onChange(newValue);
                   setOpen(false);
                 }}
               >
                 <Check
                   className={cn(
                     "mr-2 h-4 w-4",
-                    selectedLocation?.id === location.id 
+                    (location.area 
+                      ? `${location.name}, ${location.area}` === value
+                      : location.name === value)
                       ? "opacity-100"
                       : "opacity-0"
                   )}

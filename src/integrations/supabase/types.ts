@@ -275,6 +275,32 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_listings_by_location: {
+        Args: {
+          location_query: string
+        }
+        Returns: {
+          admin_notes: string | null
+          brand: string | null
+          category: string
+          condition: string
+          created_at: string
+          description: string | null
+          featured: boolean | null
+          id: string
+          images: string[]
+          location: string | null
+          price: number
+          reviewed_at: string | null
+          reviewed_by: string | null
+          specs: Json | null
+          status: string | null
+          subcategory: string
+          title: string
+          updated_at: string
+          user_id: string
+        }[]
+      }
       get_secret: {
         Args: {
           name: string

@@ -14,6 +14,7 @@ import FeaturedListings from "@/components/listings/FeaturedListings";
 import RecentListings from "@/components/listings/RecentListings";
 import CategoryListings from "@/components/listings/CategoryListings";
 import MobileNavigation from "@/components/navigation/MobileNavigation";
+import LocationSelector from "@/components/LocationSelector";
 
 const ITEMS_PER_PAGE = 20;
 
@@ -33,37 +34,39 @@ const Index = () => {
   const [searchParams] = useSearchParams();
   const [showAllProducts, setShowAllProducts] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
+  const [selectedLocation, setSelectedLocation] = useState<string | null>(null);
   
   const categoryFilter = searchParams.get('category');
   const subcategoryFilter = searchParams.get('subcategory');
 
   const { data: listings = [], isLoading, error } = useQuery({
-    queryKey: ['listings', categoryFilter, subcategoryFilter],
+    queryKey: ['listings', categoryFilter, subcategoryFilter, selectedLocation],
     queryFn: async () => {
-      console.log('Fetching listings with filters:', { categoryFilter, subcategoryFilter });
+      console.log('Fetching listings with filters:', { categoryFilter, subcategoryFilter, selectedLocation });
       
-      let query = supabase
-        .from('listings')
-        .select('*')
-        .eq('status', 'approved');
-
-      if (categoryFilter) {
-        query = query.eq('category', categoryFilter);
-      }
-      
-      if (subcategoryFilter) {
-        query = query.eq('subcategory', subcategoryFilter);
-      }
-
-      const { data, error } = await query.order('created_at', { ascending: false });
+      const { data, error } = await supabase
+        .rpc('get_listings_by_location', {
+          location_query: selectedLocation
+        });
 
       if (error) {
         console.error('Error fetching listings:', error);
         throw error;
       }
 
-      console.log('Fetched listings:', data);
-      return data as Listing[];
+      // Apply category filters after location filtering
+      let filteredListings = data as Listing[];
+      
+      if (categoryFilter) {
+        filteredListings = filteredListings.filter(listing => listing.category === categoryFilter);
+      }
+      
+      if (subcategoryFilter) {
+        filteredListings = filteredListings.filter(listing => listing.subcategory === subcategoryFilter);
+      }
+
+      console.log('Fetched listings:', filteredListings);
+      return filteredListings;
     }
   });
 
@@ -80,7 +83,15 @@ const Index = () => {
       <Header />
       <main className="container mx-auto px-4 pt-20 pb-24">
         <div className="space-y-6">
-          <HeroSearch />
+          <div className="flex flex-col gap-4">
+            <HeroSearch />
+            <div className="w-48">
+              <LocationSelector 
+                value={selectedLocation}
+                onChange={(location) => setSelectedLocation(location)}
+              />
+            </div>
+          </div>
           <CategoryFilter />
           
           {!categoryFilter && (
