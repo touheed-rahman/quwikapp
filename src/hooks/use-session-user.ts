@@ -2,15 +2,14 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { Session } from '@supabase/supabase-js';
+import type { User } from '@supabase/supabase-js';
 
 export function useSessionUser(conversationId: string | undefined) {
   const navigate = useNavigate();
-  const [sessionUser, setSessionUser] = useState<any>(null);
+  const [sessionUser, setSessionUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Initial session check
     const initializeSession = async () => {
       try {
         const { data: { session }, error } = await supabase.auth.getSession();
@@ -40,10 +39,9 @@ export function useSessionUser(conversationId: string | undefined) {
 
     initializeSession();
 
-    // Subscribe to auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        if (event === 'SIGNED_OUT' || !session) {
+      async (_event, session) => {
+        if (!session) {
           setSessionUser(null);
           navigate('/profile');
           return;
@@ -53,7 +51,6 @@ export function useSessionUser(conversationId: string | undefined) {
       }
     );
 
-    // Cleanup subscription
     return () => {
       subscription.unsubscribe();
     };

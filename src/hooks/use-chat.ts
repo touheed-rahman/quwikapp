@@ -6,16 +6,16 @@ import { useMessageSender } from './use-message-sender';
 import { useChatNotifications } from './use-chat-notifications';
 
 export function useChat(conversationId: string | undefined) {
-  const sessionUser = useSessionUser(conversationId);
+  const { sessionUser, loading } = useSessionUser(conversationId);
   const conversationDetails = useConversationDetails(conversationId, sessionUser);
-  const { messages, isLoading } = useMessageList(conversationId, sessionUser?.id);
+  const { messages, isLoading: messagesLoading } = useMessageList(conversationId, sessionUser?.id);
   const { newMessage, setNewMessage, handleSend } = useMessageSender(conversationId, sessionUser?.id);
   
   useChatNotifications(conversationId, sessionUser?.id);
 
   return {
     messages,
-    isLoading,
+    isLoading: loading || messagesLoading,
     sessionUser,
     conversationDetails,
     newMessage,
