@@ -27,7 +27,7 @@ interface ChatWindowProps {
   isOpen: boolean;
   onClose: () => void;
   initialSeller?: {
-    id?: string; // Add id property
+    id?: string;
     name: string;
     isVerified?: boolean;
     productInfo?: {
@@ -112,7 +112,7 @@ const ChatWindow = ({ isOpen, onClose, initialSeller }: ChatWindowProps) => {
 
     fetchConversations();
 
-    // Subscribe to real-time updates
+    // Subscribe to real-time updates for conversations
     const channel = supabase
       .channel('conversations')
       .on(
@@ -145,7 +145,14 @@ const ChatWindow = ({ isOpen, onClose, initialSeller }: ChatWindowProps) => {
   }, [sessionUser, toast]);
 
   const handleSend = async () => {
-    if (!newMessage.trim() || !sessionUser) return;
+    if (!newMessage.trim() || !sessionUser) {
+      toast({
+        title: "Cannot send message",
+        description: "Please sign in to send messages",
+        variant: "destructive"
+      });
+      return;
+    }
     
     setIsSending(true);
     
@@ -181,6 +188,11 @@ const ChatWindow = ({ isOpen, onClose, initialSeller }: ChatWindowProps) => {
       if (messageError) throw messageError;
       
       setNewMessage("");
+      
+      // Navigate to chat detail
+      if (conversationId) {
+        navigate(`/chat/${conversationId}`);
+      }
     } catch (error: any) {
       toast({
         variant: "destructive",
@@ -210,20 +222,13 @@ const ChatWindow = ({ isOpen, onClose, initialSeller }: ChatWindowProps) => {
 
   if (!isOpen) return null;
 
-  const filters = [
-    { id: "all", label: "All" },
-    { id: "meeting", label: "Meeting" },
-    { id: "unread", label: "Unread" },
-    { id: "important", label: "Important" },
-  ];
-
   if (!sessionUser) {
     return (
       <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50">
         <div className="fixed right-0 top-0 h-full w-full max-w-md bg-white shadow-lg">
           <div className="flex flex-col items-center justify-center h-full p-4">
             <p className="text-lg mb-4">Please sign in to use chat</p>
-            <Button onClick={() => navigate('/auth')}>Sign In</Button>
+            <Button onClick={() => navigate('/profile')}>Sign In</Button>
           </div>
         </div>
       </div>
@@ -357,3 +362,4 @@ const ChatWindow = ({ isOpen, onClose, initialSeller }: ChatWindowProps) => {
 };
 
 export default ChatWindow;
+
