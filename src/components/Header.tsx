@@ -1,5 +1,4 @@
-
-import { MapPin, Bell, MessageSquare, User, HelpCircle } from "lucide-react";
+import { MapPin, Bell, MessageSquare, User, HelpCircle, ListOrdered } from "lucide-react";
 import { Button } from "./ui/button";
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
@@ -7,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import LocationSelector from "./LocationSelector";
 import { Badge } from "./ui/badge";
 import { useIsMobile } from "@/hooks/use-mobile";
+import ChatWindow from "@/components/chat/ChatWindow";
 
 const Header = () => {
   const [session, setSession] = useState<any>(null);
@@ -32,7 +32,6 @@ const Header = () => {
   useEffect(() => {
     if (!session?.user) return;
 
-    // Fetch initial unread count
     const fetchUnreadCount = async () => {
       const { data, error } = await supabase
         .from('notifications')
@@ -50,7 +49,6 @@ const Header = () => {
 
     fetchUnreadCount();
 
-    // Subscribe to notifications
     const channel = supabase
       .channel('notifications')
       .on(
@@ -110,6 +108,11 @@ const Header = () => {
                   </Badge>
                 )}
               </div>
+              <Link to="/my-ads" className="hidden md:block">
+                <Button variant="ghost" size="icon">
+                  <ListOrdered className="h-5 w-5" />
+                </Button>
+              </Link>
               <Link to="/profile">
                 <Button variant="ghost" size="icon">
                   <User className="h-5 w-5" />
@@ -131,6 +134,8 @@ const Header = () => {
           )}
         </div>
       </div>
+
+      <ChatWindow isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} />
     </header>
   );
 };
