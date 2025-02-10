@@ -1,5 +1,4 @@
 
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -10,7 +9,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Search, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
+import LocationSelector from "@/components/LocationSelector";
 
 interface SellFormDetailsProps {
   title: string;
@@ -21,34 +21,12 @@ interface SellFormDetailsProps {
   setPrice: (value: string) => void;
   condition: string;
   setCondition: (value: string) => void;
-  selectedCity: string;
-  setSelectedCity: (value: string) => void;
-  selectedArea: string;
-  setSelectedArea: (value: string) => void;
-  searchTerm: string;
-  setSearchTerm: (value: string) => void;
+  location: string;
+  setLocation: (value: string) => void;
   isSubmitting: boolean;
   onBack: () => void;
   onSubmit: (e: React.FormEvent) => void;
 }
-
-const cities = [
-  {
-    id: "bangalore",
-    name: "Bangalore",
-    areas: ["Koramangala", "Indiranagar", "HSR Layout", "Whitefield", "JP Nagar", "Electronic City"]
-  },
-  {
-    id: "mumbai",
-    name: "Mumbai",
-    areas: ["Andheri", "Bandra", "Colaba", "Juhu", "Powai", "Worli"]
-  },
-  {
-    id: "delhi",
-    name: "Delhi",
-    areas: ["Connaught Place", "Hauz Khas", "Dwarka", "Saket", "Rohini", "Lajpat Nagar"]
-  }
-];
 
 const SellFormDetails = ({
   title,
@@ -59,24 +37,12 @@ const SellFormDetails = ({
   setPrice,
   condition,
   setCondition,
-  selectedCity,
-  setSelectedCity,
-  selectedArea,
-  setSelectedArea,
-  searchTerm,
-  setSearchTerm,
+  location,
+  setLocation,
   isSubmitting,
   onBack,
   onSubmit
 }: SellFormDetailsProps) => {
-  const filteredAreas = selectedCity
-    ? cities
-        .find((city) => city.id === selectedCity)
-        ?.areas.filter((area) =>
-          area.toLowerCase().includes(searchTerm.toLowerCase())
-        ) || []
-    : [];
-
   return (
     <form onSubmit={onSubmit} className="space-y-6">
       <div className="bg-white rounded-lg shadow-sm border p-4 md:p-6 space-y-6">
@@ -139,56 +105,11 @@ const SellFormDetails = ({
           </div>
         </div>
 
-        <div className="space-y-4">
-          <div>
-            <label className="text-sm font-medium mb-1.5 block">
-              City *
-            </label>
-            <Select value={selectedCity} onValueChange={setSelectedCity}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select city" />
-              </SelectTrigger>
-              <SelectContent>
-                {cities.map((city) => (
-                  <SelectItem key={city.id} value={city.id}>
-                    {city.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          {selectedCity && (
-            <div>
-              <label className="text-sm font-medium mb-1.5 block">
-                Area *
-              </label>
-              <div className="space-y-2">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    type="text"
-                    placeholder="Search area..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-9"
-                  />
-                </div>
-                <Select value={selectedArea} onValueChange={setSelectedArea}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select area" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {filteredAreas.map((area) => (
-                      <SelectItem key={area} value={area}>
-                        {area}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          )}
+        <div>
+          <label className="text-sm font-medium mb-1.5 block">
+            Location *
+          </label>
+          <LocationSelector value={location} onChange={setLocation} />
         </div>
       </div>
 

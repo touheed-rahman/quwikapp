@@ -11,9 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 const Sell = () => {
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState<any>({});
-  const [selectedCity, setSelectedCity] = useState("");
-  const [selectedArea, setSelectedArea] = useState("");
-  const [searchTerm, setSearchTerm] = useState("");
+  const [location, setLocation] = useState("");
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [title, setTitle] = useState("");
@@ -31,7 +29,7 @@ const Sell = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!title || !description || !price || !condition || !selectedCity) {
+    if (!title || !description || !price || !condition || !location) {
       toast({
         title: "Missing Fields",
         description: "Please fill in all required fields",
@@ -74,7 +72,7 @@ const Sell = () => {
         category: formData.category,
         subcategory: formData.subcategory,
         condition,
-        location: `${selectedCity}${selectedArea ? `, ${selectedArea}` : ''}`,
+        location,
         images: uploadedImagePaths,
         user_id: user.id,
         status: 'pending'
@@ -127,12 +125,8 @@ const Sell = () => {
           setPrice={setPrice}
           condition={condition}
           setCondition={setCondition}
-          selectedCity={selectedCity}
-          setSelectedCity={setSelectedCity}
-          selectedArea={selectedArea}
-          setSelectedArea={setSelectedArea}
-          searchTerm={searchTerm}
-          setSearchTerm={setSearchTerm}
+          location={location}
+          setLocation={setLocation}
           isSubmitting={isSubmitting}
           onBack={() => setStep(1)}
           onSubmit={handleSubmit}

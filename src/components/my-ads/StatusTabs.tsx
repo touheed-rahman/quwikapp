@@ -7,7 +7,7 @@ interface StatusTabsProps {
 
 const StatusTabs = ({ selectedTab }: StatusTabsProps) => {
   return (
-    <div className="px-4 pt-2">
+    <div className="px-4 pt-2 w-full">
       <TabsList className="w-full justify-start gap-2 h-auto p-1">
         <TabsTrigger 
           value="pending" 
