@@ -16,6 +16,13 @@ export interface Listing {
   status: string;
   distance_km?: number;
   featured: boolean;
+  description: string;
+  subcategory: string;
+  brand?: string;
+  admin_notes?: string;
+  deleted_at?: string;
+  featured_requested?: boolean;
+  view_count?: number;
 }
 
 interface UseListingsProps {
@@ -34,12 +41,7 @@ export const useListings = ({ categoryFilter, subcategoryFilter, selectedLocatio
       console.log('Fetching listings with filters:', { categoryFilter, subcategoryFilter, selectedLocation, featured });
       
       try {
-        let query = supabase
-          .from('listings')
-          .select('*')
-          .eq('status', 'approved')
-          .is('deleted_at', null); // Only show non-deleted listings
-
+        let locationQuery;
         if (selectedLocation) {
           const locationParts = selectedLocation.split('|');
           const placeId = locationParts[locationParts.length - 1];
@@ -48,46 +50,59 @@ export const useListings = ({ categoryFilter, subcategoryFilter, selectedLocatio
             .from('location_cache')
             .select('latitude, longitude')
             .eq('place_id', placeId)
-            .single();
+            .maybeSingle();
 
           if (locationData) {
-            query = supabase.rpc('get_listings_by_location', {
+            locationQuery = supabase.rpc('get_listings_by_location', {
               location_query: null,
               search_lat: locationData.latitude,
               search_long: locationData.longitude,
               radius_km: 20
             });
           } else {
-            query = supabase.rpc('get_listings_by_location', {
+            locationQuery = supabase.rpc('get_listings_by_location', {
               location_query: placeId
             });
           }
         }
 
+        // Base query for non-location based search
+        let baseQuery = supabase
+          .from('listings')
+          .select()
+          .eq('status', 'approved')
+          .is('deleted_at', null);
+
         if (categoryFilter) {
-          query = query.eq('category', categoryFilter);
+          baseQuery = baseQuery.eq('category', categoryFilter);
         }
 
         if (subcategoryFilter) {
-          query = query.eq('subcategory', subcategoryFilter);
+          baseQuery = baseQuery.eq('subcategory', subcategoryFilter);
         }
 
+        // If specifically fetching featured listings
         if (featured) {
-          query = query.eq('featured', true);
+          baseQuery = baseQuery.eq('featured', true);
         }
 
-        // Order by most recent first
-        query = query.order('created_at', { ascending: false });
-
-        const { data, error } = await query;
+        // Execute the appropriate query
+        const { data: listings, error } = await (locationQuery || baseQuery);
 
         if (error) {
           console.error('Error fetching listings:', error);
           throw error;
         }
 
-        console.log('Fetched listings:', data);
-        return data as Listing[];
+        // Sort listings to show featured items first, then by creation date
+        const sortedListings = (listings as Listing[]).sort((a, b) => {
+          if (a.featured && !b.featured) return -1;
+          if (!a.featured && b.featured) return 1;
+          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+        });
+
+        console.log('Fetched and sorted listings:', sortedListings);
+        return sortedListings;
       } catch (error) {
         console.error('Error in listing query:', error);
         toast({
