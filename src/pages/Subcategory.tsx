@@ -36,8 +36,17 @@ const SubcategoryPage = () => {
           .from('listings')
           .select('*')
           .eq('status', 'approved')
-          .eq('category', category)
-          .eq('subcategory', subcategory);
+          .is('deleted_at', null);
+
+        // Add category filter if present
+        if (category) {
+          query = query.eq('category', category);
+        }
+
+        // Add subcategory filter if present
+        if (subcategory) {
+          query = query.eq('subcategory', subcategory);
+        }
 
         if (condition !== 'all') {
           query = query.eq('condition', condition);
@@ -83,7 +92,7 @@ const SubcategoryPage = () => {
     if (images && images.length > 0) {
       return supabase.storage.from('listings').getPublicUrl(images[0]).data.publicUrl;
     }
-    return "https://via.placeholder.com/300";
+    return "/placeholder.svg";
   };
 
   return (
@@ -164,6 +173,7 @@ const SubcategoryPage = () => {
                 location={listing.location || "Location not specified"}
                 image={getFirstImageUrl(listing.images)}
                 condition={listing.condition as ProductCondition}
+                date={new Date(listing.created_at).toLocaleDateString()}
               />
             ))}
           </div>
@@ -174,3 +184,4 @@ const SubcategoryPage = () => {
 };
 
 export default SubcategoryPage;
+
