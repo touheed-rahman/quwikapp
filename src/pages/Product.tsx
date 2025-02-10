@@ -12,10 +12,12 @@ import ImageGallery from "@/components/product/ImageGallery";
 import ProductInfo from "@/components/product/ProductInfo";
 import SellerInfo from "@/components/product/SellerInfo";
 import RelatedProducts from "@/components/product/RelatedProducts";
+import { useToast } from "@/components/ui/use-toast";
 
 const ProductPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [session, setSession] = useState<any>(null);
@@ -93,19 +95,72 @@ const ProductPage = () => {
     }
   });
 
-  const handleChatWithSeller = () => {
-    if (!product) return;
+  const handleChatWithSeller = async () => {
+    if (!product || !id) return;
     
     // Check if user is logged in
     if (!session) {
-      // Save the product info to localStorage before redirecting
-      localStorage.setItem('intended_conversation', id || '');
+      toast({
+        title: "Sign in required",
+        description: "Please sign in to chat with the seller",
+        variant: "destructive"
+      });
       navigate('/profile');
       return;
     }
 
-    // If logged in, navigate to chat
-    navigate(`/chat/${id}`);
+    // Check if user is trying to chat with themselves
+    if (session.user.id === product.user_id) {
+      toast({
+        title: "Cannot chat with yourself",
+        description: "This is your own listing",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      // First check if a conversation already exists
+      const { data: existingConversation, error: conversationError } = await supabase
+        .from('conversations')
+        .select('id')
+        .eq('listing_id', id)
+        .eq('buyer_id', session.user.id)
+        .single();
+
+      if (conversationError && conversationError.code !== 'PGRST116') {
+        throw conversationError;
+      }
+
+      if (existingConversation) {
+        // If conversation exists, navigate to it
+        navigate(`/chat/${existingConversation.id}`);
+        return;
+      }
+
+      // If no conversation exists, create one
+      const { data: newConversation, error: createError } = await supabase
+        .from('conversations')
+        .insert({
+          listing_id: id,
+          buyer_id: session.user.id,
+          seller_id: product.user_id,
+        })
+        .select()
+        .single();
+
+      if (createError) throw createError;
+
+      // Navigate to the new conversation
+      navigate(`/chat/${newConversation.id}`);
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: "Failed to start conversation. Please try again.",
+        variant: "destructive"
+      });
+      console.error('Chat error:', error);
+    }
   };
 
   if (isLoading) {
