@@ -5,15 +5,7 @@ import { Link } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
-import {
-  UserRound,
-  BellRing,
-  Lock,
-  BookMarked,
-  Shield,
-  LogOut,
-  Edit,
-} from "lucide-react";
+import { UserRound, Edit } from "lucide-react";
 
 interface ProfileSidebarProps {
   profile: any;
@@ -40,34 +32,24 @@ const ProfileSidebar = ({ profile, handleLogout }: ProfileSidebarProps) => {
       </div>
       
       <div className="space-y-1">
-        <Button variant="ghost" className="w-full justify-start" size="sm">
-          <UserRound className="mr-2 h-4 w-4" />
-          Profile Settings
-        </Button>
-        <Button variant="ghost" className="w-full justify-start" size="sm">
-          <BellRing className="mr-2 h-4 w-4" />
-          Notifications
-        </Button>
-        <Button variant="ghost" className="w-full justify-start" size="sm">
-          <Lock className="mr-2 h-4 w-4" />
-          Security
-        </Button>
         <Link to="/wishlist">
-          <Button variant="ghost" className="w-full justify-start" size="sm">
-            <BookMarked className="mr-2 h-4 w-4" />
+          <Button variant="ghost" className="w-full justify-center" size="sm">
             Saved Items
           </Button>
         </Link>
         {profile?.isAdmin && (
           <Link to="/admin">
-            <Button variant="ghost" className="w-full justify-start" size="sm">
-              <Shield className="mr-2 h-4 w-4" />
+            <Button variant="ghost" className="w-full justify-center" size="sm">
               Admin Panel
             </Button>
           </Link>
         )}
-        <Button variant="ghost" className="w-full justify-start text-red-600" size="sm" onClick={handleLogout}>
-          <LogOut className="mr-2 h-4 w-4" />
+        <Button 
+          variant="ghost" 
+          className="w-full justify-center text-red-600" 
+          size="sm" 
+          onClick={handleLogout}
+        >
           Logout
         </Button>
       </div>
