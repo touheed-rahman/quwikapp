@@ -66,6 +66,13 @@ interface Conversation {
   };
 }
 
+const filters = [
+  { id: "all", label: "All" },
+  { id: "meeting", label: "Meeting" },
+  { id: "unread", label: "Unread" },
+  { id: "important", label: "Important" }
+];
+
 const ChatWindow = ({ isOpen, onClose, initialSeller }: ChatWindowProps) => {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -362,4 +369,3 @@ const ChatWindow = ({ isOpen, onClose, initialSeller }: ChatWindowProps) => {
 };
 
 export default ChatWindow;
-
