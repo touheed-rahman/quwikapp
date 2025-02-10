@@ -44,6 +44,7 @@ const MyAds = () => {
       .eq('id', listingId);
 
     if (error) {
+      console.error('Error marking as sold:', error);
       toast({
         title: "Error",
         description: "Failed to mark listing as sold",

@@ -51,10 +51,11 @@ const ListingGrid = ({ listings, onMarkAsSold, showSoldButton, onListingDeleted 
 
   const handleDelete = async (listingId: string) => {
     try {
+      const now = new Date().toISOString();
       const { error } = await supabase
         .from('listings')
         .update({ 
-          deleted_at: new Date().toISOString(),
+          deleted_at: now,
           status: 'deleted'
         })
         .eq('id', listingId);
@@ -66,7 +67,6 @@ const ListingGrid = ({ listings, onMarkAsSold, showSoldButton, onListingDeleted 
         description: "Listing deleted successfully",
       });
 
-      // Notify parent component to refresh the listings
       if (onListingDeleted) {
         onListingDeleted();
       }
