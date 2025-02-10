@@ -25,11 +25,11 @@ const MyAds = () => {
         .select('*')
         .eq('user_id', user.id)
         .eq('status', selectedTab)
+        .is('deleted_at', null)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
       
-      // Convert the condition to ProductCondition type
       return data.map(listing => ({
         ...listing,
         condition: listing.condition as ProductCondition
@@ -58,6 +58,10 @@ const MyAds = () => {
     }
   };
 
+  const handleListingDeleted = () => {
+    refetch();
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -82,6 +86,7 @@ const MyAds = () => {
                   listings={listings}
                   onMarkAsSold={selectedTab === 'approved' ? markAsSold : undefined}
                   showSoldButton={selectedTab === 'approved'}
+                  onListingDeleted={handleListingDeleted}
                 />
               )}
             </TabsContent>

@@ -7,6 +7,18 @@ import { supabase } from "@/integrations/supabase/client";
 import { Trash2, CheckSquare, Heart, Eye } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useEffect } from "react";
+import { useToast } from "@/components/ui/use-toast";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 interface Listing {
   id: string;
@@ -24,14 +36,48 @@ interface ListingGridProps {
   listings: Listing[];
   onMarkAsSold?: (id: string) => void;
   showSoldButton?: boolean;
+  onListingDeleted?: () => void;
 }
 
-const ListingGrid = ({ listings, onMarkAsSold, showSoldButton }: ListingGridProps) => {
+const ListingGrid = ({ listings, onMarkAsSold, showSoldButton, onListingDeleted }: ListingGridProps) => {
+  const { toast } = useToast();
+
   const getFirstImageUrl = (images: string[]) => {
     if (images && images.length > 0) {
       return supabase.storage.from('listings').getPublicUrl(images[0]).data.publicUrl;
     }
     return "https://via.placeholder.com/300";
+  };
+
+  const handleDelete = async (listingId: string) => {
+    try {
+      const { error } = await supabase
+        .from('listings')
+        .update({ 
+          deleted_at: new Date().toISOString(),
+          status: 'deleted'
+        })
+        .eq('id', listingId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Listing deleted successfully",
+      });
+
+      // Notify parent component to refresh the listings
+      if (onListingDeleted) {
+        onListingDeleted();
+      }
+    } catch (error) {
+      console.error('Error deleting listing:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete listing",
+        variant: "destructive",
+      });
+    }
   };
 
   // Subscribe to real-time updates for view and save counts
@@ -123,14 +169,32 @@ const ListingGrid = ({ listings, onMarkAsSold, showSoldButton }: ListingGridProp
                       <CheckSquare className="w-3.5 h-3.5 mr-1" />
                       Mark as Sold
                     </Button>
-                    <Button
-                      size="sm"
-                      variant="destructive"
-                      className="h-7 text-xs"
-                    >
-                      <Trash2 className="w-3.5 h-3.5 mr-1" />
-                      Delete
-                    </Button>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          className="h-7 text-xs"
+                        >
+                          <Trash2 className="w-3.5 h-3.5 mr-1" />
+                          Delete
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            This action cannot be undone. This will permanently delete your listing.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction onClick={() => handleDelete(listing.id)}>
+                            Delete
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
                   </div>
                 )}
               </div>

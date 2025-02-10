@@ -128,6 +128,7 @@ export type Database = {
           category: string
           condition: string
           created_at: string
+          deleted_at: string | null
           description: string | null
           featured: boolean | null
           id: string
@@ -151,6 +152,7 @@ export type Database = {
           category: string
           condition: string
           created_at?: string
+          deleted_at?: string | null
           description?: string | null
           featured?: boolean | null
           id?: string
@@ -174,6 +176,7 @@ export type Database = {
           category?: string
           condition?: string
           created_at?: string
+          deleted_at?: string | null
           description?: string | null
           featured?: boolean | null
           id?: string
@@ -416,6 +419,14 @@ export type Database = {
           },
         ]
       }
+      deleted_listings_stats: {
+        Row: {
+          deleted_titles: string | null
+          deletion_date: string | null
+          total_deleted: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       get_listings_by_location: {
@@ -428,6 +439,7 @@ export type Database = {
           category: string
           condition: string
           created_at: string
+          deleted_at: string | null
           description: string | null
           featured: boolean | null
           id: string
