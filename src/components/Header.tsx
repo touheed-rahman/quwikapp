@@ -73,22 +73,24 @@ const Header = () => {
 
   return (
     <header className="fixed top-0 left-0 right-0 bg-white border-b z-50">
-      <div className="container mx-auto px-4 h-16 flex items-center justify-between gap-4">
-        <div className="flex items-center gap-8 flex-1">
-          <Link to="/" className="shrink-0">
-            <h1 className="text-2xl font-semibold bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent">
-              Quwik
-            </h1>
-          </Link>
+      <div className="container mx-auto px-4 h-16 flex items-center gap-4">
+        <Link to="/" className="shrink-0">
+          <h1 className="text-2xl font-semibold bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent">
+            Quwik
+          </h1>
+        </Link>
+        
+        <div className="w-48 shrink-0 md:w-64">
           <LocationSelector 
             value={selectedLocation}
             onChange={setSelectedLocation}
           />
         </div>
-        <div className="flex items-center gap-2">
+
+        <div className="flex items-center gap-2 ml-auto">
           {session ? (
             <>
-              <Link to="/notifications">
+              <Link to="/notifications" className="shrink-0">
                 <Button variant="ghost" size="icon" className="relative hidden md:inline-flex">
                   <Bell className="h-5 w-5" />
                   {unreadCount > 0 && (
@@ -100,7 +102,7 @@ const Header = () => {
                   )}
                 </Button>
               </Link>
-              <div className="relative hidden md:block">
+              <div className="relative hidden md:block shrink-0">
                 <Button 
                   variant="ghost" 
                   size="icon"
@@ -116,23 +118,23 @@ const Header = () => {
                   </Badge>
                 )}
               </div>
-              <Link to="/my-ads" className="hidden md:block">
+              <Link to="/my-ads" className="hidden md:block shrink-0">
                 <Button variant="ghost" size="icon">
                   <ListOrdered className="h-5 w-5" />
                 </Button>
               </Link>
-              <Link to="/profile">
+              <Link to="/profile" className="shrink-0">
                 <Button variant="ghost" size="icon">
                   <User className="h-5 w-5" />
                 </Button>
               </Link>
-              <Link to="/help">
+              <Link to="/help" className="shrink-0">
                 <Button variant="ghost" size="icon">
                   <HelpCircle className="h-5 w-5" />
                 </Button>
               </Link>
-              <Link to="/sell" className="hidden md:block">
-                <Button className="hover:bg-primary hover:text-white">Sell Now</Button>
+              <Link to="/sell" className="hidden md:block shrink-0">
+                <Button className="hover:bg-primary hover:text-white whitespace-nowrap">Sell Now</Button>
               </Link>
             </>
           ) : (
@@ -153,3 +155,4 @@ const Header = () => {
 };
 
 export default Header;
+

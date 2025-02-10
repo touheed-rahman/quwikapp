@@ -17,6 +17,13 @@ const LocationList = ({ locations, selectedValue, onSelect }: LocationListProps)
     return null;
   }
 
+  // Function to shorten area name
+  const shortenArea = (area: string) => {
+    if (!area) return '';
+    const parts = area.split(',');
+    return parts[0].trim();
+  };
+
   return (
     <CommandGroup>
       {locations.map((location) => (
@@ -34,9 +41,9 @@ const LocationList = ({ locations, selectedValue, onSelect }: LocationListProps)
             )}
           />
           <div className="flex flex-col">
-            <span className="font-medium">{location.name}</span>
+            <span className="font-medium truncate">{location.name}</span>
             {location.area && (
-              <span className="text-sm text-muted-foreground">{location.area}</span>
+              <span className="text-sm text-muted-foreground truncate">{shortenArea(location.area)}</span>
             )}
           </div>
         </CommandItem>
@@ -46,3 +53,4 @@ const LocationList = ({ locations, selectedValue, onSelect }: LocationListProps)
 };
 
 export default LocationList;
+

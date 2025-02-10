@@ -23,12 +23,20 @@ const LocationSelector = ({ value, onChange }: LocationSelectorProps) => {
     ? locations?.find(location => location.place_id === selectedPlaceId)
     : null;
 
+  // Function to shorten area name
+  const shortenArea = (area: string) => {
+    if (!area) return '';
+    const parts = area.split(',');
+    return parts[0].trim();
+  };
+
   const handleLocationChoice = async (location: Location) => {
     try {
       const locationDetails = await handleLocationSelect(location);
       if (locationDetails) {
-        // Format: "LocationName, Area|place_id"
-        const newValue = `${locationDetails.name}${locationDetails.area ? `, ${locationDetails.area}` : ''}|${locationDetails.place_id}`;
+        const shortenedArea = shortenArea(locationDetails.area || '');
+        // Format: "LocationName, ShortenedArea|place_id"
+        const newValue = `${locationDetails.name}${shortenedArea ? `, ${shortenedArea}` : ''}|${locationDetails.place_id}`;
         onChange(newValue);
         setOpen(false);
         setSearchQuery('');
@@ -49,6 +57,18 @@ const LocationSelector = ({ value, onChange }: LocationSelectorProps) => {
     }
   };
 
+  const displayLocation = () => {
+    if (selectedLocation) {
+      const area = shortenArea(selectedLocation.area || '');
+      return area ? `${selectedLocation.name}, ${area}` : selectedLocation.name;
+    }
+    if (value) {
+      const parts = value.split('|')[0].split(',');
+      return parts[0].trim();
+    }
+    return "Select location";
+  };
+
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
@@ -59,18 +79,8 @@ const LocationSelector = ({ value, onChange }: LocationSelectorProps) => {
           className="w-full justify-between text-muted-foreground hover:text-foreground"
         >
           <div className="flex items-center gap-2 truncate">
-            <MapPin className="h-4 w-4" />
-            {selectedLocation ? (
-              <span className="truncate">
-                {selectedLocation.area 
-                  ? `${selectedLocation.name}, ${selectedLocation.area}`
-                  : selectedLocation.name}
-              </span>
-            ) : value ? (
-              <span className="truncate">{value.split('|')[0]}</span>
-            ) : (
-              "Select location"
-            )}
+            <MapPin className="h-4 w-4 shrink-0" />
+            <span className="truncate">{displayLocation()}</span>
           </div>
         </Button>
       </PopoverTrigger>
@@ -103,3 +113,4 @@ const LocationSelector = ({ value, onChange }: LocationSelectorProps) => {
 };
 
 export default LocationSelector;
+
