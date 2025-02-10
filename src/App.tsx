@@ -20,6 +20,7 @@ import MyAds from "./pages/MyAds";
 import Wishlist from "./pages/Wishlist";
 import Subcategory from "./pages/Subcategory";
 import AdminLogin from "./pages/AdminLogin";
+import FreshRecommendations from "./pages/FreshRecommendations";
 import React from 'react';
 
 const queryClient = new QueryClient({
@@ -78,6 +79,7 @@ const App = () => (
               <Routes>
                 <Route path="/" element={<Index />} />
                 <Route path="/category/:category/:subcategory" element={<Subcategory />} />
+                <Route path="/fresh-recommendations" element={<FreshRecommendations />} />
                 <Route
                   path="/sell"
                   element={
