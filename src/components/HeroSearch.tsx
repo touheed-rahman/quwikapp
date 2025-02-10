@@ -48,19 +48,6 @@ const HeroSearch = () => {
     try {
       const trimmedQuery = searchQuery.trim();
       
-      // First try direct ID match (in case of product URL paste)
-      const { data: directMatch } = await supabase
-        .from('listings')
-        .select('id')
-        .eq('status', 'approved')
-        .ilike('id', trimmedQuery)
-        .limit(1);
-
-      if (directMatch && directMatch.length > 0) {
-        navigate(`/product/${directMatch[0].id}`);
-        return;
-      }
-
       // Try exact title match
       let query = supabase
         .from('listings')
