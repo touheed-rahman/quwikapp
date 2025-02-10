@@ -115,35 +115,88 @@ const ListingManagement = () => {
   const handleDelete = async (listingId: string) => {
     console.log('Deleting listing:', listingId);
     
-    // Delete any associated records first (e.g. wishlists)
-    const { error: wishlistError } = await supabase
-      .from('wishlists')
-      .delete()
-      .eq('listing_id', listingId);
+    try {
+      // First, get all conversations related to this listing
+      const { data: conversations, error: convError } = await supabase
+        .from('conversations')
+        .select('id')
+        .eq('listing_id', listingId);
 
-    if (wishlistError) {
-      console.error('Error deleting wishlists:', wishlistError);
-    }
+      if (convError) {
+        console.error('Error fetching conversations:', convError);
+        throw convError;
+      }
 
-    // Now delete the listing itself
-    const { error } = await supabase
-      .from('listings')
-      .delete()
-      .eq('id', listingId);
+      // Delete offers for all related conversations
+      if (conversations && conversations.length > 0) {
+        const conversationIds = conversations.map(conv => conv.id);
+        const { error: offersError } = await supabase
+          .from('offers')
+          .delete()
+          .in('conversation_id', conversationIds);
 
-    if (error) {
-      console.error('Error deleting listing:', error);
-      toast({
-        title: "Error",
-        description: "Failed to delete listing",
-        variant: "destructive"
-      });
-    } else {
+        if (offersError) {
+          console.error('Error deleting offers:', offersError);
+          throw offersError;
+        }
+
+        // Delete messages for all conversations
+        const { error: messagesError } = await supabase
+          .from('messages')
+          .delete()
+          .in('conversation_id', conversationIds);
+
+        if (messagesError) {
+          console.error('Error deleting messages:', messagesError);
+          throw messagesError;
+        }
+
+        // Now delete the conversations themselves
+        const { error: conversationsError } = await supabase
+          .from('conversations')
+          .delete()
+          .eq('listing_id', listingId);
+
+        if (conversationsError) {
+          console.error('Error deleting conversations:', conversationsError);
+          throw conversationsError;
+        }
+      }
+
+      // Delete associated wishlists
+      const { error: wishlistError } = await supabase
+        .from('wishlists')
+        .delete()
+        .eq('listing_id', listingId);
+
+      if (wishlistError) {
+        console.error('Error deleting wishlists:', wishlistError);
+        throw wishlistError;
+      }
+
+      // Finally delete the listing itself
+      const { error: listingError } = await supabase
+        .from('listings')
+        .delete()
+        .eq('id', listingId);
+
+      if (listingError) {
+        console.error('Error deleting listing:', listingError);
+        throw listingError;
+      }
+
       toast({
         title: "Success",
-        description: "Listing permanently deleted",
+        description: "Listing and all associated data permanently deleted",
       });
       refetch();
+    } catch (error) {
+      console.error('Error in deletion process:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete listing and associated data",
+        variant: "destructive"
+      });
     }
   };
 
