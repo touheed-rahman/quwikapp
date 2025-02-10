@@ -34,7 +34,12 @@ export const useListings = ({ categoryFilter, subcategoryFilter, selectedLocatio
       console.log('Fetching listings with filters:', { categoryFilter, subcategoryFilter, selectedLocation, featured });
       
       try {
-        let query;
+        let query = supabase
+          .from('listings')
+          .select('*')
+          .eq('status', 'approved')
+          .is('deleted_at', null); // Only show non-deleted listings
+
         if (selectedLocation) {
           const locationParts = selectedLocation.split('|');
           const placeId = locationParts[locationParts.length - 1];
@@ -57,14 +62,22 @@ export const useListings = ({ categoryFilter, subcategoryFilter, selectedLocatio
               location_query: placeId
             });
           }
-        } else {
-          // Modified this part to fetch approved listings by default
-          query = supabase
-            .from('listings')
-            .select('*')
-            .eq('status', 'approved')
-            .order('created_at', { ascending: false });
         }
+
+        if (categoryFilter) {
+          query = query.eq('category', categoryFilter);
+        }
+
+        if (subcategoryFilter) {
+          query = query.eq('subcategory', subcategoryFilter);
+        }
+
+        if (featured) {
+          query = query.eq('featured', true);
+        }
+
+        // Order by most recent first
+        query = query.order('created_at', { ascending: false });
 
         const { data, error } = await query;
 
@@ -73,18 +86,8 @@ export const useListings = ({ categoryFilter, subcategoryFilter, selectedLocatio
           throw error;
         }
 
-        let filteredListings = data as Listing[];
-        
-        if (categoryFilter) {
-          filteredListings = filteredListings.filter(listing => listing.category === categoryFilter);
-        }
-
-        if (featured) {
-          filteredListings = filteredListings.filter(listing => listing.featured);
-        }
-
-        console.log('Fetched listings:', filteredListings);
-        return filteredListings;
+        console.log('Fetched listings:', data);
+        return data as Listing[];
       } catch (error) {
         console.error('Error in listing query:', error);
         toast({

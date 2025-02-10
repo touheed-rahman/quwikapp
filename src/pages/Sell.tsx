@@ -26,15 +26,77 @@ const Sell = () => {
     setStep(2);
   };
 
+  const validateForm = () => {
+    if (!title.trim()) {
+      toast({
+        title: "Missing Title",
+        description: "Please enter a title for your listing",
+        variant: "destructive"
+      });
+      return false;
+    }
+    
+    if (!description.trim()) {
+      toast({
+        title: "Missing Description",
+        description: "Please enter a description for your listing",
+        variant: "destructive"
+      });
+      return false;
+    }
+    
+    if (!price || isNaN(Number(price)) || Number(price) <= 0) {
+      toast({
+        title: "Invalid Price",
+        description: "Please enter a valid price",
+        variant: "destructive"
+      });
+      return false;
+    }
+    
+    if (!condition) {
+      toast({
+        title: "Missing Condition",
+        description: "Please select the condition of your item",
+        variant: "destructive"
+      });
+      return false;
+    }
+    
+    if (!location.trim()) {
+      toast({
+        title: "Missing Location",
+        description: "Please enter your location",
+        variant: "destructive"
+      });
+      return false;
+    }
+    
+    if (!formData.images || formData.images.length === 0) {
+      toast({
+        title: "Missing Images",
+        description: "Please upload at least one image",
+        variant: "destructive"
+      });
+      return false;
+    }
+
+    if (!formData.category || !formData.subcategory) {
+      toast({
+        title: "Missing Category",
+        description: "Please select a category and subcategory",
+        variant: "destructive"
+      });
+      return false;
+    }
+
+    return true;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!title || !description || !price || !condition || !location) {
-      toast({
-        title: "Missing Fields",
-        description: "Please fill in all required fields",
-        variant: "destructive"
-      });
+    if (!validateForm()) {
       return;
     }
 
