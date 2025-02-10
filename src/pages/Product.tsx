@@ -14,12 +14,16 @@ import ProductNotFound from "@/components/product/ProductNotFound";
 import { useProductDetails } from "@/hooks/useProductDetails";
 import { useRelatedProducts } from "@/hooks/useRelatedProducts";
 import { useProductActions } from "@/hooks/useProductActions";
+import { Button } from "@/components/ui/button";
+import { Share2 } from "lucide-react";
+import { useToast } from "@/components/ui/use-toast";
 
 const ProductPage = () => {
   const { id } = useParams();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [session, setSession] = useState<any>(null);
+  const { toast } = useToast();
 
   const { data: product, isLoading } = useProductDetails(id);
   const { data: relatedProducts = [] } = useRelatedProducts(id, product?.category);
@@ -47,9 +51,34 @@ const ProductPage = () => {
 
   useEffect(() => {
     if (currentConversationId) {
-      setIsChatOpen(true);
+      window.location.href = `/chat/${currentConversationId}`;
     }
   }, [currentConversationId]);
+
+  const handleShare = async () => {
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: product?.title,
+          text: `Check out this listing: ${product?.title}`,
+          url: window.location.href
+        });
+      } else {
+        await navigator.clipboard.writeText(window.location.href);
+        toast({
+          title: "Link copied",
+          description: "Product link has been copied to clipboard"
+        });
+      }
+    } catch (error) {
+      console.error('Error sharing:', error);
+      toast({
+        title: "Share failed",
+        description: "Failed to share the product",
+        variant: "destructive"
+      });
+    }
+  };
 
   if (isLoading) {
     return <ProductLoader />;
@@ -64,11 +93,24 @@ const ProductPage = () => {
       <Header />
       <main className="container mx-auto px-4 pt-20 pb-24">
         <div className="grid lg:grid-cols-2 gap-8">
-          <ImageGallery
-            images={product.images}
-            currentImageIndex={currentImageIndex}
-            setCurrentImageIndex={setCurrentImageIndex}
-          />
+          <div>
+            <div className="flex justify-end mb-4">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={handleShare}
+                className="gap-2"
+              >
+                <Share2 className="h-4 w-4" />
+                Share
+              </Button>
+            </div>
+            <ImageGallery
+              images={product.images}
+              currentImageIndex={currentImageIndex}
+              setCurrentImageIndex={setCurrentImageIndex}
+            />
+          </div>
 
           <div className="space-y-6">
             <ProductInfo
@@ -81,7 +123,11 @@ const ProductPage = () => {
             />
 
             <SellerInfo
-              seller={product.seller}
+              seller={{
+                name: product.seller?.full_name || 'Anonymous',
+                memberSince: new Date(product.seller?.created_at || Date.now()).toLocaleDateString(),
+                listings: 0
+              }}
               onChatClick={() => handleChatWithSeller(session)}
               onMakeOffer={() => handleMakeOffer(session)}
             />
@@ -90,19 +136,6 @@ const ProductPage = () => {
 
         <RelatedProducts products={relatedProducts} />
       </main>
-
-      <ChatWindow 
-        isOpen={isChatOpen} 
-        onClose={() => setIsChatOpen(false)} 
-        initialSeller={{
-          name: product.seller.full_name || 'Anonymous',
-          isVerified: true,
-          productInfo: {
-            title: product.title,
-            price: product.price.toString()
-          }
-        }}
-      />
 
       <MakeOfferDialog
         isOpen={isOfferDialogOpen}
