@@ -8,6 +8,7 @@ import LocationSelector from "./LocationSelector";
 
 const Header = () => {
   const [session, setSession] = useState<any>(null);
+  const [selectedLocation, setSelectedLocation] = useState<string | null>(null);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -33,7 +34,10 @@ const Header = () => {
             </h1>
           </Link>
           <div className="hidden md:block">
-            <LocationSelector />
+            <LocationSelector 
+              value={selectedLocation}
+              onChange={setSelectedLocation}
+            />
           </div>
         </div>
         <div className="flex items-center gap-2">

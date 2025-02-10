@@ -60,10 +60,6 @@ const Index = () => {
       if (categoryFilter) {
         filteredListings = filteredListings.filter(listing => listing.category === categoryFilter);
       }
-      
-      if (subcategoryFilter) {
-        filteredListings = filteredListings.filter(listing => listing.subcategory === subcategoryFilter);
-      }
 
       console.log('Fetched listings:', filteredListings);
       return filteredListings;
