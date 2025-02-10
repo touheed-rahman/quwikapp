@@ -91,16 +91,19 @@ export type Database = {
       listings: {
         Row: {
           admin_notes: string | null
+          brand: string | null
           category: string
           condition: string
           created_at: string
           description: string | null
+          featured: boolean | null
           id: string
           images: string[]
           location: string | null
           price: number
           reviewed_at: string | null
           reviewed_by: string | null
+          specs: Json | null
           status: string | null
           subcategory: string
           title: string
@@ -109,16 +112,19 @@ export type Database = {
         }
         Insert: {
           admin_notes?: string | null
+          brand?: string | null
           category: string
           condition: string
           created_at?: string
           description?: string | null
+          featured?: boolean | null
           id?: string
           images: string[]
           location?: string | null
           price: number
           reviewed_at?: string | null
           reviewed_by?: string | null
+          specs?: Json | null
           status?: string | null
           subcategory: string
           title: string
@@ -127,16 +133,19 @@ export type Database = {
         }
         Update: {
           admin_notes?: string | null
+          brand?: string | null
           category?: string
           condition?: string
           created_at?: string
           description?: string | null
+          featured?: boolean | null
           id?: string
           images?: string[]
           location?: string | null
           price?: number
           reviewed_at?: string | null
           reviewed_by?: string | null
+          specs?: Json | null
           status?: string | null
           subcategory?: string
           title?: string
