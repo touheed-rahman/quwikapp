@@ -19,22 +19,7 @@ serve(async (req) => {
   }
 
   try {
-    // Create Supabase client to fetch API key securely
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    )
-
-    // Get API key using the secure function
-    const { data: apiKeyData, error: apiKeyError } = await supabaseClient
-      .rpc('get_maps_api_key')
-    
-    if (apiKeyError) {
-      console.error('Error fetching Google Maps API key:', apiKeyError)
-      throw new Error('Could not fetch Google Maps API key')
-    }
-
-    const API_KEY = apiKeyData
+    const API_KEY = Deno.env.get('GOOGLE_MAPS_API_KEY')
 
     if (!API_KEY) {
       console.error('Missing Google Maps API key')
@@ -121,4 +106,3 @@ serve(async (req) => {
     })
   }
 })
-
