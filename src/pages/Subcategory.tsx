@@ -4,6 +4,8 @@ import { useParams, useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import Header from "@/components/Header";
 import ProductCard from "@/components/ProductCard";
+import LocationSelector from "@/components/LocationSelector";
+import { useLocation } from "@/contexts/LocationContext";
 import { supabase } from "@/integrations/supabase/client";
 import { ProductCondition } from "@/types/categories";
 import {
@@ -19,9 +21,10 @@ const SubcategoryPage = () => {
   const [searchParams] = useSearchParams();
   const [sortBy, setSortBy] = useState("newest");
   const [condition, setCondition] = useState<string>("all");
+  const { selectedLocation, setSelectedLocation } = useLocation();
 
   const { data: listings = [], isLoading } = useQuery({
-    queryKey: ['subcategory-listings', category, subcategory, sortBy, condition],
+    queryKey: ['subcategory-listings', category, subcategory, sortBy, condition, selectedLocation],
     queryFn: async () => {
       let query = supabase
         .from('listings')
@@ -32,6 +35,13 @@ const SubcategoryPage = () => {
 
       if (condition !== 'all') {
         query = query.eq('condition', condition);
+      }
+
+      if (selectedLocation) {
+        const placeId = selectedLocation.split('|')[1];
+        if (placeId) {
+          query = query.eq('location', selectedLocation);
+        }
       }
 
       if (sortBy === 'price-asc') {
@@ -69,9 +79,14 @@ const SubcategoryPage = () => {
             {subcategory} in {category}
           </h1>
           
-          <div className="flex gap-4 mb-6">
+          <div className="grid gap-4 md:grid-cols-3 mb-6">
+            <LocationSelector 
+              value={selectedLocation} 
+              onChange={setSelectedLocation}
+            />
+
             <Select value={sortBy} onValueChange={setSortBy}>
-              <SelectTrigger className="w-[180px]">
+              <SelectTrigger>
                 <SelectValue placeholder="Sort by" />
               </SelectTrigger>
               <SelectContent>
@@ -82,7 +97,7 @@ const SubcategoryPage = () => {
             </Select>
 
             <Select value={condition} onValueChange={setCondition}>
-              <SelectTrigger className="w-[180px]">
+              <SelectTrigger>
                 <SelectValue placeholder="Condition" />
               </SelectTrigger>
               <SelectContent>
