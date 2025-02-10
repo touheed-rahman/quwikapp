@@ -1,6 +1,5 @@
 
-import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
 interface ImageGalleryProps {
@@ -14,43 +13,55 @@ const ImageGallery = ({
   currentImageIndex, 
   setCurrentImageIndex 
 }: ImageGalleryProps) => {
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+
   const getImageUrl = (imagePath: string) => {
     return supabase.storage.from('listings').getPublicUrl(imagePath).data.publicUrl;
   };
 
-  const nextImage = () => {
-    setCurrentImageIndex(currentImageIndex === images.length - 1 ? 0 : currentImageIndex + 1);
+  // Auto-slide every 5 seconds
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentImageIndex(currentImageIndex === images.length - 1 ? 0 : currentImageIndex + 1);
+    }, 5000);
+
+    return () => clearInterval(timer);
+  }, [currentImageIndex, images.length, setCurrentImageIndex]);
+
+  // Touch slide handling
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchStart(e.touches[0].clientX);
   };
 
-  const prevImage = () => {
-    setCurrentImageIndex(currentImageIndex === 0 ? images.length - 1 : currentImageIndex - 1);
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (touchStart === null) return;
+    
+    const touchEnd = e.changedTouches[0].clientX;
+    const diff = touchStart - touchEnd;
+
+    if (Math.abs(diff) > 50) { // Minimum swipe distance
+      if (diff > 0) {
+        // Swipe left
+        setCurrentImageIndex(currentImageIndex === images.length - 1 ? 0 : currentImageIndex + 1);
+      } else {
+        // Swipe right
+        setCurrentImageIndex(currentImageIndex === 0 ? images.length - 1 : currentImageIndex - 1);
+      }
+    }
+    setTouchStart(null);
   };
 
   return (
-    <div className="relative aspect-4/3 rounded-lg overflow-hidden bg-black/5">
+    <div 
+      className="relative aspect-4/3 rounded-lg overflow-hidden bg-black/5"
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+    >
       <img
         src={getImageUrl(images[currentImageIndex])}
         alt="Product image"
         className="w-full h-full object-cover"
       />
-      <div className="absolute inset-0 flex items-center justify-between p-4">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={prevImage}
-          className="bg-white/80 hover:bg-white/90"
-        >
-          <ChevronLeft className="h-6 w-6" />
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={nextImage}
-          className="bg-white/80 hover:bg-white/90"
-        >
-          <ChevronRight className="h-6 w-6" />
-        </Button>
-      </div>
       <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
         {images.map((_, index) => (
           <button

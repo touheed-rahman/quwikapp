@@ -90,17 +90,32 @@ const ChatDetail = () => {
 
         if (!data) {
           // Check if this was a conversation we were trying to start
-          const storedId = localStorage.getItem('intended_conversation');
-          if (storedId === id) {
+          const listingId = localStorage.getItem('intended_conversation');
+          if (listingId) {
+            // Get the listing details first
+            const { data: listing, error: listingError } = await supabase
+              .from('listings')
+              .select('*, profiles:user_id(*)')
+              .eq('id', listingId)
+              .single();
+
+            if (listingError) {
+              toast({
+                variant: "destructive",
+                title: "Error fetching listing",
+                description: listingError.message
+              });
+              navigate('/');
+              return;
+            }
+
             // Create the conversation
             const { data: newConversation, error: createError } = await supabase
               .from('conversations')
               .insert({
-                id,
+                listing_id: listingId,
                 buyer_id: sessionUser.id,
-                // We'll need to get these from the listing details
-                seller_id: sessionUser.id, // This will be updated with actual seller ID
-                listing_id: id // This assumes the ID is the listing ID
+                seller_id: listing.user_id,
               })
               .select(`
                 *,
