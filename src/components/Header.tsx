@@ -1,8 +1,10 @@
+
 import { MapPin, Bell, MessageSquare, User, HelpCircle } from "lucide-react";
 import { Button } from "./ui/button";
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import LocationSelector from "./LocationSelector";
 
 const Header = () => {
   const [session, setSession] = useState<any>(null);
@@ -30,9 +32,8 @@ const Header = () => {
               Higoods
             </h1>
           </Link>
-          <div className="hidden md:flex items-center gap-2 text-sm text-muted-foreground">
-            <MapPin className="h-4 w-4" />
-            <span>Select Location</span>
+          <div className="hidden md:block">
+            <LocationSelector />
           </div>
         </div>
         <div className="flex items-center gap-2">
