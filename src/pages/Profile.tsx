@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,6 +21,8 @@ import {
   Lock,
   BookMarked,
 } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import ProductCard from "@/components/ProductCard";
 
 const Profile = () => {
   const [session, setSession] = useState<any>(null);
@@ -28,6 +31,47 @@ const Profile = () => {
   const [isEditing, setIsEditing] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
+
+  // Fetch saved listings
+  const { data: savedListings = [] } = useQuery({
+    queryKey: ['saved-listings', session?.user?.id],
+    queryFn: async () => {
+      if (!session?.user?.id) return [];
+      
+      const { data: wishlistItems, error } = await supabase
+        .from('wishlists')
+        .select(`
+          listing_id,
+          listings (*)
+        `)
+        .eq('user_id', session.user.id);
+
+      if (error) throw error;
+
+      return wishlistItems
+        .map(item => item.listings)
+        .filter(Boolean);
+    },
+    enabled: !!session?.user?.id,
+  });
+
+  // Fetch shared listings (user's own listings)
+  const { data: sharedListings = [] } = useQuery({
+    queryKey: ['shared-listings', session?.user?.id],
+    queryFn: async () => {
+      if (!session?.user?.id) return [];
+
+      const { data, error } = await supabase
+        .from('listings')
+        .select('*')
+        .eq('user_id', session.user.id)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!session?.user?.id,
+  });
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -62,6 +106,11 @@ const Profile = () => {
       setProfile(data);
     } catch (error: any) {
       console.error("Error fetching profile:", error.message);
+      toast({
+        title: "Error fetching profile",
+        description: error.message,
+        variant: "destructive",
+      });
     }
   };
 
@@ -105,6 +154,13 @@ const Profile = () => {
         variant: "destructive",
       });
     }
+  };
+
+  const getFirstImageUrl = (images: string[]) => {
+    if (images && images.length > 0) {
+      return supabase.storage.from('listings').getPublicUrl(images[0]).data.publicUrl;
+    }
+    return "https://via.placeholder.com/300";
   };
 
   if (loading) {
@@ -159,18 +215,22 @@ const Profile = () => {
                   <UserRound className="mr-2 h-4 w-4" />
                   Profile Settings
                 </Button>
-                <Button variant="ghost" className="w-full justify-start" size="sm">
-                  <BellRing className="mr-2 h-4 w-4" />
-                  Notifications
-                </Button>
+                <Link to="/notifications">
+                  <Button variant="ghost" className="w-full justify-start" size="sm">
+                    <BellRing className="mr-2 h-4 w-4" />
+                    Notifications
+                  </Button>
+                </Link>
                 <Button variant="ghost" className="w-full justify-start" size="sm">
                   <Lock className="mr-2 h-4 w-4" />
                   Privacy
                 </Button>
-                <Button variant="ghost" className="w-full justify-start" size="sm">
-                  <BookMarked className="mr-2 h-4 w-4" />
-                  Saved Items
-                </Button>
+                <Link to="/wishlist">
+                  <Button variant="ghost" className="w-full justify-start" size="sm">
+                    <BookMarked className="mr-2 h-4 w-4" />
+                    Saved Items
+                  </Button>
+                </Link>
                 {profile?.isAdmin && (
                   <Link to="/admin">
                     <Button variant="ghost" className="w-full justify-start" size="sm">
@@ -209,7 +269,7 @@ const Profile = () => {
                   </Label>
                   <Input
                     id="name"
-                    value={profile?.full_name}
+                    value={profile?.full_name || ''}
                     onChange={(e) => setProfile({ ...profile, full_name: e.target.value })}
                     disabled={!isEditing}
                     className="bg-white"
@@ -224,9 +284,8 @@ const Profile = () => {
                   <Input
                     id="email"
                     type="email"
-                    value={profile?.email}
-                    onChange={(e) => setProfile({ ...profile, email: e.target.value })}
-                    disabled={!isEditing}
+                    value={profile?.email || ''}
+                    disabled
                     className="bg-white"
                   />
                 </div>
@@ -238,7 +297,7 @@ const Profile = () => {
                   </Label>
                   <Input
                     id="location"
-                    value={profile?.location}
+                    value={profile?.location || ''}
                     onChange={(e) => setProfile({ ...profile, location: e.target.value })}
                     disabled={!isEditing}
                     className="bg-white"
@@ -259,29 +318,46 @@ const Profile = () => {
             </Card>
 
             <Card className="p-6">
-              <h2 className="text-lg font-semibold mb-4">Account Activity</h2>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between p-4 bg-secondary rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <Share2 className="w-5 h-5 text-primary" />
-                    <div>
-                      <p className="font-medium">Listings Shared</p>
-                      <p className="text-sm text-muted-foreground">12 items shared this month</p>
-                    </div>
+              <h2 className="text-lg font-semibold mb-4">My Listings</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {sharedListings.map((listing: any) => (
+                  <ProductCard
+                    key={listing.id}
+                    id={listing.id}
+                    title={listing.title}
+                    price={listing.price}
+                    location={listing.location || "Location not specified"}
+                    image={getFirstImageUrl(listing.images)}
+                    condition={listing.condition}
+                  />
+                ))}
+                {sharedListings.length === 0 && (
+                  <div className="col-span-full text-center py-8 text-muted-foreground">
+                    You haven't shared any listings yet
                   </div>
-                  <Button variant="outline" size="sm">View All</Button>
-                </div>
-                
-                <div className="flex items-center justify-between p-4 bg-secondary rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <BookMarked className="w-5 h-5 text-primary" />
-                    <div>
-                      <p className="font-medium">Saved Items</p>
-                      <p className="text-sm text-muted-foreground">8 items in your wishlist</p>
-                    </div>
+                )}
+              </div>
+            </Card>
+
+            <Card className="p-6">
+              <h2 className="text-lg font-semibold mb-4">Saved Items</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {savedListings.map((listing: any) => (
+                  <ProductCard
+                    key={listing.id}
+                    id={listing.id}
+                    title={listing.title}
+                    price={listing.price}
+                    location={listing.location || "Location not specified"}
+                    image={getFirstImageUrl(listing.images)}
+                    condition={listing.condition}
+                  />
+                ))}
+                {savedListings.length === 0 && (
+                  <div className="col-span-full text-center py-8 text-muted-foreground">
+                    No saved items yet
                   </div>
-                  <Button variant="outline" size="sm">View All</Button>
-                </div>
+                )}
               </div>
             </Card>
           </div>
