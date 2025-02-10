@@ -12,7 +12,7 @@ import CategoryListings from "@/components/listings/CategoryListings";
 import MobileNavigation from "@/components/navigation/MobileNavigation";
 import FloatingSellButton from "@/components/navigation/FloatingSellButton";
 import WelcomeDialog from "@/components/dialogs/WelcomeDialog";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, Link } from "react-router-dom";
 import { useListings } from "@/hooks/useListings";
 
 const ITEMS_PER_PAGE = 20;
@@ -30,7 +30,8 @@ const Index = () => {
   const { data: listings = [], isLoading, error, refetch } = useListings({
     categoryFilter,
     subcategoryFilter,
-    selectedLocation
+    selectedLocation,
+    featured: true // Add this to fetch featured listings
   });
 
   // Subscribe to real-time updates for listings
@@ -80,7 +81,7 @@ const Index = () => {
           
           {!categoryFilter && (
             <FeaturedListings 
-              listings={listings}
+              listings={listings.filter(listing => listing.featured)}
               getFirstImageUrl={getFirstImageUrl}
             />
           )}
