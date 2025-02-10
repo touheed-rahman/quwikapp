@@ -1,5 +1,5 @@
 
-import { serve } from 'https://deno.fresh.run/std@0.168.0/http/server.ts'
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -37,13 +37,18 @@ serve(async (req) => {
       throw new Error('Invalid endpoint')
     }
 
+    console.log('Fetching URL:', url);
+
     const response = await fetch(url)
     const data = await response.json()
+
+    console.log('API Response:', data);
 
     return new Response(JSON.stringify(data), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
   } catch (error) {
+    console.error('Edge Function Error:', error);
     return new Response(JSON.stringify({ error: error.message }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
