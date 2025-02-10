@@ -38,7 +38,12 @@ const SellFormDetails = ({
   onBack,
   onSubmit
 }: SellFormDetailsProps) => {
-  const { selectedLocation } = useLocation();
+  const { selectedLocation, setSelectedLocation } = useLocation();
+
+  const handleLocationChange = async (newLocation: string) => {
+    await setSelectedLocation(newLocation);
+    setLocation(newLocation);
+  };
 
   return (
     <form onSubmit={onSubmit} className="space-y-6">
@@ -53,7 +58,7 @@ const SellFormDetails = ({
           </label>
           <LocationSelector 
             value={selectedLocation} 
-            onChange={setLocation}
+            onChange={handleLocationChange}
           />
         </div>
       </div>
