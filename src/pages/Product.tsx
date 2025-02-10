@@ -93,7 +93,10 @@ const ProductPage = () => {
     return <ProductNotFound />;
   }
 
-  const seller = product.seller as Seller;
+  // Extract just the area name from the location string
+  const displayLocation = product.location?.split(',')[0] || 'Location not specified';
+
+  const seller = product.profiles as Seller;
 
   return (
     <div className="min-h-screen bg-background">
@@ -123,7 +126,7 @@ const ProductPage = () => {
             <ProductInfo
               title={product.title}
               price={product.price}
-              location={product.location}
+              location={displayLocation}
               createdAt={product.created_at}
               condition={product.condition}
               description={product.description}
@@ -131,9 +134,8 @@ const ProductPage = () => {
 
             <SellerInfo
               seller={{
-                name: seller?.full_name || 'Anonymous',
-                memberSince: seller?.created_at ? new Date(seller.created_at).toLocaleDateString() : new Date().toLocaleDateString(),
-                listings: 0
+                full_name: seller?.full_name || 'Anonymous',
+                created_at: seller?.created_at || new Date().toISOString()
               }}
               onChatClick={() => handleChatWithSeller(session)}
               onMakeOffer={() => handleMakeOffer(session)}

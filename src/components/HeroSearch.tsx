@@ -1,18 +1,20 @@
 
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Search } from "lucide-react";
+import { Search, Loader2 } from "lucide-react";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import LocationSelector from "./LocationSelector";
 import { useLocation } from "@/contexts/LocationContext";
 import { useToast } from "./ui/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 const HeroSearch = () => {
   const navigate = useNavigate();
   const { selectedLocation, setSelectedLocation } = useLocation();
   const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState("");
+  const [isSearching, setIsSearching] = useState(false);
 
   const handleLocationChange = async (location: string | null) => {
     try {
@@ -32,12 +34,50 @@ const HeroSearch = () => {
     }
   };
 
-  const handleSearch = () => {
-    const params = new URLSearchParams();
-    if (searchQuery) params.set('q', searchQuery);
-    if (selectedLocation) params.set('location', selectedLocation);
-    
-    navigate(`/search?${params.toString()}`);
+  const handleSearch = async () => {
+    setIsSearching(true);
+    try {
+      let query = supabase
+        .from('listings')
+        .select('*')
+        .eq('status', 'approved')
+        .ilike('title', `%${searchQuery}%`);
+
+      if (selectedLocation) {
+        const locationParts = selectedLocation.split('|');
+        const placeId = locationParts[locationParts.length - 1];
+        query = query.eq('location', selectedLocation);
+      }
+
+      const { data: results, error } = await query;
+
+      if (error) throw error;
+
+      if (results && results.length > 0) {
+        const params = new URLSearchParams();
+        if (searchQuery) params.set('q', searchQuery);
+        if (selectedLocation) {
+          const displayLocation = selectedLocation.split(',')[0];
+          params.set('location', displayLocation);
+        }
+        navigate(`/search?${params.toString()}`);
+      } else {
+        toast({
+          title: "No results found",
+          description: "Try adjusting your search criteria.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error('Search error:', error);
+      toast({
+        title: "Search failed",
+        description: "There was an error performing the search. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSearching(false);
+    }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -71,10 +111,18 @@ const HeroSearch = () => {
             </div>
             <Button 
               size="lg" 
-              className="h-12 px-8 text-base bg-[#8B5CF6] hover:bg-[#8B5CF6]/90"
+              className="h-12 px-8 text-base bg-[#8B5CF6] hover:bg-[#8B5CF6]/90 disabled:opacity-50"
               onClick={handleSearch}
+              disabled={isSearching}
             >
-              Search
+              {isSearching ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Searching...
+                </>
+              ) : (
+                'Search'
+              )}
             </Button>
           </div>
         </div>
