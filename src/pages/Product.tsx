@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import Header from "@/components/Header";
 import ChatWindow from "@/components/chat/ChatWindow";
 import { supabase } from "@/integrations/supabase/client";
@@ -20,8 +20,8 @@ import { useToast } from "@/components/ui/use-toast";
 
 const ProductPage = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [isChatOpen, setIsChatOpen] = useState(false);
   const [session, setSession] = useState<any>(null);
   const { toast } = useToast();
 
@@ -51,9 +51,9 @@ const ProductPage = () => {
 
   useEffect(() => {
     if (currentConversationId) {
-      window.location.href = `/chat/${currentConversationId}`;
+      navigate(`/chat/${currentConversationId}`);
     }
-  }, [currentConversationId]);
+  }, [currentConversationId, navigate]);
 
   const handleShare = async () => {
     try {
@@ -125,7 +125,7 @@ const ProductPage = () => {
             <SellerInfo
               seller={{
                 name: product.seller?.full_name || 'Anonymous',
-                memberSince: new Date(product.seller?.created_at || Date.now()).toLocaleDateString(),
+                memberSince: product.seller?.created_at ? new Date(product.seller.created_at).toLocaleDateString() : new Date().toLocaleDateString(),
                 listings: 0
               }}
               onChatClick={() => handleChatWithSeller(session)}
@@ -144,7 +144,7 @@ const ProductPage = () => {
         productPrice={product.price}
         conversationId={currentConversationId}
         onOfferSuccess={() => {
-          window.location.href = `/chat/${currentConversationId}`;
+          navigate(`/chat/${currentConversationId}`);
         }}
       />
     </div>

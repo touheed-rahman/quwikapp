@@ -33,6 +33,7 @@ export const useProductActions = (productId: string | undefined, sellerId: strin
     }
 
     try {
+      // Find existing conversation
       const { data: existingConversation, error: conversationError } = await supabase
         .from('conversations')
         .select('id')
@@ -45,10 +46,11 @@ export const useProductActions = (productId: string | undefined, sellerId: strin
       }
 
       if (existingConversation) {
-        setCurrentConversationId(existingConversation.id);
+        navigate(`/chat/${existingConversation.id}`);
         return;
       }
 
+      // Create new conversation
       const { data: newConversation, error: createError } = await supabase
         .from('conversations')
         .insert({
@@ -61,7 +63,7 @@ export const useProductActions = (productId: string | undefined, sellerId: strin
 
       if (createError) throw createError;
 
-      setCurrentConversationId(newConversation.id);
+      navigate(`/chat/${newConversation.id}`);
     } catch (error: any) {
       toast({
         title: "Error",
