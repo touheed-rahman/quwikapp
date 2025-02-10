@@ -46,27 +46,7 @@ const HeroSearch = () => {
 
     setIsSearching(true);
     try {
-      // First, try exact match
       let query = supabase
-        .from('listings')
-        .select('*, categories:category(*)')
-        .eq('status', 'approved')
-        .eq('title', searchQuery.trim());
-
-      if (selectedLocation) {
-        query = query.eq('location', selectedLocation);
-      }
-
-      let { data: exactMatches } = await query;
-
-      // If exact match found and has category info, redirect to subcategory
-      if (exactMatches && exactMatches.length > 0 && exactMatches[0].category) {
-        navigate(`/category/${exactMatches[0].category}/subcategory/${exactMatches[0].subcategory}`);
-        return;
-      }
-
-      // If no exact match, try fuzzy search
-      query = supabase
         .from('listings')
         .select('*')
         .eq('status', 'approved')
@@ -76,16 +56,11 @@ const HeroSearch = () => {
         query = query.eq('location', selectedLocation);
       }
 
-      const { data: fuzzyMatches } = await query;
+      const { data: results } = await query;
 
-      if (fuzzyMatches && fuzzyMatches.length > 0) {
-        const params = new URLSearchParams();
-        params.set('q', searchQuery.trim());
-        if (selectedLocation) {
-          const displayLocation = selectedLocation.split(',')[0];
-          params.set('location', displayLocation);
-        }
-        navigate(`/search?${params.toString()}`);
+      if (results && results.length > 0) {
+        // Navigate to the category/subcategory page of the first result
+        navigate(`/category/${results[0].category}/subcategory/${results[0].subcategory}`);
       } else {
         toast({
           title: "No results found",
@@ -157,4 +132,3 @@ const HeroSearch = () => {
 };
 
 export default HeroSearch;
-
