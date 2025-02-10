@@ -6,6 +6,7 @@ import { ProductCondition } from "@/types/categories";
 import { supabase } from "@/integrations/supabase/client";
 import { Trash2, CheckSquare, Heart, Eye } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useEffect } from "react";
 
 interface Listing {
   id: string;
@@ -15,6 +16,8 @@ interface Listing {
   images: string[];
   condition: ProductCondition;
   status: string;
+  view_count: number;
+  save_count: number;
 }
 
 interface ListingGridProps {
@@ -31,6 +34,29 @@ const ListingGrid = ({ listings, onMarkAsSold, showSoldButton }: ListingGridProp
     return "https://via.placeholder.com/300";
   };
 
+  // Subscribe to real-time updates for view and save counts
+  useEffect(() => {
+    const channel = supabase
+      .channel('listing-stats')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'listings',
+          filter: `id=in.(${listings.map(l => `'${l.id}'`).join(',')})`,
+        },
+        (payload) => {
+          console.log('Received real-time update:', payload);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [listings]);
+
   return (
     <div className="space-y-3">
       {listings.map((listing) => (
@@ -39,7 +65,8 @@ const ListingGrid = ({ listings, onMarkAsSold, showSoldButton }: ListingGridProp
           className="relative overflow-hidden"
         >
           <div className="flex gap-4 p-3">
-            <div className="w-32 h-24 flex-shrink-0">
+            {/* Left side - Image */}
+            <div className="w-24 h-20 flex-shrink-0">
               <img
                 src={getFirstImageUrl(listing.images)}
                 alt={listing.title}
@@ -47,19 +74,20 @@ const ListingGrid = ({ listings, onMarkAsSold, showSoldButton }: ListingGridProp
               />
             </div>
             
+            {/* Right side - Content */}
             <div className="flex-1 min-w-0">
               <div className="flex flex-col h-full justify-between">
                 <div>
                   <Link to={`/product/${listing.id}`}>
-                    <h3 className="text-base font-semibold line-clamp-1 hover:text-primary transition-colors sm:text-lg">
+                    <h3 className="text-base font-semibold line-clamp-1 hover:text-primary transition-colors">
                       {listing.title}
                     </h3>
                   </Link>
-                  <p className="text-lg font-bold text-primary mt-0.5 sm:text-xl">
+                  <p className="text-base font-bold text-primary mt-0.5">
                     ₹{listing.price.toLocaleString()}
                   </p>
                   <div className="flex flex-wrap items-center gap-2 mt-1">
-                    <p className="text-xs text-muted-foreground sm:text-sm">
+                    <p className="text-xs text-muted-foreground">
                       {listing.location || "Location not specified"}
                     </p>
                     <Badge variant="secondary" className="text-xs">
@@ -72,14 +100,14 @@ const ListingGrid = ({ listings, onMarkAsSold, showSoldButton }: ListingGridProp
                     )}
                   </div>
                   
-                  <div className="flex gap-3 mt-1 text-xs text-muted-foreground sm:text-sm">
+                  <div className="flex gap-3 mt-1 text-xs text-muted-foreground">
                     <span className="flex items-center gap-1">
                       <Eye className="w-3.5 h-3.5" />
-                      234 views
+                      {listing.view_count || 0} views
                     </span>
                     <span className="flex items-center gap-1">
                       <Heart className="w-3.5 h-3.5" />
-                      12 saves
+                      {listing.save_count || 0} saves
                     </span>
                   </div>
                 </div>
@@ -90,17 +118,17 @@ const ListingGrid = ({ listings, onMarkAsSold, showSoldButton }: ListingGridProp
                       size="sm"
                       variant="outline"
                       onClick={() => onMarkAsSold(listing.id)}
-                      className="h-8"
+                      className="h-7 text-xs"
                     >
-                      <CheckSquare className="w-4 h-4 mr-1.5" />
+                      <CheckSquare className="w-3.5 h-3.5 mr-1" />
                       Mark as Sold
                     </Button>
                     <Button
                       size="sm"
                       variant="destructive"
-                      className="h-8"
+                      className="h-7 text-xs"
                     >
-                      <Trash2 className="w-4 h-4 mr-1.5" />
+                      <Trash2 className="w-3.5 h-3.5 mr-1" />
                       Delete
                     </Button>
                   </div>

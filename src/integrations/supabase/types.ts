@@ -136,12 +136,14 @@ export type Database = {
           price: number
           reviewed_at: string | null
           reviewed_by: string | null
+          save_count: number | null
           specs: Json | null
           status: string | null
           subcategory: string
           title: string
           updated_at: string
           user_id: string
+          view_count: number | null
         }
         Insert: {
           admin_notes?: string | null
@@ -157,12 +159,14 @@ export type Database = {
           price: number
           reviewed_at?: string | null
           reviewed_by?: string | null
+          save_count?: number | null
           specs?: Json | null
           status?: string | null
           subcategory: string
           title: string
           updated_at?: string
           user_id: string
+          view_count?: number | null
         }
         Update: {
           admin_notes?: string | null
@@ -178,12 +182,14 @@ export type Database = {
           price?: number
           reviewed_at?: string | null
           reviewed_by?: string | null
+          save_count?: number | null
           specs?: Json | null
           status?: string | null
           subcategory?: string
           title?: string
           updated_at?: string
           user_id?: string
+          view_count?: number | null
         }
         Relationships: [
           {
@@ -430,12 +436,14 @@ export type Database = {
           price: number
           reviewed_at: string | null
           reviewed_by: string | null
+          save_count: number | null
           specs: Json | null
           status: string | null
           subcategory: string
           title: string
           updated_at: string
           user_id: string
+          view_count: number | null
         }[]
       }
       get_secret: {
