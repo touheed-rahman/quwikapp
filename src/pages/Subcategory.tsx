@@ -8,6 +8,8 @@ import LocationSelector from "@/components/LocationSelector";
 import { useLocation } from "@/contexts/LocationContext";
 import { supabase } from "@/integrations/supabase/client";
 import { ProductCondition } from "@/types/categories";
+import { Search } from "lucide-react";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -22,9 +24,10 @@ const SubcategoryPage = () => {
   const [sortBy, setSortBy] = useState("newest");
   const [condition, setCondition] = useState<string>("all");
   const { selectedLocation, setSelectedLocation } = useLocation();
+  const [searchQuery, setSearchQuery] = useState(searchParams.get('q') || "");
 
   const { data: listings = [], isLoading } = useQuery({
-    queryKey: ['subcategory-listings', category, subcategory, sortBy, condition, selectedLocation],
+    queryKey: ['subcategory-listings', category, subcategory, sortBy, condition, selectedLocation, searchQuery],
     queryFn: async () => {
       let query = supabase
         .from('listings')
@@ -42,6 +45,10 @@ const SubcategoryPage = () => {
         if (placeId) {
           query = query.eq('location', selectedLocation);
         }
+      }
+
+      if (searchQuery) {
+        query = query.ilike('title', `%${searchQuery}%`);
       }
 
       if (sortBy === 'price-asc') {
@@ -79,7 +86,20 @@ const SubcategoryPage = () => {
             {subcategory} in {category}
           </h1>
           
-          <div className="grid gap-4 md:grid-cols-3 mb-6">
+          <div className="grid gap-4 md:grid-cols-4 mb-6">
+            <div className="md:col-span-2">
+              <div className="relative">
+                <Input
+                  type="text"
+                  placeholder="Search in this category..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10"
+                />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              </div>
+            </div>
+
             <LocationSelector 
               value={selectedLocation} 
               onChange={setSelectedLocation}
@@ -118,6 +138,11 @@ const SubcategoryPage = () => {
             <p className="text-lg text-muted-foreground">
               No listings found for this subcategory
             </p>
+            {searchQuery && (
+              <p className="text-sm text-muted-foreground mt-2">
+                Try adjusting your search terms or filters
+              </p>
+            )}
           </div>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
