@@ -1,24 +1,36 @@
+
 import { Card } from "@/components/ui/card";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Shield, Users, ListChecks, Clock } from "lucide-react";
+import { Shield, Users, ListChecks, Clock, Star, XCircle } from "lucide-react";
 
 const DashboardMetrics = () => {
   const { data: metrics, isLoading } = useQuery({
     queryKey: ['admin-metrics'],
     queryFn: async () => {
-      const [totalListings, pendingListings, approvedListings, totalUsers] = await Promise.all([
+      const [
+        totalListings, 
+        pendingListings, 
+        approvedListings, 
+        totalUsers,
+        featuredListings,
+        rejectedListings
+      ] = await Promise.all([
         supabase.from('listings').select('*', { count: 'exact', head: true }),
         supabase.from('listings').select('*', { count: 'exact', head: true }).eq('status', 'pending'),
         supabase.from('listings').select('*', { count: 'exact', head: true }).eq('status', 'approved'),
-        supabase.from('profiles').select('*', { count: 'exact', head: true })
+        supabase.from('profiles').select('*', { count: 'exact', head: true }),
+        supabase.from('listings').select('*', { count: 'exact', head: true }).eq('featured', true),
+        supabase.from('listings').select('*', { count: 'exact', head: true }).eq('status', 'rejected')
       ]);
 
       return {
         totalListings: totalListings.count || 0,
         pendingListings: pendingListings.count || 0,
         approvedListings: approvedListings.count || 0,
-        totalUsers: totalUsers.count || 0
+        totalUsers: totalUsers.count || 0,
+        featuredListings: featuredListings.count || 0,
+        rejectedListings: rejectedListings.count || 0
       };
     }
   });
@@ -50,18 +62,32 @@ const DashboardMetrics = () => {
       bgColor: "bg-green-50"
     },
     {
+      title: "Featured Listings",
+      value: metrics?.featuredListings || 0,
+      icon: Star,
+      color: "text-purple-600",
+      bgColor: "bg-purple-50"
+    },
+    {
+      title: "Rejected Listings",
+      value: metrics?.rejectedListings || 0,
+      icon: XCircle,
+      color: "text-red-600",
+      bgColor: "bg-red-50"
+    },
+    {
       title: "Total Users",
       value: metrics?.totalUsers || 0,
       icon: Users,
-      color: "text-purple-600",
-      bgColor: "bg-purple-50"
+      color: "text-indigo-600",
+      bgColor: "bg-indigo-50"
     }
   ];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       {cards.map((card) => (
-        <Card key={card.title} className={`p-6 ${card.bgColor}`}>
+        <Card key={card.title} className={`p-6 ${card.bgColor} border-none`}>
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-muted-foreground">
