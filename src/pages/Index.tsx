@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { ProductCondition } from "@/types/categories";
 import Header from "@/components/Header";
@@ -27,11 +27,34 @@ const Index = () => {
   const categoryFilter = searchParams.get('category');
   const subcategoryFilter = searchParams.get('subcategory');
 
-  const { data: listings = [], isLoading, error } = useListings({
+  const { data: listings = [], isLoading, error, refetch } = useListings({
     categoryFilter,
     subcategoryFilter,
     selectedLocation
   });
+
+  // Subscribe to real-time updates for listings
+  useEffect(() => {
+    const channel = supabase
+      .channel('public:listings')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'listings'
+        },
+        () => {
+          console.log('Listings updated, refreshing data');
+          refetch();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [refetch]);
 
   const getFirstImageUrl = (images: string[]) => {
     if (images && images.length > 0) {

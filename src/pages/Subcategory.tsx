@@ -30,6 +30,8 @@ const SubcategoryPage = () => {
     queryKey: ['subcategory-listings', category, subcategory, sortBy, condition, selectedLocation, searchQuery],
     queryFn: async () => {
       try {
+        console.log('Fetching listings with params:', { category, subcategory, sortBy, condition, selectedLocation, searchQuery });
+        
         let query = supabase
           .from('listings')
           .select('*')
@@ -67,12 +69,14 @@ const SubcategoryPage = () => {
           throw error;
         }
 
+        console.log('Fetched listings:', data);
         return data || [];
       } catch (error) {
         console.error('Error in queryFn:', error);
         return [];
       }
-    }
+    },
+    enabled: !!category && !!subcategory // Only run query when category and subcategory are available
   });
 
   const getFirstImageUrl = (images: string[]) => {
