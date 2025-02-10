@@ -7,11 +7,13 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Location, LocationSelectorProps } from './location/types';
 import { useLocationSearch } from './location/useLocationSearch';
 import LocationList from './location/LocationList';
+import { useToast } from './ui/use-toast';
 
 const LocationSelector = ({ value, onChange }: LocationSelectorProps) => {
   const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const { locations, loading } = useLocationSearch(searchQuery);
+  const { locations, loading, handleLocationSelect } = useLocationSearch(searchQuery);
+  const { toast } = useToast();
 
   const selectedLocation = value 
     ? locations.find(location => 
@@ -21,13 +23,31 @@ const LocationSelector = ({ value, onChange }: LocationSelectorProps) => {
       )
     : null;
 
-  const handleLocationSelect = (location: Location) => {
-    const newValue = location.area 
-      ? `${location.name}, ${location.area}`
-      : location.name;
-    onChange(newValue);
-    setOpen(false);
-    setSearchQuery('');
+  const handleLocationChoice = async (location: Location) => {
+    try {
+      const locationDetails = await handleLocationSelect(location);
+      if (locationDetails) {
+        const newValue = locationDetails.area 
+          ? `${locationDetails.name}, ${locationDetails.area}`
+          : locationDetails.name;
+        onChange(newValue);
+        setOpen(false);
+        setSearchQuery('');
+      } else {
+        toast({
+          title: "Error",
+          description: "Could not fetch location details. Please try again.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error('Error selecting location:', error);
+      toast({
+        title: "Error",
+        description: "Could not process location selection. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -65,7 +85,7 @@ const LocationSelector = ({ value, onChange }: LocationSelectorProps) => {
             loading={loading}
             searchQuery={searchQuery}
             selectedValue={value}
-            onSelect={handleLocationSelect}
+            onSelect={handleLocationChoice}
           />
         </Command>
       </PopoverContent>

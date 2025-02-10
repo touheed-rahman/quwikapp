@@ -5,6 +5,9 @@ export interface Location {
   area?: string;
   place_id?: string;
   description?: string;
+  latitude?: number;
+  longitude?: number;
+  distance_km?: number;
 }
 
 export interface LocationSelectorProps {
@@ -19,4 +22,12 @@ export interface PlacePrediction {
     main_text: string;
     secondary_text: string;
   };
+}
+
+export interface PlaceDetails {
+  place_id: string;
+  name: string;
+  area?: string;
+  latitude: number;
+  longitude: number;
 }
