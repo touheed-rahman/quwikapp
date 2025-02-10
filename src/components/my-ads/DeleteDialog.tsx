@@ -24,9 +24,9 @@ const DeleteDialog = ({ onDelete }: DeleteDialogProps) => {
         <Button
           size="sm"
           variant="destructive"
-          className="h-7 text-xs"
+          className="h-7 text-xs gap-1.5"
         >
-          <Trash2 className="w-3.5 h-3.5 mr-1" />
+          <Trash2 className="w-3.5 h-3.5" />
           Delete
         </Button>
       </AlertDialogTrigger>
@@ -38,8 +38,13 @@ const DeleteDialog = ({ onDelete }: DeleteDialogProps) => {
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction onClick={onDelete}>
+          <AlertDialogCancel className="border-[#8B5CF6] text-[#8B5CF6] hover:text-[#8B5CF6] hover:bg-[#8B5CF6]/10">
+            Cancel
+          </AlertDialogCancel>
+          <AlertDialogAction 
+            onClick={onDelete}
+            className="bg-red-500 hover:bg-red-600"
+          >
             Delete
           </AlertDialogAction>
         </AlertDialogFooter>
