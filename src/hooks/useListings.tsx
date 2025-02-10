@@ -15,6 +15,7 @@ export interface Listing {
   category: string;
   status: string;
   distance_km?: number;
+  featured: boolean;
 }
 
 interface UseListingsProps {

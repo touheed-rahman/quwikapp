@@ -11,6 +11,7 @@ interface Listing {
   images: string[];
   created_at: string;
   condition: ProductCondition;
+  featured: boolean;
 }
 
 interface FeaturedListingsProps {
@@ -19,7 +20,15 @@ interface FeaturedListingsProps {
 }
 
 const FeaturedListings = ({ listings, getFirstImageUrl }: FeaturedListingsProps) => {
-  const featuredListings = listings.slice(0, 4);
+  // Filter listings to only show featured ones
+  const featuredListings = listings
+    .filter(listing => listing.featured)
+    .slice(0, 4);
+
+  // Don't render the section if there are no featured listings
+  if (featuredListings.length === 0) {
+    return null;
+  }
 
   return (
     <section>
