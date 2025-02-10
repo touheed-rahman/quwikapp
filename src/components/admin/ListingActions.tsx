@@ -45,7 +45,7 @@ const ListingActions = ({ listingId, onStatusUpdate, onDelete }: ListingActionsP
           <Button
             variant="outline"
             size="sm"
-            className="bg-red-50 hover:bg-red-100 text-red-700"
+            className="bg-red-50 hover:bg-red-100 text-red-700 font-medium"
           >
             <Trash2 className="h-4 w-4 mr-1" />
             Delete
@@ -55,16 +55,16 @@ const ListingActions = ({ listingId, onStatusUpdate, onDelete }: ListingActionsP
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the listing.
+              This action cannot be undone. This will permanently delete the listing and all associated data.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => onDelete(listingId)}
-              className="bg-red-600 hover:bg-red-700"
+              className="bg-red-600 hover:bg-red-700 text-white font-medium"
             >
-              Delete
+              Delete Permanently
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

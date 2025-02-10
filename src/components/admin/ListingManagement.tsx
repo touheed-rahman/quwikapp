@@ -114,13 +114,21 @@ const ListingManagement = () => {
 
   const handleDelete = async (listingId: string) => {
     console.log('Deleting listing:', listingId);
-    const now = new Date().toISOString();
+    
+    // Delete any associated records first (e.g. wishlists)
+    const { error: wishlistError } = await supabase
+      .from('wishlists')
+      .delete()
+      .eq('listing_id', listingId);
+
+    if (wishlistError) {
+      console.error('Error deleting wishlists:', wishlistError);
+    }
+
+    // Now delete the listing itself
     const { error } = await supabase
       .from('listings')
-      .update({ 
-        deleted_at: now,
-        status: 'deleted'
-      })
+      .delete()
       .eq('id', listingId);
 
     if (error) {
@@ -133,7 +141,7 @@ const ListingManagement = () => {
     } else {
       toast({
         title: "Success",
-        description: "Listing deleted successfully",
+        description: "Listing permanently deleted",
       });
       refetch();
     }
