@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { PlacePrediction, Location, PlaceDetails } from './types';
@@ -8,6 +8,8 @@ export const useLocationSearch = (searchQuery: string) => {
   const [predictions, setPredictions] = useState<PlacePrediction[]>([]);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
+  const debounceTimeout = useRef<NodeJS.Timeout>();
+  const abortController = useRef<AbortController>();
 
   const getPlaceDetails = async (placeId: string): Promise<PlaceDetails | null> => {
     try {
@@ -19,6 +21,7 @@ export const useLocationSearch = (searchQuery: string) => {
       });
 
       if (error) {
+        console.error('Place details error:', error);
         throw error;
       }
 
@@ -69,6 +72,12 @@ export const useLocationSearch = (searchQuery: string) => {
 
     const fetchPredictions = async () => {
       try {
+        // Cancel any previous ongoing request
+        if (abortController.current) {
+          abortController.current.abort();
+        }
+        abortController.current = new AbortController();
+
         setLoading(true);
         
         const { data, error } = await supabase.functions.invoke('places', {
@@ -79,6 +88,7 @@ export const useLocationSearch = (searchQuery: string) => {
         });
 
         if (error) {
+          console.error('Supabase function error:', error);
           throw error;
         }
 
@@ -86,25 +96,51 @@ export const useLocationSearch = (searchQuery: string) => {
         
         if (data.status === 'OK' && Array.isArray(data.predictions)) {
           setPredictions(data.predictions);
+        } else if (data.error_message) {
+          console.error('Google Places API error:', data.error_message);
+          toast({
+            title: "Error",
+            description: "There was an error fetching locations. Please try again.",
+            variant: "destructive",
+          });
+          setPredictions([]);
         } else {
-          console.error('Error fetching predictions:', data.status);
+          console.error('Unexpected response format:', data);
           setPredictions([]);
         }
-      } catch (error) {
+      } catch (error: any) {
         console.error('Error fetching predictions:', error);
-        toast({
-          title: "Error",
-          description: "Could not fetch location suggestions. Please try again.",
-          variant: "destructive",
-        });
+        // Only show toast if it's not an abort error
+        if (error.name !== 'AbortError') {
+          toast({
+            title: "Error",
+            description: "Could not fetch location suggestions. Please try again.",
+            variant: "destructive",
+          });
+        }
         setPredictions([]);
       } finally {
         setLoading(false);
       }
     };
 
-    const debounceTimeout = setTimeout(fetchPredictions, 300);
-    return () => clearTimeout(debounceTimeout);
+    // Clear any existing timeout
+    if (debounceTimeout.current) {
+      clearTimeout(debounceTimeout.current);
+    }
+
+    // Set new timeout for debouncing
+    debounceTimeout.current = setTimeout(fetchPredictions, 500);
+
+    // Cleanup function
+    return () => {
+      if (debounceTimeout.current) {
+        clearTimeout(debounceTimeout.current);
+      }
+      if (abortController.current) {
+        abortController.current.abort();
+      }
+    };
   }, [searchQuery, toast]);
 
   const handleLocationSelect = async (location: Location | PlacePrediction): Promise<Location | null> => {

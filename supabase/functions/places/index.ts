@@ -49,24 +49,41 @@ serve(async (req) => {
 
     console.log('Making request to Google Places API:', url.replace(API_KEY, '[REDACTED]'));
 
-    const response = await fetch(url)
-    const data = await response.json()
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 5000); // 5 second timeout
 
-    console.log('Google Places API Response:', {
-      status: data.status,
-      errorMessage: data.error_message,
-      hasResults: endpoint === 'autocomplete' ? 
-        (data.predictions?.length > 0) : 
-        (data.result != null)
-    });
+    try {
+      const response = await fetch(url, {
+        signal: controller.signal
+      });
+      clearTimeout(timeout);
 
-    if (data.status !== 'OK') {
-      throw new Error(data.error_message || `Google Places API error: ${data.status}`)
+      if (!response.ok) {
+        console.error('Google Places API HTTP error:', response.status);
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      console.log('Google Places API Response:', {
+        status: data.status,
+        errorMessage: data.error_message,
+        hasResults: endpoint === 'autocomplete' ? 
+          (data.predictions?.length > 0) : 
+          (data.result != null)
+      });
+
+      if (data.status !== 'OK') {
+        throw new Error(data.error_message || `Google Places API error: ${data.status}`);
+      }
+
+      return new Response(JSON.stringify(data), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    } catch (error) {
+      clearTimeout(timeout);
+      throw error;
     }
-
-    return new Response(JSON.stringify(data), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    })
   } catch (error) {
     console.error('Edge Function Error:', error.message);
     return new Response(JSON.stringify({ 
@@ -75,6 +92,6 @@ serve(async (req) => {
     }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    })
+    });
   }
-})
+});
