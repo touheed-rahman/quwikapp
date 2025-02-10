@@ -207,6 +207,7 @@ export type Database = {
       location_cache: {
         Row: {
           area: string | null
+          coordinates: unknown | null
           created_at: string
           id: string
           latitude: number
@@ -216,6 +217,7 @@ export type Database = {
         }
         Insert: {
           area?: string | null
+          coordinates?: unknown | null
           created_at?: string
           id?: string
           latitude: number
@@ -225,6 +227,7 @@ export type Database = {
         }
         Update: {
           area?: string | null
+          coordinates?: unknown | null
           created_at?: string
           id?: string
           latitude?: number
@@ -1318,35 +1321,56 @@ export type Database = {
         }
         Returns: unknown
       }
-      get_listings_by_location: {
-        Args: {
-          location_query: string
-        }
-        Returns: {
-          admin_notes: string | null
-          brand: string | null
-          category: string
-          condition: string
-          created_at: string
-          deleted_at: string | null
-          description: string | null
-          featured: boolean | null
-          id: string
-          images: string[]
-          location: string | null
-          price: number
-          reviewed_at: string | null
-          reviewed_by: string | null
-          save_count: number | null
-          specs: Json | null
-          status: string | null
-          subcategory: string
-          title: string
-          updated_at: string
-          user_id: string
-          view_count: number | null
-        }[]
-      }
+      get_listings_by_location:
+        | {
+            Args: {
+              location_query: string
+            }
+            Returns: {
+              admin_notes: string | null
+              brand: string | null
+              category: string
+              condition: string
+              created_at: string
+              deleted_at: string | null
+              description: string | null
+              featured: boolean | null
+              id: string
+              images: string[]
+              location: string | null
+              price: number
+              reviewed_at: string | null
+              reviewed_by: string | null
+              save_count: number | null
+              specs: Json | null
+              status: string | null
+              subcategory: string
+              title: string
+              updated_at: string
+              user_id: string
+              view_count: number | null
+            }[]
+          }
+        | {
+            Args: {
+              location_query?: string
+              search_lat?: number
+              search_long?: number
+              radius_km?: number
+            }
+            Returns: {
+              id: string
+              title: string
+              price: number
+              location: string
+              images: string[]
+              created_at: string
+              condition: string
+              category: string
+              status: string
+              distance_km: number
+            }[]
+          }
       get_maps_api_key: {
         Args: Record<PropertyKey, never>
         Returns: string

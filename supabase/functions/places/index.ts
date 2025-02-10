@@ -13,7 +13,6 @@ interface PlacesRequest {
 }
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
@@ -41,7 +40,7 @@ serve(async (req) => {
         console.error('Empty place_id for details');
         throw new Error('Place ID is required for details')
       }
-      url = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${place_id}&key=${API_KEY}&fields=geometry,name,formatted_address`
+      url = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${place_id}&key=${API_KEY}&fields=geometry,name,formatted_address,address_components`
     } else {
       console.error('Invalid endpoint requested:', endpoint);
       throw new Error('Invalid endpoint')
@@ -50,7 +49,7 @@ serve(async (req) => {
     console.log('Making request to Google Places API:', url.replace(API_KEY, '[REDACTED]'));
 
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+    const timeout = setTimeout(() => controller.abort(), 5000);
 
     try {
       const response = await fetch(url, {

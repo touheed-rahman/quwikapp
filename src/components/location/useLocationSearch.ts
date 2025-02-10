@@ -53,7 +53,8 @@ export const useLocationSearch = (searchQuery: string) => {
           name: details.name,
           area: details.area,
           latitude: details.latitude,
-          longitude: details.longitude
+          longitude: details.longitude,
+          coordinates: `POINT(${details.longitude} ${details.latitude})`
         });
 
       if (error) {
@@ -72,7 +73,6 @@ export const useLocationSearch = (searchQuery: string) => {
 
     const fetchPredictions = async () => {
       try {
-        // Cancel any previous ongoing request
         if (abortController.current) {
           abortController.current.abort();
         }
@@ -110,7 +110,6 @@ export const useLocationSearch = (searchQuery: string) => {
         }
       } catch (error: any) {
         console.error('Error fetching predictions:', error);
-        // Only show toast if it's not an abort error
         if (error.name !== 'AbortError') {
           toast({
             title: "Error",
@@ -124,15 +123,12 @@ export const useLocationSearch = (searchQuery: string) => {
       }
     };
 
-    // Clear any existing timeout
     if (debounceTimeout.current) {
       clearTimeout(debounceTimeout.current);
     }
 
-    // Set new timeout for debouncing
     debounceTimeout.current = setTimeout(fetchPredictions, 500);
 
-    // Cleanup function
     return () => {
       if (debounceTimeout.current) {
         clearTimeout(debounceTimeout.current);

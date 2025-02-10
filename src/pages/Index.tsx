@@ -14,6 +14,8 @@ import FeaturedListings from "@/components/listings/FeaturedListings";
 import RecentListings from "@/components/listings/RecentListings";
 import CategoryListings from "@/components/listings/CategoryListings";
 import MobileNavigation from "@/components/navigation/MobileNavigation";
+import LocationSelector from "@/components/LocationSelector";
+import { useToast } from "@/components/ui/use-toast";
 
 const ITEMS_PER_PAGE = 20;
 
@@ -27,6 +29,7 @@ interface Listing {
   condition: ProductCondition;
   category: string;
   status: string;
+  distance_km?: number;
 }
 
 const Index = () => {
@@ -34,6 +37,7 @@ const Index = () => {
   const [showAllProducts, setShowAllProducts] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState<string | null>(null);
+  const { toast } = useToast();
   
   const categoryFilter = searchParams.get('category');
   const subcategoryFilter = searchParams.get('subcategory');
@@ -43,24 +47,34 @@ const Index = () => {
     queryFn: async () => {
       console.log('Fetching listings with filters:', { categoryFilter, subcategoryFilter, selectedLocation });
       
-      const { data, error } = await supabase
-        .rpc('get_listings_by_location', {
-          location_query: selectedLocation
+      try {
+        const { data, error } = await supabase
+          .rpc('get_listings_by_location', {
+            location_query: selectedLocation
+          });
+
+        if (error) {
+          console.error('Error fetching listings:', error);
+          throw error;
+        }
+
+        let filteredListings = data as Listing[];
+        
+        if (categoryFilter) {
+          filteredListings = filteredListings.filter(listing => listing.category === categoryFilter);
+        }
+
+        console.log('Fetched listings:', filteredListings);
+        return filteredListings;
+      } catch (error) {
+        console.error('Error in listing query:', error);
+        toast({
+          title: "Error",
+          description: "Failed to fetch listings. Please try again.",
+          variant: "destructive",
         });
-
-      if (error) {
-        console.error('Error fetching listings:', error);
-        throw error;
+        return [];
       }
-
-      let filteredListings = data as Listing[];
-      
-      if (categoryFilter) {
-        filteredListings = filteredListings.filter(listing => listing.category === categoryFilter);
-      }
-
-      console.log('Fetched listings:', filteredListings);
-      return filteredListings;
     }
   });
 
@@ -78,6 +92,10 @@ const Index = () => {
         <div className="space-y-6">
           <div className="flex flex-col gap-4">
             <HeroSearch />
+            <LocationSelector 
+              value={selectedLocation} 
+              onChange={setSelectedLocation}
+            />
           </div>
           <CategoryFilter />
           
