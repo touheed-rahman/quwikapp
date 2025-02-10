@@ -12,7 +12,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const iconMap = {
   smartphone: Smartphone,
@@ -32,12 +32,13 @@ const iconMap = {
   agriculture: Wheat,
 };
 
-const CategoryFilter = ({ onSelectCategory, maxItems = 6 }: { onSelectCategory?: (category: string, subcategory: string) => void, maxItems?: number }) => {
+const CategoryFilter = ({ maxItems = 6 }: { maxItems?: number }) => {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const navigate = useNavigate();
   const visibleCategories = categories.slice(0, maxItems);
 
   const handleSubcategorySelect = (categoryId: string, subcategoryId: string) => {
-    onSelectCategory?.(categoryId, subcategoryId);
+    navigate(`/category/${categoryId}/${subcategoryId}`);
   };
 
   return (

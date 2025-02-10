@@ -15,6 +15,7 @@ import Profile from "./pages/Profile";
 import AdminPanel from "./pages/Admin";
 import MyAds from "./pages/MyAds";
 import Wishlist from "./pages/Wishlist";
+import Subcategory from "./pages/Subcategory";
 
 const queryClient = new QueryClient();
 
@@ -56,6 +57,7 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
+          <Route path="/category/:category/:subcategory" element={<Subcategory />} />
           <Route
             path="/sell"
             element={
