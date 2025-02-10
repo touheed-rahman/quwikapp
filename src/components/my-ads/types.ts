@@ -11,6 +11,8 @@ export interface Listing {
   status: string;
   view_count: number;
   save_count: number;
+  featured: boolean;
+  featured_requested: boolean;
 }
 
 export interface ListingGridProps {

@@ -29,44 +29,49 @@ const SubcategoryPage = () => {
   const { data: listings = [], isLoading } = useQuery({
     queryKey: ['subcategory-listings', category, subcategory, sortBy, condition, selectedLocation, searchQuery],
     queryFn: async () => {
-      let query = supabase
-        .from('listings')
-        .select('*')
-        .eq('status', 'approved')
-        .eq('category', category)
-        .eq('subcategory', subcategory);
+      try {
+        let query = supabase
+          .from('listings')
+          .select('*')
+          .eq('status', 'approved')
+          .eq('category', category)
+          .eq('subcategory', subcategory);
 
-      if (condition !== 'all') {
-        query = query.eq('condition', condition);
-      }
-
-      if (selectedLocation) {
-        const placeId = selectedLocation.split('|')[1];
-        if (placeId) {
-          query = query.eq('location', selectedLocation);
+        if (condition !== 'all') {
+          query = query.eq('condition', condition);
         }
+
+        if (selectedLocation) {
+          const placeId = selectedLocation.split('|')[1];
+          if (placeId) {
+            query = query.eq('location', selectedLocation);
+          }
+        }
+
+        if (searchQuery) {
+          query = query.ilike('title', `%${searchQuery}%`);
+        }
+
+        if (sortBy === 'price-asc') {
+          query = query.order('price', { ascending: true });
+        } else if (sortBy === 'price-desc') {
+          query = query.order('price', { ascending: false });
+        } else {
+          query = query.order('created_at', { ascending: false });
+        }
+
+        const { data, error } = await query;
+
+        if (error) {
+          console.error('Error fetching listings:', error);
+          throw error;
+        }
+
+        return data || [];
+      } catch (error) {
+        console.error('Error in queryFn:', error);
+        return [];
       }
-
-      if (searchQuery) {
-        query = query.ilike('title', `%${searchQuery}%`);
-      }
-
-      if (sortBy === 'price-asc') {
-        query = query.order('price', { ascending: true });
-      } else if (sortBy === 'price-desc') {
-        query = query.order('price', { ascending: false });
-      } else {
-        query = query.order('created_at', { ascending: false });
-      }
-
-      const { data, error } = await query;
-
-      if (error) {
-        console.error('Error fetching listings:', error);
-        throw error;
-      }
-
-      return data;
     }
   });
 

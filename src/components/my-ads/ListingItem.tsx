@@ -2,13 +2,20 @@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
-import { CheckSquare } from "lucide-react";
+import { CheckSquare, MoreVertical } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
 import { ListingItemProps } from "./types";
 import { getFirstImageUrl, handleDelete } from "./utils/listingUtils";
 import ListingStats from "./ListingStats";
 import DeleteDialog from "./DeleteDialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { supabase } from "@/integrations/supabase/client";
 
 const ListingItem = ({ listing, onMarkAsSold, showSoldButton, onListingDeleted }: ListingItemProps) => {
   const { toast } = useToast();
@@ -34,6 +41,29 @@ const ListingItem = ({ listing, onMarkAsSold, showSoldButton, onListingDeleted }
         });
       }
     );
+  };
+
+  const handleFeatureRequest = async () => {
+    try {
+      const { error } = await supabase
+        .from('listings')
+        .update({ featured_requested: true })
+        .eq('id', listing.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Feature request submitted successfully",
+      });
+    } catch (error) {
+      console.error('Error requesting feature:', error);
+      toast({
+        title: "Error",
+        description: "Failed to submit feature request",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -70,6 +100,11 @@ const ListingItem = ({ listing, onMarkAsSold, showSoldButton, onListingDeleted }
                     Rejected
                   </Badge>
                 )}
+                {listing.featured && (
+                  <Badge variant="secondary" className="text-xs bg-yellow-500 text-white">
+                    Featured
+                  </Badge>
+                )}
               </div>
               
               <ListingStats 
@@ -78,8 +113,8 @@ const ListingItem = ({ listing, onMarkAsSold, showSoldButton, onListingDeleted }
               />
             </div>
             
-            {showSoldButton && onMarkAsSold && (
-              <div className="flex gap-2 mt-2">
+            <div className="flex gap-2 mt-2">
+              {showSoldButton && onMarkAsSold && (
                 <Button
                   size="sm"
                   variant="outline"
@@ -89,9 +124,25 @@ const ListingItem = ({ listing, onMarkAsSold, showSoldButton, onListingDeleted }
                   <CheckSquare className="w-3.5 h-3.5 mr-1" />
                   Mark as Sold
                 </Button>
-                <DeleteDialog onDelete={handleDeleteClick} />
-              </div>
-            )}
+              )}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="sm" className="h-7">
+                    <MoreVertical className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  {!listing.featured && !listing.featured_requested && (
+                    <DropdownMenuItem onClick={handleFeatureRequest}>
+                      Request Featured
+                    </DropdownMenuItem>
+                  )}
+                  <DropdownMenuItem onClick={handleDeleteClick} className="text-destructive">
+                    Delete
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
           </div>
         </div>
       </div>
