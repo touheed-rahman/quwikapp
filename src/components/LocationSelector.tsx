@@ -70,7 +70,7 @@ const LocationSelector = () => {
           toast({
             title: "Warning",
             description: "Location services are not fully configured.",
-            variant: "warning",
+            variant: "default",  // Changed from "warning" to "default"
           });
           return;
         }
