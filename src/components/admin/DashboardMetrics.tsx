@@ -8,40 +8,56 @@ import { useEffect } from "react";
 
 const DashboardMetrics = () => {
   const navigate = useNavigate();
+  
+  // Optimize the query with staleTime and cacheTime
   const { data: metrics, isLoading, refetch } = useQuery({
     queryKey: ['admin-metrics'],
     queryFn: async () => {
-      const [
-        totalListings, 
-        pendingListings, 
-        approvedListings, 
-        totalUsers,
-        featuredListings,
-        rejectedListings
-      ] = await Promise.all([
-        supabase.from('listings').select('*', { count: 'exact', head: true }),
-        supabase.from('listings').select('*', { count: 'exact', head: true }).eq('status', 'pending'),
-        supabase.from('listings').select('*', { count: 'exact', head: true }).eq('status', 'approved'),
-        supabase.from('profiles').select('*', { count: 'exact', head: true }),
-        supabase.from('listings').select('*', { count: 'exact', head: true }).eq('featured', true),
-        supabase.from('listings').select('*', { count: 'exact', head: true }).eq('status', 'rejected')
-      ]);
+      // Use a single query with count aggregation for better performance
+      const { data: counts, error } = await supabase
+        .rpc('get_dashboard_metrics');
 
-      return {
-        totalListings: totalListings.count || 0,
-        pendingListings: pendingListings.count || 0,
-        approvedListings: approvedListings.count || 0,
-        totalUsers: totalUsers.count || 0,
-        featuredListings: featuredListings.count || 0,
-        rejectedListings: rejectedListings.count || 0
+      if (error) {
+        console.error('Error fetching metrics:', error);
+        return {
+          totalListings: 0,
+          pendingListings: 0,
+          approvedListings: 0,
+          totalUsers: 0,
+          featuredListings: 0,
+          rejectedListings: 0
+        };
+      }
+
+      return counts || {
+        totalListings: 0,
+        pendingListings: 0,
+        approvedListings: 0,
+        totalUsers: 0,
+        featuredListings: 0,
+        rejectedListings: 0
       };
-    }
+    },
+    // Add caching configuration for better performance
+    staleTime: 1000, // Consider data fresh for 1 second
+    cacheTime: 3000, // Keep data in cache for 3 seconds
+    refetchOnWindowFocus: false // Prevent unnecessary refetches
   });
 
-  // Subscribe to real-time changes
+  // Optimize real-time subscriptions
   useEffect(() => {
+    // Batch updates using a debounced refetch
+    let timeoutId: NodeJS.Timeout;
+    const debouncedRefetch = () => {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        refetch();
+      }, 300); // Debounce updates by 300ms
+    };
+
+    // Use a single channel for both tables
     const channel = supabase
-      .channel('listings-changes')
+      .channel('dashboard-metrics')
       .on(
         'postgres_changes',
         {
@@ -50,15 +66,10 @@ const DashboardMetrics = () => {
           table: 'listings'
         },
         () => {
-          console.log('Listings table changed, refetching metrics...');
-          refetch();
+          console.log('Listings changed, triggering debounced refetch...');
+          debouncedRefetch();
         }
       )
-      .subscribe();
-
-    // Also subscribe to profiles changes for user count
-    const profilesChannel = supabase
-      .channel('profiles-changes')
       .on(
         'postgres_changes',
         {
@@ -67,15 +78,15 @@ const DashboardMetrics = () => {
           table: 'profiles'
         },
         () => {
-          console.log('Profiles table changed, refetching metrics...');
-          refetch();
+          console.log('Profiles changed, triggering debounced refetch...');
+          debouncedRefetch();
         }
       )
       .subscribe();
 
     return () => {
+      clearTimeout(timeoutId);
       supabase.removeChannel(channel);
-      supabase.removeChannel(profilesChannel);
     };
   }, [refetch]);
 
