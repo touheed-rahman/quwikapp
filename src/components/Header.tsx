@@ -6,11 +6,14 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import LocationSelector from "./LocationSelector";
 import { Badge } from "./ui/badge";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const Header = () => {
   const [session, setSession] = useState<any>(null);
   const [selectedLocation, setSelectedLocation] = useState<string | null>(null);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -78,21 +81,25 @@ const Header = () => {
               Higoods
             </h1>
           </Link>
-          <div className="hidden md:block">
-            <LocationSelector 
-              value={selectedLocation}
-              onChange={setSelectedLocation}
-            />
-          </div>
+          <LocationSelector 
+            value={selectedLocation}
+            onChange={setSelectedLocation}
+          />
         </div>
         <div className="flex items-center gap-2">
           {session ? (
             <>
-              <Button variant="ghost" size="icon" className="hidden md:inline-flex">
-                <Bell className="h-5 w-5" />
-              </Button>
+              <Link to="/notifications">
+                <Button variant="ghost" size="icon" className="hidden md:inline-flex">
+                  <Bell className="h-5 w-5" />
+                </Button>
+              </Link>
               <div className="relative hidden md:block">
-                <Button variant="ghost" size="icon">
+                <Button 
+                  variant="ghost" 
+                  size="icon"
+                  onClick={() => setIsChatOpen(true)}
+                >
                   <MessageSquare className="h-5 w-5" />
                 </Button>
                 {unreadCount > 0 && (
@@ -108,9 +115,11 @@ const Header = () => {
                   <User className="h-5 w-5" />
                 </Button>
               </Link>
-              <Button variant="ghost" size="icon">
-                <HelpCircle className="h-5 w-5" />
-              </Button>
+              <Link to="/help">
+                <Button variant="ghost" size="icon">
+                  <HelpCircle className="h-5 w-5" />
+                </Button>
+              </Link>
               <Link to="/sell" className="hidden md:block">
                 <Button className="hover:bg-primary hover:text-white">Sell Now</Button>
               </Link>

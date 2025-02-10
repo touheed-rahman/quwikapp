@@ -14,7 +14,6 @@ import FeaturedListings from "@/components/listings/FeaturedListings";
 import RecentListings from "@/components/listings/RecentListings";
 import CategoryListings from "@/components/listings/CategoryListings";
 import MobileNavigation from "@/components/navigation/MobileNavigation";
-import LocationSelector from "@/components/LocationSelector";
 
 const ITEMS_PER_PAGE = 20;
 
@@ -54,7 +53,6 @@ const Index = () => {
         throw error;
       }
 
-      // Apply category filters after location filtering
       let filteredListings = data as Listing[];
       
       if (categoryFilter) {
@@ -66,12 +64,11 @@ const Index = () => {
     }
   });
 
-  // Get the URL for the first image in the array, or use a placeholder
   const getFirstImageUrl = (images: string[]) => {
     if (images && images.length > 0) {
       return supabase.storage.from('listings').getPublicUrl(images[0]).data.publicUrl;
     }
-    return "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b"; // placeholder image
+    return "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b";
   };
 
   return (
@@ -81,12 +78,6 @@ const Index = () => {
         <div className="space-y-6">
           <div className="flex flex-col gap-4">
             <HeroSearch />
-            <div className="w-48">
-              <LocationSelector 
-                value={selectedLocation}
-                onChange={(location) => setSelectedLocation(location)}
-              />
-            </div>
           </div>
           <CategoryFilter />
           
@@ -117,7 +108,6 @@ const Index = () => {
 
         <MobileNavigation onChatOpen={() => setIsChatOpen(true)} />
 
-        {/* Desktop Sell Button */}
         <Link
           to="/sell"
           className="hidden md:block fixed bottom-6 right-6 z-50"
