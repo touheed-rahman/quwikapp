@@ -20,9 +20,10 @@ interface ListingTableProps {
   listings: Listing[];
   onStatusUpdate: (listingId: string, status: string) => Promise<void>;
   onFeaturedToggle: (listingId: string, featured: boolean) => Promise<void>;
+  onDelete: (listingId: string) => Promise<void>;
 }
 
-const ListingTable = ({ listings, onStatusUpdate, onFeaturedToggle }: ListingTableProps) => {
+const ListingTable = ({ listings, onStatusUpdate, onFeaturedToggle, onDelete }: ListingTableProps) => {
   const { toast } = useToast();
   
   const getFirstImageUrl = (images: string[]) => {
@@ -127,6 +128,7 @@ const ListingTable = ({ listings, onStatusUpdate, onFeaturedToggle }: ListingTab
                   <ListingActions
                     listingId={listing.id}
                     onStatusUpdate={onStatusUpdate}
+                    onDelete={onDelete}
                   />
                 </div>
               </TableCell>

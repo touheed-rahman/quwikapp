@@ -112,6 +112,33 @@ const ListingManagement = () => {
     }
   };
 
+  const handleDelete = async (listingId: string) => {
+    console.log('Deleting listing:', listingId);
+    const now = new Date().toISOString();
+    const { error } = await supabase
+      .from('listings')
+      .update({ 
+        deleted_at: now,
+        status: 'deleted'
+      })
+      .eq('id', listingId);
+
+    if (error) {
+      console.error('Error deleting listing:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete listing",
+        variant: "destructive"
+      });
+    } else {
+      toast({
+        title: "Success",
+        description: "Listing deleted successfully",
+      });
+      refetch();
+    }
+  };
+
   const filteredListings = listings?.filter(listing =>
     listing.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
     listing.category.toLowerCase().includes(searchTerm.toLowerCase())
@@ -147,6 +174,7 @@ const ListingManagement = () => {
           listings={filteredListings || []}
           onStatusUpdate={handleStatusUpdate}
           onFeaturedToggle={handleFeaturedToggle}
+          onDelete={handleDelete}
         />
       )}
     </div>
@@ -154,4 +182,3 @@ const ListingManagement = () => {
 };
 
 export default ListingManagement;
-
