@@ -66,42 +66,47 @@ export const useListings = ({ categoryFilter, subcategoryFilter, selectedLocatio
           }
         }
 
-        // Base query for non-location based search
-        let baseQuery = supabase
+        // Base query to fetch all approved, non-deleted listings
+        let query = supabase
           .from('listings')
           .select()
           .eq('status', 'approved')
           .is('deleted_at', null);
 
         if (categoryFilter) {
-          baseQuery = baseQuery.eq('category', categoryFilter);
+          query = query.eq('category', categoryFilter);
         }
 
         if (subcategoryFilter) {
-          baseQuery = baseQuery.eq('subcategory', subcategoryFilter);
-        }
-
-        // If specifically fetching featured listings
-        if (featured) {
-          baseQuery = baseQuery.eq('featured', true);
+          query = query.eq('subcategory', subcategoryFilter);
         }
 
         // Execute the appropriate query
-        const { data: listings, error } = await (locationQuery || baseQuery);
+        const { data: listings, error } = await (locationQuery || query);
 
         if (error) {
           console.error('Error fetching listings:', error);
           throw error;
         }
 
+        if (!listings || listings.length === 0) {
+          console.log('No listings found');
+          return [];
+        }
+
+        console.log('Raw listings from database:', listings);
+
         // Sort listings to show featured items first, then by creation date
         const sortedListings = (listings as Listing[]).sort((a, b) => {
+          // First, sort by featured status
           if (a.featured && !b.featured) return -1;
           if (!a.featured && b.featured) return 1;
+          
+          // Then sort by creation date (newest first)
           return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
         });
 
-        console.log('Fetched and sorted listings:', sortedListings);
+        console.log('Sorted listings:', sortedListings);
         return sortedListings;
       } catch (error) {
         console.error('Error in listing query:', error);
@@ -112,6 +117,8 @@ export const useListings = ({ categoryFilter, subcategoryFilter, selectedLocatio
         });
         return [];
       }
-    }
+    },
+    staleTime: 1000 * 60 * 5, // Cache for 5 minutes
+    refetchOnWindowFocus: true,
   });
 };
