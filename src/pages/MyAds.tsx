@@ -77,7 +77,7 @@ const MyAds = () => {
               <Loader2 className="h-8 w-8 animate-spin" />
             </div>
           ) : (
-            <TabsContent value={selectedTab} className="mt-0">
+            <TabsContent value={selectedTab} className="mt-6 px-4">
               {listings.length === 0 ? (
                 <p className="text-center text-muted-foreground py-8">
                   No listings found in this category
