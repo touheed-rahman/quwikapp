@@ -123,6 +123,9 @@ const ProductCard = ({
     }
   };
 
+  // Extract just the area name from the location string
+  const displayLocation = location?.split(',')[0] || 'Location not specified';
+
   return (
     <Link to={`/product/${id}`}>
       <Card className="overflow-hidden border-0 bg-transparent">
@@ -159,7 +162,7 @@ const ProductCard = ({
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-1 text-xs text-muted-foreground">
               <MapPin className="h-3 w-3" />
-              <span>{location}</span>
+              <span>{displayLocation}</span>
             </div>
             {condition && (
               <Badge className={getConditionColor(condition as ProductCondition)}>
