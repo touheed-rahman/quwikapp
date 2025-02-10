@@ -48,10 +48,42 @@ const Index = () => {
       console.log('Fetching listings with filters:', { categoryFilter, subcategoryFilter, selectedLocation });
       
       try {
-        const { data, error } = await supabase
-          .rpc('get_listings_by_location', {
-            location_query: selectedLocation
+        let query;
+        if (selectedLocation) {
+          // Parse location string to get place_id
+          const locationParts = selectedLocation.split('|');
+          const placeId = locationParts[locationParts.length - 1];
+          
+          // First get the location details from cache
+          const { data: locationData } = await supabase
+            .from('location_cache')
+            .select('latitude, longitude')
+            .eq('place_id', placeId)
+            .single();
+
+          if (locationData) {
+            query = supabase.rpc('get_listings_by_location', {
+              location_query: null,
+              search_lat: locationData.latitude,
+              search_long: locationData.longitude,
+              radius_km: 20
+            });
+          } else {
+            // Fallback to simple location query if coordinates not found
+            query = supabase.rpc('get_listings_by_location', {
+              location_query: placeId
+            });
+          }
+        } else {
+          // No location selected, get all listings
+          query = supabase.rpc('get_listings_by_location', {
+            location_query: null,
+            search_lat: null,
+            search_long: null
           });
+        }
+
+        const { data, error } = await query;
 
         if (error) {
           console.error('Error fetching listings:', error);

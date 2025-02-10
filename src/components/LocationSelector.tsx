@@ -15,21 +15,16 @@ const LocationSelector = ({ value, onChange }: LocationSelectorProps) => {
   const { locations, loading, handleLocationSelect } = useLocationSearch(searchQuery);
   const { toast } = useToast();
 
-  const selectedLocation = value && locations?.length 
-    ? locations.find(location => 
-        location.area 
-          ? `${location.name}, ${location.area}` === value
-          : location.name === value
-      )
-    : null;
+  const selectedLocation = value ? locations?.find(location => 
+    value.includes(location.place_id || '')
+  ) : null;
 
   const handleLocationChoice = async (location: Location) => {
     try {
       const locationDetails = await handleLocationSelect(location);
       if (locationDetails) {
-        const newValue = locationDetails.area 
-          ? `${locationDetails.name}, ${locationDetails.area}`
-          : locationDetails.name;
+        // Include place_id in the location string
+        const newValue = `${locationDetails.name}${locationDetails.area ? `, ${locationDetails.area}` : ''}|${locationDetails.place_id}`;
         onChange(newValue);
         setOpen(false);
         setSearchQuery('');

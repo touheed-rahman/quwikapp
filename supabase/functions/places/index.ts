@@ -72,6 +72,16 @@ serve(async (req) => {
           (data.result != null)
       });
 
+      if (data.status === 'ZERO_RESULTS') {
+        // Return empty results instead of throwing error
+        return new Response(JSON.stringify({
+          status: 'OK',
+          [endpoint === 'autocomplete' ? 'predictions' : 'result']: []
+        }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
       if (data.status !== 'OK') {
         throw new Error(data.error_message || `Google Places API error: ${data.status}`);
       }
