@@ -8,6 +8,10 @@ export interface Location {
   latitude?: number;
   longitude?: number;
   distance_km?: number;
+  structured_formatting?: {
+    main_text: string;
+    secondary_text: string;
+  };
 }
 
 export interface LocationSelectorProps {

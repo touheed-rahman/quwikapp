@@ -136,8 +136,11 @@ export const useLocationSearch = (searchQuery: string) => {
     return () => clearTimeout(debounceTimeout);
   }, [searchQuery, toast]);
 
-  const handleLocationSelect = async (prediction: PlacePrediction): Promise<Location | null> => {
-    const details = await getPlaceDetails(prediction.place_id);
+  const handleLocationSelect = async (location: Location | PlacePrediction): Promise<Location | null> => {
+    const placeId = location.place_id;
+    if (!placeId) return null;
+
+    const details = await getPlaceDetails(placeId);
     if (details) {
       await cacheLocation(details);
       return {
@@ -146,7 +149,11 @@ export const useLocationSearch = (searchQuery: string) => {
         area: details.area,
         place_id: details.place_id,
         latitude: details.latitude,
-        longitude: details.longitude
+        longitude: details.longitude,
+        structured_formatting: {
+          main_text: details.name,
+          secondary_text: details.area || ''
+        }
       };
     }
     return null;
@@ -157,7 +164,8 @@ export const useLocationSearch = (searchQuery: string) => {
     name: prediction.structured_formatting.main_text,
     area: prediction.structured_formatting.secondary_text,
     place_id: prediction.place_id,
-    description: prediction.description
+    description: prediction.description,
+    structured_formatting: prediction.structured_formatting
   }));
 
   return { locations, loading, handleLocationSelect };
