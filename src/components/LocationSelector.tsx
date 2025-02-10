@@ -1,123 +1,17 @@
 
-import { useState, useEffect } from 'react';
-import { Check, MapPin } from 'lucide-react';
+import { useState } from 'react';
+import { MapPin } from 'lucide-react';
 import { Button } from "@/components/ui/button";
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-} from "@/components/ui/command";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { cn } from "@/lib/utils";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/components/ui/use-toast";
-
-interface Location {
-  id: string;
-  name: string;
-  area?: string;
-  place_id?: string;
-  description?: string;
-}
-
-interface LocationSelectorProps {
-  value: string | null;
-  onChange: (location: string | null) => void;
-}
-
-interface PlacePrediction {
-  place_id: string;
-  description: string;
-  structured_formatting: {
-    main_text: string;
-    secondary_text: string;
-  };
-}
+import { Command, CommandInput } from "@/components/ui/command";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Location, LocationSelectorProps } from './location/types';
+import { useLocationSearch } from './location/useLocationSearch';
+import LocationList from './location/LocationList';
 
 const LocationSelector = ({ value, onChange }: LocationSelectorProps) => {
   const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [predictions, setPredictions] = useState<PlacePrediction[]>([]);
-  const [loading, setLoading] = useState(false);
-  const { toast } = useToast();
-
-  useEffect(() => {
-    if (!searchQuery) {
-      setPredictions([]);
-      return;
-    }
-
-    const fetchPredictions = async () => {
-      try {
-        setLoading(true);
-        
-        const { data: apiKey } = await supabase.rpc('get_secret', {
-          name: 'OLA_MAPS_API_KEY'
-        });
-
-        if (!apiKey) {
-          console.error('Maps API key not found');
-          toast({
-            title: "Error",
-            description: "Location services are not fully configured.",
-            variant: "destructive",
-          });
-          return;
-        }
-
-        const response = await fetch(
-          `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${encodeURIComponent(
-            searchQuery
-          )}&components=country:in&key=${apiKey}&types=(cities)`,
-          {
-            headers: {
-              'Accept': 'application/json',
-            }
-          }
-        );
-
-        if (!response.ok) {
-          throw new Error('Failed to fetch predictions');
-        }
-
-        const data = await response.json();
-        
-        if (data.status === 'OK' && Array.isArray(data.predictions)) {
-          setPredictions(data.predictions);
-        } else {
-          console.error('Error fetching predictions:', data.status);
-          setPredictions([]);
-        }
-      } catch (error) {
-        console.error('Error fetching predictions:', error);
-        toast({
-          title: "Error",
-          description: "Could not fetch location suggestions. Please try again.",
-          variant: "destructive",
-        });
-        setPredictions([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    const debounceTimeout = setTimeout(fetchPredictions, 300);
-    return () => clearTimeout(debounceTimeout);
-  }, [searchQuery, toast]);
-
-  const locations: Location[] = predictions.map(prediction => ({
-    id: prediction.place_id,
-    name: prediction.structured_formatting.main_text,
-    area: prediction.structured_formatting.secondary_text,
-    place_id: prediction.place_id,
-    description: prediction.description
-  }));
+  const { locations, loading } = useLocationSearch(searchQuery);
 
   const selectedLocation = value 
     ? locations.find(location => 
@@ -166,40 +60,13 @@ const LocationSelector = ({ value, onChange }: LocationSelectorProps) => {
             value={searchQuery}
             onValueChange={setSearchQuery}
           />
-          {loading && (
-            <div className="py-6 text-center text-sm text-muted-foreground">
-              Loading locations...
-            </div>
-          )}
-          {!loading && (!predictions || predictions.length === 0) && searchQuery && (
-            <CommandEmpty>No location found.</CommandEmpty>
-          )}
-          <CommandGroup>
-            {locations && locations.map((location) => (
-              <CommandItem
-                key={location.id}
-                value={location.id}
-                onSelect={() => handleLocationSelect(location)}
-              >
-                <Check
-                  className={cn(
-                    "mr-2 h-4 w-4",
-                    (location.area 
-                      ? `${location.name}, ${location.area}` === value
-                      : location.name === value)
-                      ? "opacity-100"
-                      : "opacity-0"
-                  )}
-                />
-                <div className="flex flex-col">
-                  <span className="font-medium">{location.name}</span>
-                  {location.area && (
-                    <span className="text-sm text-muted-foreground">{location.area}</span>
-                  )}
-                </div>
-              </CommandItem>
-            ))}
-          </CommandGroup>
+          <LocationList
+            locations={locations}
+            loading={loading}
+            searchQuery={searchQuery}
+            selectedValue={value}
+            onSelect={handleLocationSelect}
+          />
         </Command>
       </PopoverContent>
     </Popover>
