@@ -8,6 +8,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "./integrations/supabase/client";
 import { LocationProvider } from "./contexts/LocationContext";
 import ScrollToTop from "./components/utils/ScrollToTop";
+import ErrorBoundary from "./components/utils/ErrorBoundary";
 import Index from "./pages/Index";
 import Sell from "./pages/Sell";
 import Product from "./pages/Product";
@@ -20,7 +21,16 @@ import Wishlist from "./pages/Wishlist";
 import Subcategory from "./pages/Subcategory";
 import AdminLogin from "./pages/AdminLogin";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      onError: (error) => {
+        console.error('Query error:', error);
+      },
+    },
+  },
+});
 
 const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
   const [session, setSession] = useState<any>(null);
@@ -57,57 +67,59 @@ const App = () => (
     <TooltipProvider>
       <LocationProvider>
         <BrowserRouter>
-          <ScrollToTop />
-          <Toaster />
-          <Sonner />
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/category/:category/:subcategory" element={<Subcategory />} />
-            <Route
-              path="/sell"
-              element={
-                <PrivateRoute>
-                  <Sell />
-                </PrivateRoute>
-              }
-            />
-            <Route path="/product/:id" element={<Product />} />
-            <Route path="/categories" element={<Categories />} />
-            <Route
-              path="/chat/:id"
-              element={
-                <PrivateRoute>
-                  <ChatDetail />
-                </PrivateRoute>
-              }
-            />
-            <Route path="/profile" element={<Profile />} />
-            <Route path="/admin/login" element={<AdminLogin />} />
-            <Route
-              path="/admin"
-              element={
-                <PrivateRoute>
-                  <AdminPanel />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/my-ads"
-              element={
-                <PrivateRoute>
-                  <MyAds />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/wishlist"
-              element={
-                <PrivateRoute>
-                  <Wishlist />
-                </PrivateRoute>
-              }
-            />
-          </Routes>
+          <ErrorBoundary>
+            <ScrollToTop />
+            <Toaster />
+            <Sonner />
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/category/:category/:subcategory" element={<Subcategory />} />
+              <Route
+                path="/sell"
+                element={
+                  <PrivateRoute>
+                    <Sell />
+                  </PrivateRoute>
+                }
+              />
+              <Route path="/product/:id" element={<Product />} />
+              <Route path="/categories" element={<Categories />} />
+              <Route
+                path="/chat/:id"
+                element={
+                  <PrivateRoute>
+                    <ChatDetail />
+                  </PrivateRoute>
+                }
+              />
+              <Route path="/profile" element={<Profile />} />
+              <Route path="/admin/login" element={<AdminLogin />} />
+              <Route
+                path="/admin"
+                element={
+                  <PrivateRoute>
+                    <AdminPanel />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/my-ads"
+                element={
+                  <PrivateRoute>
+                    <MyAds />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/wishlist"
+                element={
+                  <PrivateRoute>
+                    <Wishlist />
+                  </PrivateRoute>
+                }
+              />
+            </Routes>
+          </ErrorBoundary>
         </BrowserRouter>
       </LocationProvider>
     </TooltipProvider>
