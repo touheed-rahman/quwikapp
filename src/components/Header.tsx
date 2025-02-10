@@ -5,10 +5,12 @@ import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import LocationSelector from "./LocationSelector";
+import { Badge } from "./ui/badge";
 
 const Header = () => {
   const [session, setSession] = useState<any>(null);
   const [selectedLocation, setSelectedLocation] = useState<string | null>(null);
+  const [unreadCount, setUnreadCount] = useState(0);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -23,6 +25,49 @@ const Header = () => {
 
     return () => subscription.unsubscribe();
   }, []);
+
+  useEffect(() => {
+    if (!session?.user) return;
+
+    // Fetch initial unread count
+    const fetchUnreadCount = async () => {
+      const { data, error } = await supabase
+        .from('notifications')
+        .select('unread_count')
+        .eq('user_id', session.user.id);
+
+      if (error) {
+        console.error('Error fetching notifications:', error);
+        return;
+      }
+
+      const total = data.reduce((sum, notification) => sum + notification.unread_count, 0);
+      setUnreadCount(total);
+    };
+
+    fetchUnreadCount();
+
+    // Subscribe to notifications
+    const channel = supabase
+      .channel('notifications')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'notifications',
+          filter: `user_id=eq.${session.user.id}`
+        },
+        () => {
+          fetchUnreadCount();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [session?.user]);
 
   return (
     <header className="fixed top-0 left-0 right-0 bg-background/80 backdrop-blur-md border-b z-50">
@@ -46,9 +91,18 @@ const Header = () => {
               <Button variant="ghost" size="icon" className="hidden md:inline-flex">
                 <Bell className="h-5 w-5" />
               </Button>
-              <Button variant="ghost" size="icon" className="hidden md:inline-flex">
-                <MessageSquare className="h-5 w-5" />
-              </Button>
+              <div className="relative hidden md:block">
+                <Button variant="ghost" size="icon">
+                  <MessageSquare className="h-5 w-5" />
+                </Button>
+                {unreadCount > 0 && (
+                  <Badge 
+                    className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center bg-destructive hover:bg-destructive p-0"
+                  >
+                    {unreadCount}
+                  </Badge>
+                )}
+              </div>
               <Link to="/profile">
                 <Button variant="ghost" size="icon">
                   <User className="h-5 w-5" />

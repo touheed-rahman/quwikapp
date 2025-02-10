@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -195,9 +194,26 @@ const ChatDetail = () => {
     fetchConversationDetails();
     fetchMessages();
 
-    // Subscribe to new messages using the proper channel name
+    // Mark messages as read when entering the chat
+    const markMessagesAsRead = async () => {
+      try {
+        const { error } = await supabase
+          .from('notifications')
+          .update({ unread_count: 0 })
+          .eq('conversation_id', id)
+          .eq('user_id', sessionUser.id);
+
+        if (error) throw error;
+      } catch (error: any) {
+        console.error('Error marking messages as read:', error);
+      }
+    };
+
+    markMessagesAsRead();
+
+    // Update subscription to include both messages and notifications
     const channel = supabase
-      .channel(`messages:${id}`)
+      .channel(`room:${id}`)
       .on(
         'postgres_changes',
         {
@@ -209,6 +225,11 @@ const ChatDetail = () => {
         (payload) => {
           console.log('New message received:', payload);
           setMessages(prev => [...prev, payload.new as Message]);
+          
+          // If the message is from the other user, mark it as read since we're in the chat
+          if (payload.new.sender_id !== sessionUser.id) {
+            markMessagesAsRead();
+          }
         }
       )
       .subscribe((status) => {
@@ -261,14 +282,14 @@ const ChatDetail = () => {
   }
 
   return (
-    <div className="flex flex-col h-screen bg-background">
+    <div className="flex flex-col h-[100dvh] bg-background">
       {/* Header */}
       <div className="flex items-center gap-3 p-4 border-b bg-white">
         <Button 
           variant="ghost" 
           size="icon"
           onClick={() => navigate(-1)}
-          className="hover:bg-transparent"
+          className="hover:bg-transparent md:hidden"
         >
           <ChevronLeft className="h-6 w-6" />
         </Button>
@@ -281,21 +302,21 @@ const ChatDetail = () => {
               </div>
             </Avatar>
             
-            <div className="flex-1">
+            <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
-                <span className="font-semibold">{conversationDetails.seller.full_name}</span>
-                <Badge variant="outline" className="h-5 bg-primary/10 text-primary border-primary">
+                <span className="font-semibold truncate">{conversationDetails.seller.full_name}</span>
+                <Badge variant="outline" className="h-5 bg-primary/10 text-primary border-primary shrink-0">
                   Verified
                 </Badge>
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-sm text-muted-foreground">{conversationDetails.listing.title}</span>
-                <span className="text-sm font-medium">₹{conversationDetails.listing.price}</span>
+                <span className="text-sm text-muted-foreground truncate">{conversationDetails.listing.title}</span>
+                <span className="text-sm font-medium shrink-0">₹{conversationDetails.listing.price}</span>
               </div>
             </div>
 
             <div className="flex items-center gap-2">
-              <Button variant="ghost" size="icon">
+              <Button variant="ghost" size="icon" className="hidden md:inline-flex">
                 <Phone className="h-5 w-5" />
               </Button>
               <Button variant="ghost" size="icon">
@@ -311,18 +332,18 @@ const ChatDetail = () => {
         {messages.map((message) => (
           <div
             key={message.id}
-            className={`flex ${message.sender_id === sessionUser.id ? "justify-end" : "justify-start"}`}
+            className={`flex ${message.sender_id === sessionUser?.id ? "justify-end" : "justify-start"}`}
           >
             <div
-              className={`max-w-[70%] rounded-lg p-3 ${
-                message.sender_id === sessionUser.id 
+              className={`max-w-[85%] md:max-w-[70%] rounded-lg p-3 ${
+                message.sender_id === sessionUser?.id 
                   ? "bg-blue-100 text-blue-900" 
                   : "bg-white border"
               }`}
             >
-              <p>{message.content}</p>
+              <p className="break-words">{message.content}</p>
               <div className={`text-xs mt-1 ${
-                message.sender_id === sessionUser.id 
+                message.sender_id === sessionUser?.id 
                   ? "text-blue-700" 
                   : "text-muted-foreground"
               }`}>
@@ -335,7 +356,7 @@ const ChatDetail = () => {
 
       {/* Input */}
       <div className="p-4 bg-white border-t">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 max-w-4xl mx-auto">
           <Input
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
@@ -343,7 +364,7 @@ const ChatDetail = () => {
             className="flex-1"
             onKeyDown={(e) => e.key === "Enter" && handleSend()}
           />
-          <Button variant="ghost" size="icon">
+          <Button variant="ghost" size="icon" className="hidden md:inline-flex">
             <Mic className="h-5 w-5" />
           </Button>
           <Button 
