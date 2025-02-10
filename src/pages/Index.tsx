@@ -1,9 +1,17 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { ProductCondition } from "@/types/categories";
 import Header from "@/components/Header";
@@ -36,6 +44,7 @@ const Index = () => {
   const [showAllProducts, setShowAllProducts] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState<string | null>(null);
+  const [showWelcomePopup, setShowWelcomePopup] = useState(true);
   const { toast } = useToast();
   
   const categoryFilter = searchParams.get('category');
@@ -118,6 +127,37 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <Dialog open={showWelcomePopup} onOpenChange={setShowWelcomePopup}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold text-center text-primary">
+              Welcome to Quwik App Beta! 🚀
+            </DialogTitle>
+            <DialogDescription className="text-center pt-4 space-y-2">
+              <p className="text-lg">
+                We're excited to announce the launch of our Beta version!
+              </p>
+              <p>
+                While we're continuously improving, we'd love to hear your feedback on any issues you encounter during your experience.
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Thank you for being part of our development journey.
+              </p>
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="sm:justify-center">
+            <Button 
+              variant="default"
+              size="lg"
+              onClick={() => setShowWelcomePopup(false)}
+              className="w-full sm:w-auto"
+            >
+              Got it, thanks!
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       <Header />
       <main className="container mx-auto px-4 pt-20 pb-24">
         <div className="space-y-6">
@@ -170,3 +210,4 @@ const Index = () => {
 };
 
 export default Index;
+
