@@ -48,33 +48,47 @@ const HeroSearch = () => {
     try {
       const trimmedQuery = searchQuery.trim();
       
-      // First try exact title match with minimal columns
+      // First try direct ID match (in case of product URL paste)
+      const { data: directMatch } = await supabase
+        .from('listings')
+        .select('id')
+        .eq('status', 'approved')
+        .ilike('id', trimmedQuery)
+        .limit(1);
+
+      if (directMatch && directMatch.length > 0) {
+        navigate(`/product/${directMatch[0].id}`);
+        return;
+      }
+
+      // Try exact title match
       let query = supabase
         .from('listings')
-        .select('id, category, subcategory')
+        .select('id, title, category, subcategory')
         .eq('status', 'approved')
-        .ilike('title', trimmedQuery)
-        .limit(1);
+        .eq('title', trimmedQuery);
 
       if (selectedLocation) {
         query = query.eq('location', selectedLocation);
       }
 
-      const { data: result, error } = await query;
+      const { data: exactMatch } = await query;
 
-      if (error) throw error;
+      if (exactMatch && exactMatch.length > 0) {
+        navigate(`/category/${exactMatch[0].category}/subcategory/${exactMatch[0].subcategory}?q=${encodeURIComponent(trimmedQuery)}`);
+        return;
+      }
 
-      if (result && result.length > 0) {
-        // Navigate directly to the specific listing's category/subcategory
-        const params = new URLSearchParams({
-          q: trimmedQuery
-        });
-        
-        if (selectedLocation) {
-          params.set('location', selectedLocation);
-        }
+      // Try partial match
+      const { data: partialMatches } = await supabase
+        .from('listings')
+        .select('id, title, category, subcategory')
+        .eq('status', 'approved')
+        .ilike('title', `%${trimmedQuery}%`)
+        .limit(1);
 
-        navigate(`/category/${result[0].category}/subcategory/${result[0].subcategory}?${params.toString()}`);
+      if (partialMatches && partialMatches.length > 0) {
+        navigate(`/category/${partialMatches[0].category}/subcategory/${partialMatches[0].subcategory}?q=${encodeURIComponent(trimmedQuery)}`);
       } else {
         toast({
           title: "No results found",

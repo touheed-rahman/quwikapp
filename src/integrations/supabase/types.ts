@@ -131,6 +131,7 @@ export type Database = {
           deleted_at: string | null
           description: string | null
           featured: boolean | null
+          featured_requested: boolean | null
           id: string
           images: string[]
           location: string | null
@@ -155,6 +156,7 @@ export type Database = {
           deleted_at?: string | null
           description?: string | null
           featured?: boolean | null
+          featured_requested?: boolean | null
           id?: string
           images: string[]
           location?: string | null
@@ -179,6 +181,7 @@ export type Database = {
           deleted_at?: string | null
           description?: string | null
           featured?: boolean | null
+          featured_requested?: boolean | null
           id?: string
           images?: string[]
           location?: string | null
