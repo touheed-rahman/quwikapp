@@ -1,6 +1,5 @@
 
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { ProductCondition } from "@/types/categories";
 import Header from "@/components/Header";
@@ -14,22 +13,9 @@ import MobileNavigation from "@/components/navigation/MobileNavigation";
 import FloatingSellButton from "@/components/navigation/FloatingSellButton";
 import WelcomeDialog from "@/components/dialogs/WelcomeDialog";
 import { useSearchParams } from "react-router-dom";
-import { useToast } from "@/components/ui/use-toast";
+import { useListings } from "@/hooks/useListings";
 
 const ITEMS_PER_PAGE = 20;
-
-interface Listing {
-  id: string;
-  title: string;
-  price: number;
-  location: string;
-  images: string[];
-  created_at: string;
-  condition: ProductCondition;
-  category: string;
-  status: string;
-  distance_km?: number;
-}
 
 const Index = () => {
   const [searchParams] = useSearchParams();
@@ -37,73 +23,14 @@ const Index = () => {
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState<string | null>(null);
   const [showWelcomePopup, setShowWelcomePopup] = useState(true);
-  const { toast } = useToast();
   
   const categoryFilter = searchParams.get('category');
   const subcategoryFilter = searchParams.get('subcategory');
 
-  const { data: listings = [], isLoading, error } = useQuery({
-    queryKey: ['listings', categoryFilter, subcategoryFilter, selectedLocation],
-    queryFn: async () => {
-      console.log('Fetching listings with filters:', { categoryFilter, subcategoryFilter, selectedLocation });
-      
-      try {
-        let query;
-        if (selectedLocation) {
-          const locationParts = selectedLocation.split('|');
-          const placeId = locationParts[locationParts.length - 1];
-          
-          const { data: locationData } = await supabase
-            .from('location_cache')
-            .select('latitude, longitude')
-            .eq('place_id', placeId)
-            .single();
-
-          if (locationData) {
-            query = supabase.rpc('get_listings_by_location', {
-              location_query: null,
-              search_lat: locationData.latitude,
-              search_long: locationData.longitude,
-              radius_km: 20
-            });
-          } else {
-            query = supabase.rpc('get_listings_by_location', {
-              location_query: placeId
-            });
-          }
-        } else {
-          query = supabase.rpc('get_listings_by_location', {
-            location_query: null,
-            search_lat: null,
-            search_long: null
-          });
-        }
-
-        const { data, error } = await query;
-
-        if (error) {
-          console.error('Error fetching listings:', error);
-          throw error;
-        }
-
-        let filteredListings = data as Listing[];
-        
-        if (categoryFilter) {
-          filteredListings = filteredListings.filter(listing => listing.category === categoryFilter);
-        }
-
-        console.log('Fetched listings:', filteredListings);
-        return filteredListings;
-      } catch (error) {
-        console.error('Error in listing query:', error);
-        toast({
-          title: "Error",
-          description: "Failed to fetch listings. Please try again.",
-          variant: "destructive",
-        });
-        return [];
-      }
-    }
+  const { data: listings = [], isLoading, error } = useListings({
+    categoryFilter,
+    subcategoryFilter,
+    selectedLocation
   });
 
   const getFirstImageUrl = (images: string[]) => {
