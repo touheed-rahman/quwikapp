@@ -317,6 +317,45 @@ export type Database = {
           },
         ]
       }
+      offers: {
+        Row: {
+          amount: number
+          conversation_id: string
+          created_at: string
+          id: string
+          status: string | null
+        }
+        Insert: {
+          amount: number
+          conversation_id: string
+          created_at?: string
+          id?: string
+          status?: string | null
+        }
+        Update: {
+          amount?: number
+          conversation_id?: string
+          created_at?: string
+          id?: string
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "offers_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "offers_conversation_id_fkey1"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null

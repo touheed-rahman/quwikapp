@@ -1,7 +1,7 @@
 
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { MessageCircle } from "lucide-react";
+import { MessageCircle, Tag } from "lucide-react";
 
 interface SellerInfoProps {
   seller: {
@@ -10,9 +10,10 @@ interface SellerInfoProps {
     listings: number;
   };
   onChatClick: () => void;
+  onMakeOffer: () => void;
 }
 
-const SellerInfo = ({ seller, onChatClick }: SellerInfoProps) => {
+const SellerInfo = ({ seller, onChatClick, onMakeOffer }: SellerInfoProps) => {
   return (
     <>
       <Card className="p-4">
@@ -39,7 +40,12 @@ const SellerInfo = ({ seller, onChatClick }: SellerInfoProps) => {
           <MessageCircle className="h-5 w-5 mr-2" />
           Chat with Seller
         </Button>
-        <Button variant="outline" className="flex-1 h-12 hover:text-white transition-colors">
+        <Button 
+          variant="outline" 
+          className="flex-1 h-12 hover:bg-primary hover:text-white transition-colors"
+          onClick={onMakeOffer}
+        >
+          <Tag className="h-5 w-5 mr-2" />
           Make Offer
         </Button>
       </div>

@@ -13,6 +13,7 @@ import ProductInfo from "@/components/product/ProductInfo";
 import SellerInfo from "@/components/product/SellerInfo";
 import RelatedProducts from "@/components/product/RelatedProducts";
 import { useToast } from "@/components/ui/use-toast";
+import MakeOfferDialog from "@/components/product/MakeOfferDialog";
 
 const ProductPage = () => {
   const { id } = useParams();
@@ -21,6 +22,8 @@ const ProductPage = () => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [session, setSession] = useState<any>(null);
+  const [isOfferDialogOpen, setIsOfferDialogOpen] = useState(false);
+  const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -133,8 +136,8 @@ const ProductPage = () => {
       }
 
       if (existingConversation) {
-        // If conversation exists, navigate to it
-        navigate(`/chat/${existingConversation.id}`);
+        // If conversation exists, set it as current and open offer dialog
+        setCurrentConversationId(existingConversation.id);
         return;
       }
 
@@ -151,8 +154,7 @@ const ProductPage = () => {
 
       if (createError) throw createError;
 
-      // Navigate to the new conversation
-      navigate(`/chat/${newConversation.id}`);
+      setCurrentConversationId(newConversation.id);
     } catch (error: any) {
       toast({
         title: "Error",
@@ -161,6 +163,24 @@ const ProductPage = () => {
       });
       console.error('Chat error:', error);
     }
+  };
+
+  const handleMakeOffer = async () => {
+    if (!session) {
+      toast({
+        title: "Sign in required",
+        description: "Please sign in to make an offer",
+        variant: "destructive"
+      });
+      navigate('/profile');
+      return;
+    }
+
+    if (!currentConversationId) {
+      await handleChatWithSeller();
+    }
+    
+    setIsOfferDialogOpen(true);
   };
 
   if (isLoading) {
@@ -219,6 +239,7 @@ const ProductPage = () => {
             <SellerInfo
               seller={product.seller}
               onChatClick={handleChatWithSeller}
+              onMakeOffer={handleMakeOffer}
             />
           </div>
         </div>
@@ -236,6 +257,17 @@ const ProductPage = () => {
             title: product.title,
             price: product.price.toString()
           }
+        }}
+      />
+
+      <MakeOfferDialog
+        isOpen={isOfferDialogOpen}
+        onClose={() => setIsOfferDialogOpen(false)}
+        productTitle={product.title}
+        productPrice={product.price}
+        conversationId={currentConversationId}
+        onOfferSuccess={() => {
+          navigate(`/chat/${currentConversationId}`);
         }}
       />
     </div>
