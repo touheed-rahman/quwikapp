@@ -123,6 +123,10 @@ const ProductCard = ({
     }
   };
 
+  const capitalizeFirstLetter = (str: string) => {
+    return str.charAt(0).toUpperCase() + str.slice(1);
+  };
+
   // Extract just the area name from the location string
   const displayLocation = location?.split(',')[0] || 'Location not specified';
 
@@ -165,8 +169,10 @@ const ProductCard = ({
               <span>{displayLocation}</span>
             </div>
             {condition && (
-              <Badge className={getConditionColor(condition as ProductCondition)}>
-                {condition}
+              <Badge 
+                className={`text-[10px] px-2 py-0.5 rounded-[20px] ${getConditionColor(condition as ProductCondition)}`}
+              >
+                {capitalizeFirstLetter(condition)}
               </Badge>
             )}
           </div>
