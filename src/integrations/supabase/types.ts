@@ -1347,6 +1347,10 @@ export type Database = {
           view_count: number | null
         }[]
       }
+      get_maps_api_key: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
       get_nearby_locations: {
         Args: {
           search_lat: number
