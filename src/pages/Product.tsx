@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import Header from "@/components/Header";
@@ -29,7 +30,7 @@ const ProductPage = () => {
   const [session, setSession] = useState<any>(null);
   const { toast } = useToast();
 
-  const { data: product, isLoading } = useProductDetails(id);
+  const { data: product, isLoading, isError } = useProductDetails(id);
   const { data: relatedProducts = [] } = useRelatedProducts(id, product?.category);
   const {
     isOfferDialogOpen,
@@ -88,7 +89,7 @@ const ProductPage = () => {
     return <ProductLoader />;
   }
 
-  if (!product) {
+  if (isError || !product) {
     return <ProductNotFound />;
   }
 
@@ -131,11 +132,13 @@ const ProductPage = () => {
               description={product.description}
             />
 
-            <SellerInfo
-              seller={seller}
-              onChatClick={() => handleChatWithSeller(session)}
-              onMakeOffer={() => handleMakeOffer(session)}
-            />
+            {seller && (
+              <SellerInfo
+                seller={seller}
+                onChatClick={() => handleChatWithSeller(session)}
+                onMakeOffer={() => handleMakeOffer(session)}
+              />
+            )}
           </div>
         </div>
 

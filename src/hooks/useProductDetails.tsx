@@ -7,6 +7,8 @@ export const useProductDetails = (id: string | undefined) => {
   return useQuery({
     queryKey: ['product', id],
     queryFn: async () => {
+      if (!id) throw new Error('Product ID is required');
+
       const { data, error } = await supabase
         .from('listings')
         .select(`
@@ -25,12 +27,8 @@ export const useProductDetails = (id: string | undefined) => {
       return {
         ...data,
         condition: data.condition as ProductCondition,
-        seller: {
-          name: data.profiles.full_name || 'Anonymous',
-          memberSince: new Date(data.profiles.created_at).getFullYear().toString(),
-          listings: 0,
-        }
       };
-    }
+    },
+    enabled: !!id,
   });
 };
