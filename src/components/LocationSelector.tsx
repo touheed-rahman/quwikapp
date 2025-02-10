@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { MapPin } from 'lucide-react';
 import { Button } from "@/components/ui/button";
-import { Command, CommandInput } from "@/components/ui/command";
+import { Command, CommandEmpty, CommandInput, CommandList } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Location, LocationSelectorProps } from './location/types';
 import { useLocationSearch } from './location/useLocationSearch';
@@ -15,7 +15,7 @@ const LocationSelector = ({ value, onChange }: LocationSelectorProps) => {
   const { locations, loading, handleLocationSelect } = useLocationSearch(searchQuery);
   const { toast } = useToast();
 
-  const selectedLocation = value 
+  const selectedLocation = value && locations?.length 
     ? locations.find(location => 
         location.area 
           ? `${location.name}, ${location.area}` === value
@@ -80,13 +80,21 @@ const LocationSelector = ({ value, onChange }: LocationSelectorProps) => {
             value={searchQuery}
             onValueChange={setSearchQuery}
           />
-          <LocationList
-            locations={locations}
-            loading={loading}
-            searchQuery={searchQuery}
-            selectedValue={value}
-            onSelect={handleLocationChoice}
-          />
+          <CommandList>
+            {loading ? (
+              <CommandEmpty>Loading locations...</CommandEmpty>
+            ) : locations?.length === 0 ? (
+              <CommandEmpty>No locations found.</CommandEmpty>
+            ) : (
+              <LocationList
+                locations={locations}
+                loading={loading}
+                searchQuery={searchQuery}
+                selectedValue={value}
+                onSelect={handleLocationChoice}
+              />
+            )}
+          </CommandList>
         </Command>
       </PopoverContent>
     </Popover>

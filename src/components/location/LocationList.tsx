@@ -1,6 +1,6 @@
 
+import { CommandGroup, CommandItem } from "@/components/ui/command";
 import { Check } from 'lucide-react';
-import { CommandEmpty, CommandGroup, CommandItem } from "@/components/ui/command";
 import { cn } from "@/lib/utils";
 import { Location } from './types';
 
@@ -12,17 +12,9 @@ interface LocationListProps {
   onSelect: (location: Location) => void;
 }
 
-const LocationList = ({ locations, loading, searchQuery, selectedValue, onSelect }: LocationListProps) => {
-  if (loading) {
-    return (
-      <div className="py-6 text-center text-sm text-muted-foreground">
-        Loading locations...
-      </div>
-    );
-  }
-
-  if (!locations || locations.length === 0 && searchQuery) {
-    return <CommandEmpty>No location found.</CommandEmpty>;
+const LocationList = ({ locations, selectedValue, onSelect }: LocationListProps) => {
+  if (!locations || locations.length === 0) {
+    return null;
   }
 
   return (
