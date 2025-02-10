@@ -15,15 +15,19 @@ const LocationSelector = ({ value, onChange }: LocationSelectorProps) => {
   const { locations, loading, handleLocationSelect } = useLocationSearch(searchQuery);
   const { toast } = useToast();
 
-  const selectedLocation = value ? locations?.find(location => 
-    value.includes(location.place_id || '')
-  ) : null;
+  // Parse the value string to get place_id
+  const selectedPlaceId = value?.split('|')[1];
+
+  // Find the selected location using place_id
+  const selectedLocation = selectedPlaceId
+    ? locations?.find(location => location.place_id === selectedPlaceId)
+    : null;
 
   const handleLocationChoice = async (location: Location) => {
     try {
       const locationDetails = await handleLocationSelect(location);
       if (locationDetails) {
-        // Include place_id in the location string
+        // Format: "LocationName, Area|place_id"
         const newValue = `${locationDetails.name}${locationDetails.area ? `, ${locationDetails.area}` : ''}|${locationDetails.place_id}`;
         onChange(newValue);
         setOpen(false);
@@ -62,6 +66,8 @@ const LocationSelector = ({ value, onChange }: LocationSelectorProps) => {
                   ? `${selectedLocation.name}, ${selectedLocation.area}`
                   : selectedLocation.name}
               </span>
+            ) : value ? (
+              <span className="truncate">{value.split('|')[0]}</span>
             ) : (
               "Select location"
             )}
@@ -85,7 +91,7 @@ const LocationSelector = ({ value, onChange }: LocationSelectorProps) => {
                 locations={locations}
                 loading={loading}
                 searchQuery={searchQuery}
-                selectedValue={value}
+                selectedValue={selectedPlaceId}
                 onSelect={handleLocationChoice}
               />
             )}

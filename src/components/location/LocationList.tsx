@@ -21,16 +21,14 @@ const LocationList = ({ locations, selectedValue, onSelect }: LocationListProps)
     <CommandGroup>
       {locations.map((location) => (
         <CommandItem
-          key={location.id}
-          value={location.id}
+          key={location.place_id}
+          value={location.place_id}
           onSelect={() => onSelect(location)}
         >
           <Check
             className={cn(
               "mr-2 h-4 w-4",
-              (location.area 
-                ? `${location.name}, ${location.area}` === selectedValue
-                : location.name === selectedValue)
+              location.place_id === selectedValue
                 ? "opacity-100"
                 : "opacity-0"
             )}
