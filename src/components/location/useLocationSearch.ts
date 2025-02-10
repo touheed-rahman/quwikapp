@@ -36,6 +36,7 @@ export const useLocationSearch = (searchQuery: string) => {
       }
 
       const data = await response.json();
+      console.log('Place details response:', data);
       
       if (data.status === 'OK' && data.result) {
         const result = data.result;
@@ -95,6 +96,7 @@ export const useLocationSearch = (searchQuery: string) => {
             description: "Location services are not fully configured.",
             variant: "destructive",
           });
+          setPredictions([]);
           return;
         }
 
@@ -116,6 +118,7 @@ export const useLocationSearch = (searchQuery: string) => {
         }
 
         const data = await response.json();
+        console.log('Predictions response:', data);
         
         if (data.status === 'OK' && Array.isArray(data.predictions)) {
           setPredictions(data.predictions);
@@ -141,36 +144,41 @@ export const useLocationSearch = (searchQuery: string) => {
   }, [searchQuery, toast]);
 
   const handleLocationSelect = async (location: Location | PlacePrediction): Promise<Location | null> => {
-    const placeId = location.place_id;
-    if (!placeId) return null;
+    try {
+      const placeId = location.place_id;
+      if (!placeId) return null;
 
-    const details = await getPlaceDetails(placeId);
-    if (details) {
-      await cacheLocation(details);
-      return {
-        id: details.place_id,
-        name: details.name,
-        area: details.area,
-        place_id: details.place_id,
-        latitude: details.latitude,
-        longitude: details.longitude,
-        structured_formatting: {
-          main_text: details.name,
-          secondary_text: details.area || ''
-        }
-      };
+      const details = await getPlaceDetails(placeId);
+      if (details) {
+        await cacheLocation(details);
+        return {
+          id: details.place_id,
+          name: details.name,
+          area: details.area,
+          place_id: details.place_id,
+          latitude: details.latitude,
+          longitude: details.longitude,
+          structured_formatting: {
+            main_text: details.name,
+            secondary_text: details.area || ''
+          }
+        };
+      }
+      return null;
+    } catch (error) {
+      console.error('Error in handleLocationSelect:', error);
+      return null;
     }
-    return null;
   };
 
-  const locations: Location[] = predictions.map(prediction => ({
+  const locations: Location[] = predictions?.map(prediction => ({
     id: prediction.place_id,
     name: prediction.structured_formatting.main_text,
     area: prediction.structured_formatting.secondary_text,
     place_id: prediction.place_id,
     description: prediction.description,
     structured_formatting: prediction.structured_formatting
-  }));
+  })) || [];
 
   return { locations, loading, handleLocationSelect };
 };
