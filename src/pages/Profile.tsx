@@ -20,9 +20,11 @@ import {
   Share2,
   Lock,
   BookMarked,
+  Phone,
 } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
-import ProductCard from "@/components/ProductCard";
+import ProfileStats from "@/components/profile/ProfileStats";
+import ProfileSecuritySettings from "@/components/profile/ProfileSecuritySettings";
+import ProfileNotifications from "@/components/profile/ProfileNotifications";
 
 const Profile = () => {
   const [session, setSession] = useState<any>(null);
@@ -31,47 +33,6 @@ const Profile = () => {
   const [isEditing, setIsEditing] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
-
-  // Fetch saved listings
-  const { data: savedListings = [] } = useQuery({
-    queryKey: ['saved-listings', session?.user?.id],
-    queryFn: async () => {
-      if (!session?.user?.id) return [];
-      
-      const { data: wishlistItems, error } = await supabase
-        .from('wishlists')
-        .select(`
-          listing_id,
-          listings (*)
-        `)
-        .eq('user_id', session.user.id);
-
-      if (error) throw error;
-
-      return wishlistItems
-        .map(item => item.listings)
-        .filter(Boolean);
-    },
-    enabled: !!session?.user?.id,
-  });
-
-  // Fetch shared listings (user's own listings)
-  const { data: sharedListings = [] } = useQuery({
-    queryKey: ['shared-listings', session?.user?.id],
-    queryFn: async () => {
-      if (!session?.user?.id) return [];
-
-      const { data, error } = await supabase
-        .from('listings')
-        .select('*')
-        .eq('user_id', session.user.id)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      return data;
-    },
-    enabled: !!session?.user?.id,
-  });
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -138,6 +99,7 @@ const Profile = () => {
         .update({
           full_name: profile.full_name,
           location: profile.location,
+          phone: profile.phone,
         })
         .eq("id", session.user.id);
 
@@ -154,13 +116,6 @@ const Profile = () => {
         variant: "destructive",
       });
     }
-  };
-
-  const getFirstImageUrl = (images: string[]) => {
-    if (images && images.length > 0) {
-      return supabase.storage.from('listings').getPublicUrl(images[0]).data.publicUrl;
-    }
-    return "https://via.placeholder.com/300";
   };
 
   if (loading) {
@@ -215,15 +170,13 @@ const Profile = () => {
                   <UserRound className="mr-2 h-4 w-4" />
                   Profile Settings
                 </Button>
-                <Link to="/notifications">
-                  <Button variant="ghost" className="w-full justify-start" size="sm">
-                    <BellRing className="mr-2 h-4 w-4" />
-                    Notifications
-                  </Button>
-                </Link>
+                <Button variant="ghost" className="w-full justify-start" size="sm">
+                  <BellRing className="mr-2 h-4 w-4" />
+                  Notifications
+                </Button>
                 <Button variant="ghost" className="w-full justify-start" size="sm">
                   <Lock className="mr-2 h-4 w-4" />
-                  Privacy
+                  Security
                 </Button>
                 <Link to="/wishlist">
                   <Button variant="ghost" className="w-full justify-start" size="sm">
@@ -249,6 +202,10 @@ const Profile = () => {
 
           {/* Main Content */}
           <div className="md:col-span-9 space-y-6">
+            {/* Profile Stats */}
+            {session?.user?.id && <ProfileStats userId={session.user.id} />}
+
+            {/* Profile Information */}
             <Card className="p-6">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-lg font-semibold">Profile Information</h2>
@@ -291,6 +248,21 @@ const Profile = () => {
                 </div>
 
                 <div className="space-y-2">
+                  <Label htmlFor="phone" className="flex items-center gap-2">
+                    <Phone className="w-4 h-4" />
+                    Phone Number
+                  </Label>
+                  <Input
+                    id="phone"
+                    type="tel"
+                    value={profile?.phone || ''}
+                    onChange={(e) => setProfile({ ...profile, phone: e.target.value })}
+                    disabled={!isEditing}
+                    className="bg-white"
+                  />
+                </div>
+
+                <div className="space-y-2">
                   <Label htmlFor="location" className="flex items-center gap-2">
                     <MapPin className="w-4 h-4" />
                     Location
@@ -317,49 +289,11 @@ const Profile = () => {
               </div>
             </Card>
 
-            <Card className="p-6">
-              <h2 className="text-lg font-semibold mb-4">My Listings</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {sharedListings.map((listing: any) => (
-                  <ProductCard
-                    key={listing.id}
-                    id={listing.id}
-                    title={listing.title}
-                    price={listing.price}
-                    location={listing.location || "Location not specified"}
-                    image={getFirstImageUrl(listing.images)}
-                    condition={listing.condition}
-                  />
-                ))}
-                {sharedListings.length === 0 && (
-                  <div className="col-span-full text-center py-8 text-muted-foreground">
-                    You haven't shared any listings yet
-                  </div>
-                )}
-              </div>
-            </Card>
+            {/* Security Settings */}
+            <ProfileSecuritySettings />
 
-            <Card className="p-6">
-              <h2 className="text-lg font-semibold mb-4">Saved Items</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {savedListings.map((listing: any) => (
-                  <ProductCard
-                    key={listing.id}
-                    id={listing.id}
-                    title={listing.title}
-                    price={listing.price}
-                    location={listing.location || "Location not specified"}
-                    image={getFirstImageUrl(listing.images)}
-                    condition={listing.condition}
-                  />
-                ))}
-                {savedListings.length === 0 && (
-                  <div className="col-span-full text-center py-8 text-muted-foreground">
-                    No saved items yet
-                  </div>
-                )}
-              </div>
-            </Card>
+            {/* Notifications */}
+            <ProfileNotifications />
           </div>
         </div>
       </div>
