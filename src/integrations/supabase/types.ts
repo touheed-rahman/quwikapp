@@ -1356,6 +1356,10 @@ export type Database = {
         }
         Returns: unknown
       }
+      get_dashboard_metrics: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
+      }
       get_listings_by_location: {
         Args: {
           location_query?: string

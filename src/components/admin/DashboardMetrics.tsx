@@ -6,16 +6,26 @@ import { Shield, Users, ListChecks, Clock, Star, XCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 
+interface DashboardMetrics {
+  totalListings: number;
+  pendingListings: number;
+  approvedListings: number;
+  totalUsers: number;
+  featuredListings: number;
+  rejectedListings: number;
+}
+
 const DashboardMetrics = () => {
   const navigate = useNavigate();
   
-  // Optimize the query with staleTime and cacheTime
-  const { data: metrics, isLoading, refetch } = useQuery({
+  const { data: metrics, isLoading, refetch } = useQuery<DashboardMetrics>({
     queryKey: ['admin-metrics'],
     queryFn: async () => {
-      // Use a single query with count aggregation for better performance
-      const { data: counts, error } = await supabase
-        .rpc('get_dashboard_metrics');
+      const { data, error } = await supabase
+        .rpc('get_dashboard_metrics') as { 
+          data: DashboardMetrics | null; 
+          error: Error | null 
+        };
 
       if (error) {
         console.error('Error fetching metrics:', error);
@@ -29,7 +39,7 @@ const DashboardMetrics = () => {
         };
       }
 
-      return counts || {
+      return data || {
         totalListings: 0,
         pendingListings: 0,
         approvedListings: 0,
@@ -38,24 +48,21 @@ const DashboardMetrics = () => {
         rejectedListings: 0
       };
     },
-    // Add caching configuration for better performance
-    staleTime: 1000, // Consider data fresh for 1 second
-    cacheTime: 3000, // Keep data in cache for 3 seconds
-    refetchOnWindowFocus: false // Prevent unnecessary refetches
+    staleTime: 1000, // Data considered fresh for 1 second
+    gcTime: 3000, // Keep unused data for 3 seconds (replaces old cacheTime)
+    refetchOnWindowFocus: false
   });
 
   // Optimize real-time subscriptions
   useEffect(() => {
-    // Batch updates using a debounced refetch
     let timeoutId: NodeJS.Timeout;
     const debouncedRefetch = () => {
       clearTimeout(timeoutId);
       timeoutId = setTimeout(() => {
         refetch();
-      }, 300); // Debounce updates by 300ms
+      }, 300);
     };
 
-    // Use a single channel for both tables
     const channel = supabase
       .channel('dashboard-metrics')
       .on(
