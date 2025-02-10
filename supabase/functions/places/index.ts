@@ -21,6 +21,7 @@ serve(async (req) => {
   try {
     const API_KEY = Deno.env.get('GOOGLE_MAPS_API_KEY')
     if (!API_KEY) {
+      console.error('Missing Google Maps API key');
       throw new Error('Missing Google Maps API key')
     }
 
@@ -28,28 +29,50 @@ serve(async (req) => {
 
     let url: string
     if (endpoint === 'autocomplete') {
+      if (!input?.trim()) {
+        console.error('Empty input for autocomplete');
+        throw new Error('Input is required for autocomplete')
+      }
       url = `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${encodeURIComponent(
-        input || ''
+        input
       )}&components=country:in&key=${API_KEY}&types=(cities)`
     } else if (endpoint === 'details') {
+      if (!place_id?.trim()) {
+        console.error('Empty place_id for details');
+        throw new Error('Place ID is required for details')
+      }
       url = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${place_id}&key=${API_KEY}&fields=geometry,name,formatted_address`
     } else {
+      console.error('Invalid endpoint requested:', endpoint);
       throw new Error('Invalid endpoint')
     }
 
-    console.log('Fetching URL:', url);
+    console.log('Making request to Google Places API:', url.replace(API_KEY, '[REDACTED]'));
 
     const response = await fetch(url)
     const data = await response.json()
 
-    console.log('API Response:', data);
+    console.log('Google Places API Response:', {
+      status: data.status,
+      errorMessage: data.error_message,
+      hasResults: endpoint === 'autocomplete' ? 
+        (data.predictions?.length > 0) : 
+        (data.result != null)
+    });
+
+    if (data.status !== 'OK') {
+      throw new Error(data.error_message || `Google Places API error: ${data.status}`)
+    }
 
     return new Response(JSON.stringify(data), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
   } catch (error) {
-    console.error('Edge Function Error:', error);
-    return new Response(JSON.stringify({ error: error.message }), {
+    console.error('Edge Function Error:', error.message);
+    return new Response(JSON.stringify({ 
+      error: error.message,
+      details: 'If you recently enabled billing, it may take a few minutes to propagate. Please ensure the Places API is enabled in your Google Cloud Console.'
+    }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
