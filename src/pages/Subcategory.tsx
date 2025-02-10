@@ -1,7 +1,6 @@
 
 import { useState } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
 import Header from "@/components/Header";
 import ProductCard from "@/components/ProductCard";
 import LocationSelector from "@/components/LocationSelector";
@@ -17,6 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useQuery } from "@tanstack/react-query";
 
 const SubcategoryPage = () => {
   const { category, subcategory } = useParams();
