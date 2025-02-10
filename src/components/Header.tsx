@@ -77,7 +77,7 @@ const Header = () => {
         <div className="flex items-center gap-8 flex-1">
           <Link to="/" className="shrink-0">
             <h1 className="text-2xl font-semibold bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent">
-              Higoods
+              Quwik
             </h1>
           </Link>
           <LocationSelector 
