@@ -88,6 +88,30 @@ export type Database = {
           },
         ]
       }
+      feedback: {
+        Row: {
+          created_at: string
+          id: string
+          message: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          message: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          message?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       listing_notifications: {
         Row: {
           created_at: string | null

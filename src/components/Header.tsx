@@ -7,11 +7,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "./ui/badge";
 import { useIsMobile } from "@/hooks/use-mobile";
 import ChatWindow from "@/components/chat/ChatWindow";
+import FeedbackDialog from "@/components/feedback/FeedbackDialog";
 
 const Header = () => {
   const [session, setSession] = useState<any>(null);
   const [unreadCount, setUnreadCount] = useState(0);
   const [isChatOpen, setIsChatOpen] = useState(false);
+  const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
   const isMobile = useIsMobile();
 
   useEffect(() => {
@@ -119,19 +121,32 @@ const Header = () => {
                   <User className="h-5 w-5" />
                 </Button>
               </Link>
-              <Link to="/help" className="shrink-0">
-                <Button variant="ghost" size="icon">
-                  <HelpCircle className="h-5 w-5" />
-                </Button>
-              </Link>
+              <Button 
+                variant="ghost" 
+                size="icon"
+                onClick={() => setIsFeedbackOpen(true)}
+                className="shrink-0"
+              >
+                <HelpCircle className="h-5 w-5" />
+              </Button>
               <Link to="/sell" className="hidden md:block shrink-0">
                 <Button className="hover:bg-primary hover:text-white whitespace-nowrap">Sell Now</Button>
               </Link>
             </>
           ) : (
-            <Link to="/profile">
-              <Button>Sign In</Button>
-            </Link>
+            <>
+              <Button 
+                variant="ghost" 
+                size="icon"
+                onClick={() => setIsFeedbackOpen(true)}
+                className="shrink-0"
+              >
+                <HelpCircle className="h-5 w-5" />
+              </Button>
+              <Link to="/profile">
+                <Button>Sign In</Button>
+              </Link>
+            </>
           )}
         </div>
       </div>
@@ -141,6 +156,11 @@ const Header = () => {
           <ChatWindow isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} />
         </div>
       )}
+
+      <FeedbackDialog 
+        open={isFeedbackOpen} 
+        onOpenChange={setIsFeedbackOpen} 
+      />
     </header>
   );
 };
