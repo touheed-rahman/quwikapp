@@ -18,7 +18,7 @@ export function useSessionUser(conversationId: string | undefined) {
         if (sessionError) {
           console.error('Error fetching session:', sessionError);
           await supabase.auth.signOut(); // Clear any invalid session data
-          navigate('/profile');
+          window.location.href = `${window.location.origin}/profile`;
           return;
         }
 
@@ -26,7 +26,7 @@ export function useSessionUser(conversationId: string | undefined) {
           if (conversationId) {
             localStorage.setItem('intended_conversation', conversationId);
           }
-          navigate('/profile');
+          window.location.href = `${window.location.origin}/profile`;
           return;
         }
 
@@ -36,7 +36,7 @@ export function useSessionUser(conversationId: string | undefined) {
         if (userError || !user) {
           console.error('Error fetching user:', userError);
           await supabase.auth.signOut(); // Clear any invalid session data
-          navigate('/profile');
+          window.location.href = `${window.location.origin}/profile`;
           return;
         }
 
@@ -44,7 +44,7 @@ export function useSessionUser(conversationId: string | undefined) {
       } catch (error) {
         console.error('Session initialization error:', error);
         await supabase.auth.signOut(); // Clear any invalid session data
-        navigate('/profile');
+        window.location.href = `${window.location.origin}/profile`;
       } finally {
         setLoading(false);
       }
@@ -58,12 +58,14 @@ export function useSessionUser(conversationId: string | undefined) {
         
         if (event === 'SIGNED_OUT' || !session) {
           setSessionUser(null);
-          navigate('/profile');
+          window.location.href = `${window.location.origin}/profile`;
           return;
         }
         
         if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
           setSessionUser(session.user);
+          // Redirect to home page on successful sign in
+          window.location.href = window.location.origin;
         }
       }
     );
