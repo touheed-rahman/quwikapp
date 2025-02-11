@@ -71,7 +71,7 @@ const ListingItem = ({ listing, onMarkAsSold, showSoldButton, onListingDeleted }
   return (
     <Card className={cn(
       "relative overflow-hidden",
-      isSold && "opacity-75"
+      isSold && "opacity-75 bg-gray-100"
     )}>
       <Link to={`/product/${listing.id}`}>
         <div className="flex gap-4 p-3">
@@ -104,7 +104,7 @@ const ListingItem = ({ listing, onMarkAsSold, showSoldButton, onListingDeleted }
                       Rejected
                     </Badge>
                   )}
-                  {listing.status === 'sold' && (
+                  {isSold && (
                     <Badge variant="secondary" className="text-xs bg-gray-500 text-white">
                       Sold
                     </Badge>

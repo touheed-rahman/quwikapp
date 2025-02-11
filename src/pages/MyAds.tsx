@@ -18,13 +18,13 @@ const MyAds = () => {
   const { data: listings = [], isLoading, refetch } = useQuery({
     queryKey: ['my-listings', selectedTab],
     queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("Not authenticated");
+      const { data: authData } = await supabase.auth.getUser();
+      if (!authData.user) throw new Error("Not authenticated");
 
       const { data, error } = await supabase
         .from('listings')
         .select('*')
-        .eq('user_id', user.id)
+        .eq('user_id', authData.user.id)
         .eq('status', selectedTab)
         .is('deleted_at', null)
         .order('created_at', { ascending: false });
@@ -40,28 +40,32 @@ const MyAds = () => {
 
   // Subscribe to real-time updates
   useEffect(() => {
-    const { data: { user } } = supabase.auth.getUser();
-    if (!user) return;
+    const setupRealtime = async () => {
+      const { data: authData } = await supabase.auth.getUser();
+      if (!authData.user) return;
 
-    const channel = supabase
-      .channel('my-listings-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'listings',
-          filter: `user_id=eq.${user.id}`
-        },
-        () => {
-          refetch();
-        }
-      )
-      .subscribe();
+      const channel = supabase
+        .channel('my-listings-changes')
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'listings',
+            filter: `user_id=eq.${authData.user.id}`
+          },
+          () => {
+            refetch();
+          }
+        )
+        .subscribe();
 
-    return () => {
-      supabase.removeChannel(channel);
+      return () => {
+        supabase.removeChannel(channel);
+      };
     };
+
+    setupRealtime();
   }, [refetch]);
 
   const markAsSold = async (listingId: string) => {
