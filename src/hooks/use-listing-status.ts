@@ -1,6 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import type { Listing } from '@/components/chat/types/chat-detail';
 
 export function useListingStatus(listingId: string | undefined) {
   const [isDisabled, setIsDisabled] = useState(false);
@@ -45,7 +46,7 @@ export function useListingStatus(listingId: string | undefined) {
           table: 'listings',
           filter: `id=eq.${listingId}`
         },
-        (payload) => {
+        (payload: { new: Listing }) => {
           const listing = payload.new;
           if (listing.deleted_at) {
             setIsDisabled(true);
