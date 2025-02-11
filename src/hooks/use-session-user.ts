@@ -12,10 +12,12 @@ export function useSessionUser(conversationId: string | undefined) {
   useEffect(() => {
     const initializeSession = async () => {
       try {
-        const { data: { session }, error } = await supabase.auth.getSession();
+        // Get the current session
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         
-        if (error) {
-          console.error('Error fetching session:', error);
+        if (sessionError) {
+          console.error('Error fetching session:', sessionError);
+          await supabase.auth.signOut(); // Clear any invalid session data
           navigate('/profile');
           return;
         }
@@ -28,9 +30,20 @@ export function useSessionUser(conversationId: string | undefined) {
           return;
         }
 
-        setSessionUser(session.user);
+        // Verify the session is still valid
+        const { data: { user }, error: userError } = await supabase.auth.getUser();
+        
+        if (userError || !user) {
+          console.error('Error fetching user:', userError);
+          await supabase.auth.signOut(); // Clear any invalid session data
+          navigate('/profile');
+          return;
+        }
+
+        setSessionUser(user);
       } catch (error) {
         console.error('Session initialization error:', error);
+        await supabase.auth.signOut(); // Clear any invalid session data
         navigate('/profile');
       } finally {
         setLoading(false);
@@ -40,14 +53,18 @@ export function useSessionUser(conversationId: string | undefined) {
     initializeSession();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (_event, session) => {
-        if (!session) {
+      async (event, session) => {
+        console.log('Auth state changed:', event, session?.user?.id);
+        
+        if (event === 'SIGNED_OUT' || !session) {
           setSessionUser(null);
           navigate('/profile');
           return;
         }
         
-        setSessionUser(session.user);
+        if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+          setSessionUser(session.user);
+        }
       }
     );
 
