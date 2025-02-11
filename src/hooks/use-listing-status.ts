@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import type { Listing } from '@/components/chat/types/chat-detail';
+import type { RealtimeChannel } from '@supabase/supabase-js';
 
 export function useListingStatus(listingId: string | undefined) {
   const [isDisabled, setIsDisabled] = useState(false);
@@ -46,8 +47,8 @@ export function useListingStatus(listingId: string | undefined) {
           table: 'listings',
           filter: `id=eq.${listingId}`
         },
-        (payload: { new: Listing }) => {
-          const listing = payload.new;
+        (payload) => {
+          const listing = payload.new as Listing;
           if (listing.deleted_at) {
             setIsDisabled(true);
             setDisabledReason('This item has been deleted');
