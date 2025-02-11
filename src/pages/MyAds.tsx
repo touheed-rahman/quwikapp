@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useToast } from "@/components/ui/use-toast";
 import Header from "@/components/Header";
@@ -9,6 +9,7 @@ import { Loader2 } from "lucide-react";
 import StatusTabs from "@/components/my-ads/StatusTabs";
 import ListingGrid from "@/components/my-ads/ListingGrid";
 import { ProductCondition } from "@/types/categories";
+import type { RealtimeChannel } from "@supabase/supabase-js";
 
 const MyAds = () => {
   const { toast } = useToast();
@@ -36,6 +37,32 @@ const MyAds = () => {
       }));
     }
   });
+
+  // Subscribe to real-time updates
+  useEffect(() => {
+    const { data: { user } } = supabase.auth.getUser();
+    if (!user) return;
+
+    const channel = supabase
+      .channel('my-listings-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'listings',
+          filter: `user_id=eq.${user.id}`
+        },
+        () => {
+          refetch();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [refetch]);
 
   const markAsSold = async (listingId: string) => {
     const { error } = await supabase
