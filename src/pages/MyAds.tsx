@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useToast } from "@/components/ui/use-toast";
@@ -12,18 +11,15 @@ import { ProductCondition } from "@/types/categories";
 import { useSearchParams } from "react-router-dom";
 import type { RealtimeChannel, RealtimePostgresChangesPayload } from "@supabase/supabase-js";
 
-interface ListingUpdate extends RealtimePostgresChangesPayload<{
+interface ListingStatus {
+  status: string;
   [key: string]: any;
-}> {
-  new: {
-    status: string;
-    [key: string]: any;
-  };
-  old: {
-    status: string;
-    [key: string]: any;
-  } | null;
 }
+
+type ListingUpdate = RealtimePostgresChangesPayload<{
+  old: ListingStatus | null;
+  new: ListingStatus;
+}>;
 
 const MyAds = () => {
   const { toast } = useToast();
@@ -54,7 +50,6 @@ const MyAds = () => {
     }
   });
 
-  // Subscribe to real-time updates with optimized performance
   useEffect(() => {
     const setupRealtime = async () => {
       const { data: authData } = await supabase.auth.getUser();
@@ -72,7 +67,10 @@ const MyAds = () => {
           },
           (payload) => {
             console.log('Received real-time update:', payload);
-            if (payload.new.status === selectedTab || payload.old?.status !== payload.new.status) {
+            const newStatus = payload.new?.status;
+            const oldStatus = payload.old?.status;
+            
+            if (newStatus === selectedTab || (oldStatus && oldStatus !== newStatus)) {
               refetch();
             }
           }

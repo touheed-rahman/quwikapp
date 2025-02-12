@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -17,13 +16,11 @@ import { Switch } from "@/components/ui/switch";
 import { Search, Loader2 } from "lucide-react";
 import type { Database } from "@/integrations/supabase/types";
 
-type Profile = Database['public']['Tables']['profiles']['Row'];
-
-interface User extends Profile {
+type Profile = Database['public']['Tables']['profiles']['Row'] & {
   total_listings: number;
   is_verified: boolean;
   is_disabled: boolean;
-}
+};
 
 const UserManagement = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -48,23 +45,12 @@ const UserManagement = () => {
 
       const { data, error } = await supabase
         .from('profiles')
-        .select(`
-          *,
-          total_listings,
-          is_verified,
-          is_disabled
-        `)
+        .select('*, total_listings, is_verified, is_disabled')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
       
-      // Transform the data to match our User interface
-      return (data || []).map(profile => ({
-        ...profile,
-        total_listings: profile.total_listings ?? 0,
-        is_verified: profile.is_verified ?? false,
-        is_disabled: profile.is_disabled ?? false
-      })) as User[];
+      return (data || []) as Profile[];
     }
   });
 
