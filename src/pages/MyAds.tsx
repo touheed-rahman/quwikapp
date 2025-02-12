@@ -10,17 +10,19 @@ import StatusTabs from "@/components/my-ads/StatusTabs";
 import ListingGrid from "@/components/my-ads/ListingGrid";
 import { ProductCondition } from "@/types/categories";
 import { useSearchParams } from "react-router-dom";
-import type { RealtimeChannel } from "@supabase/supabase-js";
+import type { RealtimeChannel, RealtimePostgresChangesPayload } from "@supabase/supabase-js";
 
-interface ListingUpdate {
+interface ListingUpdate extends RealtimePostgresChangesPayload<{
+  [key: string]: any;
+}> {
   new: {
     status: string;
     [key: string]: any;
   };
-  old?: {
+  old: {
     status: string;
     [key: string]: any;
-  };
+  } | null;
 }
 
 const MyAds = () => {
@@ -60,7 +62,7 @@ const MyAds = () => {
 
       const channel = supabase
         .channel('my-listings-changes')
-        .on(
+        .on<ListingUpdate>(
           'postgres_changes',
           {
             event: '*',
@@ -68,9 +70,8 @@ const MyAds = () => {
             table: 'listings',
             filter: `user_id=eq.${authData.user.id}`
           },
-          (payload: ListingUpdate) => {
+          (payload) => {
             console.log('Received real-time update:', payload);
-            // Only refetch if the status matches the current tab or if it's a status change
             if (payload.new.status === selectedTab || payload.old?.status !== payload.new.status) {
               refetch();
             }

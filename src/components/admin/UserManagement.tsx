@@ -15,11 +15,11 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Search, Loader2 } from "lucide-react";
+import type { Database } from "@/integrations/supabase/types";
 
-interface User {
-  id: string;
-  full_name: string;
-  email: string;
+type Profile = Database['public']['Tables']['profiles']['Row'];
+
+interface User extends Profile {
   total_listings: number;
   is_verified: boolean;
   is_disabled: boolean;
@@ -48,11 +48,23 @@ const UserManagement = () => {
 
       const { data, error } = await supabase
         .from('profiles')
-        .select('*')
+        .select(`
+          *,
+          total_listings,
+          is_verified,
+          is_disabled
+        `)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      return data as User[];
+      
+      // Transform the data to match our User interface
+      return (data || []).map(profile => ({
+        ...profile,
+        total_listings: profile.total_listings ?? 0,
+        is_verified: profile.is_verified ?? false,
+        is_disabled: profile.is_disabled ?? false
+      })) as User[];
     }
   });
 
