@@ -8,6 +8,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { useEffect, useState } from "react";
 
 interface WelcomeDialogProps {
   open: boolean;
@@ -15,8 +16,26 @@ interface WelcomeDialogProps {
 }
 
 const WelcomeDialog = ({ open, onOpenChange }: WelcomeDialogProps) => {
+  const [shouldShow, setShouldShow] = useState(true);
+
+  useEffect(() => {
+    const hasSeenWelcome = localStorage.getItem('hasSeenWelcome');
+    if (hasSeenWelcome) {
+      setShouldShow(false);
+      onOpenChange(false);
+    } else {
+      setShouldShow(true);
+      localStorage.setItem('hasSeenWelcome', 'true');
+    }
+  }, [onOpenChange]);
+
+  const handleClose = () => {
+    setShouldShow(false);
+    onOpenChange(false);
+  };
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={shouldShow && open} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold text-center text-primary">
@@ -38,7 +57,7 @@ const WelcomeDialog = ({ open, onOpenChange }: WelcomeDialogProps) => {
           <Button 
             variant="default"
             size="lg"
-            onClick={() => onOpenChange(false)}
+            onClick={handleClose}
             className="w-full sm:w-auto"
           >
             Got it, thanks!
