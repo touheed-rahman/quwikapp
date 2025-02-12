@@ -10,7 +10,7 @@ import StatusTabs from "@/components/my-ads/StatusTabs";
 import ListingGrid from "@/components/my-ads/ListingGrid";
 import { ProductCondition } from "@/types/categories";
 import { useSearchParams } from "react-router-dom";
-import type { RealtimePostgresChangesPayload } from "@supabase/supabase-js";
+import type { RealtimePostgresChangesPayload, RealtimePostgresInsertPayload, RealtimePostgresUpdatePayload, RealtimePostgresDeletePayload } from "@supabase/supabase-js";
 
 interface Listing {
   id: string;
@@ -19,10 +19,10 @@ interface Listing {
   [key: string]: any;
 }
 
-type DatabaseChangesPayload = RealtimePostgresChangesPayload<{
-  old: Listing | null;
-  new: Listing | null;
-}>;
+type InsertPayload = RealtimePostgresInsertPayload<{ old: Listing | null; new: Listing }>;
+type UpdatePayload = RealtimePostgresUpdatePayload<{ old: Listing; new: Listing }>;
+type DeletePayload = RealtimePostgresDeletePayload<{ old: Listing; new: null }>;
+type DatabaseChangesPayload = InsertPayload | UpdatePayload | DeletePayload;
 
 const MyAds = () => {
   const { toast } = useToast();
@@ -70,30 +70,30 @@ const MyAds = () => {
           },
           (payload) => {
             console.log('Received real-time update:', payload);
+
+            // Handle different event types
             if (payload.eventType === 'DELETE') {
               refetch();
               return;
             }
-            
-            // Safely access the payload
-            const shouldRefetch = (() => {
-              switch (payload.eventType) {
-                case 'INSERT':
-                  return payload.new?.status === selectedTab;
-                case 'UPDATE':
-                  return (
-                    payload.new && 
-                    payload.old && 
-                    (payload.new.status === selectedTab || 
-                    payload.old.status !== payload.new.status)
-                  );
-                default:
-                  return false;
-              }
-            })();
 
-            if (shouldRefetch) {
-              refetch();
+            if (payload.eventType === 'INSERT') {
+              const insertPayload = payload as InsertPayload;
+              if (insertPayload.new.status === selectedTab) {
+                refetch();
+              }
+              return;
+            }
+
+            if (payload.eventType === 'UPDATE') {
+              const updatePayload = payload as UpdatePayload;
+              if (
+                updatePayload.new.status === selectedTab || 
+                updatePayload.old.status !== updatePayload.new.status
+              ) {
+                refetch();
+              }
+              return;
             }
           }
         )
