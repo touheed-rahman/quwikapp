@@ -52,29 +52,29 @@ const UserManagement = () => {
 
       const { data, error } = await supabase
         .from('profiles')
-        .select('id, full_name, email, avatar_url, created_at, updated_at, location, total_listings, is_verified, is_disabled');
+        .select()
+        .order('created_at', { ascending: false });
 
       if (error) throw error;
       
       return (data || []).map(profile => ({
         ...profile,
-        total_listings: profile.total_listings || 0,
-        is_verified: profile.is_verified || false,
-        is_disabled: profile.is_disabled || false
+        total_listings: (profile as any).total_listings || 0,
+        is_verified: (profile as any).is_verified || false,
+        is_disabled: (profile as any).is_disabled || false
       })) as Profile[];
     }
   });
 
   const handleVerificationToggle = async (userId: string, currentState: boolean) => {
     try {
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('profiles')
         .update({
           is_verified: !currentState,
           updated_at: new Date().toISOString()
         })
-        .eq('id', userId)
-        .select();
+        .eq('id', userId);
 
       if (error) throw error;
 
@@ -95,14 +95,13 @@ const UserManagement = () => {
 
   const handleStatusToggle = async (userId: string, currentState: boolean) => {
     try {
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('profiles')
         .update({
           is_disabled: !currentState,
           updated_at: new Date().toISOString()
         })
-        .eq('id', userId)
-        .select();
+        .eq('id', userId);
 
       if (error) throw error;
 
