@@ -78,9 +78,9 @@ const MyAds = () => {
             }
 
             // For INSERT events
-            if (payload.eventType === 'INSERT' && payload.new?.status) {
-              const newListing = payload.new as Listing;
-              if (newListing.status === selectedTab) {
+            if (payload.eventType === 'INSERT' && payload.new) {
+              const newListing = payload.new;
+              if ('status' in newListing && newListing.status === selectedTab) {
                 refetch();
               }
               return;
@@ -88,11 +88,13 @@ const MyAds = () => {
 
             // For UPDATE events
             if (payload.eventType === 'UPDATE' && payload.new && payload.old) {
-              const newListing = payload.new as Listing;
-              const oldListing = payload.old as Listing;
+              const newListing = payload.new;
+              const oldListing = payload.old;
               if (
-                newListing.status === selectedTab || 
-                oldListing.status !== newListing.status
+                'status' in newListing && 
+                'status' in oldListing && 
+                (newListing.status === selectedTab || 
+                oldListing.status !== newListing.status)
               ) {
                 refetch();
               }
