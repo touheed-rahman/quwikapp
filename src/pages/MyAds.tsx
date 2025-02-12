@@ -75,11 +75,11 @@ const MyAds = () => {
               return;
             }
             
+            const newRecord = payload.new as Listing | null;
+            const oldRecord = payload.old as Listing | null;
+
             // Safely access the payload
             const shouldRefetch = (() => {
-              const newRecord = payload.new;
-              const oldRecord = payload.old;
-
               switch (payload.eventType) {
                 case 'INSERT':
                   return newRecord?.status === selectedTab;
