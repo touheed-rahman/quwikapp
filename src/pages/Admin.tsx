@@ -1,17 +1,20 @@
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Shield, LogOut } from "lucide-react";
+import { Shield, LogOut, Users, Grid, Bell, Settings } from "lucide-react";
 import DashboardMetrics from "@/components/admin/DashboardMetrics";
 import ListingManagement from "@/components/admin/ListingManagement";
+import UserManagement from "@/components/admin/UserManagement";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const AdminPanel = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
+  const [activeTab, setActiveTab] = useState('listings');
 
   useEffect(() => {
     const checkAdminAccess = async () => {
@@ -63,8 +66,6 @@ const AdminPanel = () => {
     }
   };
 
-  const selectedFilter = location.state?.filter || 'all';
-
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="container max-w-7xl mx-auto p-4 pt-8">
@@ -85,17 +86,49 @@ const AdminPanel = () => {
 
         <div className="space-y-8">
           <DashboardMetrics />
-          <div>
-            <h2 className="text-lg font-semibold mb-4">
-              {selectedFilter === 'all' && 'All Listings'}
-              {selectedFilter === 'pending' && 'Pending Listings'}
-              {selectedFilter === 'approved' && 'Approved Listings'}
-              {selectedFilter === 'rejected' && 'Rejected Listings'}
-              {selectedFilter === 'featured' && 'Featured Listings'}
-              {selectedFilter === 'users' && 'User Management'}
-            </h2>
-            <ListingManagement />
-          </div>
+          
+          <Tabs value={activeTab} onValueChange={setActiveTab}>
+            <TabsList className="grid w-full grid-cols-4 mb-8">
+              <TabsTrigger value="listings" className="flex items-center gap-2">
+                <Grid className="w-4 h-4" />
+                Listings
+              </TabsTrigger>
+              <TabsTrigger value="users" className="flex items-center gap-2">
+                <Users className="w-4 h-4" />
+                Users
+              </TabsTrigger>
+              <TabsTrigger value="notifications" className="flex items-center gap-2">
+                <Bell className="w-4 h-4" />
+                Notifications
+              </TabsTrigger>
+              <TabsTrigger value="settings" className="flex items-center gap-2">
+                <Settings className="w-4 h-4" />
+                Settings
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="listings" className="space-y-4">
+              <ListingManagement />
+            </TabsContent>
+
+            <TabsContent value="users" className="space-y-4">
+              <UserManagement />
+            </TabsContent>
+
+            <TabsContent value="notifications" className="space-y-4">
+              <div className="bg-white p-6 rounded-lg shadow">
+                <h2 className="text-xl font-semibold mb-4">System Notifications</h2>
+                <p className="text-muted-foreground">Coming soon...</p>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="settings" className="space-y-4">
+              <div className="bg-white p-6 rounded-lg shadow">
+                <h2 className="text-xl font-semibold mb-4">Admin Settings</h2>
+                <p className="text-muted-foreground">Coming soon...</p>
+              </div>
+            </TabsContent>
+          </Tabs>
         </div>
       </div>
     </div>
@@ -103,4 +136,3 @@ const AdminPanel = () => {
 };
 
 export default AdminPanel;
-
