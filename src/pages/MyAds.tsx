@@ -74,14 +74,23 @@ const MyAds = () => {
               return;
             }
             
-            const newListing = payload.new;
-            const oldListing = payload.old;
-            
-            if (newListing && oldListing) {
-              if (newListing.status === selectedTab || oldListing.status !== newListing.status) {
-                refetch();
+            // Safely access the payload
+            const shouldRefetch = (() => {
+              switch (payload.eventType) {
+                case 'INSERT':
+                  return payload.new && payload.new.status === selectedTab;
+                case 'UPDATE':
+                  return (
+                    payload.new && 
+                    payload.old && 
+                    (payload.new.status === selectedTab || payload.old.status !== payload.new.status)
+                  );
+                default:
+                  return false;
               }
-            } else if (newListing && newListing.status === selectedTab) {
+            })();
+
+            if (shouldRefetch) {
               refetch();
             }
           }
