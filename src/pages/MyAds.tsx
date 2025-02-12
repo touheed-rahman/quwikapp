@@ -78,18 +78,21 @@ const MyAds = () => {
             }
 
             // For INSERT events
-            if (payload.eventType === 'INSERT' && payload.new) {
-              if (payload.new.status === selectedTab) {
+            if (payload.eventType === 'INSERT' && payload.new?.status) {
+              const newListing = payload.new as Listing;
+              if (newListing.status === selectedTab) {
                 refetch();
               }
               return;
             }
 
             // For UPDATE events
-            if (payload.eventType === 'UPDATE' && payload.old && payload.new) {
+            if (payload.eventType === 'UPDATE' && payload.new && payload.old) {
+              const newListing = payload.new as Listing;
+              const oldListing = payload.old as Listing;
               if (
-                payload.new.status === selectedTab || 
-                payload.old.status !== payload.new.status
+                newListing.status === selectedTab || 
+                oldListing.status !== newListing.status
               ) {
                 refetch();
               }
