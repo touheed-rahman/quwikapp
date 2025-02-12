@@ -70,10 +70,10 @@ const ListingItem = ({ listing, onMarkAsSold, showSoldButton, onListingDeleted }
 
   return (
     <Card className={cn(
-      "relative overflow-hidden",
-      isSold && "opacity-75 bg-gray-100"
+      "relative overflow-hidden group",
+      isSold && "opacity-75"
     )}>
-      <Link to={`/product/${listing.id}`}>
+      <Link to={`/product/${listing.id}`} className="block">
         <div className="flex gap-4 p-3">
           <div className="w-24 h-20 flex-shrink-0">
             <img
@@ -86,7 +86,7 @@ const ListingItem = ({ listing, onMarkAsSold, showSoldButton, onListingDeleted }
           <div className="flex-1 min-w-0">
             <div className="flex flex-col h-full justify-between">
               <div>
-                <h3 className="text-base font-semibold line-clamp-1 hover:text-primary transition-colors">
+                <h3 className="text-base font-semibold line-clamp-1 group-hover:text-primary transition-colors">
                   {listing.title}
                 </h3>
                 <p className="text-base font-bold text-primary mt-0.5">
@@ -129,6 +129,7 @@ const ListingItem = ({ listing, onMarkAsSold, showSoldButton, onListingDeleted }
                     variant="outline"
                     onClick={(e) => {
                       e.preventDefault();
+                      e.stopPropagation();
                       onMarkAsSold(listing.id);
                     }}
                     className="h-7 text-xs"
@@ -139,7 +140,7 @@ const ListingItem = ({ listing, onMarkAsSold, showSoldButton, onListingDeleted }
                 )}
                 {!isSold && (
                   <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
+                    <DropdownMenuTrigger asChild onClick={(e) => e.preventDefault()}>
                       <Button variant="ghost" size="sm" className="h-7">
                         <MoreVertical className="h-4 w-4" />
                       </Button>

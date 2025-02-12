@@ -7,8 +7,16 @@ export function useMessageSender(conversationId: string | undefined, sessionUser
   const { toast } = useToast();
   const [newMessage, setNewMessage] = useState("");
 
-  const handleSend = async () => {
-    if (!newMessage.trim() || !sessionUserId || !conversationId) return;
+  const handleSend = async (isInitialMessage?: boolean, offerAmount?: number) => {
+    let messageContent = newMessage;
+
+    if (isInitialMessage) {
+      messageContent = "Hi, is this still available?";
+    } else if (offerAmount !== undefined) {
+      messageContent = `I would like to make an offer of ₹${offerAmount.toLocaleString()}`;
+    }
+
+    if (!messageContent.trim() || !sessionUserId || !conversationId) return;
 
     try {
       const { error } = await supabase
@@ -16,7 +24,8 @@ export function useMessageSender(conversationId: string | undefined, sessionUser
         .insert({
           conversation_id: conversationId,
           sender_id: sessionUserId,
-          content: newMessage
+          content: messageContent,
+          is_offer: offerAmount !== undefined
         });
 
       if (error) throw error;
