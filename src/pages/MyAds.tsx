@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useToast } from "@/components/ui/use-toast";
@@ -9,16 +10,17 @@ import StatusTabs from "@/components/my-ads/StatusTabs";
 import ListingGrid from "@/components/my-ads/ListingGrid";
 import { ProductCondition } from "@/types/categories";
 import { useSearchParams } from "react-router-dom";
-import type { RealtimeChannel, RealtimePostgresChangesPayload } from "@supabase/supabase-js";
+import type { RealtimePostgresChangesPayload } from "@supabase/supabase-js";
 
-interface ListingStatus {
+interface Listing {
+  id: string;
   status: string;
   [key: string]: any;
 }
 
 type ListingUpdate = RealtimePostgresChangesPayload<{
-  old: ListingStatus | null;
-  new: ListingStatus;
+  old: Listing | null;
+  new: Listing;
 }>;
 
 const MyAds = () => {
@@ -67,8 +69,8 @@ const MyAds = () => {
           },
           (payload) => {
             console.log('Received real-time update:', payload);
-            const newStatus = payload.new?.status;
-            const oldStatus = payload.old?.status;
+            const newStatus = payload.new && payload.new.status;
+            const oldStatus = payload.old && payload.old.status;
             
             if (newStatus === selectedTab || (oldStatus && oldStatus !== newStatus)) {
               refetch();

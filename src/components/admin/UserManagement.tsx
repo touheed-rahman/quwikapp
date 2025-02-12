@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -14,13 +15,19 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Search, Loader2 } from "lucide-react";
-import type { Database } from "@/integrations/supabase/types";
 
-type Profile = Database['public']['Tables']['profiles']['Row'] & {
+interface Profile {
+  id: string;
+  full_name: string | null;
+  email: string | null;
+  avatar_url: string | null;
+  created_at: string;
+  updated_at: string;
+  location: string | null;
   total_listings: number;
   is_verified: boolean;
   is_disabled: boolean;
-};
+}
 
 const UserManagement = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -45,21 +52,29 @@ const UserManagement = () => {
 
       const { data, error } = await supabase
         .from('profiles')
-        .select('*, total_listings, is_verified, is_disabled')
-        .order('created_at', { ascending: false });
+        .select('id, full_name, email, avatar_url, created_at, updated_at, location, total_listings, is_verified, is_disabled');
 
       if (error) throw error;
       
-      return (data || []) as Profile[];
+      return (data || []).map(profile => ({
+        ...profile,
+        total_listings: profile.total_listings || 0,
+        is_verified: profile.is_verified || false,
+        is_disabled: profile.is_disabled || false
+      })) as Profile[];
     }
   });
 
   const handleVerificationToggle = async (userId: string, currentState: boolean) => {
     try {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('profiles')
-        .update({ is_verified: !currentState })
-        .eq('id', userId);
+        .update({
+          is_verified: !currentState,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', userId)
+        .select();
 
       if (error) throw error;
 
@@ -80,10 +95,14 @@ const UserManagement = () => {
 
   const handleStatusToggle = async (userId: string, currentState: boolean) => {
     try {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('profiles')
-        .update({ is_disabled: !currentState })
-        .eq('id', userId);
+        .update({
+          is_disabled: !currentState,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', userId)
+        .select();
 
       if (error) throw error;
 
