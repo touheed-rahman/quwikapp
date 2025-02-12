@@ -18,10 +18,10 @@ interface Listing {
   [key: string]: any;
 }
 
-type ListingUpdate = RealtimePostgresChangesPayload<{
+type ListingPayload = {
   old: Listing | null;
   new: Listing;
-}>;
+};
 
 const MyAds = () => {
   const { toast } = useToast();
@@ -59,7 +59,7 @@ const MyAds = () => {
 
       const channel = supabase
         .channel('my-listings-changes')
-        .on<ListingUpdate>(
+        .on<RealtimePostgresChangesPayload<ListingPayload>>(
           'postgres_changes',
           {
             event: '*',
@@ -69,10 +69,19 @@ const MyAds = () => {
           },
           (payload) => {
             console.log('Received real-time update:', payload);
-            const newStatus = payload.new && payload.new.status;
-            const oldStatus = payload.old && payload.old.status;
+            if (payload.eventType === 'DELETE') {
+              refetch();
+              return;
+            }
             
-            if (newStatus === selectedTab || (oldStatus && oldStatus !== newStatus)) {
+            const newListing = payload.new;
+            const oldListing = payload.old;
+            
+            if (newListing && oldListing) {
+              if (newListing.status === selectedTab || oldListing.status !== newListing.status) {
+                refetch();
+              }
+            } else if (newListing && newListing.status === selectedTab) {
               refetch();
             }
           }
