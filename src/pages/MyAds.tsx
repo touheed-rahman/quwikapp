@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useToast } from "@/components/ui/use-toast";
@@ -10,6 +11,17 @@ import ListingGrid from "@/components/my-ads/ListingGrid";
 import { ProductCondition } from "@/types/categories";
 import { useSearchParams } from "react-router-dom";
 import type { RealtimeChannel } from "@supabase/supabase-js";
+
+interface ListingUpdate {
+  new: {
+    status: string;
+    [key: string]: any;
+  };
+  old?: {
+    status: string;
+    [key: string]: any;
+  };
+}
 
 const MyAds = () => {
   const { toast } = useToast();
@@ -56,7 +68,7 @@ const MyAds = () => {
             table: 'listings',
             filter: `user_id=eq.${authData.user.id}`
           },
-          (payload) => {
+          (payload: ListingUpdate) => {
             console.log('Received real-time update:', payload);
             // Only refetch if the status matches the current tab or if it's a status change
             if (payload.new.status === selectedTab || payload.old?.status !== payload.new.status) {

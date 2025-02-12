@@ -13,7 +13,7 @@ const RecentSubcategoryListings = () => {
   const [searchParams] = useSearchParams();
   const subcategory = searchParams.get('subcategory');
 
-  const { data: listings = [], isLoading } = useQuery({
+  const { data: listings = [], isLoading, refetch } = useQuery({
     queryKey: ['recent-subcategory-listings', category, subcategory],
     queryFn: async () => {
       // Get listings from last 24 hours
@@ -54,8 +54,7 @@ const RecentSubcategoryListings = () => {
         },
         () => {
           console.log('Received real-time update for listings');
-          // Refetch data
-          void refetch();
+          refetch();
         }
       )
       .subscribe();
@@ -63,7 +62,7 @@ const RecentSubcategoryListings = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [category, subcategory]);
+  }, [category, subcategory, refetch]);
 
   const getFirstImageUrl = (images: string[]) => {
     if (images && images.length > 0) {
