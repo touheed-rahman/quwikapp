@@ -21,6 +21,7 @@ import Wishlist from "./pages/Wishlist";
 import Subcategory from "./pages/Subcategory";
 import AdminLogin from "./pages/AdminLogin";
 import FreshRecommendations from "./pages/FreshRecommendations";
+import RecentSubcategoryListings from "./pages/RecentSubcategoryListings";
 import React from 'react';
 
 const queryClient = new QueryClient({
@@ -80,6 +81,7 @@ const App = () => (
                 <Route path="/" element={<Index />} />
                 <Route path="/category/:category/:subcategory" element={<Subcategory />} />
                 <Route path="/fresh-recommendations" element={<FreshRecommendations />} />
+                <Route path="/recent-listings/:category" element={<RecentSubcategoryListings />} />
                 <Route
                   path="/sell"
                   element={

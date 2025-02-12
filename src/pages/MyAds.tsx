@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useToast } from "@/components/ui/use-toast";
@@ -9,11 +8,14 @@ import { Loader2 } from "lucide-react";
 import StatusTabs from "@/components/my-ads/StatusTabs";
 import ListingGrid from "@/components/my-ads/ListingGrid";
 import { ProductCondition } from "@/types/categories";
+import { useSearchParams } from "react-router-dom";
 import type { RealtimeChannel } from "@supabase/supabase-js";
 
 const MyAds = () => {
   const { toast } = useToast();
-  const [selectedTab, setSelectedTab] = useState("pending");
+  const [searchParams] = useSearchParams();
+  const initialTab = searchParams.get('tab') || "pending";
+  const [selectedTab, setSelectedTab] = useState(initialTab);
 
   const { data: listings = [], isLoading, refetch } = useQuery({
     queryKey: ['my-listings', selectedTab],
@@ -38,7 +40,7 @@ const MyAds = () => {
     }
   });
 
-  // Subscribe to real-time updates
+  // Subscribe to real-time updates with optimized performance
   useEffect(() => {
     const setupRealtime = async () => {
       const { data: authData } = await supabase.auth.getUser();
@@ -54,8 +56,12 @@ const MyAds = () => {
             table: 'listings',
             filter: `user_id=eq.${authData.user.id}`
           },
-          () => {
-            refetch();
+          (payload) => {
+            console.log('Received real-time update:', payload);
+            // Only refetch if the status matches the current tab or if it's a status change
+            if (payload.new.status === selectedTab || payload.old?.status !== payload.new.status) {
+              refetch();
+            }
           }
         )
         .subscribe();
@@ -66,7 +72,7 @@ const MyAds = () => {
     };
 
     setupRealtime();
-  }, [refetch]);
+  }, [refetch, selectedTab]);
 
   const markAsSold = async (listingId: string) => {
     const { error } = await supabase
@@ -97,15 +103,15 @@ const MyAds = () => {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      <main className="container mx-auto px-4 pt-20 pb-24">
-        <h1 className="text-2xl font-bold mb-6">My Ads</h1>
+      <main className="container mx-auto px-4 pt-20 pb-24 max-w-7xl">
+        <h1 className="text-2xl font-bold mb-6 text-foreground">My Ads</h1>
         
         <Tabs defaultValue={selectedTab} onValueChange={setSelectedTab}>
           <StatusTabs selectedTab={selectedTab} />
 
           {isLoading ? (
             <div className="flex items-center justify-center py-8">
-              <Loader2 className="h-8 w-8 animate-spin" />
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
             </div>
           ) : (
             <TabsContent value={selectedTab} className="mt-6 px-4">
