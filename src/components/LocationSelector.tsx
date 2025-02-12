@@ -8,6 +8,7 @@ import { Location, LocationSelectorProps } from './location/types';
 import { useLocationSearch } from './location/useLocationSearch';
 import LocationList from './location/LocationList';
 import { useToast } from './ui/use-toast';
+import { cn } from '@/lib/utils';
 
 const LocationSelector = ({ value, onChange }: LocationSelectorProps) => {
   const [open, setOpen] = useState(false);
@@ -35,7 +36,6 @@ const LocationSelector = ({ value, onChange }: LocationSelectorProps) => {
       const locationDetails = await handleLocationSelect(location);
       if (locationDetails) {
         const shortenedArea = shortenArea(locationDetails.area || '');
-        // Format: "LocationName, ShortenedArea|place_id"
         const newValue = `${locationDetails.name}${shortenedArea ? `, ${shortenedArea}` : ''}|${locationDetails.place_id}`;
         onChange(newValue);
         setOpen(false);
@@ -76,20 +76,29 @@ const LocationSelector = ({ value, onChange }: LocationSelectorProps) => {
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className="w-full justify-between text-muted-foreground hover:text-foreground"
+          className={cn(
+            "w-full justify-between text-muted-foreground hover:text-foreground border-input",
+            "hover:bg-accent hover:text-accent-foreground",
+            "focus:ring-2 focus:ring-ring focus:ring-offset-2",
+            "transition-colors duration-200"
+          )}
         >
           <div className="flex items-center gap-2 truncate">
-            <MapPin className="h-4 w-4 shrink-0" />
+            <MapPin className="h-4 w-4 shrink-0 text-primary" />
             <span className="truncate">{displayLocation()}</span>
           </div>
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-72 p-0">
-        <Command shouldFilter={false}>
+      <PopoverContent 
+        className="w-[300px] p-0 shadow-lg border border-input/50 backdrop-blur-sm" 
+        align="start"
+      >
+        <Command className="rounded-lg border-none">
           <CommandInput 
             placeholder="Search location..." 
             value={searchQuery}
             onValueChange={setSearchQuery}
+            className="border-b border-input/50"
           />
           <CommandList>
             {loading ? (
@@ -113,4 +122,3 @@ const LocationSelector = ({ value, onChange }: LocationSelectorProps) => {
 };
 
 export default LocationSelector;
-
