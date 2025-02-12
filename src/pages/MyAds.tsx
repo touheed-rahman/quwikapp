@@ -15,13 +15,14 @@ import type { RealtimePostgresChangesPayload } from "@supabase/supabase-js";
 interface Listing {
   id: string;
   status: string;
+  condition: ProductCondition;
   [key: string]: any;
 }
 
-type ListingPayload = {
+type DatabaseChangesPayload = RealtimePostgresChangesPayload<{
   old: Listing | null;
-  new: Listing;
-};
+  new: Listing | null;
+}>;
 
 const MyAds = () => {
   const { toast } = useToast();
@@ -59,7 +60,7 @@ const MyAds = () => {
 
       const channel = supabase
         .channel('my-listings-changes')
-        .on<RealtimePostgresChangesPayload<ListingPayload>>(
+        .on<DatabaseChangesPayload>(
           'postgres_changes',
           {
             event: '*',
@@ -76,14 +77,16 @@ const MyAds = () => {
             
             // Safely access the payload
             const shouldRefetch = (() => {
+              const newRecord = payload.new;
+              const oldRecord = payload.old;
+
               switch (payload.eventType) {
                 case 'INSERT':
-                  return payload.new && payload.new.status === selectedTab;
+                  return newRecord?.status === selectedTab;
                 case 'UPDATE':
-                  return (
-                    payload.new && 
-                    payload.old && 
-                    (payload.new.status === selectedTab || payload.old.status !== payload.new.status)
+                  return newRecord && oldRecord && (
+                    newRecord.status === selectedTab || 
+                    oldRecord.status !== newRecord.status
                   );
                 default:
                   return false;
