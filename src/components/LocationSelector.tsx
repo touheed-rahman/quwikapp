@@ -16,27 +16,19 @@ const LocationSelector = ({ value, onChange }: LocationSelectorProps) => {
   const { locations, loading, handleLocationSelect } = useLocationSearch(searchQuery);
   const { toast } = useToast();
 
-  // Parse the value string to get place_id
-  const selectedPlaceId = value?.split('|')[1];
-
-  // Find the selected location using place_id
-  const selectedLocation = selectedPlaceId
-    ? locations?.find(location => location.place_id === selectedPlaceId)
-    : null;
-
-  // Function to shorten area name
-  const shortenArea = (area: string) => {
-    if (!area) return '';
-    const parts = area.split(',');
-    return parts[0].trim();
+  // Extract just the city name from the location string
+  const getCityName = (locationString: string) => {
+    if (!locationString) return '';
+    const parts = locationString.split(',')[0].split('|')[0];
+    return parts.trim();
   };
 
   const handleLocationChoice = async (location: Location) => {
     try {
       const locationDetails = await handleLocationSelect(location);
       if (locationDetails) {
-        const shortenedArea = shortenArea(locationDetails.area || '');
-        const newValue = `${locationDetails.name}${shortenedArea ? `, ${shortenedArea}` : ''}|${locationDetails.place_id}`;
+        const cityName = getCityName(locationDetails.name);
+        const newValue = `${cityName}|${locationDetails.place_id}`;
         onChange(newValue);
         setOpen(false);
         setSearchQuery('');
@@ -57,18 +49,6 @@ const LocationSelector = ({ value, onChange }: LocationSelectorProps) => {
     }
   };
 
-  const displayLocation = () => {
-    if (selectedLocation) {
-      const area = shortenArea(selectedLocation.area || '');
-      return area ? `${selectedLocation.name}, ${area}` : selectedLocation.name;
-    }
-    if (value) {
-      const parts = value.split('|')[0].split(',');
-      return parts[0].trim();
-    }
-    return "Select location";
-  };
-
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
@@ -85,13 +65,15 @@ const LocationSelector = ({ value, onChange }: LocationSelectorProps) => {
         >
           <div className="flex items-center gap-2 truncate">
             <MapPin className="h-4 w-4 shrink-0 text-primary" />
-            <span className="truncate">{displayLocation()}</span>
+            <span className="truncate">{value ? getCityName(value) : "Select location"}</span>
           </div>
         </Button>
       </PopoverTrigger>
       <PopoverContent 
-        className="w-[300px] p-0 shadow-lg border border-input/50 backdrop-blur-sm" 
+        className="w-[300px] p-0 shadow-lg border border-input/50 bg-white" 
         align="start"
+        side="bottom"
+        sideOffset={4}
       >
         <Command className="rounded-lg border-none">
           <CommandInput 
@@ -110,7 +92,7 @@ const LocationSelector = ({ value, onChange }: LocationSelectorProps) => {
                 locations={locations}
                 loading={loading}
                 searchQuery={searchQuery}
-                selectedValue={selectedPlaceId}
+                selectedValue={value?.split('|')[1]}
                 onSelect={handleLocationChoice}
               />
             )}
