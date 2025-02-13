@@ -31,15 +31,15 @@ const ProductInfo = ({
   const displayLocation = location?.split(/[|,]/)[0].trim() || 'Location not specified';
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-start justify-between">
-        <div>
-          <h1 className="text-2xl md:text-3xl font-bold">{title}</h1>
-          <p className="text-3xl md:text-4xl font-bold text-primary mt-2">
+    <div className="space-y-4 md:space-y-6">
+      <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+        <div className="space-y-2">
+          <h1 className="text-xl md:text-3xl font-bold break-words">{title}</h1>
+          <p className="text-2xl md:text-4xl font-bold text-primary">
             ₹{price.toLocaleString()}
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 self-end md:self-start">
           <Button variant="outline" size="icon" className="rounded-full">
             <Share2 className="h-5 w-5" />
           </Button>
@@ -49,7 +49,7 @@ const ProductInfo = ({
         </div>
       </div>
 
-      <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+      <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
         <div className="flex items-center gap-1">
           <MapPin className="h-4 w-4" />
           <span>{displayLocation}</span>
