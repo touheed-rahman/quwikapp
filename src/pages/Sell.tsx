@@ -18,13 +18,14 @@ const Sell = () => {
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
   const [condition, setCondition] = useState("");
-  const { selectedLocation, setSelectedLocation } = useLocation();
+  const { selectedLocation } = useLocation();
   const { toast } = useToast();
   const navigate = useNavigate();
 
   const handleStepOneComplete = (data: any) => {
     setFormData({ ...formData, ...data });
-    setStep(2);
+    // Add a small delay to prevent rapid component mount/unmount
+    setTimeout(() => setStep(2), 0);
   };
 
   const validateForm = () => {
@@ -128,7 +129,7 @@ const Sell = () => {
 
       const uploadedImagePaths = await Promise.all(imageUploadPromises);
       
-      const { error } = await supabase.from('listings').insert({
+      const listingData = {
         title,
         description,
         price: parseFloat(price),
@@ -138,8 +139,11 @@ const Sell = () => {
         location: selectedLocation,
         images: uploadedImagePaths,
         user_id: user.id,
-        status: 'pending'
-      });
+        status: 'pending',
+        km_driven: formData.category === 'vehicles' ? formData.km_driven : null
+      };
+
+      const { error } = await supabase.from('listings').insert(listingData);
 
       if (error) throw error;
 
@@ -148,8 +152,8 @@ const Sell = () => {
         description: "Your ad will be visible after review.",
       });
 
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      navigate('/');
+      // Add a delay before navigation to prevent rapid unmount
+      setTimeout(() => navigate('/'), 1000);
 
     } catch (error) {
       console.error('Error posting ad:', error);
@@ -163,37 +167,34 @@ const Sell = () => {
     }
   };
 
-  if (step === 1) {
-    return (
-      <>
-        <SellStepOne onNext={handleStepOneComplete} />
-        <ChatWindow isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} />
-      </>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-background">
-      <Header />
-      <div className="container max-w-2xl mx-auto px-4 pt-20 pb-24">
-        <h1 className="text-2xl font-bold mb-6 text-foreground">
-          ITEM DETAILS
-        </h1>
-        <SellFormDetails
-          title={title}
-          setTitle={setTitle}
-          description={description}
-          setDescription={setDescription}
-          price={price}
-          setPrice={setPrice}
-          condition={condition}
-          setCondition={setCondition}
-          isSubmitting={isSubmitting}
-          onBack={() => setStep(1)}
-          onSubmit={handleSubmit}
-        />
-      </div>
-      <ChatWindow isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} />
+      {step === 1 ? (
+        <SellStepOne onNext={handleStepOneComplete} />
+      ) : (
+        <>
+          <Header />
+          <div className="container max-w-2xl mx-auto px-4 pt-20 pb-24">
+            <h1 className="text-2xl font-bold mb-6 text-foreground">
+              ITEM DETAILS
+            </h1>
+            <SellFormDetails
+              title={title}
+              setTitle={setTitle}
+              description={description}
+              setDescription={setDescription}
+              price={price}
+              setPrice={setPrice}
+              condition={condition}
+              setCondition={setCondition}
+              isSubmitting={isSubmitting}
+              onBack={() => setStep(1)}
+              onSubmit={handleSubmit}
+            />
+          </div>
+        </>
+      )}
+      {isChatOpen && <ChatWindow isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} />}
     </div>
   );
 };
