@@ -158,6 +158,7 @@ export type Database = {
           featured_requested: boolean | null
           id: string
           images: string[]
+          km_driven: number | null
           location: string | null
           price: number
           reviewed_at: string | null
@@ -183,6 +184,7 @@ export type Database = {
           featured_requested?: boolean | null
           id?: string
           images: string[]
+          km_driven?: number | null
           location?: string | null
           price: number
           reviewed_at?: string | null
@@ -208,6 +210,7 @@ export type Database = {
           featured_requested?: boolean | null
           id?: string
           images?: string[]
+          km_driven?: number | null
           location?: string | null
           price?: number
           reviewed_at?: string | null
@@ -1480,6 +1483,12 @@ export type Database = {
           name: string
         }
         Returns: string
+      }
+      get_vehicle_details: {
+        Args: {
+          listing_id: string
+        }
+        Returns: Json
       }
       gettransactionid: {
         Args: Record<PropertyKey, never>

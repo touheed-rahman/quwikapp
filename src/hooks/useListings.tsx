@@ -1,4 +1,3 @@
-
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { ProductCondition } from "@/types/categories";
@@ -23,6 +22,8 @@ export interface Listing {
   deleted_at?: string;
   featured_requested?: boolean;
   view_count?: number;
+  save_count?: number;
+  km_driven?: number | null;
 }
 
 interface UseListingsProps {

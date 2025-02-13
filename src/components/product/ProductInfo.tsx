@@ -1,9 +1,10 @@
 
-import { Heart, Share2, MapPin, Calendar } from "lucide-react";
+import { Heart, Share2, MapPin, Calendar, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { ProductCondition } from "@/types/categories";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface ProductInfoProps {
   title: string;
@@ -12,6 +13,8 @@ interface ProductInfoProps {
   createdAt: string;
   condition: ProductCondition;
   description: string;
+  category?: string;
+  km_driven?: number | null;
 }
 
 const ProductInfo = ({
@@ -20,45 +23,67 @@ const ProductInfo = ({
   location,
   createdAt,
   condition,
-  description
+  description,
+  category,
+  km_driven
 }: ProductInfoProps) => {
+  // Extract just the area name
+  const displayLocation = location?.split(/[|,]/)[0].trim() || 'Location not specified';
+
   return (
     <div className="space-y-6">
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-2xl font-bold">{title}</h1>
-          <p className="text-3xl font-bold text-primary mt-2">
+          <h1 className="text-2xl md:text-3xl font-bold">{title}</h1>
+          <p className="text-3xl md:text-4xl font-bold text-primary mt-2">
             ₹{price.toLocaleString()}
           </p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" size="icon">
+          <Button variant="outline" size="icon" className="rounded-full">
             <Share2 className="h-5 w-5" />
           </Button>
-          <Button variant="outline" size="icon">
+          <Button variant="outline" size="icon" className="rounded-full">
             <Heart className="h-5 w-5" />
           </Button>
         </div>
       </div>
 
-      <div className="flex items-center gap-4 text-sm text-muted-foreground">
+      <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
         <div className="flex items-center gap-1">
           <MapPin className="h-4 w-4" />
-          <span>{location}</span>
+          <span>{displayLocation}</span>
         </div>
         <div className="flex items-center gap-1">
           <Calendar className="h-4 w-4" />
-          <span>Posted on {new Date(createdAt).toLocaleDateString()}</span>
+          <span>{new Date(createdAt).toLocaleDateString()}</span>
         </div>
+        {category === 'vehicles' && km_driven !== null && (
+          <div className="flex items-center gap-1">
+            <Clock className="h-4 w-4" />
+            <span>{km_driven.toLocaleString()} km driven</span>
+          </div>
+        )}
       </div>
 
-      <Badge className="bg-primary/10 text-primary hover:bg-primary/20">
-        {condition}
-      </Badge>
+      <div className="flex flex-wrap gap-2">
+        <Badge className="bg-primary/10 text-primary hover:bg-primary/20">
+          {condition}
+        </Badge>
+        {category === 'vehicles' && km_driven !== null && (
+          <Badge variant="outline">
+            {km_driven.toLocaleString()} km
+          </Badge>
+        )}
+      </div>
 
-      <Card className="p-4">
-        <h2 className="font-semibold mb-2">Description</h2>
-        <p className="text-muted-foreground">{description}</p>
+      <Card className="overflow-hidden">
+        <ScrollArea className="h-[200px] w-full p-4">
+          <div className="space-y-4">
+            <h2 className="font-semibold">Description</h2>
+            <p className="text-muted-foreground whitespace-pre-wrap">{description}</p>
+          </div>
+        </ScrollArea>
       </Card>
     </div>
   );

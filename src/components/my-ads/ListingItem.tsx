@@ -20,7 +20,7 @@ import { cn } from "@/lib/utils";
 const ListingItem = ({ listing, onMarkAsSold, showSoldButton, onListingDeleted }: ListingItemProps) => {
   const { toast } = useToast();
   const isSold = listing.status === 'sold';
-  // Extract just the city name before any comma or pipe
+  // Extract just the area name before any special characters
   const cityName = listing.location?.split(/[|,]/)[0].trim() || 'Location not specified';
 
   const handleDeleteClick = async () => {
@@ -72,6 +72,11 @@ const ListingItem = ({ listing, onMarkAsSold, showSoldButton, onListingDeleted }
               <Badge variant="secondary" className="text-xs">
                 {listing.condition}
               </Badge>
+              {listing.category === 'vehicles' && listing.km_driven !== null && (
+                <Badge variant="outline" className="text-xs">
+                  {listing.km_driven.toLocaleString()} km
+                </Badge>
+              )}
               {listing.status === 'rejected' && (
                 <Badge variant="destructive" className="text-xs">
                   Rejected
