@@ -12,13 +12,14 @@ export function useSessionUser(conversationId: string | undefined) {
   useEffect(() => {
     const initializeSession = async () => {
       try {
-        // Get the current session
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         
         if (sessionError) {
           console.error('Error fetching session:', sessionError);
-          await supabase.auth.signOut(); // Clear any invalid session data
-          window.location.href = `${window.location.origin}/profile`;
+          // Clear any invalid session data but don't redirect yet
+          await supabase.auth.signOut();
+          setSessionUser(null);
+          setLoading(false);
           return;
         }
 
@@ -26,7 +27,8 @@ export function useSessionUser(conversationId: string | undefined) {
           if (conversationId) {
             localStorage.setItem('intended_conversation', conversationId);
           }
-          window.location.href = `${window.location.origin}/profile`;
+          setSessionUser(null);
+          setLoading(false);
           return;
         }
 
@@ -35,17 +37,20 @@ export function useSessionUser(conversationId: string | undefined) {
         
         if (userError || !user) {
           console.error('Error fetching user:', userError);
-          await supabase.auth.signOut(); // Clear any invalid session data
-          window.location.href = `${window.location.origin}/profile`;
+          // Clear any invalid session data
+          await supabase.auth.signOut();
+          setSessionUser(null);
+          setLoading(false);
           return;
         }
 
         setSessionUser(user);
+        setLoading(false);
       } catch (error) {
         console.error('Session initialization error:', error);
-        await supabase.auth.signOut(); // Clear any invalid session data
-        window.location.href = `${window.location.origin}/profile`;
-      } finally {
+        // Clear any invalid session data
+        await supabase.auth.signOut();
+        setSessionUser(null);
         setLoading(false);
       }
     };
@@ -58,14 +63,22 @@ export function useSessionUser(conversationId: string | undefined) {
         
         if (event === 'SIGNED_OUT' || !session) {
           setSessionUser(null);
-          window.location.href = `${window.location.origin}/profile`;
           return;
         }
         
         if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
           setSessionUser(session.user);
-          // Redirect to home page on successful sign in
-          window.location.href = window.location.origin;
+          // Check if there's an intended conversation to redirect to
+          const intendedConversation = localStorage.getItem('intended_conversation');
+          if (intendedConversation) {
+            localStorage.removeItem('intended_conversation');
+            window.location.href = `${window.location.origin}/chat/${intendedConversation}`;
+          } else {
+            // Only redirect to home if we're on the profile page
+            if (window.location.pathname === '/profile') {
+              window.location.href = window.location.origin;
+            }
+          }
         }
       }
     );
@@ -74,6 +87,13 @@ export function useSessionUser(conversationId: string | undefined) {
       subscription.unsubscribe();
     };
   }, [navigate, conversationId]);
+
+  // Use the useEffect hook to handle redirects based on session state
+  useEffect(() => {
+    if (!loading && !sessionUser && window.location.pathname !== '/profile') {
+      navigate('/profile');
+    }
+  }, [sessionUser, loading, navigate]);
 
   return { sessionUser, loading };
 }
