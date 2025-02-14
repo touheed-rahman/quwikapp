@@ -42,8 +42,9 @@ export const useListings = ({ categoryFilter, subcategoryFilter, selectedLocatio
       try {
         let locationQuery;
         if (selectedLocation) {
-          const area = selectedLocation.split('|')[0];
+          const area = selectedLocation.split('|')[0].trim();
           locationQuery = supabase.from('listings').select().ilike('location', `${area}%`);
+          console.log('Location filter applied with area:', area);
         }
 
         // Base query to fetch all approved, non-deleted listings
@@ -70,7 +71,7 @@ export const useListings = ({ categoryFilter, subcategoryFilter, selectedLocatio
         }
 
         if (!listings || listings.length === 0) {
-          console.log('No listings found');
+          console.log('No listings found for the selected filters.');
           return [];
         }
 
@@ -102,4 +103,5 @@ export const useListings = ({ categoryFilter, subcategoryFilter, selectedLocatio
     refetchOnWindowFocus: true,
   });
 };
+
 
