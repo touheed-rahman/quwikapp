@@ -94,7 +94,7 @@ const ListingItem = ({ listing, onMarkAsSold, showSoldButton, onListingDeleted }
                 </p>
                 <div className="flex flex-wrap items-center gap-2 mt-1">
                   <p className="text-xs text-muted-foreground">
-                    {listing.location || "Location not specified"}
+               {listing.location?.split('|')[0].split(',')[1]?.trim() || listing.location?.split('|')[0] || "Location not specified"}
                   </p>
                   <Badge variant="secondary" className="text-xs">
                     {listing.condition}
