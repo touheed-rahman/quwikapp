@@ -9,3 +9,9 @@ const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiO
 // import { supabase } from "@/integrations/supabase/client";
 
 export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+//OSM
+export async function insertLocations(locations) {
+    const { data, error } = await supabase.from('locations').insert(locations);
+    if (error) console.error('Supabase Insert Error:', error);
+    else console.log('Locations Inserted:', data);
+}
