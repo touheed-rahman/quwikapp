@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Location } from './types';
 
@@ -68,7 +68,7 @@ export const useLocationSearch = (searchQuery: string) => {
   };
 
   // Use effect to fetch locations when search query changes
-  useState(() => {
+  useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
       fetchLocations(searchQuery);
     }, 300);
