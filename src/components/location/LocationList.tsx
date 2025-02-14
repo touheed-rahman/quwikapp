@@ -1,8 +1,10 @@
-
 import { CommandGroup, CommandItem } from "@/components/ui/command";
 import { Check } from 'lucide-react';
 import { cn } from "@/lib/utils";
 import { Location } from './types';
+import React, { useEffect, useState } from 'react';
+import { fetchOSMData } from '../utils/overpassAPI';
+import { insertLocations } from '../services/supabaseClient';
 
 interface LocationListProps {
   locations: Location[];
@@ -13,11 +15,23 @@ interface LocationListProps {
 }
 
 const LocationList = ({ locations, selectedValue, onSelect }: LocationListProps) => {
-  if (!locations || locations.length === 0) {
+  const [osmLocations, setOsmLocations] = useState<Location[]>([]);
+
+  useEffect(() => {
+    async function loadOSMLocations() {
+      const data = await fetchOSMData();
+      await insertLocations(data);
+      setOsmLocations(data);
+    }
+    loadOSMLocations();
+  }, []);
+
+  const combinedLocations = [...locations, ...osmLocations];
+
+  if (!combinedLocations || combinedLocations.length === 0) {
     return null;
   }
 
-  // Function to shorten area name
   const shortenArea = (area: string) => {
     if (!area) return '';
     const parts = area.split(',');
@@ -26,7 +40,7 @@ const LocationList = ({ locations, selectedValue, onSelect }: LocationListProps)
 
   return (
     <CommandGroup className="max-h-[300px] overflow-y-auto">
-      {locations.map((location) => (
+      {combinedLocations.map((location) => (
         <CommandItem
           key={location.place_id}
           value={location.place_id}
