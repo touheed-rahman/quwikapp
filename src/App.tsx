@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -22,6 +21,7 @@ import Subcategory from "./pages/Subcategory";
 import AdminLogin from "./pages/AdminLogin";
 import FreshRecommendations from "./pages/FreshRecommendations";
 import RecentSubcategoryListings from "./pages/RecentSubcategoryListings";
+import Reels from "./pages/Reels";
 import React from 'react';
 
 // Create a client outside of the component to avoid recreating it on every render
@@ -79,6 +79,7 @@ const App = () => (
             <Sonner />
             <Routes>
               <Route path="/" element={<Index />} />
+              <Route path="/reels" element={<Reels />} />
               <Route path="/category/:category/:subcategory" element={<Subcategory />} />
               <Route path="/fresh-recommendations" element={<FreshRecommendations />} />
               <Route path="/recent-listings/:category" element={<RecentSubcategoryListings />} />
