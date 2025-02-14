@@ -1,40 +1,55 @@
+export interface Location {
+  name: string;
+  area?: string;
+  latitude: number;
+  longitude: number;
+  distance_km?: number;
+  structured_formatting?: {
+    main_text: string;
+    secondary_text: string;
+  };
+}
+
+export interface LocationSelectorProps {
+  value: string | null;
+  onChange: (location: string | null) => void;
+}
+
+export interface PlacePrediction {
+  description: string;
+  structured_formatting: {
+    main_text: string;
+    secondary_text: string;
+  };
+}
 
 import { useState, useEffect, useRef } from 'react';
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { PlacePrediction, Location, PlaceDetails } from './types';
+
+type Timeout = ReturnType<typeof setTimeout>;
 
 export const useLocationSearch = (searchQuery: string) => {
   const [predictions, setPredictions] = useState<PlacePrediction[]>([]);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
-  const debounceTimeout = useRef<NodeJS.Timeout>();
-  const abortController = useRef<AbortController>();
+  const debounceTimeout = useRef<Timeout | null>(null);
+  const abortController = useRef<AbortController | null>(null);
 
-  const getPlaceDetails = async (placeId: string): Promise<PlaceDetails | null> => {
+  const getPlaceDetails = async (area: string) => {
     try {
       const { data, error } = await supabase.functions.invoke('places', {
-        body: {
-          endpoint: 'details',
-          place_id: placeId
-        }
+        body: { endpoint: 'details', area }
       });
 
-      if (error) {
-        console.error('Place details error:', error);
-        throw error;
-      }
-
-      console.log('Place details response:', data);
-      
+      if (error) throw new Error(error.message);
       if (data.status === 'OK' && data.result) {
-        const result = data.result;
+        const { name, formatted_address, geometry } = data.result;
         return {
-          place_id: placeId,
-          name: result.name,
-          area: result.formatted_address,
-          latitude: result.geometry.location.lat,
-          longitude: result.geometry.location.lng
+          name,
+          area: formatted_address,
+          latitude: geometry.location.lat,
+          longitude: geometry.location.lng,
         };
       }
       return null;
@@ -44,22 +59,17 @@ export const useLocationSearch = (searchQuery: string) => {
     }
   };
 
-  const cacheLocation = async (details: PlaceDetails) => {
+  const cacheLocation = async (details: Location) => {
     try {
-      const { error } = await supabase
-        .from('location_cache')
-        .upsert({
-          place_id: details.place_id,
-          name: details.name,
-          area: details.area,
-          latitude: details.latitude,
-          longitude: details.longitude,
-          coordinates: `POINT(${details.longitude} ${details.latitude})`
-        });
-
-      if (error) {
-        console.error('Error caching location:', error);
-      }
+      const { error } = await supabase.from('location_cache').upsert({
+        name: details.name,
+        area: details.area ?? '',
+        latitude: details.latitude,
+        longitude: details.longitude,
+        coordinates: `POINT(${details.longitude} ${details.latitude})`,
+        place_id: ''
+      });
+      if (error) console.error('Error caching location:', error);
     } catch (error) {
       console.error('Error in caching location:', error);
     }
@@ -72,109 +82,73 @@ export const useLocationSearch = (searchQuery: string) => {
     }
 
     const fetchPredictions = async () => {
+      setLoading(true);
       try {
-        if (abortController.current) {
-          abortController.current.abort();
-        }
-        abortController.current = new AbortController();
-
-        setLoading(true);
-        
         const { data, error } = await supabase.functions.invoke('places', {
-          body: {
-            endpoint: 'autocomplete',
-            input: searchQuery
-          }
+          body: { endpoint: 'autocomplete', input: searchQuery }
         });
 
         if (error) {
-          console.error('Supabase function error:', error);
-          throw error;
+          console.error('Supabase error:', error);
+          toast({ title: 'Error', description: error.message, variant: 'destructive' });
+          setPredictions([]);
+          return;
         }
 
-        console.log('Predictions response:', data);
-        
-        if (data.status === 'OK' && Array.isArray(data.predictions)) {
+        if (data?.status === 'OK' && data.predictions) {
           setPredictions(data.predictions);
-        } else if (data.error_message) {
-          console.error('Google Places API error:', data.error_message);
-          toast({
-            title: "Error",
-            description: "There was an error fetching locations. Please try again.",
-            variant: "destructive",
-          });
-          setPredictions([]);
         } else {
-          console.error('Unexpected response format:', data);
           setPredictions([]);
         }
-      } catch (error: any) {
-        console.error('Error fetching predictions:', error);
-        if (error.name !== 'AbortError') {
-          toast({
-            title: "Error",
-            description: "Could not fetch location suggestions. Please try again.",
-            variant: "destructive",
-          });
-        }
+      } catch (error) {
+        console.error('Autocomplete API error:', error);
+        toast({
+          title: 'Error',
+          description: 'Failed to fetch location predictions.',
+          variant: 'destructive',
+        });
         setPredictions([]);
       } finally {
         setLoading(false);
       }
     };
 
-    if (debounceTimeout.current) {
-      clearTimeout(debounceTimeout.current);
-    }
-
+    if (debounceTimeout.current) clearTimeout(debounceTimeout.current);
     debounceTimeout.current = setTimeout(fetchPredictions, 500);
 
     return () => {
-      if (debounceTimeout.current) {
-        clearTimeout(debounceTimeout.current);
-      }
-      if (abortController.current) {
-        abortController.current.abort();
-      }
+      if (debounceTimeout.current) clearTimeout(debounceTimeout.current);
+      if (abortController.current) abortController.current.abort();
     };
   }, [searchQuery, toast]);
 
-  const handleLocationSelect = async (location: Location | PlacePrediction): Promise<Location | null> => {
-    try {
-      const placeId = location.place_id;
-      if (!placeId) return null;
-
-      const details = await getPlaceDetails(placeId);
-      if (details) {
-        await cacheLocation(details);
-        return {
-          id: details.place_id,
-          name: details.name,
-          area: details.area,
-          place_id: details.place_id,
-          latitude: details.latitude,
-          longitude: details.longitude,
-          structured_formatting: {
-            main_text: details.name,
-            secondary_text: details.area || ''
-          }
-        };
-      }
-      return null;
-    } catch (error) {
-      console.error('Error in handleLocationSelect:', error);
-      return null;
+  const handleLocationSelect = async (location: Location | PlacePrediction) => {
+    const area = 'area' in location ? location.area ?? location.structured_formatting.secondary_text : location.structured_formatting.secondary_text;
+    const details = await getPlaceDetails(area);
+    if (details) {
+      await cacheLocation(details);
+      return {
+        name: details.name,
+        area: details.area,
+        latitude: details.latitude,
+        longitude: details.longitude,
+        structured_formatting: {
+          main_text: details.name,
+          secondary_text: details.area || '',
+        }
+      };
     }
+    return null;
   };
 
-  const locations: Location[] = predictions?.map(prediction => ({
-    id: prediction.place_id,
-    name: prediction.structured_formatting.main_text,
-    area: prediction.structured_formatting.secondary_text,
-    place_id: prediction.place_id,
-    description: prediction.description,
-    structured_formatting: prediction.structured_formatting
-  })) || [];
+  const locations: Location[] = predictions.map((pred) => ({
+    name: pred.structured_formatting.main_text,
+    area: pred.structured_formatting.secondary_text ?? '',
+    latitude: 0,
+    longitude: 0,
+    structured_formatting: pred.structured_formatting,
+  }));
 
   return { locations, loading, handleLocationSelect };
 };
+
