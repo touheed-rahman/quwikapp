@@ -40,13 +40,6 @@ export const useListings = ({ categoryFilter, subcategoryFilter, selectedLocatio
       console.log('Fetching listings with filters:', { categoryFilter, subcategoryFilter, selectedLocation, featured });
       
       try {
-        let locationQuery;
-        if (selectedLocation) {
-          const area = selectedLocation.split('|')[0].trim();
-          locationQuery = supabase.from('listings').select().ilike('location', `${area}%`);
-          console.log('Location filter applied with area:', area);
-        }
-
         // Base query to fetch all approved, non-deleted listings
         let query = supabase
           .from('listings')
@@ -62,8 +55,18 @@ export const useListings = ({ categoryFilter, subcategoryFilter, selectedLocatio
           query = query.eq('subcategory', subcategoryFilter);
         }
 
-        // Execute the appropriate query
-        const { data: listings, error } = await (locationQuery || query);
+        if (selectedLocation) {
+          const area = selectedLocation.split('|')[0].trim();
+          query = query.ilike('location', `${area}%`);
+          console.log('Location filter applied with area:', area);
+        }
+
+        if (featured) {
+          query = query.eq('featured', true);
+        }
+
+        // Execute the query
+        const { data: listings, error } = await query;
 
         if (error) {
           console.error('Error fetching listings:', error);
