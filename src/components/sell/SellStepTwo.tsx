@@ -1,4 +1,5 @@
 
+import { memo } from "react";
 import Header from "@/components/Header";
 import SellFormDetails from "./SellFormDetails";
 import { useLocation } from "@/contexts/LocationContext";
@@ -18,7 +19,7 @@ interface SellStepTwoProps {
   category?: string;
 }
 
-const SellStepTwo = ({
+const SellStepTwo = memo(({
   title,
   setTitle,
   description,
@@ -35,7 +36,7 @@ const SellStepTwo = ({
   const { selectedLocation } = useLocation();
 
   return (
-    <>
+    <div className="transition-opacity duration-200">
       <Header />
       <div className="container max-w-2xl mx-auto px-4 pt-20 pb-24">
         <h1 className="text-2xl font-bold mb-6 text-foreground">
@@ -56,8 +57,10 @@ const SellStepTwo = ({
           category={category}
         />
       </div>
-    </>
+    </div>
   );
-};
+});
+
+SellStepTwo.displayName = "SellStepTwo";
 
 export default SellStepTwo;

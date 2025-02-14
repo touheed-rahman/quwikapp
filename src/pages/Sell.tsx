@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import SellStepOne from "@/components/sell/SellStepOne";
 import SellStepTwo from "@/components/sell/SellStepTwo";
 import ChatWindow from "@/components/chat/ChatWindow";
@@ -25,32 +25,55 @@ const Sell = () => {
     handleSubmit
   } = useListingForm();
 
-  const handleStepOneComplete = (data: any) => {
-    setFormData({ ...formData, ...data });
-    setTimeout(() => setStep(2), 0);
-  };
+  const handleStepOneComplete = useCallback((data: any) => {
+    setFormData((prevData: any) => ({ ...prevData, ...data }));
+    // Add RAF to smooth out the transition
+    requestAnimationFrame(() => {
+      setStep(2);
+    });
+  }, [setFormData]);
+
+  const handleBack = useCallback(() => {
+    requestAnimationFrame(() => {
+      setStep(1);
+    });
+  }, []);
+
+  const handleSubmitForm = useCallback((e: React.FormEvent) => {
+    handleSubmit(e, selectedLocation);
+  }, [handleSubmit, selectedLocation]);
+
+  // Memoize the chat window to prevent unnecessary remounts
+  const chatWindow = isChatOpen ? (
+    <ChatWindow 
+      isOpen={isChatOpen} 
+      onClose={() => setIsChatOpen(false)} 
+    />
+  ) : null;
 
   return (
     <div className="min-h-screen bg-background">
-      {step === 1 ? (
-        <SellStepOne onNext={handleStepOneComplete} />
-      ) : (
-        <SellStepTwo
-          title={title}
-          setTitle={setTitle}
-          description={description}
-          setDescription={setDescription}
-          price={price}
-          setPrice={setPrice}
-          condition={condition}
-          setCondition={setCondition}
-          isSubmitting={isSubmitting}
-          onBack={() => setStep(1)}
-          onSubmit={(e) => handleSubmit(e, selectedLocation)}
-          category={formData.category}
-        />
-      )}
-      {isChatOpen && <ChatWindow isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} />}
+      <div className="relative">
+        {step === 1 ? (
+          <SellStepOne onNext={handleStepOneComplete} />
+        ) : (
+          <SellStepTwo
+            title={title}
+            setTitle={setTitle}
+            description={description}
+            setDescription={setDescription}
+            price={price}
+            setPrice={setPrice}
+            condition={condition}
+            setCondition={setCondition}
+            isSubmitting={isSubmitting}
+            onBack={handleBack}
+            onSubmit={handleSubmitForm}
+            category={formData.category}
+          />
+        )}
+      </div>
+      {chatWindow}
     </div>
   );
 };
