@@ -128,7 +128,7 @@ const ProductCard = ({
   };
 
   // Extract just the area name from the location string
-  const displayLocation = location?.split(',')[0] || 'Location not specified';
+  const displayLocation = location?.split('|')[0]?.split(',')[0] || 'Location not specified';
 
   return (
     <Link to={`/product/${id}`}>
