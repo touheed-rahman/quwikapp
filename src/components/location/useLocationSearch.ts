@@ -1,107 +1,180 @@
 
-import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { Location } from './types';
-import { toast } from "@/hooks/use-toast";
+import { useState, useEffect, useRef } from 'react';
+import { useToast } from "@/components/ui/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { PlacePrediction, Location, PlaceDetails } from './types';
 
 export const useLocationSearch = (searchQuery: string) => {
-  const [locations, setLocations] = useState<Location[]>([]);
+  const [predictions, setPredictions] = useState<PlacePrediction[]>([]);
   const [loading, setLoading] = useState(false);
+  const { toast } = useToast();
+  const debounceTimeout = useRef<NodeJS.Timeout>();
+  const abortController = useRef<AbortController>();
 
-  // Fetch location suggestions based on user input
-  const fetchLocations = async (query: string) => {
-    if (!query?.trim()) {
-      setLocations([]);
-      return;
-    }
-
-    setLoading(true);
+  const getPlaceDetails = async (placeId: string): Promise<PlaceDetails | null> => {
     try {
-      const { data, error } = await supabase.functions.invoke('places', {
-        body: {
-          endpoint: 'autocomplete',
-          input: query,
-        },
-      });
-
-      if (error) throw error;
-
-      if (!data?.predictions) {
-        console.error('No predictions in response:', data);
-        throw new Error('Failed to get location suggestions');
-      }
-
-      const suggestions = data.predictions.map((prediction: any) => ({
-        description: prediction.description,
-        place_id: prediction.place_id,
-        name: prediction.structured_formatting?.main_text || prediction.description,
-      }));
-
-      console.log('Location suggestions:', suggestions);
-      setLocations(suggestions);
-    } catch (error) {
-      console.error('Error fetching locations:', error);
-      toast({
-        title: "Error",
-        description: "Failed to fetch location suggestions. Please try again.",
-        variant: "destructive",
-      });
-      setLocations([]);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Get detailed information for a selected location
-  const handleLocationSelect = async (location: Location) => {
-    try {
-      console.log('Fetching details for location:', location);
       const { data, error } = await supabase.functions.invoke('places', {
         body: {
           endpoint: 'details',
-          place_id: location.place_id,
-        },
+          place_id: placeId
+        }
       });
 
-      if (error) throw error;
-
-      if (!data?.result) {
-        console.error('No result in response:', data);
-        throw new Error('Failed to get location details');
+      if (error) {
+        console.error('Place details error:', error);
+        throw error;
       }
 
-      console.log('Location details:', data.result);
-      return {
-        name: location.name,
-        place_id: location.place_id,
-        formatted_address: data.result.formatted_address,
-        geometry: data.result.geometry,
-      };
+      console.log('Place details response:', data);
+      
+      if (data.status === 'OK' && data.result) {
+        const result = data.result;
+        return {
+          place_id: placeId,
+          name: result.name,
+          area: result.formatted_address,
+          latitude: result.geometry.location.lat,
+          longitude: result.geometry.location.lng
+        };
+      }
+      return null;
     } catch (error) {
-      console.error('Error fetching location details:', error);
-      toast({
-        title: "Error",
-        description: "Failed to fetch location details. Please try again.",
-        variant: "destructive",
-      });
+      console.error('Error fetching place details:', error);
       return null;
     }
   };
 
-  // Use effect to fetch locations when search query changes with debounce
-  useEffect(() => {
-    const delayDebounceFn = setTimeout(() => {
-      if (searchQuery) {
-        fetchLocations(searchQuery);
+  const cacheLocation = async (details: PlaceDetails) => {
+    try {
+      const { error } = await supabase
+        .from('location_cache')
+        .upsert({
+          place_id: details.place_id,
+          name: details.name,
+          area: details.area,
+          latitude: details.latitude,
+          longitude: details.longitude,
+          coordinates: `POINT(${details.longitude} ${details.latitude})`
+        });
+
+      if (error) {
+        console.error('Error caching location:', error);
       }
-    }, 300);
-
-    return () => clearTimeout(delayDebounceFn);
-  }, [searchQuery]);
-
-  return {
-    locations,
-    loading,
-    handleLocationSelect,
+    } catch (error) {
+      console.error('Error in caching location:', error);
+    }
   };
+
+  useEffect(() => {
+    if (!searchQuery) {
+      setPredictions([]);
+      return;
+    }
+
+    const fetchPredictions = async () => {
+      try {
+        if (abortController.current) {
+          abortController.current.abort();
+        }
+        abortController.current = new AbortController();
+
+        setLoading(true);
+        
+        const { data, error } = await supabase.functions.invoke('places', {
+          body: {
+            endpoint: 'autocomplete',
+            input: searchQuery
+          }
+        });
+
+        if (error) {
+          console.error('Supabase function error:', error);
+          throw error;
+        }
+
+        console.log('Predictions response:', data);
+        
+        if (data.status === 'OK' && Array.isArray(data.predictions)) {
+          setPredictions(data.predictions);
+        } else if (data.error_message) {
+          console.error('Google Places API error:', data.error_message);
+          toast({
+            title: "Error",
+            description: "There was an error fetching locations. Please try again.",
+            variant: "destructive",
+          });
+          setPredictions([]);
+        } else {
+          console.error('Unexpected response format:', data);
+          setPredictions([]);
+        }
+      } catch (error: any) {
+        console.error('Error fetching predictions:', error);
+        if (error.name !== 'AbortError') {
+          toast({
+            title: "Error",
+            description: "Could not fetch location suggestions. Please try again.",
+            variant: "destructive",
+          });
+        }
+        setPredictions([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (debounceTimeout.current) {
+      clearTimeout(debounceTimeout.current);
+    }
+
+    debounceTimeout.current = setTimeout(fetchPredictions, 500);
+
+    return () => {
+      if (debounceTimeout.current) {
+        clearTimeout(debounceTimeout.current);
+      }
+      if (abortController.current) {
+        abortController.current.abort();
+      }
+    };
+  }, [searchQuery, toast]);
+
+  const handleLocationSelect = async (location: Location | PlacePrediction): Promise<Location | null> => {
+    try {
+      const placeId = location.place_id;
+      if (!placeId) return null;
+
+      const details = await getPlaceDetails(placeId);
+      if (details) {
+        await cacheLocation(details);
+        return {
+          id: details.place_id,
+          name: details.name,
+          area: details.area,
+          place_id: details.place_id,
+          latitude: details.latitude,
+          longitude: details.longitude,
+          structured_formatting: {
+            main_text: details.name,
+            secondary_text: details.area || ''
+          }
+        };
+      }
+      return null;
+    } catch (error) {
+      console.error('Error in handleLocationSelect:', error);
+      return null;
+    }
+  };
+
+  const locations: Location[] = predictions?.map(prediction => ({
+    id: prediction.place_id,
+    name: prediction.structured_formatting.main_text,
+    area: prediction.structured_formatting.secondary_text,
+    place_id: prediction.place_id,
+    description: prediction.description,
+    structured_formatting: prediction.structured_formatting
+  })) || [];
+
+  return { locations, loading, handleLocationSelect };
 };

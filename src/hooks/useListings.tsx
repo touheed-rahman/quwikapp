@@ -23,8 +23,6 @@ export interface Listing {
   deleted_at?: string;
   featured_requested?: boolean;
   view_count?: number;
-  save_count?: number;
-  km_driven?: number | null;
 }
 
 interface UseListingsProps {

@@ -84,56 +84,50 @@ const Header = () => {
           {session ? (
             <>
               <Link to="/notifications" className="shrink-0">
-                <Button variant="ghost" size="icon" className="relative hidden md:flex flex-col items-center justify-center h-16 w-16 gap-0.5">
+                <Button variant="ghost" size="icon" className="relative hidden md:inline-flex">
                   <Bell className="h-5 w-5" />
-                  <span className="text-[10px]">Notifications</span>
                   {unreadCount > 0 && (
                     <Badge 
-                      className="absolute top-2 right-2 h-5 w-5 flex items-center justify-center bg-destructive hover:bg-destructive p-0"
+                      className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center bg-destructive hover:bg-destructive p-0"
                     >
                       {unreadCount}
                     </Badge>
                   )}
                 </Button>
               </Link>
-              <div className="relative hidden md:block">
+              <div className="relative hidden md:block shrink-0">
                 <Button 
                   variant="ghost" 
                   size="icon"
                   onClick={() => setIsChatOpen(true)}
-                  className="flex flex-col items-center justify-center h-16 w-16 gap-0.5"
                 >
                   <MessageSquare className="h-5 w-5" />
-                  <span className="text-[10px]">Chats</span>
                 </Button>
                 {unreadCount > 0 && (
                   <Badge 
-                    className="absolute top-2 right-2 h-5 w-5 flex items-center justify-center bg-destructive hover:bg-destructive p-0"
+                    className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center bg-destructive hover:bg-destructive p-0"
                   >
                     {unreadCount}
                   </Badge>
                 )}
               </div>
-              <Link to="/my-ads" className="hidden md:block">
-                <Button variant="ghost" size="icon" className="flex flex-col items-center justify-center h-16 w-16 gap-0.5">
+              <Link to="/my-ads" className="hidden md:block shrink-0">
+                <Button variant="ghost" size="icon">
                   <ListOrdered className="h-5 w-5" />
-                  <span className="text-[10px]">My Ads</span>
                 </Button>
               </Link>
-              <Link to="/profile">
-                <Button variant="ghost" size="icon" className="flex flex-col items-center justify-center h-16 w-16 gap-0.5">
+              <Link to="/profile" className="shrink-0">
+                <Button variant="ghost" size="icon">
                   <User className="h-5 w-5" />
-                  <span className="text-[10px]">Profile</span>
                 </Button>
               </Link>
               <Button 
                 variant="ghost" 
                 size="icon"
                 onClick={() => setIsFeedbackOpen(true)}
-                className="flex flex-col items-center justify-center h-16 w-16 gap-0.5"
+                className="shrink-0"
               >
                 <HelpCircle className="h-5 w-5" />
-                <span className="text-[10px]">Help</span>
               </Button>
               <Link to="/sell" className="hidden md:block shrink-0">
                 <Button className="hover:bg-primary hover:text-white whitespace-nowrap">Sell Now</Button>
@@ -145,10 +139,9 @@ const Header = () => {
                 variant="ghost" 
                 size="icon"
                 onClick={() => setIsFeedbackOpen(true)}
-                className="flex flex-col items-center justify-center h-16 w-16 gap-0.5"
+                className="shrink-0"
               >
                 <HelpCircle className="h-5 w-5" />
-                <span className="text-[10px]">Help</span>
               </Button>
               <Link to="/profile">
                 <Button>Sign In</Button>

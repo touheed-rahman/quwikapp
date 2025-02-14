@@ -158,7 +158,6 @@ export type Database = {
           featured_requested: boolean | null
           id: string
           images: string[]
-          km_driven: number | null
           location: string | null
           price: number
           reviewed_at: string | null
@@ -184,7 +183,6 @@ export type Database = {
           featured_requested?: boolean | null
           id?: string
           images: string[]
-          km_driven?: number | null
           location?: string | null
           price: number
           reviewed_at?: string | null
@@ -210,7 +208,6 @@ export type Database = {
           featured_requested?: boolean | null
           id?: string
           images?: string[]
-          km_driven?: number | null
           location?: string | null
           price?: number
           reviewed_at?: string | null
@@ -276,7 +273,6 @@ export type Database = {
           conversation_id: string
           created_at: string
           id: string
-          is_offer: boolean | null
           read_at: string | null
           sender_id: string
         }
@@ -285,7 +281,6 @@ export type Database = {
           conversation_id: string
           created_at?: string
           id?: string
-          is_offer?: boolean | null
           read_at?: string | null
           sender_id: string
         }
@@ -294,7 +289,6 @@ export type Database = {
           conversation_id?: string
           created_at?: string
           id?: string
-          is_offer?: boolean | null
           read_at?: string | null
           sender_id?: string
         }
@@ -416,27 +410,6 @@ export type Database = {
           id?: string
           location?: string | null
           updated_at?: string
-        }
-        Relationships: []
-      }
-      secrets: {
-        Row: {
-          created_at: string | null
-          key: string
-          updated_at: string | null
-          value: string
-        }
-        Insert: {
-          created_at?: string | null
-          key: string
-          updated_at?: string | null
-          value: string
-        }
-        Update: {
-          created_at?: string | null
-          key?: string
-          updated_at?: string | null
-          value?: string
         }
         Relationships: []
       }
@@ -1461,30 +1434,16 @@ export type Database = {
           radius_km?: number
         }
         Returns: {
-          admin_notes: string | null
-          brand: string | null
-          category: string
-          condition: string
-          created_at: string
-          deleted_at: string | null
-          description: string | null
-          featured: boolean | null
-          featured_requested: boolean | null
           id: string
-          images: string[]
-          km_driven: number | null
-          location: string | null
-          price: number
-          reviewed_at: string | null
-          reviewed_by: string | null
-          save_count: number | null
-          specs: Json | null
-          status: string | null
-          subcategory: string
           title: string
-          updated_at: string
-          user_id: string
-          view_count: number | null
+          price: number
+          location: string
+          images: string[]
+          created_at: string
+          condition: string
+          category: string
+          status: string
+          distance_km: number
         }[]
       }
       get_maps_api_key: {
@@ -1515,15 +1474,9 @@ export type Database = {
       }
       get_secret: {
         Args: {
-          secret_key: string
+          name: string
         }
         Returns: string
-      }
-      get_vehicle_details: {
-        Args: {
-          listing_id: string
-        }
-        Returns: Json
       }
       gettransactionid: {
         Args: Record<PropertyKey, never>

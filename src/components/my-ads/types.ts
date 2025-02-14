@@ -13,9 +13,6 @@ export interface Listing {
   save_count: number;
   featured: boolean;
   featured_requested: boolean;
-  category: string;
-  km_driven: number | null;
-  subcategory: string;
 }
 
 export interface ListingGridProps {
