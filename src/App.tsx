@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -23,6 +22,7 @@ import AdminLogin from "./pages/AdminLogin";
 import FreshRecommendations from "./pages/FreshRecommendations";
 import RecentSubcategoryListings from "./pages/RecentSubcategoryListings";
 import React from 'react';
+import LocationSelector from "./components/LocationSelector";
 
 // Create a client outside of the component to avoid recreating it on every render
 const queryClient = new QueryClient({
@@ -77,6 +77,9 @@ const App = () => (
             <ScrollToTop />
             <Toaster />
             <Sonner />
+            <div className="min-h-screen flex items-center justify-center bg-gray-100">
+              <LocationSelector />
+            </div>
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/category/:category/:subcategory" element={<Subcategory />} />
