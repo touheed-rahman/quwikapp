@@ -98,6 +98,38 @@ export const useListings = ({
           throw error;
         }
 
-        if (!listings ||
+        if (!listings || listings.length === 0) {
+          console.log('No listings found for the selected filters.');
+          return [];
+        }
+
+        console.log('Raw listings from database:', listings);
+
+        // Sort listings to show featured items first, then by creation date
+        const sortedListings = (listings as Listing[]).sort((a, b) => {
+          // First, sort by featured status
+          if (a.featured && !b.featured) return -1;
+          if (!a.featured && b.featured) return 1;
+
+          // Then sort by creation date (newest first)
+          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+        });
+
+        console.log('Sorted listings:', sortedListings);
+        return sortedListings;
+      } catch (error) {
+        console.error('Error in listing query:', error);
+        toast({
+          title: "Error",
+          description: "Failed to fetch listings. Please try again.",
+          variant: "destructive",
+        });
+        return [];
+      }
+    },
+    staleTime: 1000 * 60 * 5, // Cache for 5 minutes
+    refetchOnWindowFocus: true,
+  });
+};
 
 
