@@ -17,9 +17,7 @@ const ChatDetail = () => {
     conversationDetails,
     newMessage,
     setNewMessage,
-    handleSend,
-    chatDisabled,
-    disabledReason
+    handleSend
   } = useChat(id);
 
   if (!sessionUser) {
@@ -47,8 +45,6 @@ const ChatDetail = () => {
         newMessage={newMessage}
         setNewMessage={setNewMessage}
         handleSend={handleSend}
-        disabled={chatDisabled}
-        disabledReason={disabledReason}
       />
     </div>
   );

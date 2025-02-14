@@ -123,13 +123,6 @@ const ProductCard = ({
     }
   };
 
-  const capitalizeFirstLetter = (str: string) => {
-    return str.charAt(0).toUpperCase() + str.slice(1);
-  };
-
-  // Extract just the area name from the location string
-  const displayLocation = location?.split(',')[0] || 'Location not specified';
-
   return (
     <Link to={`/product/${id}`}>
       <Card className="overflow-hidden border-0 bg-transparent">
@@ -166,13 +159,11 @@ const ProductCard = ({
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-1 text-xs text-muted-foreground">
               <MapPin className="h-3 w-3" />
-              <span>{displayLocation}</span>
+              <span>{location}</span>
             </div>
             {condition && (
-              <Badge 
-                className={`text-[10px] px-2 py-0.5 rounded-[20px] ${getConditionColor(condition as ProductCondition)}`}
-              >
-                {capitalizeFirstLetter(condition)}
+              <Badge className={getConditionColor(condition as ProductCondition)}>
+                {condition}
               </Badge>
             )}
           </div>

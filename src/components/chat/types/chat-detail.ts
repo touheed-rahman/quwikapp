@@ -6,14 +6,6 @@ export interface Message {
   created_at: string;
 }
 
-export interface Listing {
-  id: string;
-  title: string;
-  price: number;
-  status?: string;
-  deleted_at?: string | null;
-}
-
 export interface ConversationDetails {
   seller: {
     id: string;
@@ -23,5 +15,9 @@ export interface ConversationDetails {
     id: string;
     full_name: string;
   };
-  listing: Listing;
+  listing: {
+    title: string;
+    price: number;
+  };
 }
+

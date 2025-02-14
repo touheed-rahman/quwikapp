@@ -1,25 +1,12 @@
-
-import { CheckCircle2, XCircle, Trash2 } from "lucide-react";
+import { CheckCircle2, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
 
 interface ListingActionsProps {
   listingId: string;
   onStatusUpdate: (listingId: string, status: string) => Promise<void>;
-  onDelete: (listingId: string) => Promise<void>;
 }
 
-const ListingActions = ({ listingId, onStatusUpdate, onDelete }: ListingActionsProps) => {
+const ListingActions = ({ listingId, onStatusUpdate }: ListingActionsProps) => {
   return (
     <div className="flex items-center justify-end gap-2">
       <Button
@@ -40,35 +27,6 @@ const ListingActions = ({ listingId, onStatusUpdate, onDelete }: ListingActionsP
         <XCircle className="h-4 w-4 mr-1" />
         Reject
       </Button>
-      <AlertDialog>
-        <AlertDialogTrigger asChild>
-          <Button
-            variant="outline"
-            size="sm"
-            className="bg-red-50 hover:bg-red-100 text-red-700 font-medium"
-          >
-            <Trash2 className="h-4 w-4 mr-1" />
-            Delete
-          </Button>
-        </AlertDialogTrigger>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the listing and all associated data.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() => onDelete(listingId)}
-              className="bg-red-600 hover:bg-red-700 text-white font-medium"
-            >
-              Delete Permanently
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </div>
   );
 };

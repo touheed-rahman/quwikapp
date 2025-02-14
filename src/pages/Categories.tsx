@@ -1,6 +1,6 @@
-
 import Header from "@/components/Header";
 import { categories } from "@/types/categories";
+import { Button } from "@/components/ui/button";
 import { ChevronRight } from "lucide-react";
 import { Link } from "react-router-dom";
 
@@ -16,15 +16,15 @@ const Categories = () => {
             {categories.map((category) => (
               <div key={category.id} className="bg-white rounded-lg shadow-sm border p-4">
                 <div className="flex items-center justify-between mb-3">
-                  <h2 className="text-lg font-semibold text-[#8B5CF6]">{category.name}</h2>
-                  <ChevronRight className="h-5 w-5 text-[#8B5CF6]" />
+                  <h2 className="text-lg font-semibold">{category.name}</h2>
+                  <ChevronRight className="h-5 w-5 text-muted-foreground" />
                 </div>
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
                   {category.subcategories.map((sub) => (
                     <Link 
                       key={sub.id} 
-                      to={`/category/${category.id}/${sub.id}`}
-                      className="text-sm text-muted-foreground hover:text-[#8B5CF6] transition-colors"
+                      to={`/?category=${category.id}&subcategory=${sub.id}`}
+                      className="text-sm text-muted-foreground hover:text-primary"
                     >
                       {sub.name}
                     </Link>

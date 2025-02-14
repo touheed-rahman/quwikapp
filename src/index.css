@@ -4,7 +4,7 @@
  
 @layer base {
   :root {
-    --background: 262 83% 98%;
+    --background: 0 0% 98%;
     --foreground: 222.2 84% 4.9%;
     --card: 0 0% 100%;
     --card-foreground: 222.2 84% 4.9%;
@@ -34,39 +34,8 @@
   body {
     @apply bg-background text-foreground antialiased;
   }
-
-  /* Enhanced text and headings */
-  h1 {
-    @apply text-foreground/90 font-bold tracking-tight;
-  }
-  
-  h2, h3 {
-    @apply text-foreground/85 font-semibold tracking-tight;
-  }
-
-  p {
-    @apply text-foreground/75 leading-relaxed;
-  }
-
-  /* Enhanced input styling */
-  input, textarea, select {
-    @apply bg-background border-input/30 focus-visible:ring-2 focus-visible:ring-primary/50 
-           focus-visible:ring-offset-2 transition-all duration-200 shadow-sm;
-  }
-
-  /* Enhanced button hover effects */
-  button {
-    @apply hover:shadow-md active:scale-[0.98] transition-all duration-200;
-  }
-
-  /* Card enhancements */
-  .card {
-    @apply shadow-sm hover:shadow-md transition-all duration-200 bg-card/95 backdrop-blur-sm
-           border border-border/20;
-  }
 }
 
-/* Enhanced scrollbar styling */
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
 }
@@ -74,71 +43,4 @@
 .scrollbar-hide {
   -ms-overflow-style: none;
   scrollbar-width: none;
-}
-
-/* Command menu enhancements */
-.cmd-menu {
-  @apply bg-white/95 backdrop-blur-sm border border-input/50 shadow-lg;
-}
-
-/* Enhanced transitions */
-.transition-all {
-  @apply duration-200 ease-in-out;
-}
-
-/* Enhanced focus styles */
-.focus-ring {
-  @apply focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2;
-}
-
-/* Enhanced text readability */
-.text-enhanced {
-  @apply tracking-wide leading-relaxed;
-}
-
-/* Enhanced responsive padding */
-.section-padding {
-  @apply py-20 px-6 md:px-12 lg:px-24;
-}
-
-/* Enhanced container width */
-.container {
-  @apply px-4 mx-auto max-w-7xl;
-}
-
-/* Glass effect components */
-.glass {
-  @apply bg-white/80 backdrop-blur-sm border border-white/20 shadow-lg;
-}
-
-/* Enhanced list items */
-.list-item {
-  @apply hover:bg-accent/5 transition-colors duration-200 rounded-md;
-}
-
-/* Enhanced interactive elements */
-.interactive {
-  @apply hover:shadow-md active:scale-[0.98] transition-all duration-200;
-}
-
-/* Enhanced card layouts */
-.card-grid {
-  @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4;
-}
-
-/* Enhanced form elements */
-.form-input {
-  @apply w-full rounded-md border border-input/30 bg-background px-3 py-2
-         focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all duration-200;
-}
-
-/* Enhanced loading states */
-.loading {
-  @apply animate-pulse bg-muted rounded;
-}
-
-/* Enhanced badges */
-.badge {
-  @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium
-         transition-colors duration-200;
 }

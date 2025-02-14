@@ -1,9 +1,8 @@
 
 import { Button } from "@/components/ui/button";
-import { ChevronDown, ArrowRight } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import { ProductCondition } from "@/types/categories";
 import ProductCard from "../ProductCard";
-import { Link } from "react-router-dom";
 
 interface Listing {
   id: string;
@@ -40,17 +39,7 @@ const RecentListings = ({
 
   return (
     <section>
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-bold">Fresh Recommendations</h2>
-        <Link 
-          to="/fresh-recommendations" 
-          className="text-primary flex items-center hover:underline"
-        >
-          View All
-          <ArrowRight className="ml-1 h-4 w-4" />
-        </Link>
-      </div>
-      
+      <h2 className="text-xl font-bold mb-4">Fresh Recommendations</h2>
       {isLoading ? (
         <div className="text-center py-8">Loading listings...</div>
       ) : error ? (

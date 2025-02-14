@@ -1,7 +1,6 @@
 
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import ListingSearchBar from "./ListingSearchBar";
@@ -12,13 +11,11 @@ import { Loader2 } from "lucide-react";
 const ListingManagement = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const { toast } = useToast();
-  const location = useLocation();
-  const filter = location.state?.filter || 'all';
 
   const { data: listings, isLoading, error, refetch } = useQuery({
-    queryKey: ['admin-listings', filter],
+    queryKey: ['admin-listings'],
     queryFn: async () => {
-      console.log('Fetching admin listings with filter:', filter);
+      console.log('Fetching admin listings...');
       const { data: { user } } = await supabase.auth.getUser();
       
       if (!user) {
@@ -33,24 +30,11 @@ const ListingManagement = () => {
         throw new Error('Unauthorized');
       }
 
-      let query = supabase
+      const { data: listingsData, error } = await supabase
         .from('listings')
-        .select('*, seller:profiles(*))')
+        .select('*, seller:profiles(*)')
         .order('featured', { ascending: false })
         .order('created_at', { ascending: false });
-
-      // Apply filters based on dashboard metrics selection
-      if (filter === 'pending') {
-        query = query.eq('status', 'pending');
-      } else if (filter === 'approved') {
-        query = query.eq('status', 'approved');
-      } else if (filter === 'rejected') {
-        query = query.eq('status', 'rejected');
-      } else if (filter === 'featured') {
-        query = query.eq('featured', true);
-      }
-
-      const { data: listingsData, error } = await query;
 
       if (error) {
         console.error('Error fetching listings:', error);
@@ -112,94 +96,6 @@ const ListingManagement = () => {
     }
   };
 
-  const handleDelete = async (listingId: string) => {
-    console.log('Deleting listing:', listingId);
-    
-    try {
-      // First, get all conversations related to this listing
-      const { data: conversations, error: convError } = await supabase
-        .from('conversations')
-        .select('id')
-        .eq('listing_id', listingId);
-
-      if (convError) {
-        console.error('Error fetching conversations:', convError);
-        throw convError;
-      }
-
-      // Delete offers for all related conversations
-      if (conversations && conversations.length > 0) {
-        const conversationIds = conversations.map(conv => conv.id);
-        const { error: offersError } = await supabase
-          .from('offers')
-          .delete()
-          .in('conversation_id', conversationIds);
-
-        if (offersError) {
-          console.error('Error deleting offers:', offersError);
-          throw offersError;
-        }
-
-        // Delete messages for all conversations
-        const { error: messagesError } = await supabase
-          .from('messages')
-          .delete()
-          .in('conversation_id', conversationIds);
-
-        if (messagesError) {
-          console.error('Error deleting messages:', messagesError);
-          throw messagesError;
-        }
-
-        // Now delete the conversations themselves
-        const { error: conversationsError } = await supabase
-          .from('conversations')
-          .delete()
-          .eq('listing_id', listingId);
-
-        if (conversationsError) {
-          console.error('Error deleting conversations:', conversationsError);
-          throw conversationsError;
-        }
-      }
-
-      // Delete associated wishlists
-      const { error: wishlistError } = await supabase
-        .from('wishlists')
-        .delete()
-        .eq('listing_id', listingId);
-
-      if (wishlistError) {
-        console.error('Error deleting wishlists:', wishlistError);
-        throw wishlistError;
-      }
-
-      // Finally delete the listing itself
-      const { error: listingError } = await supabase
-        .from('listings')
-        .delete()
-        .eq('id', listingId);
-
-      if (listingError) {
-        console.error('Error deleting listing:', listingError);
-        throw listingError;
-      }
-
-      toast({
-        title: "Success",
-        description: "Listing and all associated data permanently deleted",
-      });
-      refetch();
-    } catch (error) {
-      console.error('Error in deletion process:', error);
-      toast({
-        title: "Error",
-        description: "Failed to delete listing and associated data",
-        variant: "destructive"
-      });
-    }
-  };
-
   const filteredListings = listings?.filter(listing =>
     listing.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
     listing.category.toLowerCase().includes(searchTerm.toLowerCase())
@@ -235,7 +131,6 @@ const ListingManagement = () => {
           listings={filteredListings || []}
           onStatusUpdate={handleStatusUpdate}
           onFeaturedToggle={handleFeaturedToggle}
-          onDelete={handleDelete}
         />
       )}
     </div>

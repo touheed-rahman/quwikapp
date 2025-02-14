@@ -7,36 +7,13 @@ interface StatusTabsProps {
 
 const StatusTabs = ({ selectedTab }: StatusTabsProps) => {
   return (
-    <div className="px-4 pt-2 w-full">
-      <TabsList className="w-full grid grid-cols-4 gap-2 h-auto p-1">
-        <TabsTrigger 
-          value="pending" 
-          className="data-[state=active]:bg-primary data-[state=active]:text-white hover:text-white w-full text-xs font-medium px-2 py-1.5"
-        >
-          PENDING
-        </TabsTrigger>
-        <TabsTrigger 
-          value="approved" 
-          className="data-[state=active]:bg-primary data-[state=active]:text-white hover:text-white w-full text-xs font-medium px-2 py-1.5"
-        >
-          ONLINE
-        </TabsTrigger>
-        <TabsTrigger 
-          value="rejected" 
-          className="data-[state=active]:bg-primary data-[state=active]:text-white hover:text-white w-full text-xs font-medium px-2 py-1.5"
-        >
-          REJECTED
-        </TabsTrigger>
-        <TabsTrigger 
-          value="sold" 
-          className="data-[state=active]:bg-primary data-[state=active]:text-white hover:text-white w-full text-xs font-medium px-2 py-1.5"
-        >
-          SOLD
-        </TabsTrigger>
-      </TabsList>
-    </div>
+    <TabsList className="mb-8">
+      <TabsTrigger value="pending">Under Review</TabsTrigger>
+      <TabsTrigger value="approved">Online</TabsTrigger>
+      <TabsTrigger value="rejected">Rejected</TabsTrigger>
+      <TabsTrigger value="sold">Sold</TabsTrigger>
+    </TabsList>
   );
 };
 
 export default StatusTabs;
-

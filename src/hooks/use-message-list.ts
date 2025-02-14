@@ -10,10 +10,7 @@ export function useMessageList(conversationId: string | undefined, sessionUserId
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    if (!conversationId || !sessionUserId) {
-      setIsLoading(false);
-      return;
-    }
+    if (!conversationId || !sessionUserId) return;
 
     const fetchMessages = async () => {
       try {
@@ -49,10 +46,13 @@ export function useMessageList(conversationId: string | undefined, sessionUserId
           filter: `conversation_id=eq.${conversationId}`
         },
         (payload) => {
+          console.log('New message received:', payload);
           setMessages(prev => [...prev, payload.new as Message]);
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        console.log('Subscription status:', status);
+      });
 
     return () => {
       supabase.removeChannel(channel);
