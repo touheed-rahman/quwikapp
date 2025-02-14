@@ -73,7 +73,10 @@ const SubcategoryPage = () => {
 
         const { data, error } = await query;
 
-        if (error) throw error;
+        if (error) {
+          console.error('Error fetching listings:', error);
+          throw error;
+        }
 
         console.log('Fetched listings:', data);
         return data || [];

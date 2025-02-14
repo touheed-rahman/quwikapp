@@ -1,5 +1,5 @@
 
-import { useState, useCallback } from 'react';
+import { useState } from 'react';
 import { MapPin } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Command, CommandEmpty, CommandInput, CommandList } from "@/components/ui/command";
@@ -17,18 +17,16 @@ const LocationSelector = ({ value, onChange }: LocationSelectorProps) => {
   const { toast } = useToast();
 
   // Extract just the city name from the location string
-  const getCityName = useCallback((locationString: string) => {
+  const getCityName = (locationString: string) => {
     if (!locationString) return '';
-    const parts = locationString.split(',')[0];
+    const parts = locationString.split(',')[0].split('|')[0];
     return parts.trim();
-  }, []);
+  };
 
-  const handleLocationChoice = useCallback(async (location: Location) => {
+  const handleLocationChoice = async (location: Location) => {
     try {
-      console.log('Selecting location:', location);
       const locationDetails = await handleLocationSelect(location);
       if (locationDetails) {
-        console.log('Location details:', locationDetails);
         const cityName = getCityName(locationDetails.name);
         const newValue = `${cityName}|${locationDetails.place_id}`;
         onChange(newValue);
@@ -49,7 +47,7 @@ const LocationSelector = ({ value, onChange }: LocationSelectorProps) => {
         variant: "destructive",
       });
     }
-  }, [getCityName, handleLocationSelect, onChange, toast]);
+  };
 
   return (
     <Popover open={open} onOpenChange={setOpen}>

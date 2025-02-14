@@ -1,79 +1,200 @@
 
-import { useState, useCallback } from "react";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useToast } from "@/components/ui/use-toast";
 import SellStepOne from "@/components/sell/SellStepOne";
-import SellStepTwo from "@/components/sell/SellStepTwo";
+import SellFormDetails from "@/components/sell/SellFormDetails";
+import Header from "@/components/Header";
 import ChatWindow from "@/components/chat/ChatWindow";
+import { supabase } from "@/integrations/supabase/client";
 import { useLocation } from "@/contexts/LocationContext";
-import { useListingForm } from "@/components/sell/useListingForm";
 
 const Sell = () => {
   const [step, setStep] = useState(1);
+  const [formData, setFormData] = useState<any>({});
   const [isChatOpen, setIsChatOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [price, setPrice] = useState("");
+  const [condition, setCondition] = useState("");
   const { selectedLocation } = useLocation();
-  const {
-    formData,
-    setFormData,
-    isSubmitting,
-    title,
-    setTitle,
-    description,
-    setDescription,
-    price,
-    setPrice,
-    condition,
-    setCondition,
-    handleSubmit
-  } = useListingForm();
+  const { toast } = useToast();
+  const navigate = useNavigate();
 
-  const handleStepOneComplete = useCallback((data: any) => {
-    setFormData((prevData: any) => ({ ...prevData, ...data }));
-    // Add RAF to smooth out the transition
-    requestAnimationFrame(() => {
-      setStep(2);
-    });
-  }, [setFormData]);
+  const handleStepOneComplete = (data: any) => {
+    setFormData({ ...formData, ...data });
+    // Add a small delay to prevent rapid component mount/unmount
+    setTimeout(() => setStep(2), 0);
+  };
 
-  const handleBack = useCallback(() => {
-    requestAnimationFrame(() => {
-      setStep(1);
-    });
-  }, []);
+  const validateForm = () => {
+    if (!title.trim()) {
+      toast({
+        title: "Missing Title",
+        description: "Please enter a title for your listing",
+        variant: "destructive"
+      });
+      return false;
+    }
+    
+    if (!description.trim()) {
+      toast({
+        title: "Missing Description",
+        description: "Please enter a description for your listing",
+        variant: "destructive"
+      });
+      return false;
+    }
+    
+    if (!price || isNaN(Number(price)) || Number(price) <= 0) {
+      toast({
+        title: "Invalid Price",
+        description: "Please enter a valid price",
+        variant: "destructive"
+      });
+      return false;
+    }
+    
+    if (!condition) {
+      toast({
+        title: "Missing Condition",
+        description: "Please select the condition of your item",
+        variant: "destructive"
+      });
+      return false;
+    }
+    
+    if (!selectedLocation) {
+      toast({
+        title: "Missing Location",
+        description: "Please select your location",
+        variant: "destructive"
+      });
+      return false;
+    }
+    
+    if (!formData.images || formData.images.length === 0) {
+      toast({
+        title: "Missing Images",
+        description: "Please upload at least one image",
+        variant: "destructive"
+      });
+      return false;
+    }
 
-  const handleSubmitForm = useCallback((e: React.FormEvent) => {
-    handleSubmit(e, selectedLocation);
-  }, [handleSubmit, selectedLocation]);
+    if (!formData.category || !formData.subcategory) {
+      toast({
+        title: "Missing Category",
+        description: "Please select a category and subcategory",
+        variant: "destructive"
+      });
+      return false;
+    }
 
-  // Memoize the chat window to prevent unnecessary remounts
-  const chatWindow = isChatOpen ? (
-    <ChatWindow 
-      isOpen={isChatOpen} 
-      onClose={() => setIsChatOpen(false)} 
-    />
-  ) : null;
+    return true;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!validateForm()) {
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        toast({
+          title: "Authentication required",
+          description: "Please log in to post an ad",
+          variant: "destructive"
+        });
+        navigate('/profile');
+        return;
+      }
+
+      const imageUploadPromises = formData.images.map(async (image: File) => {
+        const filename = `${crypto.randomUUID()}-${image.name}`;
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from('listings')
+          .upload(filename, image);
+
+        if (uploadError) throw uploadError;
+        return filename;
+      });
+
+      const uploadedImagePaths = await Promise.all(imageUploadPromises);
+      
+      const listingData = {
+        title,
+        description,
+        price: parseFloat(price),
+        category: formData.category,
+        subcategory: formData.subcategory,
+        condition,
+        location: selectedLocation,
+        images: uploadedImagePaths,
+        user_id: user.id,
+        status: 'pending',
+        km_driven: formData.category === 'vehicles' ? formData.km_driven : null
+      };
+
+      const { error } = await supabase.from('listings').insert(listingData);
+
+      if (error) throw error;
+
+      toast({
+        title: "Ad Posted Successfully!",
+        description: "Your ad will be visible after review.",
+      });
+
+      // Add a delay before navigation to prevent rapid unmount
+      setTimeout(() => navigate('/'), 1000);
+
+    } catch (error) {
+      console.error('Error posting ad:', error);
+      toast({
+        title: "Error",
+        description: "Failed to post your ad. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="relative">
-        {step === 1 ? (
-          <SellStepOne onNext={handleStepOneComplete} />
-        ) : (
-          <SellStepTwo
-            title={title}
-            setTitle={setTitle}
-            description={description}
-            setDescription={setDescription}
-            price={price}
-            setPrice={setPrice}
-            condition={condition}
-            setCondition={setCondition}
-            isSubmitting={isSubmitting}
-            onBack={handleBack}
-            onSubmit={handleSubmitForm}
-            category={formData.category}
-          />
-        )}
-      </div>
-      {chatWindow}
+      {step === 1 ? (
+        <SellStepOne onNext={handleStepOneComplete} />
+      ) : (
+        <>
+          <Header />
+          <div className="container max-w-2xl mx-auto px-4 pt-20 pb-24">
+            <h1 className="text-2xl font-bold mb-6 text-foreground">
+              ITEM DETAILS
+            </h1>
+            <SellFormDetails
+              title={title}
+              setTitle={setTitle}
+              description={description}
+              setDescription={setDescription}
+              price={price}
+              setPrice={setPrice}
+              condition={condition}
+              setCondition={setCondition}
+              isSubmitting={isSubmitting}
+              onBack={() => setStep(1)}
+              onSubmit={handleSubmit}
+            />
+          </div>
+        </>
+      )}
+      {isChatOpen && <ChatWindow isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} />}
     </div>
   );
 };
