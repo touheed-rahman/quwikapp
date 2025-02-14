@@ -2,12 +2,11 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Location } from './types';
-import { useToast } from '@/components/ui/use-toast';
+import { toast } from "@/hooks/use-toast";
 
 export const useLocationSearch = (searchQuery: string) => {
   const [locations, setLocations] = useState<Location[]>([]);
   const [loading, setLoading] = useState(false);
-  const { toast } = useToast();
 
   // Fetch location suggestions based on user input
   const fetchLocations = async (query: string) => {
