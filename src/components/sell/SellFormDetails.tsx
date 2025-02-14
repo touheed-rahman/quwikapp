@@ -6,6 +6,8 @@ import PriceInput from "./PriceInput";
 import FormActions from "./FormActions";
 import LocationSelector from "@/components/LocationSelector";
 import { useLocation } from "@/contexts/LocationContext";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 interface SellFormDetailsProps {
   title: string;
@@ -19,6 +21,9 @@ interface SellFormDetailsProps {
   isSubmitting: boolean;
   onBack: () => void;
   onSubmit: (e: React.FormEvent) => void;
+  category?: string;
+  kmDriven?: string;
+  setKmDriven?: (value: string) => void;
 }
 
 const SellFormDetails = ({
@@ -32,7 +37,10 @@ const SellFormDetails = ({
   setCondition,
   isSubmitting,
   onBack,
-  onSubmit
+  onSubmit,
+  category,
+  kmDriven,
+  setKmDriven
 }: SellFormDetailsProps) => {
   const { selectedLocation, setSelectedLocation } = useLocation();
 
@@ -43,6 +51,20 @@ const SellFormDetails = ({
         <DescriptionInput value={description} onChange={setDescription} />
         <ConditionSelect value={condition} onChange={setCondition} />
         <PriceInput value={price} onChange={setPrice} />
+        {category === 'vehicles' && setKmDriven && (
+          <div className="space-y-2">
+            <Label htmlFor="kmDriven">Kilometers Driven *</Label>
+            <Input
+              id="kmDriven"
+              type="number"
+              placeholder="Enter kilometers driven"
+              value={kmDriven}
+              onChange={(e) => setKmDriven(e.target.value)}
+              min="0"
+              required
+            />
+          </div>
+        )}
         <div>
           <label className="text-sm font-medium mb-1.5 block">
             Location *

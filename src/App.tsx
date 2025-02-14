@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -22,8 +21,10 @@ import Subcategory from "./pages/Subcategory";
 import AdminLogin from "./pages/AdminLogin";
 import FreshRecommendations from "./pages/FreshRecommendations";
 import RecentSubcategoryListings from "./pages/RecentSubcategoryListings";
+import Reels from "./pages/Reels";
 import React from 'react';
 
+// Create a client outside of the component to avoid recreating it on every render
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -68,71 +69,70 @@ const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
 };
 
 const App = () => (
-  <React.StrictMode>
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <LocationProvider>
-          <BrowserRouter>
-            <ErrorBoundary>
-              <ScrollToTop />
-              <Toaster />
-              <Sonner />
-              <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/category/:category/:subcategory" element={<Subcategory />} />
-                <Route path="/fresh-recommendations" element={<FreshRecommendations />} />
-                <Route path="/recent-listings/:category" element={<RecentSubcategoryListings />} />
-                <Route
-                  path="/sell"
-                  element={
-                    <PrivateRoute>
-                      <Sell />
-                    </PrivateRoute>
-                  }
-                />
-                <Route path="/product/:id" element={<Product />} />
-                <Route path="/categories" element={<Categories />} />
-                <Route
-                  path="/chat/:id"
-                  element={
-                    <PrivateRoute>
-                      <ChatDetail />
-                    </PrivateRoute>
-                  }
-                />
-                <Route path="/profile" element={<Profile />} />
-                <Route path="/admin/login" element={<AdminLogin />} />
-                <Route
-                  path="/admin"
-                  element={
-                    <PrivateRoute>
-                      <AdminPanel />
-                    </PrivateRoute>
-                  }
-                />
-                <Route
-                  path="/my-ads"
-                  element={
-                    <PrivateRoute>
-                      <MyAds />
-                    </PrivateRoute>
-                  }
-                />
-                <Route
-                  path="/wishlist"
-                  element={
-                    <PrivateRoute>
-                      <Wishlist />
-                    </PrivateRoute>
-                  }
-                />
-              </Routes>
-            </ErrorBoundary>
-          </BrowserRouter>
-        </LocationProvider>
-      </TooltipProvider>
-    </QueryClientProvider>
-  </React.StrictMode>
+  <QueryClientProvider client={queryClient}>
+    <TooltipProvider>
+      <LocationProvider>
+        <BrowserRouter>
+          <ErrorBoundary>
+            <ScrollToTop />
+            <Toaster />
+            <Sonner />
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/reels" element={<Reels />} />
+              <Route path="/category/:category/:subcategory" element={<Subcategory />} />
+              <Route path="/fresh-recommendations" element={<FreshRecommendations />} />
+              <Route path="/recent-listings/:category" element={<RecentSubcategoryListings />} />
+              <Route
+                path="/sell"
+                element={
+                  <PrivateRoute>
+                    <Sell />
+                  </PrivateRoute>
+                }
+              />
+              <Route path="/product/:id" element={<Product />} />
+              <Route path="/categories" element={<Categories />} />
+              <Route
+                path="/chat/:id"
+                element={
+                  <PrivateRoute>
+                    <ChatDetail />
+                  </PrivateRoute>
+                }
+              />
+              <Route path="/profile" element={<Profile />} />
+              <Route path="/admin/login" element={<AdminLogin />} />
+              <Route
+                path="/admin"
+                element={
+                  <PrivateRoute>
+                    <AdminPanel />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/my-ads"
+                element={
+                  <PrivateRoute>
+                    <MyAds />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/wishlist"
+                element={
+                  <PrivateRoute>
+                    <Wishlist />
+                  </PrivateRoute>
+                }
+              />
+            </Routes>
+          </ErrorBoundary>
+        </BrowserRouter>
+      </LocationProvider>
+    </TooltipProvider>
+  </QueryClientProvider>
 );
 
 export default App;

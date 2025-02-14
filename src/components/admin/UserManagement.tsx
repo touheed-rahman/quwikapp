@@ -15,11 +15,15 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Search, Loader2 } from "lucide-react";
-import type { Database } from "@/integrations/supabase/types";
 
-type Profile = Database['public']['Tables']['profiles']['Row'];
-
-interface User extends Profile {
+interface Profile {
+  id: string;
+  full_name: string | null;
+  email: string | null;
+  avatar_url: string | null;
+  created_at: string;
+  updated_at: string;
+  location: string | null;
   total_listings: number;
   is_verified: boolean;
   is_disabled: boolean;
@@ -48,23 +52,17 @@ const UserManagement = () => {
 
       const { data, error } = await supabase
         .from('profiles')
-        .select(`
-          *,
-          total_listings,
-          is_verified,
-          is_disabled
-        `)
+        .select()
         .order('created_at', { ascending: false });
 
       if (error) throw error;
       
-      // Transform the data to match our User interface
       return (data || []).map(profile => ({
         ...profile,
-        total_listings: profile.total_listings ?? 0,
-        is_verified: profile.is_verified ?? false,
-        is_disabled: profile.is_disabled ?? false
-      })) as User[];
+        total_listings: (profile as any).total_listings || 0,
+        is_verified: (profile as any).is_verified || false,
+        is_disabled: (profile as any).is_disabled || false
+      })) as Profile[];
     }
   });
 
@@ -72,7 +70,10 @@ const UserManagement = () => {
     try {
       const { error } = await supabase
         .from('profiles')
-        .update({ is_verified: !currentState })
+        .update({
+          is_verified: !currentState,
+          updated_at: new Date().toISOString()
+        })
         .eq('id', userId);
 
       if (error) throw error;
@@ -96,7 +97,10 @@ const UserManagement = () => {
     try {
       const { error } = await supabase
         .from('profiles')
-        .update({ is_disabled: !currentState })
+        .update({
+          is_disabled: !currentState,
+          updated_at: new Date().toISOString()
+        })
         .eq('id', userId);
 
       if (error) throw error;

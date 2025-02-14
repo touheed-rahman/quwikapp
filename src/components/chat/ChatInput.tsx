@@ -1,7 +1,7 @@
 
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Send, Mic } from "lucide-react";
+import { Send } from "lucide-react";
 
 interface ChatInputProps {
   newMessage: string;
@@ -28,9 +28,6 @@ const ChatInput = ({ newMessage, setNewMessage, handleSend, disabled, disabledRe
           onKeyDown={(e) => e.key === "Enter" && !disabled && handleSend()}
           disabled={disabled}
         />
-        <Button variant="ghost" size="icon" className="hidden md:inline-flex" disabled={disabled}>
-          <Mic className="h-5 w-5" />
-        </Button>
         <Button 
           onClick={handleSend}
           disabled={disabled || !newMessage.trim()}

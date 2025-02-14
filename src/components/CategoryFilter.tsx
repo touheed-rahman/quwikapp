@@ -62,7 +62,12 @@ const CategoryFilter = ({ maxItems = 6 }: { maxItems?: number }) => {
                   </span>
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-64 p-2" align="start">
+              <PopoverContent 
+                className="w-64 p-2 bg-white shadow-lg border border-input/50 max-h-[60vh] overflow-y-auto" 
+                align="start"
+                side="bottom"
+                sideOffset={4}
+              >
                 <div className="grid gap-1">
                   {subcategories.map((sub) => (
                     <Button

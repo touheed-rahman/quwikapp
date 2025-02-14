@@ -10,20 +10,19 @@ import StatusTabs from "@/components/my-ads/StatusTabs";
 import ListingGrid from "@/components/my-ads/ListingGrid";
 import { ProductCondition } from "@/types/categories";
 import { useSearchParams } from "react-router-dom";
-import type { RealtimeChannel, RealtimePostgresChangesPayload } from "@supabase/supabase-js";
+import type { RealtimePostgresChangesPayload } from "@supabase/supabase-js";
 
-interface ListingUpdate extends RealtimePostgresChangesPayload<{
+interface Listing {
+  id: string;
+  status: string;
+  condition: ProductCondition;
   [key: string]: any;
-}> {
-  new: {
-    status: string;
-    [key: string]: any;
-  };
-  old: {
-    status: string;
-    [key: string]: any;
-  } | null;
 }
+
+type DatabaseChangesPayload = RealtimePostgresChangesPayload<{
+  old: Listing | null;
+  new: Listing | null;
+}>;
 
 const MyAds = () => {
   const { toast } = useToast();
@@ -54,7 +53,6 @@ const MyAds = () => {
     }
   });
 
-  // Subscribe to real-time updates with optimized performance
   useEffect(() => {
     const setupRealtime = async () => {
       const { data: authData } = await supabase.auth.getUser();
@@ -62,7 +60,7 @@ const MyAds = () => {
 
       const channel = supabase
         .channel('my-listings-changes')
-        .on<ListingUpdate>(
+        .on<DatabaseChangesPayload>(
           'postgres_changes',
           {
             event: '*',
@@ -72,8 +70,35 @@ const MyAds = () => {
           },
           (payload) => {
             console.log('Received real-time update:', payload);
-            if (payload.new.status === selectedTab || payload.old?.status !== payload.new.status) {
+
+            // Handle different event types
+            if (payload.eventType === 'DELETE') {
               refetch();
+              return;
+            }
+
+            // For INSERT events
+            if (payload.eventType === 'INSERT' && payload.new) {
+              const newListing = payload.new;
+              if ('status' in newListing && newListing.status === selectedTab) {
+                refetch();
+              }
+              return;
+            }
+
+            // For UPDATE events
+            if (payload.eventType === 'UPDATE' && payload.new && payload.old) {
+              const newListing = payload.new;
+              const oldListing = payload.old;
+              if (
+                'status' in newListing && 
+                'status' in oldListing && 
+                (newListing.status === selectedTab || 
+                oldListing.status !== newListing.status)
+              ) {
+                refetch();
+              }
+              return;
             }
           }
         )
