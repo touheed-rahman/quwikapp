@@ -1440,16 +1440,30 @@ export type Database = {
           radius_km?: number
         }
         Returns: {
-          id: string
-          title: string
-          price: number
-          location: string
-          images: string[]
-          created_at: string
-          condition: string
+          admin_notes: string | null
+          brand: string | null
           category: string
-          status: string
-          distance_km: number
+          condition: string
+          created_at: string
+          deleted_at: string | null
+          description: string | null
+          featured: boolean | null
+          featured_requested: boolean | null
+          id: string
+          images: string[]
+          km_driven: number | null
+          location: string | null
+          price: number
+          reviewed_at: string | null
+          reviewed_by: string | null
+          save_count: number | null
+          specs: Json | null
+          status: string | null
+          subcategory: string
+          title: string
+          updated_at: string
+          user_id: string
+          view_count: number | null
         }[]
       }
       get_maps_api_key: {
