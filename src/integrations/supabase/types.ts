@@ -88,6 +88,39 @@ export type Database = {
           },
         ]
       }
+      listing_notifications: {
+        Row: {
+          created_at: string | null
+          id: string
+          listing_id: string
+          message: string
+          read: boolean | null
+          type: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          listing_id: string
+          message: string
+          read?: boolean | null
+          type: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          listing_id?: string
+          message?: string
+          read?: boolean | null
+          type?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       listings: {
         Row: {
           admin_notes: string | null
@@ -269,6 +302,57 @@ export type Database = {
         }
         Relationships: []
       }
+      system_notifications: {
+        Row: {
+          content: string
+          created_at: string | null
+          id: string
+          metadata: Json | null
+          read: boolean | null
+          title: string
+          type: Database["public"]["Enums"]["notification_type"]
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string | null
+          id?: string
+          metadata?: Json | null
+          read?: boolean | null
+          title: string
+          type: Database["public"]["Enums"]["notification_type"]
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string | null
+          id?: string
+          metadata?: Json | null
+          read?: boolean | null
+          title?: string
+          type?: Database["public"]["Enums"]["notification_type"]
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_user_id"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "system_notifications_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       wishlists: {
         Row: {
           created_at: string
@@ -369,6 +453,11 @@ export type Database = {
     }
     Enums: {
       admin_role: "super_admin" | "admin" | "moderator"
+      notification_type:
+        | "message"
+        | "listing_approved"
+        | "listing_rejected"
+        | "system"
     }
     CompositeTypes: {
       [_ in never]: never

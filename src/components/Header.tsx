@@ -1,3 +1,4 @@
+
 import { MapPin, Bell, MessageSquare, User, HelpCircle, ListOrdered } from "lucide-react";
 import { Button } from "./ui/button";
 import { Link } from "react-router-dom";
@@ -71,7 +72,7 @@ const Header = () => {
   }, [session?.user]);
 
   return (
-    <header className="fixed top-0 left-0 right-0 bg-background/80 backdrop-blur-md border-b z-50">
+    <header className="fixed top-0 left-0 right-0 bg-white border-b z-50">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between gap-4">
         <div className="flex items-center gap-8 flex-1">
           <Link to="/" className="shrink-0">
@@ -88,8 +89,15 @@ const Header = () => {
           {session ? (
             <>
               <Link to="/notifications">
-                <Button variant="ghost" size="icon" className="hidden md:inline-flex">
+                <Button variant="ghost" size="icon" className="relative hidden md:inline-flex">
                   <Bell className="h-5 w-5" />
+                  {unreadCount > 0 && (
+                    <Badge 
+                      className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center bg-destructive hover:bg-destructive p-0"
+                    >
+                      {unreadCount}
+                    </Badge>
+                  )}
                 </Button>
               </Link>
               <div className="relative hidden md:block">
@@ -135,7 +143,11 @@ const Header = () => {
         </div>
       </div>
 
-      <ChatWindow isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} />
+      {isChatOpen && (
+        <div className="fixed inset-0 bg-black/20 z-50">
+          <ChatWindow isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} />
+        </div>
+      )}
     </header>
   );
 };
