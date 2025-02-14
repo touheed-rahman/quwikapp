@@ -1,6 +1,6 @@
 
 import { Check } from "lucide-react";
-import { CommandItem } from "@/components/ui/command";
+import { CommandGroup, CommandItem } from "@/components/ui/command";
 import { Location } from "./types";
 
 interface LocationListProps {
@@ -17,7 +17,7 @@ const LocationList = ({
   onSelect,
 }: LocationListProps) => {
   return (
-    <div className="mt-2">
+    <CommandGroup className="mt-2">
       {locations.map((location) => (
         <CommandItem
           key={location.place_id}
@@ -36,7 +36,7 @@ const LocationList = ({
           )}
         </CommandItem>
       ))}
-    </div>
+    </CommandGroup>
   );
 };
 
