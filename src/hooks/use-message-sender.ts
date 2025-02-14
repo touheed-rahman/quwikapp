@@ -10,8 +10,18 @@ export function useMessageSender(conversationId: string | undefined, sessionUser
   const handleSend = async (isInitialMessage?: boolean, offerAmount?: number) => {
     let messageContent = newMessage;
 
+    // Only send "is this available" if it's the buyer's first message
     if (isInitialMessage) {
-      messageContent = "Hi, is this still available?";
+      const { data: conversation } = await supabase
+        .from('conversations')
+        .select('buyer_id')
+        .eq('id', conversationId)
+        .single();
+
+      // Only send "is this available" if the current user is the buyer
+      if (conversation && conversation.buyer_id === sessionUserId) {
+        messageContent = "Hi, is this still available?";
+      }
     } else if (offerAmount !== undefined) {
       messageContent = `I would like to make an offer of ₹${offerAmount.toLocaleString()}`;
     }

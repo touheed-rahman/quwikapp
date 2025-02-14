@@ -13,6 +13,7 @@ export const useLocationSearch = (searchQuery: string) => {
 
   const getPlaceDetails = async (placeId: string): Promise<PlaceDetails | null> => {
     try {
+      console.log('Fetching place details for:', placeId);
       const { data, error } = await supabase.functions.invoke('places', {
         body: {
           endpoint: 'details',
@@ -79,6 +80,7 @@ export const useLocationSearch = (searchQuery: string) => {
         abortController.current = new AbortController();
 
         setLoading(true);
+        console.log('Fetching predictions for query:', searchQuery);
         
         const { data, error } = await supabase.functions.invoke('places', {
           body: {
@@ -141,6 +143,7 @@ export const useLocationSearch = (searchQuery: string) => {
 
   const handleLocationSelect = async (location: Location | PlacePrediction): Promise<Location | null> => {
     try {
+      console.log('Handling location select:', location);
       const placeId = location.place_id;
       if (!placeId) return null;
 

@@ -19,14 +19,16 @@ const LocationSelector = ({ value, onChange }: LocationSelectorProps) => {
   // Extract just the city name from the location string
   const getCityName = useCallback((locationString: string) => {
     if (!locationString) return '';
-    const parts = locationString.split(',')[0].split('|')[0];
+    const parts = locationString.split(',')[0];
     return parts.trim();
   }, []);
 
   const handleLocationChoice = useCallback(async (location: Location) => {
     try {
+      console.log('Selecting location:', location);
       const locationDetails = await handleLocationSelect(location);
       if (locationDetails) {
+        console.log('Location details:', locationDetails);
         const cityName = getCityName(locationDetails.name);
         const newValue = `${cityName}|${locationDetails.place_id}`;
         onChange(newValue);
