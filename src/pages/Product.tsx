@@ -1,241 +1,120 @@
 
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Button } from "@/components/ui/button";
 import Header from "@/components/Header";
-import { useQuery } from "@tanstack/react-query";
-import { Loader2 } from "lucide-react";
-import { ProductCondition } from "@/types/categories";
 import ChatWindow from "@/components/chat/ChatWindow";
 import { supabase } from "@/integrations/supabase/client";
 import ImageGallery from "@/components/product/ImageGallery";
 import ProductInfo from "@/components/product/ProductInfo";
 import SellerInfo from "@/components/product/SellerInfo";
 import RelatedProducts from "@/components/product/RelatedProducts";
+import MakeOfferDialog from "@/components/product/MakeOfferDialog";
+import ProductLoader from "@/components/product/ProductLoader";
+import ProductNotFound from "@/components/product/ProductNotFound";
+import { useProductDetails } from "@/hooks/useProductDetails";
+import { useRelatedProducts } from "@/hooks/useRelatedProducts";
+import { useProductActions } from "@/hooks/useProductActions";
 import { useToast } from "@/components/ui/use-toast";
+
+interface Seller {
+  full_name: string;
+  created_at: string;
+}
 
 const ProductPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { toast } = useToast();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [isChatOpen, setIsChatOpen] = useState(false);
   const [session, setSession] = useState<any>(null);
+  const { toast } = useToast();
+
+  const { data: product, isLoading, isError } = useProductDetails(id);
+  const { data: relatedProducts = [] } = useRelatedProducts(id, product?.category);
+  const {
+    isOfferDialogOpen,
+    setIsOfferDialogOpen,
+    currentConversationId,
+    handleChatWithSeller,
+    handleMakeOffer
+  } = useProductActions(id, product?.user_id);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    const getSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
       setSession(session);
-    });
+    };
+    getSession();
 
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
     });
 
     return () => subscription.unsubscribe();
   }, []);
 
-  // Fetch the product data
-  const { data: product, isLoading } = useQuery({
-    queryKey: ['product', id],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('listings')
-        .select(`
-          *,
-          profiles:user_id (
-            full_name,
-            created_at
-          )
-        `)
-        .eq('id', id)
-        .single();
-
-      if (error) throw error;
-      if (!data) throw new Error('Product not found');
-
-      return {
-        ...data,
-        condition: data.condition as ProductCondition,
-        seller: {
-          name: data.profiles.full_name || 'Anonymous',
-          memberSince: new Date(data.profiles.created_at).getFullYear().toString(),
-          listings: 0,
-        }
-      };
+  useEffect(() => {
+    if (currentConversationId) {
+      navigate(`/chat/${currentConversationId}`);
     }
-  });
-
-  // Fetch related products
-  const { data: relatedProducts = [] } = useQuery({
-    queryKey: ['related-products', product?.category],
-    enabled: !!product,
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('listings')
-        .select('*')
-        .eq('category', product?.category)
-        .eq('status', 'approved')
-        .neq('id', id)
-        .limit(4);
-
-      if (error) throw error;
-
-      return data.map(item => ({
-        id: item.id,
-        title: item.title,
-        price: item.price,
-        location: item.location,
-        image: item.images[0] ? 
-          supabase.storage.from('listings').getPublicUrl(item.images[0]).data.publicUrl 
-          : "https://via.placeholder.com/300",
-        condition: item.condition as ProductCondition,
-      }));
-    }
-  });
-
-  const handleChatWithSeller = async () => {
-    if (!product || !id) return;
-    
-    // Check if user is logged in
-    if (!session) {
-      toast({
-        title: "Sign in required",
-        description: "Please sign in to chat with the seller",
-        variant: "destructive"
-      });
-      navigate('/profile');
-      return;
-    }
-
-    // Check if user is trying to chat with themselves
-    if (session.user.id === product.user_id) {
-      toast({
-        title: "Cannot chat with yourself",
-        description: "This is your own listing",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    try {
-      // First check if a conversation already exists
-      const { data: existingConversation, error: conversationError } = await supabase
-        .from('conversations')
-        .select('id')
-        .eq('listing_id', id)
-        .eq('buyer_id', session.user.id)
-        .single();
-
-      if (conversationError && conversationError.code !== 'PGRST116') {
-        throw conversationError;
-      }
-
-      if (existingConversation) {
-        // If conversation exists, navigate to it
-        navigate(`/chat/${existingConversation.id}`);
-        return;
-      }
-
-      // If no conversation exists, create one
-      const { data: newConversation, error: createError } = await supabase
-        .from('conversations')
-        .insert({
-          listing_id: id,
-          buyer_id: session.user.id,
-          seller_id: product.user_id,
-        })
-        .select()
-        .single();
-
-      if (createError) throw createError;
-
-      // Navigate to the new conversation
-      navigate(`/chat/${newConversation.id}`);
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: "Failed to start conversation. Please try again.",
-        variant: "destructive"
-      });
-      console.error('Chat error:', error);
-    }
-  };
+  }, [currentConversationId, navigate]);
 
   if (isLoading) {
-    return (
-      <div className="min-h-screen bg-background">
-        <Header />
-        <main className="container mx-auto px-4 pt-20 pb-24">
-          <div className="flex items-center justify-center h-[60vh]">
-            <Loader2 className="h-8 w-8 animate-spin" />
-          </div>
-        </main>
-      </div>
-    );
+    return <ProductLoader />;
   }
 
-  if (!product) {
-    return (
-      <div className="min-h-screen bg-background">
-        <Header />
-        <main className="container mx-auto px-4 pt-20 pb-24">
-          <div className="text-center">
-            <h2 className="text-2xl font-bold">Product not found</h2>
-            <Button 
-              className="mt-4"
-              onClick={() => navigate('/')}
-            >
-              Back to Home
-            </Button>
-          </div>
-        </main>
-      </div>
-    );
+  if (isError || !product) {
+    return <ProductNotFound />;
   }
+
+  // Extract just the area name from the location string
+  const displayLocation = product.location?.split(',')[0] || 'Location not specified';
+
+  const seller = product.profiles as Seller;
 
   return (
     <div className="min-h-screen bg-background">
       <Header />
       <main className="container mx-auto px-4 pt-20 pb-24">
         <div className="grid lg:grid-cols-2 gap-8">
-          <ImageGallery
-            images={product.images}
-            currentImageIndex={currentImageIndex}
-            setCurrentImageIndex={setCurrentImageIndex}
-          />
+          <div>
+            <ImageGallery
+              images={product.images}
+              currentImageIndex={currentImageIndex}
+              setCurrentImageIndex={setCurrentImageIndex}
+            />
+          </div>
 
           <div className="space-y-6">
             <ProductInfo
               title={product.title}
               price={product.price}
-              location={product.location}
+              location={displayLocation}
               createdAt={product.created_at}
               condition={product.condition}
               description={product.description}
             />
 
-            <SellerInfo
-              seller={product.seller}
-              onChatClick={handleChatWithSeller}
-            />
+            {seller && (
+              <SellerInfo
+                seller={seller}
+                onChatClick={() => handleChatWithSeller(session)}
+                onMakeOffer={() => handleMakeOffer(session)}
+              />
+            )}
           </div>
         </div>
 
         <RelatedProducts products={relatedProducts} />
       </main>
 
-      <ChatWindow 
-        isOpen={isChatOpen} 
-        onClose={() => setIsChatOpen(false)} 
-        initialSeller={{
-          name: product.seller.name,
-          isVerified: true,
-          productInfo: {
-            title: product.title,
-            price: product.price.toString()
-          }
+      <MakeOfferDialog
+        isOpen={isOfferDialogOpen}
+        onClose={() => setIsOfferDialogOpen(false)}
+        productTitle={product.title}
+        productPrice={product.price}
+        conversationId={currentConversationId}
+        onOfferSuccess={() => {
+          navigate(`/chat/${currentConversationId}`);
         }}
       />
     </div>

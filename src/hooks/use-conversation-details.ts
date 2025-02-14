@@ -24,7 +24,7 @@ export function useConversationDetails(
             *,
             seller:profiles!conversations_seller_id_fkey(id, full_name),
             buyer:profiles!conversations_buyer_id_fkey(id, full_name),
-            listing:listings(title, price)
+            listing:listings(id, title, price, status, deleted_at)
           `)
           .eq('id', conversationId)
           .maybeSingle();
@@ -53,7 +53,7 @@ export function useConversationDetails(
                 *,
                 seller:profiles!conversations_seller_id_fkey(id, full_name),
                 buyer:profiles!conversations_buyer_id_fkey(id, full_name),
-                listing:listings(title, price)
+                listing:listings(id, title, price, status, deleted_at)
               `)
               .single();
 
