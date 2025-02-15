@@ -81,8 +81,14 @@ export const useListings = ({ categoryFilter, subcategoryFilter, selectedLocatio
               throw error;
             }
 
-            console.log('Fetched location-based listings:', listings);
-            return listings || [];
+            // Convert condition to ProductCondition type
+            const typedListings = listings?.map(listing => ({
+              ...listing,
+              condition: listing.condition as ProductCondition
+            })) || [];
+
+            console.log('Fetched location-based listings:', typedListings);
+            return typedListings;
           }
         }
 
@@ -113,8 +119,14 @@ export const useListings = ({ categoryFilter, subcategoryFilter, selectedLocatio
           throw error;
         }
 
-        console.log('Fetched regular listings:', listings);
-        return listings || [];
+        // Convert condition to ProductCondition type
+        const typedListings = listings?.map(listing => ({
+          ...listing,
+          condition: listing.condition as ProductCondition
+        })) || [];
+
+        console.log('Fetched regular listings:', typedListings);
+        return typedListings;
 
       } catch (error) {
         console.error('Error in listing query:', error);
