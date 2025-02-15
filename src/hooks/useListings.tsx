@@ -57,26 +57,27 @@ export const useListings = ({ categoryFilter, subcategoryFilter, selectedLocatio
 
           if (locationData) {
             console.log('Found location data:', locationData);
-            let rpcQuery = supabase.rpc('get_listings_by_location', {
+            let query = supabase.rpc('get_listings_by_location', {
               search_lat: locationData.latitude,
               search_long: locationData.longitude,
               radius_km: 20
             });
 
+            // Apply filters after the RPC call
             if (categoryFilter) {
-              rpcQuery = rpcQuery.eq('category', categoryFilter);
+              query = query.eq('category', categoryFilter);
             }
             if (subcategoryFilter) {
-              rpcQuery = rpcQuery.eq('subcategory', subcategoryFilter);
+              query = query.eq('subcategory', subcategoryFilter);
             }
             if (featured) {
-              rpcQuery = rpcQuery.eq('featured', true);
+              query = query.eq('featured', true);
             }
 
-            // Order by distance if location-based, otherwise by created_at
-            rpcQuery = rpcQuery.order('distance', { ascending: true });
+            // Order by distance for location-based searches
+            query = query.order('distance', { ascending: true });
 
-            const { data: listings, error } = await rpcQuery;
+            const { data: listings, error } = await query;
             
             if (error) {
               console.error('Error fetching listings:', error);

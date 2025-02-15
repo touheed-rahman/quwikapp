@@ -1552,7 +1552,6 @@ export type Database = {
       }
       get_listings_by_location: {
         Args: {
-          location_query?: string
           search_lat?: number
           search_long?: number
           radius_km?: number
