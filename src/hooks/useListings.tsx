@@ -1,3 +1,4 @@
+
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { ProductCondition } from "@/types/categories";
@@ -24,6 +25,7 @@ export interface Listing {
   view_count?: number;
   save_count?: number;
   km_driven?: number | null;
+  distance?: number;
 }
 
 interface UseListingsProps {
@@ -42,11 +44,11 @@ export const useListings = ({ categoryFilter, subcategoryFilter, selectedLocatio
       console.log('Fetching listings with filters:', { categoryFilter, subcategoryFilter, selectedLocation, featured });
       
       try {
-        let locationQuery;
         if (selectedLocation) {
           const locationParts = selectedLocation.split('|');
           const placeId = locationParts[locationParts.length - 1];
           
+          // Get coordinates from location cache
           const { data: locationData } = await supabase
             .from('location_cache')
             .select('latitude, longitude')
@@ -54,20 +56,37 @@ export const useListings = ({ categoryFilter, subcategoryFilter, selectedLocatio
             .maybeSingle();
 
           if (locationData) {
-            locationQuery = supabase.rpc('get_listings_by_location', {
-              location_query: null,
+            console.log('Found location data:', locationData);
+            let query = supabase.rpc('get_listings_by_location', {
               search_lat: locationData.latitude,
               search_long: locationData.longitude,
               radius_km: 20
             });
-          } else {
-            locationQuery = supabase.rpc('get_listings_by_location', {
-              location_query: placeId
-            });
+
+            // Apply additional filters
+            if (categoryFilter) {
+              query = query.eq('category', categoryFilter);
+            }
+            if (subcategoryFilter) {
+              query = query.eq('subcategory', subcategoryFilter);
+            }
+            if (featured) {
+              query = query.eq('featured', true);
+            }
+
+            const { data: listings, error } = await query;
+            
+            if (error) {
+              console.error('Error fetching listings:', error);
+              throw error;
+            }
+
+            console.log('Fetched location-based listings:', listings);
+            return listings || [];
           }
         }
 
-        // Base query to fetch all approved, non-deleted listings
+        // If no location selected or location data not found, use regular query
         let query = supabase
           .from('listings')
           .select()
@@ -77,38 +96,26 @@ export const useListings = ({ categoryFilter, subcategoryFilter, selectedLocatio
         if (categoryFilter) {
           query = query.eq('category', categoryFilter);
         }
-
         if (subcategoryFilter) {
           query = query.eq('subcategory', subcategoryFilter);
         }
+        if (featured) {
+          query = query.eq('featured', true);
+        }
 
-        // Execute the appropriate query
-        const { data: listings, error } = await (locationQuery || query);
+        // Order by creation date (newest first)
+        query = query.order('created_at', { ascending: false });
+
+        const { data: listings, error } = await query;
 
         if (error) {
           console.error('Error fetching listings:', error);
           throw error;
         }
 
-        if (!listings || listings.length === 0) {
-          console.log('No listings found');
-          return [];
-        }
+        console.log('Fetched regular listings:', listings);
+        return listings || [];
 
-        console.log('Raw listings from database:', listings);
-
-        // Sort listings to show featured items first, then by creation date
-        const sortedListings = (listings as Listing[]).sort((a, b) => {
-          // First, sort by featured status
-          if (a.featured && !b.featured) return -1;
-          if (!a.featured && b.featured) return 1;
-          
-          // Then sort by creation date (newest first)
-          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-        });
-
-        console.log('Sorted listings:', sortedListings);
-        return sortedListings;
       } catch (error) {
         console.error('Error in listing query:', error);
         toast({

@@ -32,12 +32,11 @@ const SubcategoryPage = () => {
       try {
         console.log('Fetching listings with params:', { category, subcategory, sortBy, condition, selectedLocation, searchQuery });
         
-        // If location is selected, we need to use the location-based query
+        // If location is selected, use location-based search
         if (selectedLocation) {
           const locationParts = selectedLocation.split('|');
           const placeId = locationParts[locationParts.length - 1];
           
-          // First get location coordinates
           const { data: locationData } = await supabase
             .from('location_cache')
             .select('latitude, longitude')
@@ -45,15 +44,14 @@ const SubcategoryPage = () => {
             .maybeSingle();
 
           if (locationData) {
-            // Use RPC call for location-based search
+            console.log('Found location data:', locationData);
             let query = supabase.rpc('get_listings_by_location', {
-              location_query: null,
               search_lat: locationData.latitude,
               search_long: locationData.longitude,
               radius_km: 20
             });
 
-            // Add other filters
+            // Apply filters
             if (category) {
               query = query.eq('category', category);
             }
@@ -76,10 +74,14 @@ const SubcategoryPage = () => {
               query = query.order('created_at', { ascending: false });
             }
 
-            const { data: locationBasedListings, error } = await query;
+            const { data, error } = await query;
+            
+            if (error) {
+              console.error('Error fetching location-based listings:', error);
+              throw error;
+            }
 
-            if (error) throw error;
-            return locationBasedListings || [];
+            return data || [];
           }
         }
 
@@ -90,7 +92,7 @@ const SubcategoryPage = () => {
           .eq('status', 'approved')
           .is('deleted_at', null);
 
-        // Add filters
+        // Apply filters
         if (category) {
           query = query.eq('category', category);
         }
@@ -123,7 +125,7 @@ const SubcategoryPage = () => {
         return [];
       }
     },
-    enabled: !!category && !!subcategory // Only run query when category and subcategory are available
+    enabled: !!category && !!subcategory
   });
 
   const getFirstImageUrl = (images: string[]) => {
