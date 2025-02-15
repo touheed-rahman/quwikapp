@@ -32,81 +32,37 @@ const SubcategoryPage = () => {
       try {
         console.log('Fetching listings with params:', { category, subcategory, sortBy, condition, selectedLocation, searchQuery });
         
-        // If location is selected, use location-based search
-        if (selectedLocation) {
-          const locationParts = selectedLocation.split('|');
-          const placeId = locationParts[locationParts.length - 1];
-          
-          const { data: locationData } = await supabase
-            .from('location_cache')
-            .select('latitude, longitude')
-            .eq('place_id', placeId)
-            .maybeSingle();
-
-          if (locationData) {
-            console.log('Found location data:', locationData);
-            let query = supabase.rpc('get_listings_by_location', {
-              search_lat: locationData.latitude,
-              search_long: locationData.longitude,
-              radius_km: 20
-            });
-
-            // Apply filters
-            if (category) {
-              query = query.eq('category', category);
-            }
-            if (subcategory) {
-              query = query.eq('subcategory', subcategory);
-            }
-            if (condition !== 'all') {
-              query = query.eq('condition', condition);
-            }
-            if (searchQuery) {
-              query = query.ilike('title', `%${searchQuery}%`);
-            }
-
-            // Apply sorting
-            if (sortBy === 'price-asc') {
-              query = query.order('price', { ascending: true });
-            } else if (sortBy === 'price-desc') {
-              query = query.order('price', { ascending: false });
-            } else {
-              query = query.order('created_at', { ascending: false });
-            }
-
-            const { data, error } = await query;
-            
-            if (error) {
-              console.error('Error fetching location-based listings:', error);
-              throw error;
-            }
-
-            return data || [];
-          }
-        }
-
-        // Regular search without location
         let query = supabase
           .from('listings')
           .select('*')
           .eq('status', 'approved')
           .is('deleted_at', null);
 
-        // Apply filters
+        // Add category filter if present
         if (category) {
           query = query.eq('category', category);
         }
+
+        // Add subcategory filter if present
         if (subcategory) {
           query = query.eq('subcategory', subcategory);
         }
+
         if (condition !== 'all') {
           query = query.eq('condition', condition);
         }
+
+        if (selectedLocation) {
+          const placeId = selectedLocation.split('|')[1];
+          if (placeId) {
+            query = query.eq('location', selectedLocation);
+          }
+        }
+
         if (searchQuery) {
           query = query.ilike('title', `%${searchQuery}%`);
         }
 
-        // Apply sorting
         if (sortBy === 'price-asc') {
           query = query.order('price', { ascending: true });
         } else if (sortBy === 'price-desc') {
@@ -117,7 +73,11 @@ const SubcategoryPage = () => {
 
         const { data, error } = await query;
 
-        if (error) throw error;
+        if (error) {
+          console.error('Error fetching listings:', error);
+          throw error;
+        }
+
         console.log('Fetched listings:', data);
         return data || [];
       } catch (error) {
@@ -125,7 +85,7 @@ const SubcategoryPage = () => {
         return [];
       }
     },
-    enabled: !!category && !!subcategory
+    enabled: !!category && !!subcategory // Only run query when category and subcategory are available
   });
 
   const getFirstImageUrl = (images: string[]) => {
@@ -224,3 +184,4 @@ const SubcategoryPage = () => {
 };
 
 export default SubcategoryPage;
+

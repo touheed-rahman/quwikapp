@@ -5,97 +5,42 @@ import { Button } from "@/components/ui/button";
 import { Command, CommandEmpty, CommandInput, CommandList } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Location, LocationSelectorProps } from './location/types';
-import { search } from 'nominatim-browser';
+import { useLocationSearch } from './location/useLocationSearch';
 import LocationList from './location/LocationList';
 import { useToast } from './ui/use-toast';
 import { cn } from '@/lib/utils';
-import { supabase } from '@/integrations/supabase/client';
 
 const LocationSelector = ({ value, onChange }: LocationSelectorProps) => {
   const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [locations, setLocations] = useState<Location[]>([]);
-  const [loading, setLoading] = useState(false);
+  const { locations, loading, handleLocationSelect } = useLocationSearch(searchQuery);
   const { toast } = useToast();
 
   // Extract just the city name from the location string
   const getCityName = useCallback((locationString: string) => {
     if (!locationString) return '';
-    const parts = locationString.split(',')[0].split('|')[0];
+    const parts = locationString.split(',')[0];
     return parts.trim();
   }, []);
 
-  const handleSearch = useCallback(async (query: string) => {
-    if (!query.trim()) {
-      setLocations([]);
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const results = await search({
-        q: query,
-        addressdetails: true,
-        limit: 5
-      });
-
-      const formattedLocations = results.map(result => ({
-        id: result.place_id.toString(),
-        name: result.address.city || result.address.town || result.address.village || result.address.suburb || result.display_name.split(',')[0],
-        area: result.display_name,
-        place_id: result.place_id.toString(),
-        latitude: parseFloat(result.lat),
-        longitude: parseFloat(result.lon),
-        structured_formatting: {
-          main_text: result.address.city || result.address.town || result.address.village || result.address.suburb || result.display_name.split(',')[0],
-          secondary_text: result.display_name
-        }
-      }));
-
-      setLocations(formattedLocations);
-    } catch (error) {
-      console.error('Error searching locations:', error);
-      toast({
-        title: "Error",
-        description: "Could not fetch locations. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  }, [toast]);
-
-  // Debounce search
-  const handleSearchDebounced = useCallback((value: string) => {
-    setSearchQuery(value);
-    const timeoutId = setTimeout(() => {
-      handleSearch(value);
-    }, 500);
-    return () => clearTimeout(timeoutId);
-  }, [handleSearch]);
-
   const handleLocationChoice = useCallback(async (location: Location) => {
     try {
-      // Cache the location data in Supabase
-      const { error } = await supabase
-        .from('location_cache')
-        .upsert({
-          place_id: location.place_id,
-          name: location.name,
-          area: location.area,
-          latitude: location.latitude,
-          longitude: location.longitude,
-          coordinates: `POINT(${location.longitude} ${location.latitude})`
+      console.log('Selecting location:', location);
+      const locationDetails = await handleLocationSelect(location);
+      if (locationDetails) {
+        console.log('Location details:', locationDetails);
+        const cityName = getCityName(locationDetails.name);
+        const newValue = `${cityName}|${locationDetails.place_id}`;
+        onChange(newValue);
+        setOpen(false);
+        setSearchQuery('');
+      } else {
+        toast({
+          title: "Error",
+          description: "Could not fetch location details. Please try again.",
+          variant: "destructive",
         });
-
-      if (error) throw error;
-
-      const cityName = location.name;
-      const newValue = `${cityName}|${location.place_id}`;
-      onChange(newValue);
-      setOpen(false);
-      setSearchQuery('');
-      setLocations([]);
+      }
     } catch (error) {
       console.error('Error selecting location:', error);
       toast({
@@ -104,7 +49,7 @@ const LocationSelector = ({ value, onChange }: LocationSelectorProps) => {
         variant: "destructive",
       });
     }
-  }, [onChange, toast]);
+  }, [getCityName, handleLocationSelect, onChange, toast]);
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -136,13 +81,13 @@ const LocationSelector = ({ value, onChange }: LocationSelectorProps) => {
           <CommandInput 
             placeholder="Search location..." 
             value={searchQuery}
-            onValueChange={handleSearchDebounced}
+            onValueChange={setSearchQuery}
             className="border-b border-input/50"
           />
           <CommandList>
             {loading ? (
               <CommandEmpty>Loading locations...</CommandEmpty>
-            ) : locations.length === 0 ? (
+            ) : locations?.length === 0 ? (
               <CommandEmpty>No locations found.</CommandEmpty>
             ) : (
               <LocationList
