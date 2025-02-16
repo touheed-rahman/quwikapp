@@ -389,6 +389,36 @@ export type Database = {
           },
         ]
       }
+      places: {
+        Row: {
+          created_at: string | null
+          formatted_address: string | null
+          id: number
+          latitude: number | null
+          longitude: number | null
+          name: string
+          place_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          formatted_address?: string | null
+          id?: number
+          latitude?: number | null
+          longitude?: number | null
+          name: string
+          place_id: string
+        }
+        Update: {
+          created_at?: string | null
+          formatted_address?: string | null
+          id?: number
+          latitude?: number | null
+          longitude?: number | null
+          name?: string
+          place_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null

@@ -1,13 +1,25 @@
 
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.38.4'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
+interface Place {
+  place_id: string;
+  name: string;
+  formatted_address: string;
+  geometry: {
+    location: {
+      lat: number;
+      lng: number;
+    };
+  };
+}
+
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
@@ -20,7 +32,45 @@ serve(async (req) => {
       throw new Error('Query parameter is required and must be a string')
     }
 
-    // Using Google Places API instead of Ola Maps
+    // Initialize Supabase client
+    const supabaseClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    )
+
+    // Check cache first
+    const { data: cachedPlaces, error: cacheError } = await supabaseClient
+      .from('places')
+      .select('*')
+      .ilike('name', `%${query}%`)
+      .limit(5)
+
+    if (cacheError) {
+      console.error('Cache lookup error:', cacheError)
+    } else if (cachedPlaces && cachedPlaces.length > 0) {
+      console.log('Returning cached results')
+      return new Response(
+        JSON.stringify(cachedPlaces.map(place => ({
+          place_id: place.place_id,
+          name: place.name,
+          formatted_address: place.formatted_address,
+          geometry: {
+            location: {
+              lat: place.latitude,
+              lng: place.longitude
+            }
+          }
+        }))),
+        { 
+          headers: { 
+            ...corsHeaders,
+            'Content-Type': 'application/json',
+          },
+        },
+      )
+    }
+
+    // If not in cache, fetch from Google Places API
     const GOOGLE_MAPS_API_KEY = Deno.env.get('GOOGLE_MAPS_API_KEY')
     if (!GOOGLE_MAPS_API_KEY) {
       throw new Error('GOOGLE_MAPS_API_KEY is not configured')
@@ -41,10 +91,29 @@ serve(async (req) => {
     }
 
     const data = await response.json()
-    console.log('Successfully fetched places data')
+    const places: Place[] = data.results
+
+    // Cache the results
+    if (places.length > 0) {
+      const { error: insertError } = await supabaseClient
+        .from('places')
+        .upsert(
+          places.map(place => ({
+            place_id: place.place_id,
+            name: place.name,
+            formatted_address: place.formatted_address,
+            latitude: place.geometry.location.lat,
+            longitude: place.geometry.location.lng
+          }))
+        )
+
+      if (insertError) {
+        console.error('Error caching places:', insertError)
+      }
+    }
 
     return new Response(
-      JSON.stringify(data.results),
+      JSON.stringify(places),
       { 
         headers: { 
           ...corsHeaders,
@@ -53,7 +122,7 @@ serve(async (req) => {
       },
     )
   } catch (error) {
-    console.error('Error in ola-maps-search function:', error)
+    console.error('Error in places-search function:', error)
     return new Response(
       JSON.stringify({ error: error.message }),
       { 
