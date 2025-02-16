@@ -3,3 +3,6 @@ project_id = "cgrtrdwvkkhraizqukwt"
 
 [functions.places]
 verify_jwt = false
+
+[functions.ola-maps-search]
+verify_jwt = false

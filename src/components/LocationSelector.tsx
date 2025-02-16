@@ -1,6 +1,5 @@
-
 import { useState, useCallback } from 'react';
-import { MapPin } from 'lucide-react';
+import { MapPin, Loader2 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Command, CommandEmpty, CommandInput, CommandList } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -46,47 +45,25 @@ const LocationSelector = ({ value, onChange }: LocationSelectorProps) => {
 
     setLoading(true);
     try {
-      const response = await fetch(
-        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5&addressdetails=1&countrycodes=in`,
-        {
-          headers: {
-            'Accept-Language': 'en',
-            'User-Agent': 'BajaoBazar Location Search'
-          }
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error('Network response was not ok');
-      }
-
-      const results: NominatimResult[] = await response.json();
-
-      const formattedLocations: Location[] = results.map(result => {
-        const mainName = result.address.city || 
-                        result.address.town || 
-                        result.address.village || 
-                        result.address.suburb || 
-                        result.display_name.split(',')[0];
-
-        const secondaryText = [
-          result.address.state,
-          result.address.country
-        ].filter(Boolean).join(', ');
-
-        return {
-          id: result.place_id.toString(),
-          name: mainName,
-          area: result.display_name,
-          place_id: result.place_id.toString(),
-          latitude: parseFloat(result.lat),
-          longitude: parseFloat(result.lon),
-          structured_formatting: {
-            main_text: mainName,
-            secondary_text: secondaryText
-          }
-        };
+      // Call Ola Maps API through our Supabase function
+      const { data, error } = await supabase.functions.invoke('ola-maps-search', {
+        body: { query: query.trim() }
       });
+
+      if (error) throw error;
+
+      const formattedLocations: Location[] = data.map((result: any) => ({
+        id: result.place_id,
+        name: result.name,
+        area: result.formatted_address,
+        place_id: result.place_id,
+        latitude: result.geometry.location.lat,
+        longitude: result.geometry.location.lng,
+        structured_formatting: {
+          main_text: result.name,
+          secondary_text: result.formatted_address
+        }
+      }));
 
       setLocations(formattedLocations);
     } catch (error) {
@@ -111,22 +88,7 @@ const LocationSelector = ({ value, onChange }: LocationSelectorProps) => {
 
   const handleLocationChoice = useCallback(async (location: Location) => {
     try {
-      // Cache the location data in Supabase
-      const { error } = await supabase
-        .from('location_cache')
-        .upsert({
-          place_id: location.place_id,
-          name: location.name,
-          area: location.area,
-          latitude: location.latitude,
-          longitude: location.longitude,
-          coordinates: `POINT(${location.longitude} ${location.latitude})`
-        });
-
-      if (error) throw error;
-
-      const cityName = location.name;
-      const newValue = `${cityName}|${location.place_id}`;
+      const newValue = `${location.name}|${location.place_id}`;
       onChange(newValue);
       setOpen(false);
       setSearchQuery('');
@@ -176,7 +138,12 @@ const LocationSelector = ({ value, onChange }: LocationSelectorProps) => {
           />
           <CommandList>
             {loading ? (
-              <CommandEmpty>Loading locations...</CommandEmpty>
+              <CommandEmpty>
+                <Loader2 className="h-4 w-4 animate-spin text-purple-500 mx-auto" />
+                <p className="text-sm text-muted-foreground text-center mt-2">
+                  Searching locations...
+                </p>
+              </CommandEmpty>
             ) : locations.length === 0 ? (
               <CommandEmpty>No locations found.</CommandEmpty>
             ) : (

@@ -17,7 +17,6 @@ const LocationList = ({ locations, selectedValue, onSelect }: LocationListProps)
     return null;
   }
 
-  // Function to shorten area name
   const shortenArea = (area: string) => {
     if (!area) return '';
     const parts = area.split(',');
@@ -33,15 +32,15 @@ const LocationList = ({ locations, selectedValue, onSelect }: LocationListProps)
           onSelect={() => onSelect(location)}
           className={cn(
             "flex items-start gap-2 p-3 cursor-pointer",
-            "hover:bg-primary/90 hover:text-primary-foreground",
-            "data-[selected=true]:bg-primary/90 data-[selected=true]:text-primary-foreground",
+            "hover:bg-neutral-800/50 hover:text-purple-400",
+            "data-[selected=true]:bg-purple-500/20 data-[selected=true]:text-purple-400",
             "transition-colors duration-200"
           )}
           data-selected={location.place_id === selectedValue}
         >
           <Check
             className={cn(
-              "h-4 w-4 mt-1 shrink-0",
+              "h-4 w-4 mt-1 shrink-0 text-purple-500",
               location.place_id === selectedValue
                 ? "opacity-100"
                 : "opacity-0"
@@ -52,7 +51,7 @@ const LocationList = ({ locations, selectedValue, onSelect }: LocationListProps)
               {location.name}
             </span>
             {location.area && (
-              <span className="text-sm opacity-90 truncate">
+              <span className="text-sm text-muted-foreground truncate">
                 {shortenArea(location.area)}
               </span>
             )}
