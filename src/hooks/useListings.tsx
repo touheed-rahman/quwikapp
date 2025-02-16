@@ -55,6 +55,7 @@ export const useListings = ({ categoryFilter, subcategoryFilter, selectedLocatio
             .maybeSingle();
 
           if (locationData) {
+            // Use the stored location data to fetch nearby listings
             query = supabase.rpc('get_listings_by_location', {
               search_lat: locationData.latitude,
               search_long: locationData.longitude,
@@ -85,6 +86,10 @@ export const useListings = ({ categoryFilter, subcategoryFilter, selectedLocatio
           query = query.eq('subcategory', subcategoryFilter);
         }
 
+        if (featured) {
+          query = query.eq('featured', true);
+        }
+
         // Execute the appropriate query
         const { data: listings, error } = await query;
 
@@ -110,7 +115,6 @@ export const useListings = ({ categoryFilter, subcategoryFilter, selectedLocatio
           return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
         });
 
-        console.log('Sorted listings:', sortedListings);
         return sortedListings;
       } catch (error) {
         console.error('Error in listing query:', error);
