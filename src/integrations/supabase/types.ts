@@ -1550,40 +1550,74 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: Json
       }
-      get_listings_by_location: {
-        Args: {
-          search_lat?: number
-          search_long?: number
-          radius_km?: number
-        }
-        Returns: {
-          id: string
-          title: string
-          price: number
-          category: string
-          subcategory: string
-          condition: string
-          description: string
-          images: string[]
-          location: string
-          user_id: string
-          created_at: string
-          updated_at: string
-          status: string
-          reviewed_at: string
-          reviewed_by: string
-          specs: Json
-          featured: boolean
-          view_count: number
-          save_count: number
-          deleted_at: string
-          featured_requested: boolean
-          km_driven: number
-          admin_notes: string
-          brand: string
-          distance: number
-        }[]
-      }
+      get_listings_by_location:
+        | {
+            Args: {
+              search_lat: number
+              search_long: number
+              radius_km: number
+            }
+            Returns: {
+              admin_notes: string | null
+              brand: string | null
+              category: string
+              condition: string
+              created_at: string
+              deleted_at: string | null
+              description: string | null
+              featured: boolean | null
+              featured_requested: boolean | null
+              id: string
+              images: string[]
+              km_driven: number | null
+              location: string | null
+              price: number
+              reviewed_at: string | null
+              reviewed_by: string | null
+              save_count: number | null
+              specs: Json | null
+              status: string | null
+              subcategory: string
+              title: string
+              updated_at: string
+              user_id: string
+              view_count: number | null
+            }[]
+          }
+        | {
+            Args: {
+              search_lat?: number
+              search_long?: number
+              radius_km?: number
+            }
+            Returns: {
+              id: string
+              title: string
+              price: number
+              category: string
+              subcategory: string
+              condition: string
+              description: string
+              images: string[]
+              location: string
+              user_id: string
+              created_at: string
+              updated_at: string
+              status: string
+              reviewed_at: string
+              reviewed_by: string
+              specs: Json
+              featured: boolean
+              view_count: number
+              save_count: number
+              deleted_at: string
+              featured_requested: boolean
+              km_driven: number
+              admin_notes: string
+              brand: string
+              distance: number
+            }[]
+          }
       get_maps_api_key: {
         Args: Record<PropertyKey, never>
         Returns: string
