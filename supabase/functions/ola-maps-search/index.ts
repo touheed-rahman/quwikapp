@@ -39,25 +39,25 @@ serve(async (req) => {
     )
 
     // Check cache first
-    const { data: cachedPlaces, error: cacheError } = await supabaseClient
-      .from('places')
+    const { data: cachedLocations, error: cacheError } = await supabaseClient
+      .from('location_cache')
       .select('*')
       .ilike('name', `%${query}%`)
       .limit(5)
 
     if (cacheError) {
       console.error('Cache lookup error:', cacheError)
-    } else if (cachedPlaces && cachedPlaces.length > 0) {
+    } else if (cachedLocations && cachedLocations.length > 0) {
       console.log('Returning cached results')
       return new Response(
-        JSON.stringify(cachedPlaces.map(place => ({
-          place_id: place.place_id,
-          name: place.name,
-          formatted_address: place.formatted_address,
+        JSON.stringify(cachedLocations.map(location => ({
+          place_id: location.place_id,
+          name: location.name,
+          formatted_address: location.area,
           geometry: {
             location: {
-              lat: place.latitude,
-              lng: place.longitude
+              lat: location.latitude,
+              lng: location.longitude
             }
           }
         }))),
@@ -96,19 +96,19 @@ serve(async (req) => {
     // Cache the results
     if (places.length > 0) {
       const { error: insertError } = await supabaseClient
-        .from('places')
+        .from('location_cache')
         .upsert(
           places.map(place => ({
             place_id: place.place_id,
             name: place.name,
-            formatted_address: place.formatted_address,
+            area: place.formatted_address,
             latitude: place.geometry.location.lat,
             longitude: place.geometry.location.lng
           }))
         )
 
       if (insertError) {
-        console.error('Error caching places:', insertError)
+        console.error('Error caching locations:', insertError)
       }
     }
 
