@@ -1,3 +1,4 @@
+
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { ProductCondition } from "@/types/categories";
@@ -42,7 +43,7 @@ export const useListings = ({ categoryFilter, subcategoryFilter, selectedLocatio
       console.log('Fetching listings with filters:', { categoryFilter, subcategoryFilter, selectedLocation, featured });
       
       try {
-        let locationQuery;
+        let query;
         if (selectedLocation) {
           const locationParts = selectedLocation.split('|');
           const placeId = locationParts[locationParts.length - 1];
@@ -54,25 +55,27 @@ export const useListings = ({ categoryFilter, subcategoryFilter, selectedLocatio
             .maybeSingle();
 
           if (locationData) {
-            locationQuery = supabase.rpc('get_listings_by_location', {
-              location_query: null,
+            query = supabase.rpc('get_listings_by_location', {
               search_lat: locationData.latitude,
               search_long: locationData.longitude,
               radius_km: 20
             });
           } else {
-            locationQuery = supabase.rpc('get_listings_by_location', {
-              location_query: placeId
-            });
+            // If location not found in cache, fetch all listings
+            query = supabase
+              .from('listings')
+              .select()
+              .eq('status', 'approved')
+              .is('deleted_at', null);
           }
+        } else {
+          // Base query to fetch all approved, non-deleted listings
+          query = supabase
+            .from('listings')
+            .select()
+            .eq('status', 'approved')
+            .is('deleted_at', null);
         }
-
-        // Base query to fetch all approved, non-deleted listings
-        let query = supabase
-          .from('listings')
-          .select()
-          .eq('status', 'approved')
-          .is('deleted_at', null);
 
         if (categoryFilter) {
           query = query.eq('category', categoryFilter);
@@ -83,7 +86,7 @@ export const useListings = ({ categoryFilter, subcategoryFilter, selectedLocatio
         }
 
         // Execute the appropriate query
-        const { data: listings, error } = await (locationQuery || query);
+        const { data: listings, error } = await query;
 
         if (error) {
           console.error('Error fetching listings:', error);
