@@ -14,15 +14,20 @@ serve(async (req) => {
 
   try {
     const { query } = await req.json()
-    const apiKey = Deno.env.get('OLA_MAPS_API_KEY')
+    console.log('Received search query:', query)
 
-    if (!apiKey) {
-      throw new Error('OLA_MAPS_API_KEY is not configured')
+    if (!query || typeof query !== 'string') {
+      throw new Error('Query parameter is required and must be a string')
     }
 
-    // Call Ola Maps API for place search
+    // Using Google Places API instead of Ola Maps
+    const GOOGLE_MAPS_API_KEY = Deno.env.get('GOOGLE_MAPS_API_KEY')
+    if (!GOOGLE_MAPS_API_KEY) {
+      throw new Error('GOOGLE_MAPS_API_KEY is not configured')
+    }
+
     const response = await fetch(
-      `https://api.olamaps.com/v1/places/textsearch?query=${encodeURIComponent(query)}&key=${apiKey}`,
+      `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${encodeURIComponent(query)}&key=${GOOGLE_MAPS_API_KEY}`,
       {
         headers: {
           'Accept': 'application/json',
@@ -30,7 +35,13 @@ serve(async (req) => {
       }
     )
 
+    if (!response.ok) {
+      console.error('Google Places API error:', await response.text())
+      throw new Error(`Google Places API returned ${response.status}`)
+    }
+
     const data = await response.json()
+    console.log('Successfully fetched places data')
 
     return new Response(
       JSON.stringify(data.results),
@@ -42,6 +53,7 @@ serve(async (req) => {
       },
     )
   } catch (error) {
+    console.error('Error in ola-maps-search function:', error)
     return new Response(
       JSON.stringify({ error: error.message }),
       { 
