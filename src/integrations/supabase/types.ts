@@ -419,6 +419,124 @@ export type Database = {
         }
         Relationships: []
       }
+      reels: {
+        Row: {
+          comments_count: number | null
+          created_at: string
+          description: string | null
+          id: string
+          likes_count: number | null
+          updated_at: string
+          user_id: string
+          video_url: string
+        }
+        Insert: {
+          comments_count?: number | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          likes_count?: number | null
+          updated_at?: string
+          user_id: string
+          video_url: string
+        }
+        Update: {
+          comments_count?: number | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          likes_count?: number | null
+          updated_at?: string
+          user_id?: string
+          video_url?: string
+        }
+        Relationships: []
+      }
+      reels_comments: {
+        Row: {
+          comment: string
+          created_at: string
+          id: string
+          reel_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          comment: string
+          created_at?: string
+          id?: string
+          reel_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          comment?: string
+          created_at?: string
+          id?: string
+          reel_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reels_comments_reel_id_fkey"
+            columns: ["reel_id"]
+            isOneToOne: false
+            referencedRelation: "reels"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      reels_likes: {
+        Row: {
+          created_at: string
+          id: string
+          reel_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          reel_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          reel_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reels_likes_reel_id_fkey"
+            columns: ["reel_id"]
+            isOneToOne: false
+            referencedRelation: "reels"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      secrets: {
+        Row: {
+          created_at: string | null
+          key: string
+          updated_at: string | null
+          value: string
+        }
+        Insert: {
+          created_at?: string | null
+          key: string
+          updated_at?: string | null
+          value: string
+        }
+        Update: {
+          created_at?: string | null
+          key?: string
+          updated_at?: string | null
+          value?: string
+        }
+        Relationships: []
+      }
       spatial_ref_sys: {
         Row: {
           auth_name: string | null
@@ -1434,36 +1552,36 @@ export type Database = {
       }
       get_listings_by_location: {
         Args: {
-          location_query?: string
           search_lat?: number
           search_long?: number
           radius_km?: number
         }
         Returns: {
-          admin_notes: string | null
-          brand: string | null
-          category: string
-          condition: string
-          created_at: string
-          deleted_at: string | null
-          description: string | null
-          featured: boolean | null
-          featured_requested: boolean | null
           id: string
-          images: string[]
-          km_driven: number | null
-          location: string | null
-          price: number
-          reviewed_at: string | null
-          reviewed_by: string | null
-          save_count: number | null
-          specs: Json | null
-          status: string | null
-          subcategory: string
           title: string
-          updated_at: string
+          price: number
+          category: string
+          subcategory: string
+          condition: string
+          description: string
+          images: string[]
+          location: string
           user_id: string
-          view_count: number | null
+          created_at: string
+          updated_at: string
+          status: string
+          reviewed_at: string
+          reviewed_by: string
+          specs: Json
+          featured: boolean
+          view_count: number
+          save_count: number
+          deleted_at: string
+          featured_requested: boolean
+          km_driven: number
+          admin_notes: string
+          brand: string
+          distance: number
         }[]
       }
       get_maps_api_key: {
@@ -1494,7 +1612,7 @@ export type Database = {
       }
       get_secret: {
         Args: {
-          name: string
+          secret_key: string
         }
         Returns: string
       }
