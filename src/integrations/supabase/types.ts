@@ -237,6 +237,7 @@ export type Database = {
       location_cache: {
         Row: {
           area: string | null
+          city: string | null
           coordinates: unknown | null
           created_at: string
           id: string
@@ -244,10 +245,13 @@ export type Database = {
           longitude: number
           name: string
           place_id: string
+          priority: number | null
+          state: string | null
           updated_at: string | null
         }
         Insert: {
           area?: string | null
+          city?: string | null
           coordinates?: unknown | null
           created_at?: string
           id?: string
@@ -255,10 +259,13 @@ export type Database = {
           longitude: number
           name: string
           place_id: string
+          priority?: number | null
+          state?: string | null
           updated_at?: string | null
         }
         Update: {
           area?: string | null
+          city?: string | null
           coordinates?: unknown | null
           created_at?: string
           id?: string
@@ -266,6 +273,8 @@ export type Database = {
           longitude?: number
           name?: string
           place_id?: string
+          priority?: number | null
+          state?: string | null
           updated_at?: string | null
         }
         Relationships: []
