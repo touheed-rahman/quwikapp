@@ -43,54 +43,70 @@ export const useListings = ({ categoryFilter, subcategoryFilter, selectedLocatio
       console.log('Fetching listings with filters:', { categoryFilter, subcategoryFilter, selectedLocation, featured });
       
       try {
-        let query;
+        let query = supabase
+          .from('listings')
+          .select()
+          .eq('status', 'approved')
+          .is('deleted_at', null);
+
         if (selectedLocation) {
           const locationParts = selectedLocation.split('|');
           const placeId = locationParts[locationParts.length - 1];
           
-          const { data: locationData } = await supabase
+          const { data: locationData, error: locationError } = await supabase
             .from('location_cache')
             .select('latitude, longitude')
             .eq('place_id', placeId)
-            .maybeSingle();
+            .single();
+
+          if (locationError) {
+            console.error('Error fetching location data:', locationError);
+            throw locationError;
+          }
 
           if (locationData) {
-            // Use the stored location data to fetch nearby listings
-            query = supabase.rpc('get_listings_by_location', {
-              search_lat: locationData.latitude,
-              search_long: locationData.longitude,
-              radius_km: 20
-            });
-          } else {
-            // If location not found in cache, fetch all listings
-            query = supabase
-              .from('listings')
-              .select()
-              .eq('status', 'approved')
-              .is('deleted_at', null);
+            console.log('Found location data:', locationData);
+            const { data: nearbyListings, error: nearbyError } = await supabase
+              .rpc('get_listings_by_location', {
+                search_lat: locationData.latitude,
+                search_long: locationData.longitude,
+                radius_km: 20
+              });
+
+            if (nearbyError) {
+              console.error('Error fetching nearby listings:', nearbyError);
+              throw nearbyError;
+            }
+
+            console.log('Fetched nearby listings:', nearbyListings);
+            
+            // Filter the nearby listings based on category and subcategory if needed
+            let filteredListings = nearbyListings;
+            if (categoryFilter) {
+              filteredListings = filteredListings.filter(listing => listing.category === categoryFilter);
+            }
+            if (subcategoryFilter) {
+              filteredListings = filteredListings.filter(listing => listing.subcategory === subcategoryFilter);
+            }
+            if (featured) {
+              filteredListings = filteredListings.filter(listing => listing.featured);
+            }
+
+            return filteredListings;
           }
-        } else {
-          // Base query to fetch all approved, non-deleted listings
-          query = supabase
-            .from('listings')
-            .select()
-            .eq('status', 'approved')
-            .is('deleted_at', null);
         }
 
+        // If no location selected or location not found, apply regular filters
         if (categoryFilter) {
           query = query.eq('category', categoryFilter);
         }
-
         if (subcategoryFilter) {
           query = query.eq('subcategory', subcategoryFilter);
         }
-
         if (featured) {
           query = query.eq('featured', true);
         }
 
-        // Execute the appropriate query
         const { data: listings, error } = await query;
 
         if (error) {
@@ -106,7 +122,7 @@ export const useListings = ({ categoryFilter, subcategoryFilter, selectedLocatio
         console.log('Raw listings from database:', listings);
 
         // Sort listings to show featured items first, then by creation date
-        const sortedListings = (listings as Listing[]).sort((a, b) => {
+        const sortedListings = listings.sort((a, b) => {
           // First, sort by featured status
           if (a.featured && !b.featured) return -1;
           if (!a.featured && b.featured) return 1;
@@ -123,7 +139,7 @@ export const useListings = ({ categoryFilter, subcategoryFilter, selectedLocatio
           description: "Failed to fetch listings. Please try again.",
           variant: "destructive",
         });
-        return [];
+        throw error;
       }
     },
     staleTime: 1000 * 60 * 5, // Cache for 5 minutes
