@@ -50,26 +50,15 @@ export const useListings = ({ categoryFilter, subcategoryFilter, selectedLocatio
           .is('deleted_at', null);
 
         if (selectedLocation) {
-          const locationParts = selectedLocation.split('|');
-          const placeId = locationParts[locationParts.length - 1];
+          // Format: "name|lat|long|place_id"
+          const [_, lat, long] = selectedLocation.split('|');
           
-          const { data: locationData, error: locationError } = await supabase
-            .from('location_cache')
-            .select('latitude, longitude')
-            .eq('place_id', placeId)
-            .single();
-
-          if (locationError) {
-            console.error('Error fetching location data:', locationError);
-            throw locationError;
-          }
-
-          if (locationData) {
-            console.log('Found location data:', locationData);
+          if (lat && long) {
+            console.log('Using coordinates:', { lat, long });
             const { data: nearbyListings, error: nearbyError } = await supabase
               .rpc('get_listings_by_location', {
-                search_lat: locationData.latitude,
-                search_long: locationData.longitude,
+                search_lat: parseFloat(lat),
+                search_long: parseFloat(long),
                 radius_km: 20
               });
 

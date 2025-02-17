@@ -1591,8 +1591,8 @@ export type Database = {
       }
       get_listings_by_location: {
         Args: {
-          search_lat?: number
-          search_long?: number
+          search_lat: number
+          search_long: number
           radius_km?: number
         }
         Returns: {
@@ -1620,7 +1620,7 @@ export type Database = {
           km_driven: number
           admin_notes: string
           brand: string
-          distance: number
+          distance_km: number
         }[]
       }
       get_maps_api_key: {
