@@ -27,8 +27,8 @@ const LocationList = ({ locations, selectedValue, onSelect }: LocationListProps)
     <CommandGroup className="max-h-[300px] overflow-y-auto">
       {locations.map((location) => (
         <CommandItem
-          key={location.place_id}
-          value={location.place_id}
+          key={location.id}
+          value={location.id}
           onSelect={() => onSelect(location)}
           className={cn(
             "flex items-start gap-2 p-3 cursor-pointer",
@@ -36,12 +36,12 @@ const LocationList = ({ locations, selectedValue, onSelect }: LocationListProps)
             "data-[selected=true]:bg-purple-500/20 data-[selected=true]:text-purple-400",
             "transition-colors duration-200"
           )}
-          data-selected={location.place_id === selectedValue}
+          data-selected={location.id === selectedValue}
         >
           <Check
             className={cn(
               "h-4 w-4 mt-1 shrink-0 text-purple-500",
-              location.place_id === selectedValue
+              location.id === selectedValue
                 ? "opacity-100"
                 : "opacity-0"
             )}

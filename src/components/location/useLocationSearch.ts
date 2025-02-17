@@ -5,63 +5,35 @@ import { supabase } from "@/integrations/supabase/client";
 import { PlacePrediction, Location, PlaceDetails } from './types';
 
 export const useLocationSearch = (searchQuery: string) => {
-  const [predictions, setPredictions] = useState<PlacePrediction[]>([]);
+  const [predictions, setPredictions] = useState<Location[]>([]);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
   const debounceTimeout = useRef<NodeJS.Timeout>();
   const abortController = useRef<AbortController>();
 
-  const getPlaceDetails = async (placeId: string): Promise<PlaceDetails | null> => {
+  const getPlaceDetails = async (id: string): Promise<PlaceDetails | null> => {
     try {
-      const { data, error } = await supabase.functions.invoke('places', {
-        body: {
-          endpoint: 'details',
-          place_id: placeId
-        }
-      });
+      const { data: city, error } = await supabase
+        .from('indian_cities')
+        .select('*')
+        .eq('id', id)
+        .single();
 
-      if (error) {
-        console.error('Place details error:', error);
-        throw error;
-      }
+      if (error) throw error;
 
-      console.log('Place details response:', data);
-      
-      if (data.status === 'OK' && data.result) {
-        const result = data.result;
+      if (city) {
         return {
-          place_id: placeId,
-          name: result.name,
-          area: result.formatted_address,
-          latitude: result.geometry.location.lat,
-          longitude: result.geometry.location.lng
+          id: city.id,
+          name: city.name,
+          area: city.area,
+          latitude: city.latitude,
+          longitude: city.longitude
         };
       }
       return null;
     } catch (error) {
       console.error('Error fetching place details:', error);
       return null;
-    }
-  };
-
-  const cacheLocation = async (details: PlaceDetails) => {
-    try {
-      const { error } = await supabase
-        .from('location_cache')
-        .upsert({
-          place_id: details.place_id,
-          name: details.name,
-          area: details.area,
-          latitude: details.latitude,
-          longitude: details.longitude,
-          coordinates: `POINT(${details.longitude} ${details.latitude})`
-        });
-
-      if (error) {
-        console.error('Error caching location:', error);
-      }
-    } catch (error) {
-      console.error('Error in caching location:', error);
     }
   };
 
@@ -80,32 +52,25 @@ export const useLocationSearch = (searchQuery: string) => {
 
         setLoading(true);
         
-        const { data, error } = await supabase.functions.invoke('places', {
-          body: {
-            endpoint: 'autocomplete',
-            input: searchQuery
-          }
-        });
+        const { data: cities, error } = await supabase
+          .from('indian_cities')
+          .select('*')
+          .or(`name.ilike.%${searchQuery}%,area.ilike.%${searchQuery}%,state.ilike.%${searchQuery}%`)
+          .limit(10);
 
-        if (error) {
-          console.error('Supabase function error:', error);
-          throw error;
-        }
+        if (error) throw error;
 
-        console.log('Predictions response:', data);
-        
-        if (data.status === 'OK' && Array.isArray(data.predictions)) {
-          setPredictions(data.predictions);
-        } else if (data.error_message) {
-          console.error('Google Places API error:', data.error_message);
-          toast({
-            title: "Error",
-            description: "There was an error fetching locations. Please try again.",
-            variant: "destructive",
-          });
-          setPredictions([]);
+        if (cities) {
+          const formattedLocations: Location[] = cities.map(city => ({
+            id: city.id,
+            name: city.name,
+            area: city.area,
+            state: city.state,
+            latitude: city.latitude,
+            longitude: city.longitude
+          }));
+          setPredictions(formattedLocations);
         } else {
-          console.error('Unexpected response format:', data);
           setPredictions([]);
         }
       } catch (error: any) {
@@ -139,25 +104,17 @@ export const useLocationSearch = (searchQuery: string) => {
     };
   }, [searchQuery, toast]);
 
-  const handleLocationSelect = async (location: Location | PlacePrediction): Promise<Location | null> => {
+  const handleLocationSelect = async (location: Location): Promise<Location | null> => {
     try {
-      const placeId = location.place_id;
-      if (!placeId) return null;
-
-      const details = await getPlaceDetails(placeId);
+      const details = await getPlaceDetails(location.id);
       if (details) {
-        await cacheLocation(details);
         return {
-          id: details.place_id,
+          id: details.id,
           name: details.name,
           area: details.area,
-          place_id: details.place_id,
+          state: location.state,
           latitude: details.latitude,
-          longitude: details.longitude,
-          structured_formatting: {
-            main_text: details.name,
-            secondary_text: details.area || ''
-          }
+          longitude: details.longitude
         };
       }
       return null;
@@ -167,14 +124,5 @@ export const useLocationSearch = (searchQuery: string) => {
     }
   };
 
-  const locations: Location[] = predictions?.map(prediction => ({
-    id: prediction.place_id,
-    name: prediction.structured_formatting.main_text,
-    area: prediction.structured_formatting.secondary_text,
-    place_id: prediction.place_id,
-    description: prediction.description,
-    structured_formatting: prediction.structured_formatting
-  })) || [];
-
-  return { locations, loading, handleLocationSelect };
+  return { locations: predictions, loading, handleLocationSelect };
 };
