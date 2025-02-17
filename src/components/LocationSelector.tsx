@@ -1,30 +1,16 @@
+
 import { useState, useCallback } from 'react';
 import { MapPin, Loader2 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Command, CommandEmpty, CommandInput, CommandList } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Location, LocationSelectorProps } from './location/types';
+import { Location } from './location/types';
 import LocationList from './location/LocationList';
 import { useToast } from './ui/use-toast';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 
-interface NominatimResult {
-  place_id: number;
-  lat: string;
-  lon: string;
-  display_name: string;
-  address: {
-    city?: string;
-    town?: string;
-    village?: string;
-    suburb?: string;
-    state?: string;
-    country?: string;
-  };
-}
-
-const LocationSelector = ({ value, onChange }: LocationSelectorProps) => {
+const LocationSelector = ({ value, onChange }: { value: string | null, onChange: (value: string | null) => void }) => {
   const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [locations, setLocations] = useState<Location[]>([]);
@@ -33,8 +19,7 @@ const LocationSelector = ({ value, onChange }: LocationSelectorProps) => {
 
   const getCityName = useCallback((locationString: string) => {
     if (!locationString) return '';
-    const parts = locationString.split(',')[0].split('|')[0];
-    return parts.trim();
+    return locationString.split('|')[0];
   }, []);
 
   const handleSearch = useCallback(async (query: string) => {
@@ -45,24 +30,21 @@ const LocationSelector = ({ value, onChange }: LocationSelectorProps) => {
 
     setLoading(true);
     try {
-      // Call Ola Maps API through our Supabase function
-      const { data, error } = await supabase.functions.invoke('ola-maps-search', {
-        body: { query: query.trim() }
-      });
+      const { data: cities, error } = await supabase
+        .from('indian_cities')
+        .select('*')
+        .or(`name.ilike.%${query}%,area.ilike.%${query}%,state.ilike.%${query}%`)
+        .limit(10);
 
       if (error) throw error;
 
-      const formattedLocations: Location[] = data.map((result: any) => ({
-        id: result.place_id,
-        name: result.name,
-        area: result.formatted_address,
-        place_id: result.place_id,
-        latitude: result.geometry.location.lat,
-        longitude: result.geometry.location.lng,
-        structured_formatting: {
-          main_text: result.name,
-          secondary_text: result.formatted_address
-        }
+      const formattedLocations: Location[] = (cities || []).map(city => ({
+        id: city.id,
+        name: city.name,
+        area: city.area,
+        state: city.state,
+        latitude: city.latitude,
+        longitude: city.longitude
       }));
 
       setLocations(formattedLocations);
@@ -88,7 +70,7 @@ const LocationSelector = ({ value, onChange }: LocationSelectorProps) => {
 
   const handleLocationChoice = useCallback(async (location: Location) => {
     try {
-      const newValue = `${location.name}|${location.place_id}`;
+      const newValue = `${location.name}|${location.latitude}|${location.longitude}|${location.id}`;
       onChange(newValue);
       setOpen(false);
       setSearchQuery('');
@@ -131,7 +113,7 @@ const LocationSelector = ({ value, onChange }: LocationSelectorProps) => {
       >
         <Command className="rounded-lg border-none">
           <CommandInput 
-            placeholder="Search location..." 
+            placeholder="Search cities..." 
             value={searchQuery}
             onValueChange={handleSearchDebounced}
             className="border-b border-input/50"
@@ -145,13 +127,13 @@ const LocationSelector = ({ value, onChange }: LocationSelectorProps) => {
                 </p>
               </CommandEmpty>
             ) : locations.length === 0 ? (
-              <CommandEmpty>No locations found.</CommandEmpty>
+              <CommandEmpty>No cities found.</CommandEmpty>
             ) : (
               <LocationList
                 locations={locations}
                 loading={loading}
                 searchQuery={searchQuery}
-                selectedValue={value?.split('|')[1]}
+                selectedValue={value?.split('|')[3]}
                 onSelect={handleLocationChoice}
               />
             )}

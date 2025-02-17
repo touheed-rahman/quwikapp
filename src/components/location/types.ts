@@ -3,15 +3,11 @@ export interface Location {
   id: string;
   name: string;
   area?: string;
-  place_id?: string;
+  state: string;
+  latitude: number;
+  longitude: number;
   description?: string;
-  latitude?: number;
-  longitude?: number;
   distance_km?: number;
-  structured_formatting?: {
-    main_text: string;
-    secondary_text: string;
-  };
 }
 
 export interface LocationSelectorProps {
@@ -20,7 +16,7 @@ export interface LocationSelectorProps {
 }
 
 export interface PlacePrediction {
-  place_id: string;
+  id: string;
   description: string;
   structured_formatting: {
     main_text: string;
@@ -29,7 +25,7 @@ export interface PlacePrediction {
 }
 
 export interface PlaceDetails {
-  place_id: string;
+  id: string;
   name: string;
   area?: string;
   latitude: number;

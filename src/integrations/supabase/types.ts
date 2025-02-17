@@ -112,6 +112,36 @@ export type Database = {
         }
         Relationships: []
       }
+      indian_cities: {
+        Row: {
+          area: string | null
+          created_at: string | null
+          id: string
+          latitude: number
+          longitude: number
+          name: string
+          state: string
+        }
+        Insert: {
+          area?: string | null
+          created_at?: string | null
+          id?: string
+          latitude: number
+          longitude: number
+          name: string
+          state: string
+        }
+        Update: {
+          area?: string | null
+          created_at?: string | null
+          id?: string
+          latitude?: number
+          longitude?: number
+          name?: string
+          state?: string
+        }
+        Relationships: []
+      }
       listing_notifications: {
         Row: {
           created_at: string | null
@@ -150,6 +180,7 @@ export type Database = {
           admin_notes: string | null
           brand: string | null
           category: string
+          city_id: string | null
           condition: string
           created_at: string
           deleted_at: string | null
@@ -176,6 +207,7 @@ export type Database = {
           admin_notes?: string | null
           brand?: string | null
           category: string
+          city_id?: string | null
           condition: string
           created_at?: string
           deleted_at?: string | null
@@ -202,6 +234,7 @@ export type Database = {
           admin_notes?: string | null
           brand?: string | null
           category?: string
+          city_id?: string | null
           condition?: string
           created_at?: string
           deleted_at?: string | null
@@ -225,6 +258,13 @@ export type Database = {
           view_count?: number | null
         }
         Relationships: [
+          {
+            foreignKeyName: "listings_city_id_fkey"
+            columns: ["city_id"]
+            isOneToOne: false
+            referencedRelation: "indian_cities"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "listings_user_id_fkey"
             columns: ["user_id"]
@@ -1588,6 +1628,39 @@ export type Database = {
       get_dashboard_metrics: {
         Args: Record<PropertyKey, never>
         Returns: Json
+      }
+      get_listings_by_city: {
+        Args: {
+          p_city_id: string
+          radius_km?: number
+        }
+        Returns: {
+          id: string
+          title: string
+          price: number
+          category: string
+          subcategory: string
+          condition: string
+          description: string
+          images: string[]
+          location: string
+          user_id: string
+          created_at: string
+          updated_at: string
+          status: string
+          reviewed_at: string
+          reviewed_by: string
+          specs: Json
+          featured: boolean
+          view_count: number
+          save_count: number
+          deleted_at: string
+          featured_requested: boolean
+          km_driven: number
+          admin_notes: string
+          brand: string
+          distance_km: number
+        }[]
       }
       get_listings_by_location: {
         Args: {

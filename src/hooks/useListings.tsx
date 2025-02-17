@@ -50,15 +50,14 @@ export const useListings = ({ categoryFilter, subcategoryFilter, selectedLocatio
           .is('deleted_at', null);
 
         if (selectedLocation) {
-          // Format: "name|lat|long|place_id"
-          const [_, lat, long] = selectedLocation.split('|');
+          // Format: "name|lat|long|city_id"
+          const cityId = selectedLocation.split('|')[3];
           
-          if (lat && long) {
-            console.log('Using coordinates:', { lat, long });
+          if (cityId) {
+            console.log('Using city ID:', cityId);
             const { data: nearbyListings, error: nearbyError } = await supabase
-              .rpc('get_listings_by_location', {
-                search_lat: parseFloat(lat),
-                search_long: parseFloat(long),
+              .rpc('get_listings_by_city', {
+                p_city_id: cityId,
                 radius_km: 20
               });
 
@@ -72,7 +71,7 @@ export const useListings = ({ categoryFilter, subcategoryFilter, selectedLocatio
             // Filter the nearby listings based on category and subcategory if needed
             let filteredListings = (nearbyListings || []).map(listing => ({
               ...listing,
-              condition: listing.condition as ProductCondition // Type assertion for condition
+              condition: listing.condition as ProductCondition
             }));
 
             if (categoryFilter) {
