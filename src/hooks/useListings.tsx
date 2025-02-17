@@ -81,7 +81,11 @@ export const useListings = ({ categoryFilter, subcategoryFilter, selectedLocatio
             console.log('Fetched nearby listings:', nearbyListings);
             
             // Filter the nearby listings based on category and subcategory if needed
-            let filteredListings = nearbyListings;
+            let filteredListings = (nearbyListings || []).map(listing => ({
+              ...listing,
+              condition: listing.condition as ProductCondition // Type assertion for condition
+            }));
+
             if (categoryFilter) {
               filteredListings = filteredListings.filter(listing => listing.category === categoryFilter);
             }
@@ -121,8 +125,14 @@ export const useListings = ({ categoryFilter, subcategoryFilter, selectedLocatio
 
         console.log('Raw listings from database:', listings);
 
+        // Map the listings and assert the condition type
+        const typedListings = listings.map(listing => ({
+          ...listing,
+          condition: listing.condition as ProductCondition
+        }));
+
         // Sort listings to show featured items first, then by creation date
-        const sortedListings = listings.sort((a, b) => {
+        const sortedListings = typedListings.sort((a, b) => {
           // First, sort by featured status
           if (a.featured && !b.featured) return -1;
           if (!a.featured && b.featured) return 1;
