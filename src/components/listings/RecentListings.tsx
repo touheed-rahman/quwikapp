@@ -38,10 +38,14 @@ const RecentListings = ({
     ? listings
     : listings.slice(0, itemsPerPage);
 
+  if (listings.length === 0) {
+    return null;
+  }
+
   return (
     <section>
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-bold">Fresh Recommendations</h2>
+        <h2 className="text-2xl font-bold">Fresh Recommendations</h2>
         <Link 
           to="/fresh-recommendations" 
           className="text-primary flex items-center hover:underline"
@@ -52,9 +56,15 @@ const RecentListings = ({
       </div>
       
       {isLoading ? (
-        <div className="text-center py-8">Loading listings...</div>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 animate-pulse">
+          {[...Array(8)].map((_, i) => (
+            <div key={i} className="bg-gray-200 aspect-[4/3] rounded-lg" />
+          ))}
+        </div>
       ) : error ? (
-        <div className="text-center py-8 text-red-500">Error loading listings</div>
+        <div className="text-center py-8 text-red-500">
+          Error loading listings
+        </div>
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
           {displayedListings.map((listing) => (
