@@ -41,22 +41,25 @@ const RecentListings = ({
   return (
     <section>
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-bold">Fresh Recommendations</h2>
         <Link 
           to="/fresh-recommendations" 
-          className="text-primary flex items-center hover:underline"
+          className="text-primary flex items-center hover:underline text-sm"
         >
-          View All
+          View All Recommendations
           <ArrowRight className="ml-1 h-4 w-4" />
         </Link>
       </div>
       
       {isLoading ? (
-        <div className="text-center py-8">Loading listings...</div>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 animate-pulse">
+          {[...Array(8)].map((_, i) => (
+            <div key={i} className="bg-gray-200 aspect-[4/3] rounded-lg" />
+          ))}
+        </div>
       ) : error ? (
         <div className="text-center py-8 text-red-500">Error loading listings</div>
       ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
           {displayedListings.map((listing) => (
             <ProductCard
               key={listing.id}

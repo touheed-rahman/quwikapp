@@ -49,7 +49,13 @@ export const useListings = ({ categoryFilter, subcategoryFilter, selectedLocatio
           .eq('status', 'approved')
           .is('deleted_at', null);
 
-        // Regular filters first
+        // Apply location filter if selected
+        if (selectedLocation) {
+          const [city] = selectedLocation.split('|');
+          query = query.eq('location', city);
+        }
+
+        // Regular filters
         if (categoryFilter) {
           query = query.eq('category', categoryFilter);
         }
