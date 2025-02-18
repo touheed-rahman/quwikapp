@@ -1,6 +1,6 @@
 
 import { useState, useCallback } from 'react';
-import { MapPin, Loader2, ChevronRight } from 'lucide-react';
+import { MapPin, Loader2, ChevronRight, ArrowLeft } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Command, CommandEmpty, CommandInput, CommandList } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -122,14 +122,15 @@ const LocationSelector = ({ value, onChange }: { value: string | null, onChange:
                 <div className="p-2">
                   <Button
                     variant="ghost"
-                    className="w-full justify-start font-normal"
+                    className="w-full justify-start font-normal hover:text-white"
                     onClick={() => {
                       setSelectedState(null);
                       setCities([]);
                       loadStates();
                     }}
                   >
-                    ← Back to States
+                    <ArrowLeft className="mr-2 h-4 w-4" />
+                    Back to States
                   </Button>
                 </div>
                 {cities.length === 0 ? (
@@ -139,7 +140,7 @@ const LocationSelector = ({ value, onChange }: { value: string | null, onChange:
                     {cities.map((city) => (
                       <div
                         key={city.id}
-                        className="px-2 py-1.5 cursor-pointer hover:bg-accent hover:text-accent-foreground"
+                        className="px-2 py-1.5 cursor-pointer hover:bg-primary hover:text-white"
                         onClick={() => handleCitySelect(city)}
                       >
                         {city.name}
@@ -157,7 +158,7 @@ const LocationSelector = ({ value, onChange }: { value: string | null, onChange:
                     {states.map((state) => (
                       <div
                         key={state.id}
-                        className="px-2 py-1.5 cursor-pointer hover:bg-accent hover:text-accent-foreground flex items-center justify-between"
+                        className="px-2 py-1.5 cursor-pointer hover:bg-primary hover:text-white flex items-center justify-between"
                         onClick={() => handleStateSelect(state)}
                       >
                         <span>{state.name}</span>

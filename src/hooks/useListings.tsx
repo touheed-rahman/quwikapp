@@ -49,46 +49,7 @@ export const useListings = ({ categoryFilter, subcategoryFilter, selectedLocatio
           .eq('status', 'approved')
           .is('deleted_at', null);
 
-        if (selectedLocation) {
-          // Format: "name|state|lat|long|city_id"
-          const cityId = selectedLocation.split('|')[4];
-          
-          if (cityId) {
-            console.log('Using city ID:', cityId);
-            const { data: nearbyListings, error: nearbyError } = await supabase
-              .rpc('get_listings_by_city', {
-                p_city_id: cityId,
-                radius_km: 20
-              });
-
-            if (nearbyError) {
-              console.error('Error fetching nearby listings:', nearbyError);
-              throw nearbyError;
-            }
-
-            console.log('Fetched nearby listings:', nearbyListings);
-            
-            // Filter the nearby listings based on category and subcategory if needed
-            let filteredListings = (nearbyListings || []).map(listing => ({
-              ...listing,
-              condition: listing.condition as ProductCondition
-            }));
-
-            if (categoryFilter) {
-              filteredListings = filteredListings.filter(listing => listing.category === categoryFilter);
-            }
-            if (subcategoryFilter) {
-              filteredListings = filteredListings.filter(listing => listing.subcategory === subcategoryFilter);
-            }
-            if (featured) {
-              filteredListings = filteredListings.filter(listing => listing.featured);
-            }
-
-            return filteredListings;
-          }
-        }
-
-        // If no location selected or location not found, apply regular filters
+        // Regular filters first
         if (categoryFilter) {
           query = query.eq('category', categoryFilter);
         }
@@ -110,8 +71,6 @@ export const useListings = ({ categoryFilter, subcategoryFilter, selectedLocatio
           console.log('No listings found');
           return [];
         }
-
-        console.log('Raw listings from database:', listings);
 
         // Map the listings and assert the condition type
         const typedListings = listings.map(listing => ({
