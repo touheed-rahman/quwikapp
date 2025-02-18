@@ -50,8 +50,8 @@ export const useListings = ({ categoryFilter, subcategoryFilter, selectedLocatio
           .is('deleted_at', null);
 
         if (selectedLocation) {
-          // Format: "name|lat|long|city_id"
-          const cityId = selectedLocation.split('|')[3];
+          // Format: "name|state|lat|long|city_id"
+          const cityId = selectedLocation.split('|')[4];
           
           if (cityId) {
             console.log('Using city ID:', cityId);

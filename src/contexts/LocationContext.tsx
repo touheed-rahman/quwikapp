@@ -48,7 +48,9 @@ export const LocationProvider = ({ children }: { children: React.ReactNode }) =>
             city_id: cityId,
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString()
-          } as UserLocationPreference);
+          } as UserLocationPreference, {
+            onConflict: 'user_id'
+          });
 
         if (error) throw error;
       }
