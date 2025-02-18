@@ -27,7 +27,7 @@ const Index = () => {
     categoryFilter: null,
     subcategoryFilter: null,
     selectedLocation,
-    featured: false
+    featured: false // Set to false to get all listings
   });
 
   // Subscribe to real-time updates for listings
@@ -81,15 +81,34 @@ const Index = () => {
             getFirstImageUrl={getFirstImageUrl}
           />
 
-          <RecentListings 
-            listings={listings}
-            isLoading={isLoading}
-            error={error as Error}
-            showAllProducts={showAllProducts}
-            setShowAllProducts={setShowAllProducts}
-            getFirstImageUrl={getFirstImageUrl}
-            itemsPerPage={ITEMS_PER_PAGE}
-          />
+          <div className="space-y-4">
+            <h2 className="text-2xl font-bold">Fresh Recommendations</h2>
+            {isLoading ? (
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 animate-pulse">
+                {[...Array(8)].map((_, i) => (
+                  <div key={i} className="bg-gray-200 aspect-[4/3] rounded-lg" />
+                ))}
+              </div>
+            ) : error ? (
+              <div className="text-center py-8 text-red-500">
+                Error loading recommendations
+              </div>
+            ) : listings.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                No listings available in your area yet
+              </div>
+            ) : (
+              <RecentListings 
+                listings={listings}
+                isLoading={isLoading}
+                error={error as Error}
+                showAllProducts={showAllProducts}
+                setShowAllProducts={setShowAllProducts}
+                getFirstImageUrl={getFirstImageUrl}
+                itemsPerPage={ITEMS_PER_PAGE}
+              />
+            )}
+          </div>
 
           <CategoryListings 
             listings={listings}

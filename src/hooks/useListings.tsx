@@ -43,53 +43,13 @@ export const useListings = ({ categoryFilter, subcategoryFilter, selectedLocatio
       console.log('Fetching listings with filters:', { categoryFilter, subcategoryFilter, selectedLocation, featured });
       
       try {
-        if (selectedLocation) {
-          const cityId = selectedLocation.split('|')[4];
-          console.log('Filtering by city ID:', cityId);
-
-          const { data: cityListings, error: cityError } = await supabase
-            .rpc('get_listings_by_city', {
-              p_city_id: cityId,
-              radius_km: 50 // Increased radius for better results
-            });
-
-          if (cityError) {
-            console.error('Error fetching city listings:', cityError);
-            throw cityError;
-          }
-
-          let filteredListings = cityListings || [];
-
-          // Apply additional filters
-          if (categoryFilter) {
-            filteredListings = filteredListings.filter(listing => listing.category === categoryFilter);
-          }
-          if (subcategoryFilter) {
-            filteredListings = filteredListings.filter(listing => listing.subcategory === subcategoryFilter);
-          }
-          if (featured) {
-            filteredListings = filteredListings.filter(listing => listing.featured);
-          }
-
-          const typedListings = filteredListings.map(listing => ({
-            ...listing,
-            condition: listing.condition as ProductCondition
-          }));
-
-          return typedListings.sort((a, b) => {
-            if (a.featured && !b.featured) return -1;
-            if (!a.featured && b.featured) return 1;
-            return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-          });
-        }
-
-        // If no location selected, fetch all listings with filters
         let query = supabase
           .from('listings')
           .select()
           .eq('status', 'approved')
           .is('deleted_at', null);
 
+        // Regular filters first
         if (categoryFilter) {
           query = query.eq('category', categoryFilter);
         }
@@ -112,16 +72,23 @@ export const useListings = ({ categoryFilter, subcategoryFilter, selectedLocatio
           return [];
         }
 
+        // Map the listings and assert the condition type
         const typedListings = listings.map(listing => ({
           ...listing,
           condition: listing.condition as ProductCondition
         }));
 
-        return typedListings.sort((a, b) => {
+        // Sort listings to show featured items first, then by creation date
+        const sortedListings = typedListings.sort((a, b) => {
+          // First, sort by featured status
           if (a.featured && !b.featured) return -1;
           if (!a.featured && b.featured) return 1;
+          
+          // Then sort by creation date (newest first)
           return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
         });
+
+        return sortedListings;
       } catch (error) {
         console.error('Error in listing query:', error);
         toast({
