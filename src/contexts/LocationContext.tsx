@@ -7,6 +7,24 @@ interface LocationContextType {
   setSelectedLocation: (location: string | null) => Promise<void>;
 }
 
+interface UserLocationPreference {
+  id: string;
+  user_id: string;
+  city_id: string;
+  created_at: string;
+  updated_at: string;
+}
+
+interface CityDetails {
+  id: string;
+  name: string;
+  latitude: number;
+  longitude: number;
+  states: {
+    name: string;
+  };
+}
+
 const LocationContext = createContext<LocationContextType | undefined>(undefined);
 
 export const LocationProvider = ({ children }: { children: React.ReactNode }) => {
@@ -25,11 +43,12 @@ export const LocationProvider = ({ children }: { children: React.ReactNode }) =>
         const { error } = await supabase
           .from('user_location_preferences')
           .upsert({
+            id: crypto.randomUUID(),
             user_id: user.id,
-            city_id: cityId
-          }, {
-            onConflict: 'user_id'
-          });
+            city_id: cityId,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          } as UserLocationPreference);
 
         if (error) throw error;
       }
@@ -46,7 +65,7 @@ export const LocationProvider = ({ children }: { children: React.ReactNode }) =>
 
         const { data: locationPref, error: prefError } = await supabase
           .from('user_location_preferences')
-          .select('city_id')
+          .select('*')
           .eq('user_id', user.id)
           .single();
 
@@ -62,7 +81,8 @@ export const LocationProvider = ({ children }: { children: React.ReactNode }) =>
           if (cityError) throw cityError;
 
           if (cityDetails) {
-            const locationString = `${cityDetails.name}|${cityDetails.states.name}|${cityDetails.latitude}|${cityDetails.longitude}|${cityDetails.id}`;
+            const details = cityDetails as CityDetails;
+            const locationString = `${details.name}|${details.states.name}|${details.latitude}|${details.longitude}|${details.id}`;
             setLocationState(locationString);
           }
         }

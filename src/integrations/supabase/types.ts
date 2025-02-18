@@ -715,33 +715,33 @@ export type Database = {
       }
       user_location_preferences: {
         Row: {
+          city_id: string
           created_at: string
           id: string
-          place_id: string
           updated_at: string
           user_id: string
         }
         Insert: {
+          city_id: string
           created_at?: string
           id?: string
-          place_id: string
           updated_at?: string
           user_id: string
         }
         Update: {
+          city_id?: string
           created_at?: string
           id?: string
-          place_id?: string
           updated_at?: string
           user_id?: string
         }
         Relationships: [
           {
-            foreignKeyName: "user_location_preferences_place_id_fkey"
-            columns: ["place_id"]
+            foreignKeyName: "user_location_preferences_city_id_fkey"
+            columns: ["city_id"]
             isOneToOne: false
-            referencedRelation: "location_cache"
-            referencedColumns: ["place_id"]
+            referencedRelation: "cities"
+            referencedColumns: ["id"]
           },
         ]
       }
