@@ -15,6 +15,7 @@ export interface Listing {
 }
 
 export interface ConversationDetails {
+  id: string;  // Added this property
   seller: {
     id: string;
     full_name: string;
