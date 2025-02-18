@@ -44,18 +44,22 @@ export const LocationProvider = ({ children }: { children: React.ReactNode }) =>
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return;
 
-        const { data: locationPref } = await supabase
+        const { data: locationPref, error: prefError } = await supabase
           .from('user_location_preferences')
           .select('city_id')
           .eq('user_id', user.id)
           .single();
 
+        if (prefError) throw prefError;
+
         if (locationPref?.city_id) {
-          const { data: cityDetails } = await supabase
+          const { data: cityDetails, error: cityError } = await supabase
             .from('cities')
             .select('*, states(name)')
             .eq('id', locationPref.city_id)
             .single();
+
+          if (cityError) throw cityError;
 
           if (cityDetails) {
             const locationString = `${cityDetails.name}|${cityDetails.states.name}|${cityDetails.latitude}|${cityDetails.longitude}|${cityDetails.id}`;
