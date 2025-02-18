@@ -33,6 +33,44 @@ export type Database = {
         }
         Relationships: []
       }
+      cities: {
+        Row: {
+          created_at: string
+          id: string
+          latitude: number | null
+          longitude: number | null
+          name: string
+          state_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          latitude?: number | null
+          longitude?: number | null
+          name: string
+          state_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          latitude?: number | null
+          longitude?: number | null
+          name?: string
+          state_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cities_state_id_fkey"
+            columns: ["state_id"]
+            isOneToOne: false
+            referencedRelation: "states"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       conversations: {
         Row: {
           buyer_id: string
@@ -109,36 +147,6 @@ export type Database = {
           message?: string
           updated_at?: string
           user_id?: string | null
-        }
-        Relationships: []
-      }
-      indian_cities: {
-        Row: {
-          area: string | null
-          created_at: string | null
-          id: string
-          latitude: number
-          longitude: number
-          name: string
-          state: string
-        }
-        Insert: {
-          area?: string | null
-          created_at?: string | null
-          id?: string
-          latitude: number
-          longitude: number
-          name: string
-          state: string
-        }
-        Update: {
-          area?: string | null
-          created_at?: string | null
-          id?: string
-          latitude?: number
-          longitude?: number
-          name?: string
-          state?: string
         }
         Relationships: []
       }
@@ -258,13 +266,6 @@ export type Database = {
           view_count?: number | null
         }
         Relationships: [
-          {
-            foreignKeyName: "listings_city_id_fkey"
-            columns: ["city_id"]
-            isOneToOne: false
-            referencedRelation: "indian_cities"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "listings_user_id_fkey"
             columns: ["user_id"]
@@ -637,6 +638,27 @@ export type Database = {
           proj4text?: string | null
           srid?: number
           srtext?: string | null
+        }
+        Relationships: []
+      }
+      states: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          updated_at?: string
         }
         Relationships: []
       }

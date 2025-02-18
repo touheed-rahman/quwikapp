@@ -1,58 +1,43 @@
 
 import { useState, useCallback } from 'react';
-import { MapPin, Loader2 } from 'lucide-react';
+import { MapPin, Loader2, ChevronRight } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Command, CommandEmpty, CommandInput, CommandList } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Location } from './location/types';
-import LocationList from './location/LocationList';
+import { Location, State, City } from './location/types';
 import { useToast } from './ui/use-toast';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 
 const LocationSelector = ({ value, onChange }: { value: string | null, onChange: (value: string | null) => void }) => {
   const [open, setOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [locations, setLocations] = useState<Location[]>([]);
+  const [states, setStates] = useState<State[]>([]);
+  const [cities, setCities] = useState<City[]>([]);
+  const [selectedState, setSelectedState] = useState<State | null>(null);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
-  const getCityName = useCallback((locationString: string) => {
+  const getLocationName = useCallback((locationString: string) => {
     if (!locationString) return '';
-    return locationString.split('|')[0];
+    const [city, state] = locationString.split('|');
+    return `${city}, ${state}`;
   }, []);
 
-  const handleSearch = useCallback(async (query: string) => {
-    if (!query.trim()) {
-      setLocations([]);
-      return;
-    }
-
+  const loadStates = useCallback(async () => {
     setLoading(true);
     try {
-      const { data: cities, error } = await supabase
-        .from('indian_cities')
+      const { data: states, error } = await supabase
+        .from('states')
         .select('*')
-        .or(`name.ilike.%${query}%,area.ilike.%${query}%,state.ilike.%${query}%`)
-        .limit(10);
+        .order('name');
 
       if (error) throw error;
-
-      const formattedLocations: Location[] = (cities || []).map(city => ({
-        id: city.id,
-        name: city.name,
-        area: city.area,
-        state: city.state,
-        latitude: city.latitude,
-        longitude: city.longitude
-      }));
-
-      setLocations(formattedLocations);
+      setStates(states || []);
     } catch (error) {
-      console.error('Error searching locations:', error);
+      console.error('Error loading states:', error);
       toast({
         title: "Error",
-        description: "Could not fetch locations. Please try again.",
+        description: "Could not load states. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -60,82 +45,128 @@ const LocationSelector = ({ value, onChange }: { value: string | null, onChange:
     }
   }, [toast]);
 
-  const handleSearchDebounced = useCallback((value: string) => {
-    setSearchQuery(value);
-    const timeoutId = setTimeout(() => {
-      handleSearch(value);
-    }, 500);
-    return () => clearTimeout(timeoutId);
-  }, [handleSearch]);
-
-  const handleLocationChoice = useCallback(async (location: Location) => {
+  const loadCities = useCallback(async (stateId: string) => {
+    setLoading(true);
     try {
-      const newValue = `${location.name}|${location.latitude}|${location.longitude}|${location.id}`;
-      onChange(newValue);
-      setOpen(false);
-      setSearchQuery('');
-      setLocations([]);
+      const { data: cities, error } = await supabase
+        .from('cities')
+        .select('*')
+        .eq('state_id', stateId)
+        .order('name');
+
+      if (error) throw error;
+      setCities(cities || []);
     } catch (error) {
-      console.error('Error selecting location:', error);
+      console.error('Error loading cities:', error);
       toast({
         title: "Error",
-        description: "Could not process location selection. Please try again.",
+        description: "Could not load cities. Please try again.",
         variant: "destructive",
       });
+    } finally {
+      setLoading(false);
     }
-  }, [onChange, toast]);
+  }, [toast]);
+
+  const handleStateSelect = useCallback(async (state: State) => {
+    setSelectedState(state);
+    await loadCities(state.id);
+  }, [loadCities]);
+
+  const handleCitySelect = useCallback((city: City) => {
+    if (!selectedState) return;
+    
+    const locationString = `${city.name}|${selectedState.name}|${city.latitude}|${city.longitude}|${city.id}`;
+    onChange(locationString);
+    setOpen(false);
+    setCities([]);
+    setSelectedState(null);
+  }, [selectedState, onChange]);
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover open={open} onOpenChange={(isOpen) => {
+      setOpen(isOpen);
+      if (isOpen) {
+        loadStates();
+      }
+    }}>
       <PopoverTrigger asChild>
         <Button
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className={cn(
-            "w-full justify-between text-muted-foreground hover:text-foreground border-input",
-            "hover:bg-accent hover:text-accent-foreground",
-            "focus:ring-2 focus:ring-ring focus:ring-offset-2",
-            "transition-colors duration-200"
-          )}
+          className="w-full justify-between text-muted-foreground hover:text-foreground"
         >
           <div className="flex items-center gap-2 truncate">
             <MapPin className="h-4 w-4 shrink-0 text-primary" />
-            <span className="truncate">{value ? getCityName(value) : "Select location"}</span>
+            <span className="truncate">{value ? getLocationName(value) : "Select location"}</span>
           </div>
         </Button>
       </PopoverTrigger>
       <PopoverContent 
-        className="w-[300px] p-0 shadow-lg border border-input/50 bg-white" 
+        className="w-[300px] p-0" 
         align="start"
-        side="bottom"
-        sideOffset={4}
       >
-        <Command className="rounded-lg border-none">
-          <CommandInput 
-            placeholder="Search cities..." 
-            value={searchQuery}
-            onValueChange={handleSearchDebounced}
-            className="border-b border-input/50"
-          />
+        <Command>
+          <CommandInput placeholder={selectedState ? "Search cities..." : "Search states..."} />
           <CommandList>
             {loading ? (
               <CommandEmpty>
-                <Loader2 className="h-4 w-4 animate-spin text-purple-500 mx-auto" />
+                <Loader2 className="h-4 w-4 animate-spin mx-auto" />
                 <p className="text-sm text-muted-foreground text-center mt-2">
-                  Searching locations...
+                  Loading...
                 </p>
               </CommandEmpty>
-            ) : locations.length === 0 ? (
-              <CommandEmpty>No cities found.</CommandEmpty>
+            ) : selectedState ? (
+              <>
+                <div className="p-2">
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-start font-normal"
+                    onClick={() => {
+                      setSelectedState(null);
+                      setCities([]);
+                      loadStates();
+                    }}
+                  >
+                    ← Back to States
+                  </Button>
+                </div>
+                {cities.length === 0 ? (
+                  <CommandEmpty>No cities found in {selectedState.name}</CommandEmpty>
+                ) : (
+                  <div className="max-h-[300px] overflow-y-auto">
+                    {cities.map((city) => (
+                      <div
+                        key={city.id}
+                        className="px-2 py-1.5 cursor-pointer hover:bg-accent hover:text-accent-foreground"
+                        onClick={() => handleCitySelect(city)}
+                      >
+                        {city.name}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </>
             ) : (
-              <LocationList
-                locations={locations}
-                loading={loading}
-                searchQuery={searchQuery}
-                selectedValue={value?.split('|')[3]}
-                onSelect={handleLocationChoice}
-              />
+              <>
+                {states.length === 0 ? (
+                  <CommandEmpty>No states found</CommandEmpty>
+                ) : (
+                  <div className="max-h-[300px] overflow-y-auto">
+                    {states.map((state) => (
+                      <div
+                        key={state.id}
+                        className="px-2 py-1.5 cursor-pointer hover:bg-accent hover:text-accent-foreground flex items-center justify-between"
+                        onClick={() => handleStateSelect(state)}
+                      >
+                        <span>{state.name}</span>
+                        <ChevronRight className="h-4 w-4" />
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </>
             )}
           </CommandList>
         </Command>

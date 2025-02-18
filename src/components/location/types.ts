@@ -2,12 +2,10 @@
 export interface Location {
   id: string;
   name: string;
-  area?: string;
   state: string;
+  state_id: string;
   latitude: number;
   longitude: number;
-  description?: string;
-  distance_km?: number;
 }
 
 export interface LocationSelectorProps {
@@ -15,19 +13,15 @@ export interface LocationSelectorProps {
   onChange: (location: string | null) => void;
 }
 
-export interface PlacePrediction {
-  id: string;
-  description: string;
-  structured_formatting: {
-    main_text: string;
-    secondary_text: string;
-  };
-}
-
-export interface PlaceDetails {
+export interface State {
   id: string;
   name: string;
-  area?: string;
+}
+
+export interface City {
+  id: string;
+  name: string;
+  state_id: string;
   latitude: number;
   longitude: number;
 }

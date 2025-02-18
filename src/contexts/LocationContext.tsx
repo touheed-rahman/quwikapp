@@ -20,13 +20,13 @@ export const LocationProvider = ({ children }: { children: React.ReactNode }) =>
       if (!user) return;
 
       if (location) {
-        const placeId = location.split('|')[1];
+        const cityId = location.split('|')[4];
         
         const { error } = await supabase
           .from('user_location_preferences')
           .upsert({
             user_id: user.id,
-            place_id: placeId
+            city_id: cityId
           }, {
             onConflict: 'user_id'
           });
@@ -46,18 +46,20 @@ export const LocationProvider = ({ children }: { children: React.ReactNode }) =>
 
         const { data: locationPref } = await supabase
           .from('user_location_preferences')
-          .select('place_id')
+          .select('city_id')
+          .eq('user_id', user.id)
           .single();
 
-        if (locationPref?.place_id) {
-          const { data: locationDetails } = await supabase
-            .from('location_cache')
-            .select('name, area')
-            .eq('place_id', locationPref.place_id)
+        if (locationPref?.city_id) {
+          const { data: cityDetails } = await supabase
+            .from('cities')
+            .select('*, states(name)')
+            .eq('id', locationPref.city_id)
             .single();
 
-          if (locationDetails) {
-            setLocationState(`${locationDetails.name}${locationDetails.area ? `, ${locationDetails.area}` : ''}|${locationPref.place_id}`);
+          if (cityDetails) {
+            const locationString = `${cityDetails.name}|${cityDetails.states.name}|${cityDetails.latitude}|${cityDetails.longitude}|${cityDetails.id}`;
+            setLocationState(locationString);
           }
         }
       } catch (error) {
