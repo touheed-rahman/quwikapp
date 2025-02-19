@@ -4,10 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { X, MoreVertical, Trash2 } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import ChatHeader from "./ChatHeader";
-import ConversationItem from "./ConversationItem";
-import ChatInput from "./ChatInput";
-import ChatFilters from "./ChatFilters";
+import { ChatHeader } from "./ChatHeader";
+import { ConversationItem } from "./ConversationItem";
+import { ChatInput } from "./ChatInput";
+import { ChatFilters } from "./ChatFilters";
 import { useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import {
