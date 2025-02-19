@@ -51,8 +51,9 @@ export const useListings = ({ categoryFilter, subcategoryFilter, selectedLocatio
 
         // Apply location filter if selected
         if (selectedLocation) {
-          const [city] = selectedLocation.split('|');
-          query = query.eq('location', city);
+          const cityName = selectedLocation.split('|')[0];
+          console.log('Filtering by city:', cityName);
+          query = query.eq('city_id', selectedLocation.split('|')[4]);
         }
 
         // Regular filters
@@ -74,7 +75,7 @@ export const useListings = ({ categoryFilter, subcategoryFilter, selectedLocatio
         }
 
         if (!listings || listings.length === 0) {
-          console.log('No listings found');
+          console.log('No listings found with filters:', { categoryFilter, subcategoryFilter, selectedLocation, featured });
           return [];
         }
 
@@ -85,16 +86,12 @@ export const useListings = ({ categoryFilter, subcategoryFilter, selectedLocatio
         }));
 
         // Sort listings to show featured items first, then by creation date
-        const sortedListings = typedListings.sort((a, b) => {
-          // First, sort by featured status
+        return typedListings.sort((a, b) => {
           if (a.featured && !b.featured) return -1;
           if (!a.featured && b.featured) return 1;
-          
-          // Then sort by creation date (newest first)
           return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
         });
 
-        return sortedListings;
       } catch (error) {
         console.error('Error in listing query:', error);
         toast({

@@ -2,11 +2,10 @@
 import { useState, useCallback } from 'react';
 import { MapPin, Loader2, ChevronRight, ArrowLeft } from 'lucide-react';
 import { Button } from "@/components/ui/button";
-import { Command, CommandEmpty, CommandInput, CommandList } from "@/components/ui/command";
+import { Command, CommandEmpty, CommandList } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Location, State, City } from './location/types';
 import { useToast } from './ui/use-toast';
-import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 
 const LocationSelector = ({ value, onChange }: { value: string | null, onChange: (value: string | null) => void }) => {
@@ -52,11 +51,16 @@ const LocationSelector = ({ value, onChange }: { value: string | null, onChange:
         .from('cities')
         .select('*')
         .eq('state_id', stateId)
-        .neq('name', 'Bangalore') // Exclude Bangalore
         .order('name');
 
       if (error) throw error;
-      setCities(cities || []);
+
+      // Filter out Bangalore if Bengaluru exists
+      const filteredCities = cities?.filter(city => 
+        city.name !== 'Bangalore' || !cities.some(c => c.name === 'Bengaluru')
+      ) || [];
+
+      setCities(filteredCities);
     } catch (error) {
       console.error('Error loading cities:', error);
       toast({
@@ -109,17 +113,7 @@ const LocationSelector = ({ value, onChange }: { value: string | null, onChange:
         align="start"
       >
         <Command>
-          <CommandInput 
-            placeholder={selectedState ? "Search cities..." : "Search states..."} 
-            readOnly={true}
-            onTouchStart={(e) => {
-              e.preventDefault();
-              if (e.target instanceof HTMLInputElement) {
-                e.target.blur();
-              }
-            }}
-          />
-          <CommandList>
+          <CommandList className="max-h-[300px] overflow-y-auto">
             {loading ? (
               <CommandEmpty>
                 <Loader2 className="h-4 w-4 animate-spin mx-auto" />
@@ -143,41 +137,31 @@ const LocationSelector = ({ value, onChange }: { value: string | null, onChange:
                     Back to States
                   </Button>
                 </div>
-                {cities.length === 0 ? (
-                  <CommandEmpty>No cities found in {selectedState.name}</CommandEmpty>
-                ) : (
-                  <div className="max-h-[300px] overflow-y-auto">
-                    {cities.map((city) => (
-                      <div
-                        key={city.id}
-                        className="px-2 py-1.5 cursor-pointer hover:bg-primary hover:text-white"
-                        onClick={() => handleCitySelect(city)}
-                      >
-                        {city.name}
-                      </div>
-                    ))}
-                  </div>
-                )}
+                <div className="py-2">
+                  {cities.map((city) => (
+                    <div
+                      key={city.id}
+                      className="px-2 py-1.5 cursor-pointer hover:bg-primary hover:text-white"
+                      onClick={() => handleCitySelect(city)}
+                    >
+                      {city.name}
+                    </div>
+                  ))}
+                </div>
               </>
             ) : (
-              <>
-                {states.length === 0 ? (
-                  <CommandEmpty>No states found</CommandEmpty>
-                ) : (
-                  <div className="max-h-[300px] overflow-y-auto">
-                    {states.map((state) => (
-                      <div
-                        key={state.id}
-                        className="px-2 py-1.5 cursor-pointer hover:bg-primary hover:text-white flex items-center justify-between"
-                        onClick={() => handleStateSelect(state)}
-                      >
-                        <span>{state.name}</span>
-                        <ChevronRight className="h-4 w-4" />
-                      </div>
-                    ))}
+              <div className="py-2">
+                {states.map((state) => (
+                  <div
+                    key={state.id}
+                    className="px-2 py-1.5 cursor-pointer hover:bg-primary hover:text-white flex items-center justify-between"
+                    onClick={() => handleStateSelect(state)}
+                  >
+                    <span>{state.name}</span>
+                    <ChevronRight className="h-4 w-4" />
                   </div>
-                )}
-              </>
+                ))}
+              </div>
             )}
           </CommandList>
         </Command>
