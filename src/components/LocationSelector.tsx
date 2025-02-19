@@ -1,4 +1,3 @@
-
 import { useState, useCallback } from 'react';
 import { MapPin, Loader2, ChevronRight, ArrowLeft } from 'lucide-react';
 import { Button } from "@/components/ui/button";
@@ -108,7 +107,15 @@ const LocationSelector = ({ value, onChange }: { value: string | null, onChange:
         align="start"
       >
         <Command>
-          <CommandInput placeholder={selectedState ? "Search cities..." : "Search states..."} />
+          <CommandInput 
+            placeholder={selectedState ? "Search cities..." : "Search states..."} 
+            readOnly={true} // This prevents keyboard on mobile
+            onTouchStart={(e) => {
+              // Prevent focus and keyboard
+              e.preventDefault();
+              e.target.blur();
+            }}
+          />
           <CommandList>
             {loading ? (
               <CommandEmpty>
