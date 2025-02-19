@@ -1,147 +1,153 @@
 
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { X, MoreVertical, Trash2 } from "lucide-react";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import ChatHeader from "./ChatHeader";
+import ConversationItem from "./ConversationItem";
+import ChatInput from "./ChatInput";
+import ChatFilters from "./ChatFilters";
+import { useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { ChatFilters } from "./ChatFilters";
-import { ChatHeader } from "./ChatHeader";
-import { ConversationItem } from "./ConversationItem";
-import type { ChatWindowProps, Conversation } from "./types";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { useToast } from "../ui/use-toast";
 
-const ChatWindow = ({ isOpen, onClose, initialSeller }: ChatWindowProps) => {
+interface ChatWindowProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
+  const [activeConversation, setActiveConversation] = useState<string | null>(null);
+  const [conversations, setConversations] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [filter, setFilter] = useState<'all' | 'buying' | 'selling'>('all');
+  const location = useLocation();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [conversations, setConversations] = useState<Conversation[]>([]);
-  const [isSending, setIsSending] = useState(false);
-  const [activeFilter, setActiveFilter] = useState("all");
-  const [activeTab, setActiveTab] = useState("all");
-  const [sessionUser, setSessionUser] = useState<any>(null);
 
   useEffect(() => {
-    const getSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      setSessionUser(session?.user);
-    };
-    getSession();
-  }, []);
+    fetchConversations();
+  }, [filter]);
 
-  useEffect(() => {
-    if (!sessionUser) return;
+  const fetchConversations = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        setIsLoading(false);
+        return;
+      }
 
-    const fetchConversations = async () => {
       let query = supabase
         .from('conversations')
         .select(`
           *,
-          listing:listings(title, price),
-          seller:profiles!conversations_seller_id_fkey(full_name, avatar_url),
-          notifications!inner (unread_count)
+          listing:listings(*),
+          seller:profiles!conversations_seller_id_fkey(*),
+          buyer:profiles!conversations_buyer_id_fkey(*)
         `)
-        .or(`buyer_id.eq.${sessionUser.id},seller_id.eq.${sessionUser.id}`);
+        .order('last_message_at', { ascending: false });
 
-      // Apply tab filters
-      if (activeTab === 'buying') {
-        query = query.eq('buyer_id', sessionUser.id);
-      } else if (activeTab === 'selling') {
-        query = query.eq('seller_id', sessionUser.id);
+      if (filter === 'buying') {
+        query = query.eq('buyer_id', user.id);
+      } else if (filter === 'selling') {
+        query = query.eq('seller_id', user.id);
+      } else {
+        query = query.or(`buyer_id.eq.${user.id},seller_id.eq.${user.id}`);
       }
 
-      // Apply additional filters
-      if (activeFilter === 'unread') {
-        query = query.gt('notifications.unread_count', 0);
-      } else if (activeFilter === 'meeting') {
-        query = query.ilike('last_message', '%meeting%');
-      } else if (activeFilter === 'important') {
-        query = query.eq('notifications.unread_count', 0);
-      }
+      const { data: conversations, error } = await query;
 
-      query = query.order('last_message_at', { ascending: false });
-
-      const { data, error } = await query;
-
-      if (error) {
-        toast({
-          variant: "destructive",
-          title: "Error fetching conversations",
-          description: error.message
-        });
-        return;
-      }
-
-      setConversations(data || []);
-    };
-
-    fetchConversations();
-
-    // Subscribe to real-time updates
-    const channel = supabase
-      .channel('conversations')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'conversations',
-          filter: `buyer_id=eq.${sessionUser.id}`
-        },
-        () => {
-          fetchConversations();
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [sessionUser, toast, activeFilter, activeTab]);
-
-  const handleAvatarClick = async (conversationId: string) => {
-    onClose();
-    navigate(`/chat/${conversationId}`);
+      if (error) throw error;
+      setConversations(conversations || []);
+    } catch (error) {
+      console.error('Error fetching conversations:', error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  if (!isOpen) return null;
+  const handleDelete = async (conversationId: string) => {
+    try {
+      const { error } = await supabase
+        .from('conversations')
+        .delete()
+        .eq('id', conversationId);
 
-  if (!sessionUser) {
-    return (
-      <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50">
-        <div className="fixed right-0 top-0 h-full w-full max-w-md bg-white shadow-lg">
-          <div className="flex flex-col items-center justify-center h-full p-4">
-            <p className="text-lg mb-4">Please sign in to use chat</p>
-            <Button onClick={() => navigate('/profile')}>Sign In</Button>
-          </div>
-        </div>
-      </div>
-    );
-  }
+      if (error) throw error;
+
+      toast({
+        title: "Chat deleted",
+        description: "The conversation has been deleted successfully."
+      });
+
+      // Remove the deleted conversation from state
+      setConversations(prev => prev.filter(conv => conv.id !== conversationId));
+    } catch (error) {
+      console.error('Error deleting conversation:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete the conversation. Please try again.",
+        variant: "destructive"
+      });
+    }
+  };
 
   return (
-    <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50">
-      <div className="fixed right-0 top-0 h-full w-full max-w-md bg-white shadow-lg animate-in slide-in-from-right">
-        <div className="flex flex-col h-full">
-          <ChatHeader onClose={onClose} />
-          <ChatFilters 
-            activeFilter={activeFilter} 
-            setActiveFilter={setActiveFilter}
-            activeTab={activeTab}
-            setActiveTab={setActiveTab}
-          />
-          
-          <div className="flex-1 overflow-y-auto">
-            {conversations.map((conversation) => (
-              <ConversationItem
-                key={conversation.id}
-                conversation={conversation}
-                userId={sessionUser.id}
-                onClick={handleAvatarClick}
-                unreadCount={conversation.notifications?.[0]?.unread_count || 0}
-              />
-            ))}
-          </div>
-        </div>
+    <Card className={`fixed inset-y-0 right-0 w-full sm:w-[400px] flex flex-col z-50 transform transition-transform duration-300 ease-in-out ${
+      isOpen ? 'translate-x-0' : 'translate-x-full'
+    }`}>
+      <div className="flex items-center justify-between p-4 border-b">
+        <h2 className="text-lg font-semibold">Messages</h2>
+        <Button variant="ghost" size="icon" onClick={onClose}>
+          <X className="h-5 w-5" />
+        </Button>
       </div>
-    </div>
+
+      <ChatFilters filter={filter} onFilterChange={setFilter} />
+
+      <ScrollArea className="flex-1">
+        {conversations.map((conversation) => (
+          <div key={conversation.id} className="group relative">
+            <ConversationItem
+              conversation={conversation}
+              onClick={() => {
+                if (location.pathname === '/chat') {
+                  navigate(`/chat/${conversation.id}`);
+                } else {
+                  setActiveConversation(conversation.id);
+                }
+              }}
+              active={activeConversation === conversation.id}
+            />
+            <div className="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon">
+                    <MoreVertical className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem 
+                    className="text-destructive focus:text-destructive"
+                    onClick={() => handleDelete(conversation.id)}
+                  >
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    Delete Chat
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          </div>
+        ))}
+      </ScrollArea>
+    </Card>
   );
 };
 
