@@ -133,7 +133,7 @@ const ProductCard = ({
   return (
     <Link to={`/product/${id}`}>
       <Card className="overflow-hidden border-0 bg-transparent">
-        <div className="relative aspect-[4/3] overflow-hidden rounded-lg">
+        <div className="relative aspect-[4/3] overflow-hidden rounded-lg border border-neutral-200/60">
           <img
             src={image}
             alt={title}
@@ -157,7 +157,7 @@ const ProductCard = ({
           )}
         </div>
         <CardContent className="p-2">
-          <p className="text-lg font-bold text-primary">
+          <p className="text-lg font-bold text-primary-600">
             ₹{price.toLocaleString()}
           </p>
           <h3 className="text-sm font-medium line-clamp-2 mb-1 text-foreground/80">

@@ -1,3 +1,4 @@
+
 import { useState, useCallback } from 'react';
 import { MapPin, Loader2, ChevronRight, ArrowLeft } from 'lucide-react';
 import { Button } from "@/components/ui/button";
@@ -51,6 +52,7 @@ const LocationSelector = ({ value, onChange }: { value: string | null, onChange:
         .from('cities')
         .select('*')
         .eq('state_id', stateId)
+        .neq('name', 'Bangalore') // Exclude Bangalore
         .order('name');
 
       if (error) throw error;
@@ -94,7 +96,7 @@ const LocationSelector = ({ value, onChange }: { value: string | null, onChange:
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className="w-full justify-between text-muted-foreground hover:text-foreground"
+          className="w-full justify-between text-muted-foreground hover:text-foreground ring-offset-background"
         >
           <div className="flex items-center gap-2 truncate">
             <MapPin className="h-4 w-4 shrink-0 text-primary" />
@@ -109,11 +111,12 @@ const LocationSelector = ({ value, onChange }: { value: string | null, onChange:
         <Command>
           <CommandInput 
             placeholder={selectedState ? "Search cities..." : "Search states..."} 
-            readOnly={true} // This prevents keyboard on mobile
+            readOnly={true}
             onTouchStart={(e) => {
-              // Prevent focus and keyboard
               e.preventDefault();
-              e.target.blur();
+              if (e.target instanceof HTMLInputElement) {
+                e.target.blur();
+              }
             }}
           />
           <CommandList>
@@ -129,7 +132,7 @@ const LocationSelector = ({ value, onChange }: { value: string | null, onChange:
                 <div className="p-2">
                   <Button
                     variant="ghost"
-                    className="w-full justify-start font-normal hover:text-white"
+                    className="w-full justify-start font-normal hover:bg-primary hover:text-white"
                     onClick={() => {
                       setSelectedState(null);
                       setCities([]);
