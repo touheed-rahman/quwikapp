@@ -5,8 +5,8 @@ import { Card } from "@/components/ui/card";
 import { X, MoreVertical, Trash2 } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ChatHeader } from "./ChatHeader";
-import ConversationItem from "./ConversationItem";
-import ChatInput from "./ChatInput";
+import { ConversationItem } from "./ConversationItem";
+import { ChatInput } from "./ChatInput";
 import { ChatFilters } from "./ChatFilters";
 import { useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -124,7 +124,7 @@ const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
         </Button>
       </div>
 
-      <ChatFilters currentFilter={filter} onFilterChange={setFilter} />
+      <ChatFilters filter={filter} onFilterChange={setFilter} />
 
       <ScrollArea className="flex-1">
         {conversations.map((conversation) => (
