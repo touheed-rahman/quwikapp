@@ -159,6 +159,10 @@ const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
     }
   };
 
+  const handleFilterChange = (newFilter: 'all' | 'buying' | 'selling') => {
+    setFilter(newFilter);
+  };
+
   return (
     <Card className={`fixed inset-y-0 right-0 w-full sm:w-[400px] flex flex-col z-50 transform transition-transform duration-300 ease-in-out ${
       isOpen ? 'translate-x-0' : 'translate-x-full'
@@ -172,9 +176,9 @@ const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
 
       <ChatFilters 
         activeTab={filter}
-        setActiveTab={setFilter}
+        setActiveTab={handleFilterChange}
         filter={filter}
-        onFilterChange={setFilter}
+        onFilterChange={handleFilterChange}
       />
 
       <ScrollArea className="flex-1">

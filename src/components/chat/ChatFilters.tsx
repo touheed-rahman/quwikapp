@@ -2,8 +2,8 @@
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface ChatFiltersProps {
-  activeTab: string;
-  setActiveTab: (tab: string) => void;
+  activeTab: 'all' | 'buying' | 'selling';
+  setActiveTab: (tab: 'all' | 'buying' | 'selling') => void;
   filter: 'all' | 'buying' | 'selling';
   onFilterChange: (filter: 'all' | 'buying' | 'selling') => void;
 }
@@ -16,7 +16,7 @@ export const ChatFilters = ({
 }: ChatFiltersProps) => {
   return (
     <div className="px-4 pt-2">
-      <Tabs value={filter} onValueChange={(value: any) => onFilterChange(value)}>
+      <Tabs value={filter} onValueChange={(value: 'all' | 'buying' | 'selling') => onFilterChange(value)}>
         <TabsList className="w-full justify-start gap-2 h-auto p-1">
           <TabsTrigger 
             value="all" 
