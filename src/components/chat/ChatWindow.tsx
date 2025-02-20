@@ -76,7 +76,15 @@ const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
       let query = supabase
         .from('conversations')
         .select(`
-          *,
+          id,
+          buyer_id,
+          seller_id,
+          listing_id,
+          last_message,
+          last_message_at,
+          created_at,
+          updated_at,
+          deleted,
           listing:listings(id, title, price, status),
           seller:profiles!conversations_seller_id_fkey(id, full_name, avatar_url, email),
           buyer:profiles!conversations_buyer_id_fkey(id, full_name, avatar_url, email)
@@ -96,13 +104,20 @@ const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
 
       if (error) throw error;
       
-      // Ensure the data matches our Conversation type
+      // Transform the data to match our Conversation type
       const typedConversations: Conversation[] = (data || []).map(conv => ({
-        ...conv,
+        id: conv.id,
+        buyer_id: conv.buyer_id,
+        seller_id: conv.seller_id,
+        listing_id: conv.listing_id,
+        last_message: conv.last_message,
+        last_message_at: conv.last_message_at,
+        created_at: conv.created_at,
+        updated_at: conv.updated_at,
+        deleted: conv.deleted || false,
         listing: conv.listing,
         seller: conv.seller,
-        buyer: conv.buyer,
-        deleted: conv.deleted || false
+        buyer: conv.buyer
       }));
 
       setConversations(typedConversations);
@@ -115,9 +130,13 @@ const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
 
   const handleDelete = async (conversationId: string) => {
     try {
+      const updates = {
+        deleted: true
+      };
+
       const { error: updateError } = await supabase
         .from('conversations')
-        .update({ deleted: true })
+        .update(updates)
         .eq('id', conversationId);
 
       if (updateError) throw updateError;
