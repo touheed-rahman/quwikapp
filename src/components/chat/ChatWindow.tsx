@@ -5,8 +5,8 @@ import { Card } from "@/components/ui/card";
 import { X, MoreVertical, Trash2 } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ChatHeader } from "./ChatHeader";
-import { ConversationItem } from "./ConversationItem";
-import { ChatInput } from "./ChatInput";
+import ConversationItem from "./ConversationItem";
+import ChatInput from "./ChatInput";
 import { ChatFilters } from "./ChatFilters";
 import { useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -75,12 +75,21 @@ const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
 
   const handleDelete = async (conversationId: string) => {
     try {
-      const { error } = await supabase
+      // First delete all messages in the conversation
+      const { error: messagesError } = await supabase
+        .from('messages')
+        .delete()
+        .eq('conversation_id', conversationId);
+
+      if (messagesError) throw messagesError;
+
+      // Then delete the conversation
+      const { error: conversationError } = await supabase
         .from('conversations')
         .delete()
         .eq('id', conversationId);
 
-      if (error) throw error;
+      if (conversationError) throw conversationError;
 
       toast({
         title: "Chat deleted",
@@ -89,6 +98,11 @@ const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
 
       // Remove the deleted conversation from state
       setConversations(prev => prev.filter(conv => conv.id !== conversationId));
+      
+      // If we're in the chat detail page, navigate back
+      if (location.pathname.includes('/chat/')) {
+        navigate('/chat');
+      }
     } catch (error) {
       console.error('Error deleting conversation:', error);
       toast({
@@ -110,7 +124,7 @@ const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
         </Button>
       </div>
 
-      <ChatFilters filter={filter} onFilterChange={setFilter} />
+      <ChatFilters currentFilter={filter} onFilterChange={setFilter} />
 
       <ScrollArea className="flex-1">
         {conversations.map((conversation) => (
@@ -124,7 +138,7 @@ const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
                   setActiveConversation(conversation.id);
                 }
               }}
-              active={activeConversation === conversation.id}
+              isActive={activeConversation === conversation.id}
             />
             <div className="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity">
               <DropdownMenu>
