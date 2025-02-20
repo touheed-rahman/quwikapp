@@ -22,6 +22,20 @@ interface ChatWindowProps {
   onClose: () => void;
 }
 
+interface Profile {
+  id: string;
+  full_name: string;
+  avatar_url?: string;
+  email?: string;
+}
+
+interface ListingDetails {
+  id: string;
+  title: string;
+  price: number;
+  status: string;
+}
+
 interface Conversation {
   id: string;
   buyer_id: string;
@@ -32,9 +46,9 @@ interface Conversation {
   created_at: string;
   updated_at: string;
   deleted: boolean;
-  listing: any;
-  seller: any;
-  buyer: any;
+  listing: ListingDetails;
+  seller: Profile;
+  buyer: Profile;
 }
 
 const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
@@ -63,9 +77,9 @@ const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
         .from('conversations')
         .select(`
           *,
-          listing:listings(*),
-          seller:profiles!conversations_seller_id_fkey(*),
-          buyer:profiles!conversations_buyer_id_fkey(*)
+          listing:listings(id, title, price, status),
+          seller:profiles!conversations_seller_id_fkey(id, full_name, avatar_url, email),
+          buyer:profiles!conversations_buyer_id_fkey(id, full_name, avatar_url, email)
         `)
         .eq('deleted', false)
         .order('last_message_at', { ascending: false });
@@ -78,10 +92,20 @@ const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
         query = query.or(`buyer_id.eq.${user.id},seller_id.eq.${user.id}`);
       }
 
-      const { data: conversations, error } = await query;
+      const { data, error } = await query;
 
       if (error) throw error;
-      setConversations(conversations || []);
+      
+      // Ensure the data matches our Conversation type
+      const typedConversations: Conversation[] = (data || []).map(conv => ({
+        ...conv,
+        listing: conv.listing,
+        seller: conv.seller,
+        buyer: conv.buyer,
+        deleted: conv.deleted || false
+      }));
+
+      setConversations(typedConversations);
     } catch (error) {
       console.error('Error fetching conversations:', error);
     } finally {

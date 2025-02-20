@@ -75,6 +75,7 @@ export type Database = {
         Row: {
           buyer_id: string
           created_at: string
+          deleted: boolean | null
           id: string
           last_message: string | null
           last_message_at: string | null
@@ -85,6 +86,7 @@ export type Database = {
         Insert: {
           buyer_id: string
           created_at?: string
+          deleted?: boolean | null
           id?: string
           last_message?: string | null
           last_message_at?: string | null
@@ -95,6 +97,7 @@ export type Database = {
         Update: {
           buyer_id?: string
           created_at?: string
+          deleted?: boolean | null
           id?: string
           last_message?: string | null
           last_message_at?: string | null
