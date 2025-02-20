@@ -1,34 +1,37 @@
 
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Check, MoreVertical } from "lucide-react";
+import { Check } from "lucide-react";
 import { cn } from "@/lib/utils";
-import type { Conversation } from "./types";
 
 interface ConversationItemProps {
-  conversation: Conversation;
-  userId: string;
-  onClick: (conversationId: string) => void;
-  unreadCount: number;
+  conversation: any;
+  onClick: () => void;
+  userId?: string;
+  unreadCount?: number;
 }
 
-export const ConversationItem = ({ conversation, userId, onClick, unreadCount }: ConversationItemProps) => {
+export const ConversationItem = ({ 
+  conversation, 
+  onClick, 
+  userId, 
+  unreadCount = 0 
+}: ConversationItemProps) => {
   return (
     <div
       className={cn(
         "px-4 py-3 hover:bg-muted/50 transition-colors cursor-pointer border-b",
         unreadCount > 0 && "bg-primary/5"
       )}
-      onClick={() => onClick(conversation.id)}
+      onClick={onClick}
     >
       <div className="flex items-start gap-3">
         <Avatar className="h-12 w-12">
           <div className={cn(
             "w-full h-full rounded-full flex items-center justify-center text-white",
-            userId === conversation.buyer_id ? "bg-primary" : "bg-orange-500"
+            userId === conversation.buyer_id ? "bg-primary/90" : "bg-orange-500/90"
           )}>
-            {conversation.seller.full_name[0]}
+            {conversation.seller.full_name?.[0] || 'U'}
           </div>
         </Avatar>
         <div className="flex-1 min-w-0">
@@ -40,7 +43,7 @@ export const ConversationItem = ({ conversation, userId, onClick, unreadCount }:
                 Verified
               </Badge>
               {unreadCount > 0 && (
-                <Badge variant="default" className="bg-primary text-white">
+                <Badge variant="default" className="bg-primary/90 text-white">
                   {unreadCount}
                 </Badge>
               )}
@@ -49,7 +52,7 @@ export const ConversationItem = ({ conversation, userId, onClick, unreadCount }:
               {new Date(conversation.last_message_at).toLocaleDateString()}
             </span>
           </div>
-          <p className="text-sm font-medium text-primary mt-1">
+          <p className="text-sm font-medium text-primary/90 mt-1">
             {conversation.listing.title}
             {conversation.listing.price && ` - ₹${conversation.listing.price}`}
           </p>
@@ -57,9 +60,6 @@ export const ConversationItem = ({ conversation, userId, onClick, unreadCount }:
             {conversation.last_message}
           </p>
         </div>
-        <Button variant="ghost" size="icon" className="shrink-0">
-          <MoreVertical className="h-4 w-4" />
-        </Button>
       </div>
     </div>
   );

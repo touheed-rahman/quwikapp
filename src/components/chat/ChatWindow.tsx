@@ -6,7 +6,6 @@ import { X, MoreVertical, Trash2 } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ChatHeader } from "./ChatHeader";
 import { ConversationItem } from "./ConversationItem";
-import { ChatInput } from "./ChatInput";
 import { ChatFilters } from "./ChatFilters";
 import { useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -28,6 +27,7 @@ const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
   const [conversations, setConversations] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'buying' | 'selling'>('all');
+  const [activeTab, setActiveTab] = useState('all');
   const location = useLocation();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -52,6 +52,7 @@ const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
           seller:profiles!conversations_seller_id_fkey(*),
           buyer:profiles!conversations_buyer_id_fkey(*)
         `)
+        .eq('deleted', false)
         .order('last_message_at', { ascending: false });
 
       if (filter === 'buying') {
@@ -75,21 +76,13 @@ const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
 
   const handleDelete = async (conversationId: string) => {
     try {
-      // First delete all messages in the conversation
-      const { error: messagesError } = await supabase
-        .from('messages')
-        .delete()
-        .eq('conversation_id', conversationId);
-
-      if (messagesError) throw messagesError;
-
-      // Then delete the conversation
-      const { error: conversationError } = await supabase
+      // Soft delete the conversation
+      const { error: updateError } = await supabase
         .from('conversations')
-        .delete()
+        .update({ deleted: true })
         .eq('id', conversationId);
 
-      if (conversationError) throw conversationError;
+      if (updateError) throw updateError;
 
       toast({
         title: "Chat deleted",
@@ -124,7 +117,12 @@ const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
         </Button>
       </div>
 
-      <ChatFilters filter={filter} onFilterChange={setFilter} />
+      <ChatFilters 
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        filter={filter}
+        onFilterChange={setFilter}
+      />
 
       <ScrollArea className="flex-1">
         {conversations.map((conversation) => (
@@ -138,7 +136,6 @@ const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
                   setActiveConversation(conversation.id);
                 }
               }}
-              isActive={activeConversation === conversation.id}
             />
             <div className="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity">
               <DropdownMenu>

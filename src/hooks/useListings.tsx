@@ -25,6 +25,7 @@ export interface Listing {
   view_count?: number;
   save_count?: number;
   km_driven?: number | null;
+  city_id?: string;
 }
 
 interface UseListingsProps {
@@ -51,9 +52,9 @@ export const useListings = ({ categoryFilter, subcategoryFilter, selectedLocatio
 
         // Apply location filter if selected
         if (selectedLocation) {
-          const cityName = selectedLocation.split('|')[0];
-          console.log('Filtering by city:', cityName);
-          query = query.eq('city_id', selectedLocation.split('|')[4]);
+          const cityId = selectedLocation.split('|')[4];
+          console.log('Filtering by city_id:', cityId);
+          query = query.eq('city_id', cityId);
         }
 
         // Regular filters
