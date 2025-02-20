@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -56,7 +55,6 @@ const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'buying' | 'selling'>('all');
-  const [activeTab, setActiveTab] = useState('all');
   const location = useLocation();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -173,8 +171,8 @@ const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
       </div>
 
       <ChatFilters 
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
+        activeTab={filter}
+        setActiveTab={setFilter}
         filter={filter}
         onFilterChange={setFilter}
       />
