@@ -22,9 +22,24 @@ interface ChatWindowProps {
   onClose: () => void;
 }
 
+interface Conversation {
+  id: string;
+  buyer_id: string;
+  seller_id: string;
+  listing_id: string;
+  last_message?: string;
+  last_message_at?: string;
+  created_at: string;
+  updated_at: string;
+  deleted: boolean;
+  listing: any;
+  seller: any;
+  buyer: any;
+}
+
 const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
   const [activeConversation, setActiveConversation] = useState<string | null>(null);
-  const [conversations, setConversations] = useState<any[]>([]);
+  const [conversations, setConversations] = useState<Conversation[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'buying' | 'selling'>('all');
   const [activeTab, setActiveTab] = useState('all');
@@ -76,7 +91,6 @@ const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
 
   const handleDelete = async (conversationId: string) => {
     try {
-      // Soft delete the conversation
       const { error: updateError } = await supabase
         .from('conversations')
         .update({ deleted: true })
@@ -89,10 +103,8 @@ const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
         description: "The conversation has been deleted successfully."
       });
 
-      // Remove the deleted conversation from state
       setConversations(prev => prev.filter(conv => conv.id !== conversationId));
       
-      // If we're in the chat detail page, navigate back
       if (location.pathname.includes('/chat/')) {
         navigate('/chat');
       }
