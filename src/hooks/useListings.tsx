@@ -53,8 +53,9 @@ export const useListings = ({ categoryFilter, subcategoryFilter, selectedLocatio
         // Apply location filter if selected
         if (selectedLocation) {
           const cityId = selectedLocation.split('|')[4];
-          console.log('Filtering by city_id:', cityId);
-          query = query.eq('city_id', cityId);
+          if (cityId) {
+            query = query.eq('city_id', cityId);
+          }
         }
 
         // Regular filters
@@ -75,13 +76,8 @@ export const useListings = ({ categoryFilter, subcategoryFilter, selectedLocatio
           throw error;
         }
 
-        if (!listings || listings.length === 0) {
-          console.log('No listings found with filters:', { categoryFilter, subcategoryFilter, selectedLocation, featured });
-          return [];
-        }
-
         // Map the listings and assert the condition type
-        const typedListings = listings.map(listing => ({
+        const typedListings = (listings || []).map(listing => ({
           ...listing,
           condition: listing.condition as ProductCondition
         }));

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -133,19 +132,18 @@ const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
 
       if (updateError) throw updateError;
 
+      // Immediately remove the conversation from the local state
+      setConversations(prev => prev.filter(conv => conv.id !== conversationId));
+
       toast({
         title: "Chat deleted",
         description: "The conversation has been deleted successfully."
       });
-
-      setConversations(prev => prev.filter(conv => conv.id !== conversationId));
       
+      // If we're on the chat detail page, navigate back to chat list
       if (location.pathname.includes('/chat/')) {
         navigate('/chat');
       }
-
-      // Refresh conversations after deletion
-      fetchConversations();
     } catch (error) {
       console.error('Error deleting conversation:', error);
       toast({
