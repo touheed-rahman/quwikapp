@@ -81,7 +81,7 @@ const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
           seller:profiles!conversations_seller_id_fkey(id, full_name, avatar_url, email),
           buyer:profiles!conversations_buyer_id_fkey(id, full_name, avatar_url, email)
         `)
-        .is('deleted', false)  // This is the key change
+        .eq('deleted', false)
         .order('last_message_at', { ascending: false });
 
       if (filter === 'buying') {

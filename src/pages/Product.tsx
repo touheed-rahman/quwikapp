@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import Header from "@/components/Header";
+import ChatWindow from "@/components/chat/ChatWindow";
 import { supabase } from "@/integrations/supabase/client";
 import ImageGallery from "@/components/product/ImageGallery";
 import ProductInfo from "@/components/product/ProductInfo";
@@ -13,7 +14,7 @@ import ProductNotFound from "@/components/product/ProductNotFound";
 import { useProductDetails } from "@/hooks/useProductDetails";
 import { useRelatedProducts } from "@/hooks/useRelatedProducts";
 import { useProductActions } from "@/hooks/useProductActions";
-import { Card } from "@/components/ui/card";
+import { useToast } from "@/components/ui/use-toast";
 
 interface Seller {
   full_name: string;
@@ -25,6 +26,7 @@ const ProductPage = () => {
   const navigate = useNavigate();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [session, setSession] = useState<any>(null);
+  const { toast } = useToast();
 
   const { data: product, isLoading, isError } = useProductDetails(id);
   const { data: relatedProducts = [] } = useRelatedProducts(id, product?.category);
@@ -64,49 +66,45 @@ const ProductPage = () => {
     return <ProductNotFound />;
   }
 
+  // Extract just the area name from the location string
   const displayLocation = product.location?.split(',')[0] || 'Location not specified';
+
   const seller = product.profiles as Seller;
 
   return (
     <div className="min-h-screen bg-background">
       <Header />
       <main className="container mx-auto px-4 pt-20 pb-24">
-        <Card className="p-6 lg:p-8 rounded-xl shadow-lg">
-          <div className="grid lg:grid-cols-2 gap-8">
-            <div className="lg:sticky lg:top-24">
-              <ImageGallery
-                images={product.images}
-                currentImageIndex={currentImageIndex}
-                setCurrentImageIndex={setCurrentImageIndex}
-              />
-            </div>
-
-            <div className="space-y-8">
-              <ProductInfo
-                title={product.title}
-                price={product.price}
-                location={displayLocation}
-                createdAt={product.created_at}
-                condition={product.condition}
-                description={product.description}
-                category={product.category}
-                km_driven={product.km_driven}
-              />
-
-              {seller && (
-                <SellerInfo
-                  seller={seller}
-                  onChatClick={() => handleChatWithSeller(session)}
-                  onMakeOffer={() => handleMakeOffer(session)}
-                />
-              )}
-            </div>
+        <div className="grid lg:grid-cols-2 gap-8">
+          <div>
+            <ImageGallery
+              images={product.images}
+              currentImageIndex={currentImageIndex}
+              setCurrentImageIndex={setCurrentImageIndex}
+            />
           </div>
-        </Card>
 
-        <div className="mt-12">
-          <RelatedProducts products={relatedProducts} />
+          <div className="space-y-6">
+            <ProductInfo
+              title={product.title}
+              price={product.price}
+              location={displayLocation}
+              createdAt={product.created_at}
+              condition={product.condition}
+              description={product.description}
+            />
+
+            {seller && (
+              <SellerInfo
+                seller={seller}
+                onChatClick={() => handleChatWithSeller(session)}
+                onMakeOffer={() => handleMakeOffer(session)}
+              />
+            )}
+          </div>
         </div>
+
+        <RelatedProducts products={relatedProducts} />
       </main>
 
       <MakeOfferDialog

@@ -50,7 +50,7 @@ export const useListings = ({ categoryFilter, subcategoryFilter, selectedLocatio
           .eq('status', 'approved')
           .is('deleted_at', null);
 
-        // Only apply location filter if a location is selected
+        // Apply location filter if selected
         if (selectedLocation) {
           const cityId = selectedLocation.split('|')[4];
           if (cityId) {
