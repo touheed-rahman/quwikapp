@@ -1,5 +1,4 @@
 
-import { useState } from "react";
 import { Button } from "./ui/button";
 import { categories } from "@/types/categories";
 import { 
@@ -28,7 +27,6 @@ const iconMap = {
 };
 
 const CategoryFilter = ({ maxItems = 6 }: { maxItems?: number }) => {
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const visibleCategories = categories.slice(0, maxItems);
 
   return (
@@ -45,7 +43,6 @@ const CategoryFilter = ({ maxItems = 6 }: { maxItems?: number }) => {
               <Button
                 variant="ghost"
                 className="h-20 sm:h-24 flex-col gap-2 py-3 px-2 bg-[#8B5CF6]/10 hover:bg-[#8B5CF6] group w-full transition-colors rounded-lg border border-[#8B5CF6]/20"
-                onClick={() => setSelectedCategory(id)}
               >
                 <div className="bg-white/90 p-2 rounded-lg group-hover:bg-[#8B5CF6]/20">
                   {Icon && <Icon className="h-4 w-4 sm:h-5 sm:w-5 text-[#8B5CF6] group-hover:text-white" />}

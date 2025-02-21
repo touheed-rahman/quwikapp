@@ -3,7 +3,7 @@ import { useParams, Link } from "react-router-dom";
 import Header from "@/components/Header";
 import { categories } from "@/types/categories";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, ChevronRight } from "lucide-react";
 import { Card } from "@/components/ui/card";
 
 const Category = () => {
