@@ -29,20 +29,15 @@ export interface Listing {
 }
 
 interface UseListingsProps {
-  categoryFilter: string | null;
-  subcategoryFilter: string | null;
   selectedLocation: string | null;
-  featured?: boolean;
 }
 
-export const useListings = ({ categoryFilter, subcategoryFilter, selectedLocation, featured }: UseListingsProps) => {
+export const useListings = ({ selectedLocation }: UseListingsProps) => {
   const { toast } = useToast();
 
   return useQuery({
-    queryKey: ['listings', categoryFilter, subcategoryFilter, selectedLocation, featured],
+    queryKey: ['listings', selectedLocation],
     queryFn: async () => {
-      console.log('Fetching listings with filters:', { categoryFilter, subcategoryFilter, selectedLocation, featured });
-      
       try {
         let query = supabase
           .from('listings')
@@ -58,17 +53,6 @@ export const useListings = ({ categoryFilter, subcategoryFilter, selectedLocatio
           }
         }
 
-        // Regular filters
-        if (categoryFilter) {
-          query = query.eq('category', categoryFilter);
-        }
-        if (subcategoryFilter) {
-          query = query.eq('subcategory', subcategoryFilter);
-        }
-        if (featured) {
-          query = query.eq('featured', true);
-        }
-
         const { data: listings, error } = await query;
 
         if (error) {
@@ -82,13 +66,7 @@ export const useListings = ({ categoryFilter, subcategoryFilter, selectedLocatio
           condition: listing.condition as ProductCondition
         }));
 
-        // Sort listings to show featured items first, then by creation date
-        return typedListings.sort((a, b) => {
-          if (a.featured && !b.featured) return -1;
-          if (!a.featured && b.featured) return 1;
-          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-        });
-
+        return typedListings;
       } catch (error) {
         console.error('Error in listing query:', error);
         toast({
