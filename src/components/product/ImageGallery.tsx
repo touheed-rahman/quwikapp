@@ -57,7 +57,7 @@ const ImageGallery = ({
 
   return (
     <>
-      <div className="relative aspect-4/3 rounded-lg overflow-hidden bg-black/5">
+      <div className="relative w-full aspect-square md:aspect-4/3 lg:aspect-16/9 rounded-lg overflow-hidden bg-black/5">
         <img
           src={getImageUrl(images[currentImageIndex])}
           alt="Product image"
@@ -84,11 +84,11 @@ const ImageGallery = ({
       </div>
 
       {/* Thumbnail strip */}
-      <div className="mt-4 flex gap-2 overflow-x-auto pb-2 px-1">
+      <div className="mt-4 grid grid-cols-4 sm:grid-cols-5 lg:grid-cols-6 gap-2 overflow-x-auto pb-2 px-1">
         {images.map((image, index) => (
           <button
             key={index}
-            className={`relative flex-shrink-0 w-16 h-16 rounded-md overflow-hidden ${
+            className={`relative aspect-square rounded-md overflow-hidden ${
               index === currentImageIndex ? 'ring-2 ring-primary' : ''
             }`}
             onClick={() => setCurrentImageIndex(index)}
