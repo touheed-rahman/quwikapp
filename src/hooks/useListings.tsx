@@ -39,7 +39,7 @@ export const useListings = ({ selectedLocation }: UseListingsProps) => {
     queryKey: ['listings', selectedLocation],
     queryFn: async () => {
       try {
-        console.log('Selected Location:', selectedLocation); // Debug log
+        console.log('Fetching listings with location:', selectedLocation);
 
         let query = supabase
           .from('listings')
@@ -50,13 +50,11 @@ export const useListings = ({ selectedLocation }: UseListingsProps) => {
         // Apply location filter if selected
         if (selectedLocation) {
           const locationParts = selectedLocation.split('|');
-          if (locationParts.length >= 5) {
-            const cityId = locationParts[4];
-            console.log('Filtering by city_id:', cityId); // Debug log
-            if (cityId) {
-              query = query.eq('city_id', cityId);
-            }
-          }
+          const cityName = locationParts[0]; // Get city name from first part
+          console.log('Filtering by city name:', cityName);
+          
+          // Use ilike for case-insensitive partial match on location field
+          query = query.ilike('location', `%${cityName}%`);
         }
 
         // Add ordering to show featured listings first and newest listings next
@@ -70,7 +68,7 @@ export const useListings = ({ selectedLocation }: UseListingsProps) => {
           throw error;
         }
 
-        console.log('Fetched listings:', listings); // Debug log
+        console.log('Fetched listings:', listings);
 
         // Map the listings and assert the condition type
         const typedListings = (listings || []).map(listing => ({

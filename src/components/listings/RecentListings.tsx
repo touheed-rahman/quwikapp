@@ -42,6 +42,10 @@ const RecentListings = ({
 
   const cityName = selectedLocation ? selectedLocation.split('|')[0] : null;
 
+  console.log('Current listings:', listings);
+  console.log('Selected location:', selectedLocation);
+  console.log('City name:', cityName);
+
   return (
     <section className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
