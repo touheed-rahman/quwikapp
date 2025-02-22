@@ -10,9 +10,7 @@ const FreshRecommendations = () => {
   const { selectedLocation } = useLocation();
   
   const { data: listings = [], isLoading, error } = useListings({
-    categoryFilter: null,
-    subcategoryFilter: null,
-    selectedLocation,
+    selectedLocation
   });
 
   const getFirstImageUrl = (images: string[]) => {
