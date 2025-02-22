@@ -80,9 +80,20 @@ const RecentListings = ({
       ) : listings.length === 0 ? (
         <div className="text-center py-12 space-y-3">
           <div className="text-lg font-medium">No listings found</div>
-          {cityName && (
+          {cityName ? (
+            <>
+              <p className="text-sm text-muted-foreground">
+                There are no listings available in {cityName} yet. Be the first to post!
+              </p>
+              <Link to="/sell">
+                <Button className="mt-4" variant="default">
+                  Post Your First Listing
+                </Button>
+              </Link>
+            </>
+          ) : (
             <p className="text-sm text-muted-foreground">
-              There are no listings available in {cityName} yet
+              Please select a location to see listings in your area
             </p>
           )}
         </div>

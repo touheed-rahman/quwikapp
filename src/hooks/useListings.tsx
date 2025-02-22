@@ -47,11 +47,18 @@ export const useListings = ({ selectedLocation }: UseListingsProps) => {
 
         // Apply location filter if selected
         if (selectedLocation) {
-          const cityId = selectedLocation.split('|')[4];
-          if (cityId) {
-            query = query.eq('city_id', cityId);
+          const locationParts = selectedLocation.split('|');
+          if (locationParts.length >= 5) {
+            const cityId = locationParts[4];
+            if (cityId) {
+              query = query.eq('city_id', cityId);
+            }
           }
         }
+
+        // Add ordering to show featured listings first and newest listings next
+        query = query.order('featured', { ascending: false })
+                    .order('created_at', { ascending: false });
 
         const { data: listings, error } = await query;
 
