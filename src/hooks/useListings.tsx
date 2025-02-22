@@ -43,13 +43,7 @@ export const useListings = ({ selectedLocation }: UseListingsProps) => {
 
         let query = supabase
           .from('listings')
-          .select(`
-            *,
-            cities!inner (
-              id,
-              name
-            )
-          `)
+          .select('*')
           .eq('status', 'approved')
           .is('deleted_at', null);
 
