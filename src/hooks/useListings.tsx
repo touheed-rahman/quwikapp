@@ -39,9 +39,17 @@ export const useListings = ({ selectedLocation }: UseListingsProps) => {
     queryKey: ['listings', selectedLocation],
     queryFn: async () => {
       try {
+        console.log('Selected Location:', selectedLocation); // Debug log
+
         let query = supabase
           .from('listings')
-          .select()
+          .select(`
+            *,
+            cities!inner (
+              id,
+              name
+            )
+          `)
           .eq('status', 'approved')
           .is('deleted_at', null);
 
@@ -50,6 +58,7 @@ export const useListings = ({ selectedLocation }: UseListingsProps) => {
           const locationParts = selectedLocation.split('|');
           if (locationParts.length >= 5) {
             const cityId = locationParts[4];
+            console.log('Filtering by city_id:', cityId); // Debug log
             if (cityId) {
               query = query.eq('city_id', cityId);
             }
@@ -66,6 +75,8 @@ export const useListings = ({ selectedLocation }: UseListingsProps) => {
           console.error('Error fetching listings:', error);
           throw error;
         }
+
+        console.log('Fetched listings:', listings); // Debug log
 
         // Map the listings and assert the condition type
         const typedListings = (listings || []).map(listing => ({
