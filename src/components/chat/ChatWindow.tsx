@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -14,7 +15,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useToast } from "../ui/use-toast";
+import { useToast } from "@/components/ui/use-toast";
 
 interface ChatWindowProps {
   isOpen: boolean;
@@ -51,7 +52,6 @@ interface Conversation {
 }
 
 const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
-  const [activeConversation, setActiveConversation] = useState<string | null>(null);
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'buying' | 'selling'>('all');
@@ -96,22 +96,24 @@ const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
 
       if (error) throw error;
       
-      const typedConversations: Conversation[] = (data || []).map(conv => ({
-        id: conv.id,
-        buyer_id: conv.buyer_id,
-        seller_id: conv.seller_id,
-        listing_id: conv.listing_id,
-        last_message: conv.last_message,
-        last_message_at: conv.last_message_at,
-        created_at: conv.created_at,
-        updated_at: conv.updated_at,
-        deleted: conv.deleted || false,
-        listing: conv.listing,
-        seller: conv.seller,
-        buyer: conv.buyer
-      }));
+      const typedConversations = (data || [])
+        .filter(conv => !conv.deleted)
+        .map(conv => ({
+          id: conv.id,
+          buyer_id: conv.buyer_id,
+          seller_id: conv.seller_id,
+          listing_id: conv.listing_id,
+          last_message: conv.last_message,
+          last_message_at: conv.last_message_at,
+          created_at: conv.created_at,
+          updated_at: conv.updated_at,
+          deleted: conv.deleted || false,
+          listing: conv.listing,
+          seller: conv.seller,
+          buyer: conv.buyer
+        }));
 
-      setConversations(typedConversations.filter(conv => !conv.deleted));
+      setConversations(typedConversations);
     } catch (error) {
       console.error('Error fetching conversations:', error);
     } finally {
@@ -132,25 +134,13 @@ const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
 
       if (updateError) throw updateError;
 
-      // Immediately remove the conversation from the local state
       setConversations(prev => prev.filter(conv => conv.id !== conversationId));
-
-      toast({
-        title: "Chat deleted",
-        description: "The conversation has been deleted successfully."
-      });
       
-      // If we're on the chat detail page, navigate back to chat list
       if (location.pathname.includes('/chat/')) {
         navigate('/chat');
       }
     } catch (error) {
       console.error('Error deleting conversation:', error);
-      toast({
-        title: "Error",
-        description: "Failed to delete the conversation. Please try again.",
-        variant: "destructive"
-      });
     }
   };
 
@@ -186,7 +176,6 @@ const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
                 conversation={conversation}
                 onClick={() => {
                   navigate(`/chat/${conversation.id}`);
-                  setActiveConversation(conversation.id);
                   onClose();
                 }}
               />
@@ -200,7 +189,10 @@ const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
                   <DropdownMenuContent align="end">
                     <DropdownMenuItem 
                       className="text-destructive focus:text-destructive"
-                      onClick={() => handleDelete(conversation.id)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDelete(conversation.id);
+                      }}
                     >
                       <Trash2 className="mr-2 h-4 w-4" />
                       Delete Chat
