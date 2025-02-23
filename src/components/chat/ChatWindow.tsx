@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -94,24 +93,23 @@ const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
     }
   };
 
-  const handleFilterChange = (newFilter: 'all' | 'buying' | 'selling') => {
-    setFilter(newFilter);
-  };
-
   const handleDelete = async (conversationId: string) => {
     try {
-      // Delete all messages first
+      // First delete all messages
       await supabase
         .from('messages')
         .delete()
         .eq('conversation_id', conversationId);
 
       // Then delete the conversation
-      await supabase
+      const { error } = await supabase
         .from('conversations')
         .delete()
         .eq('id', conversationId);
 
+      if (error) throw error;
+
+      // Update local state to remove the deleted conversation
       setConversations(prev => prev.filter(conv => conv.id !== conversationId));
       
       if (location.pathname.includes('/chat/')) {
