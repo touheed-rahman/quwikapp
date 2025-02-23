@@ -14,7 +14,7 @@ import {
   ShoppingBag,
   Gamepad2,
   Library,
-  Tool
+  Wrench
 } from "lucide-react";
 
 const categoryIcons: Record<string, any> = {
@@ -29,7 +29,7 @@ const categoryIcons: Record<string, any> = {
   fashion: ShoppingBag,
   gaming: Gamepad2,
   books: Library,
-  services: Tool,
+  services: Wrench,
 };
 
 const categoryColors: Record<string, string> = {
