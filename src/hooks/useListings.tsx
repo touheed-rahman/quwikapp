@@ -39,55 +39,42 @@ export const useListings = ({ selectedLocation }: UseListingsProps) => {
     queryKey: ['listings', selectedLocation],
     queryFn: async () => {
       try {
-        console.log('Fetching listings with location:', selectedLocation);
-
         let query = supabase
           .from('listings')
           .select('*')
           .eq('status', 'approved')
-          .is('deleted_at', null);
+          .is('deleted_at', null)
+          .order('featured', { ascending: false })
+          .order('created_at', { ascending: false });
 
-        // Apply location filter if selected
         if (selectedLocation) {
           const locationParts = selectedLocation.split('|');
-          const cityName = locationParts[0]; // Get city name from first part
-          console.log('Filtering by city name:', cityName);
-          
-          // Use ilike for case-insensitive partial match on location field
+          const cityName = locationParts[0];
           query = query.ilike('location', `%${cityName}%`);
         }
-
-        // Add ordering to show featured listings first and newest listings next
-        query = query.order('featured', { ascending: false })
-                    .order('created_at', { ascending: false });
 
         const { data: listings, error } = await query;
 
         if (error) {
-          console.error('Error fetching listings:', error);
           throw error;
         }
 
-        console.log('Fetched listings:', listings);
-
-        // Map the listings and assert the condition type
-        const typedListings = (listings || []).map(listing => ({
+        return (listings || []).map(listing => ({
           ...listing,
           condition: listing.condition as ProductCondition
         }));
-
-        return typedListings;
       } catch (error) {
         console.error('Error in listing query:', error);
         toast({
           title: "Error",
-          description: "Failed to fetch listings. Please try again.",
+          description: "Failed to fetch listings",
           variant: "destructive",
         });
         throw error;
       }
     },
-    staleTime: 1000 * 60 * 5, // Cache for 5 minutes
+    staleTime: 1000 * 30, // Cache for 30 seconds
+    refetchInterval: 1000 * 30, // Refetch every 30 seconds
     refetchOnWindowFocus: true,
   });
 };

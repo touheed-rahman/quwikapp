@@ -1,8 +1,8 @@
 
 import { useState, useEffect } from "react";
-import { Heart, MapPin } from "lucide-react";
+import { Heart, MapPin, Star } from "lucide-react";
 import { Button } from "./ui/button";
-import { Card, CardContent } from "./ui/card";
+import { Card } from "./ui/card";
 import { Badge } from "./ui/badge";
 import { ProductCondition } from "@/types/categories";
 import { Link } from "react-router-dom";
@@ -61,48 +61,28 @@ const ProductCard = ({
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
         toast({
-          title: "Authentication required",
-          description: "Please login to add items to your wishlist",
+          title: "Please login",
+          description: "Login to add items to wishlist",
           variant: "destructive"
         });
         return;
       }
 
       if (isWishlisted) {
-        const { error } = await supabase
+        await supabase
           .from('wishlists')
           .delete()
           .eq('user_id', user.id)
           .eq('listing_id', id);
-
-        if (error) throw error;
         setIsWishlisted(false);
-        toast({
-          title: "Removed from wishlist",
-          description: "Item has been removed from your wishlist"
-        });
       } else {
-        const { error } = await supabase
+        await supabase
           .from('wishlists')
-          .insert([{
-            user_id: user.id,
-            listing_id: id
-          }]);
-
-        if (error) throw error;
+          .insert([{ user_id: user.id, listing_id: id }]);
         setIsWishlisted(true);
-        toast({
-          title: "Added to wishlist",
-          description: "Item has been added to your wishlist"
-        });
       }
     } catch (error) {
       console.error('Error updating wishlist:', error);
-      toast({
-        title: "Error",
-        description: "Failed to update wishlist",
-        variant: "destructive"
-      });
     } finally {
       setIsLoading(false);
     }
@@ -111,15 +91,15 @@ const ProductCard = ({
   const getConditionColor = (condition?: ProductCondition) => {
     switch (condition) {
       case "new":
-        return "bg-green-500 text-white";
+        return "bg-green-500 text-white ring-green-200";
       case "excellent":
-        return "bg-primary text-white";
+        return "bg-primary text-white ring-primary/20";
       case "good":
-        return "bg-yellow-500 text-white";
+        return "bg-yellow-500 text-white ring-yellow-200";
       case "moderate":
-        return "bg-orange-500 text-white";
+        return "bg-orange-500 text-white ring-orange-200";
       default:
-        return "bg-gray-500 text-white";
+        return "bg-gray-500 text-white ring-gray-200";
     }
   };
 
@@ -127,22 +107,21 @@ const ProductCard = ({
     return str.charAt(0).toUpperCase() + str.slice(1);
   };
 
-  // Extract just the area name from the location string
   const displayLocation = location?.split('|')[0]?.split(',')[0] || 'Location not specified';
 
   return (
     <Link to={`/product/${id}`}>
-      <Card className="overflow-hidden border-0 bg-transparent">
-        <div className="relative aspect-[4/3] overflow-hidden rounded-lg border border-neutral-200/60">
+      <Card className="group overflow-hidden border-[1.5px] border-neutral-200 hover:border-primary/50 hover:shadow-lg transition-all duration-200">
+        <div className="relative aspect-[4/3] overflow-hidden">
           <img
             src={image}
             alt={title}
-            className="object-cover w-full h-full"
+            className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300"
           />
           <Button
             variant="ghost"
             size="icon"
-            className={`absolute top-2 right-2 bg-white/80 backdrop-blur-sm hover:bg-white/90 h-8 w-8 ${
+            className={`absolute top-2 right-2 bg-white/90 backdrop-blur-sm hover:bg-white h-8 w-8 shadow-lg ring-1 ring-black/5 ${
               isWishlisted ? "text-red-500" : ""
             } ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
             onClick={handleWishlist}
@@ -151,16 +130,16 @@ const ProductCard = ({
             <Heart className="h-4 w-4" fill={isWishlisted ? "currentColor" : "none"} />
           </Button>
           {featured && (
-            <Badge variant="default" className="absolute top-2 left-2 bg-yellow-500 text-white">
-              Featured
+            <Badge variant="default" className="absolute top-2 left-2 bg-yellow-500 text-white font-medium ring-2 ring-yellow-200">
+              <Star className="h-3 w-3 mr-1" /> Featured
             </Badge>
           )}
         </div>
-        <CardContent className="p-2">
-          <p className="text-lg font-bold text-primary-600">
+        <div className="p-3 space-y-2">
+          <p className="text-lg font-bold text-primary">
             ₹{price.toLocaleString()}
           </p>
-          <h3 className="text-sm font-medium line-clamp-2 mb-1 text-foreground/80">
+          <h3 className="text-sm font-medium line-clamp-2 text-foreground/90 group-hover:text-primary transition-colors">
             {title}
           </h3>
           <div className="flex items-center justify-between">
@@ -170,13 +149,13 @@ const ProductCard = ({
             </div>
             {condition && (
               <Badge 
-                className={`text-[10px] px-2 py-0.5 rounded-[20px] ${getConditionColor(condition as ProductCondition)}`}
+                className={`text-[10px] px-2 py-0.5 rounded-full ring-2 ${getConditionColor(condition)}`}
               >
                 {capitalizeFirstLetter(condition)}
               </Badge>
             )}
           </div>
-        </CardContent>
+        </div>
       </Card>
     </Link>
   );
