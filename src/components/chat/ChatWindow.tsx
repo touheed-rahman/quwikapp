@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { X, MoreVertical, Trash2 } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { ChatHeader } from "./ChatHeader";
 import { ConversationItem } from "./ConversationItem";
 import { ChatFilters } from "./ChatFilters";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -15,7 +14,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useToast } from "@/components/ui/use-toast";
 
 interface ChatWindowProps {
   isOpen: boolean;
@@ -26,14 +24,12 @@ interface Profile {
   id: string;
   full_name: string;
   avatar_url?: string;
-  email?: string;
 }
 
 interface ListingDetails {
   id: string;
   title: string;
   price: number;
-  status: string;
 }
 
 interface Conversation {
@@ -43,9 +39,6 @@ interface Conversation {
   listing_id: string;
   last_message?: string;
   last_message_at?: string;
-  created_at: string;
-  updated_at: string;
-  deleted: boolean;
   listing: ListingDetails;
   seller: Profile;
   buyer: Profile;
@@ -57,7 +50,6 @@ const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
   const [filter, setFilter] = useState<'all' | 'buying' | 'selling'>('all');
   const location = useLocation();
   const navigate = useNavigate();
-  const { toast } = useToast();
 
   useEffect(() => {
     if (isOpen) {
@@ -77,11 +69,10 @@ const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
         .from('conversations')
         .select(`
           *,
-          listing:listings(id, title, price, status),
-          seller:profiles!conversations_seller_id_fkey(id, full_name, avatar_url, email),
-          buyer:profiles!conversations_buyer_id_fkey(id, full_name, avatar_url, email)
+          listing:listings(id, title, price),
+          seller:profiles!conversations_seller_id_fkey(id, full_name, avatar_url),
+          buyer:profiles!conversations_buyer_id_fkey(id, full_name, avatar_url)
         `)
-        .eq('deleted', false)
         .order('last_message_at', { ascending: false });
 
       if (filter === 'buying') {
@@ -93,27 +84,9 @@ const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
       }
 
       const { data, error } = await query;
-
       if (error) throw error;
       
-      const typedConversations = (data || [])
-        .filter(conv => !conv.deleted)
-        .map(conv => ({
-          id: conv.id,
-          buyer_id: conv.buyer_id,
-          seller_id: conv.seller_id,
-          listing_id: conv.listing_id,
-          last_message: conv.last_message,
-          last_message_at: conv.last_message_at,
-          created_at: conv.created_at,
-          updated_at: conv.updated_at,
-          deleted: conv.deleted || false,
-          listing: conv.listing,
-          seller: conv.seller,
-          buyer: conv.buyer
-        }));
-
-      setConversations(typedConversations);
+      setConversations(data || []);
     } catch (error) {
       console.error('Error fetching conversations:', error);
     } finally {
@@ -127,12 +100,17 @@ const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
 
   const handleDelete = async (conversationId: string) => {
     try {
-      const { error: updateError } = await supabase
-        .from('conversations')
-        .update({ deleted: true })
-        .eq('id', conversationId);
+      // Delete all messages first
+      await supabase
+        .from('messages')
+        .delete()
+        .eq('conversation_id', conversationId);
 
-      if (updateError) throw updateError;
+      // Then delete the conversation
+      await supabase
+        .from('conversations')
+        .delete()
+        .eq('id', conversationId);
 
       setConversations(prev => prev.filter(conv => conv.id !== conversationId));
       
@@ -166,9 +144,9 @@ const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
 
       <ScrollArea className="flex-1">
         {isLoading ? (
-          <div className="p-4 text-center text-muted-foreground">Loading conversations...</div>
+          <div className="p-4 text-center text-muted-foreground">Loading...</div>
         ) : conversations.length === 0 ? (
-          <div className="p-4 text-center text-muted-foreground">No conversations found</div>
+          <div className="p-4 text-center text-muted-foreground">No conversations</div>
         ) : (
           conversations.map((conversation) => (
             <div key={conversation.id} className="group relative">

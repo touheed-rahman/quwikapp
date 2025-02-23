@@ -11,8 +11,13 @@ import { useLocation } from "@/contexts/LocationContext";
 import { useListings } from "@/hooks/useListings";
 import RecentListings from "@/components/listings/RecentListings";
 import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
+import { ArrowRight } from "lucide-react";
+import ProductCard from "@/components/ProductCard";
 
 const ITEMS_PER_PAGE = 20;
+const FEATURED_ITEMS_LIMIT = 6;
 
 const Index = () => {
   const [showAllProducts, setShowAllProducts] = useState(false);
@@ -23,6 +28,10 @@ const Index = () => {
   const { data: listings = [], isLoading, error } = useListings({
     selectedLocation
   });
+
+  const featuredListings = listings
+    .filter(listing => listing.featured)
+    .slice(0, FEATURED_ITEMS_LIMIT);
 
   const getFirstImageUrl = (images: string[]) => {
     if (images && images.length > 0) {
@@ -47,10 +56,40 @@ const Index = () => {
           
           <CategoryFilter />
           
+          {featuredListings.length > 0 && (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h2 className="text-2xl font-bold">Featured Listings</h2>
+                <Link 
+                  to="/featured-listings" 
+                  className="text-primary flex items-center hover:underline text-sm font-medium"
+                >
+                  View All Featured
+                  <ArrowRight className="ml-1 h-4 w-4" />
+                </Link>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-4">
+                {featuredListings.map((listing) => (
+                  <ProductCard
+                    key={listing.id}
+                    id={listing.id}
+                    title={listing.title}
+                    price={listing.price}
+                    location={listing.location || "Location not specified"}
+                    image={getFirstImageUrl(listing.images)}
+                    date={new Date(listing.created_at).toLocaleDateString()}
+                    condition={listing.condition}
+                    featured={listing.featured}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+          
           <div className="space-y-4">
-            <h2 className="text-2xl font-bold">Listings in your area</h2>
+            <h2 className="text-2xl font-bold">Recent Listings</h2>
             <RecentListings 
-              listings={listings}
+              listings={listings.filter(listing => !listing.featured)}
               isLoading={isLoading}
               error={error as Error}
               showAllProducts={showAllProducts}
