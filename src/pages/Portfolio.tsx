@@ -11,7 +11,7 @@ import { useToast } from "@/components/ui/use-toast";
 interface UserProfile {
   id: string;
   full_name: string;
-  bio: string;
+  bio: string | null;
   created_at: string;
   avatar_url?: string;
   followers_count: number;
@@ -32,7 +32,7 @@ const Portfolio = () => {
         const [profileResponse, listingsResponse] = await Promise.all([
           supabase
             .from('profiles')
-            .select('*, followers:followers_count, following:following_count')
+            .select('*')
             .eq('id', userId)
             .single(),
           supabase
@@ -48,6 +48,19 @@ const Portfolio = () => {
 
         setProfile(profileResponse.data);
         setListings(listingsResponse.data);
+
+        // Check if current user is following this profile
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const { data: followData } = await supabase
+            .from('follows')
+            .select('id')
+            .eq('follower_id', user.id)
+            .eq('following_id', userId)
+            .maybeSingle();
+          
+          setIsFollowing(!!followData);
+        }
       } catch (error) {
         console.error('Error fetching profile:', error);
       } finally {
@@ -73,18 +86,42 @@ const Portfolio = () => {
 
     try {
       if (isFollowing) {
-        await supabase
+        const { error } = await supabase
           .from('follows')
           .delete()
-          .match({ follower_id: user.id, following_id: userId });
+          .eq('follower_id', user.id)
+          .eq('following_id', userId);
+          
+        if (error) throw error;
       } else {
-        await supabase
+        const { error } = await supabase
           .from('follows')
-          .insert({ follower_id: user.id, following_id: userId });
+          .insert({
+            follower_id: user.id,
+            following_id: userId
+          });
+          
+        if (error) throw error;
       }
+      
       setIsFollowing(!isFollowing);
-    } catch (error) {
-      console.error('Error following/unfollowing:', error);
+      
+      // Refresh profile to get updated counts
+      const { data } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single();
+        
+      if (data) {
+        setProfile(data);
+      }
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive"
+      });
     }
   };
 

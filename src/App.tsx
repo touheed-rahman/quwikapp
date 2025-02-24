@@ -1,3 +1,4 @@
+
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -10,7 +11,7 @@ import Product from "./pages/Product";
 import Profile from "./pages/Profile";
 import Wishlist from "./pages/Wishlist";
 import Admin from "./pages/Admin";
-import LocationProvider from "@/contexts/LocationContext";
+import { LocationProvider } from "@/contexts/LocationContext";
 import FeaturedListings from "./pages/FeaturedListings";
 import Portfolio from "./pages/Portfolio";
 
@@ -21,7 +22,7 @@ const App = () => (
     <TooltipProvider>
       <LocationProvider>
         <BrowserRouter>
-          <ErrorBoundary>
+          <ErrorBoundary fallback={<div>Something went wrong</div>}>
             <ScrollToTop />
             <Toaster />
             <Routes>
