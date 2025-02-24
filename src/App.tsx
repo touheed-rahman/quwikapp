@@ -17,31 +17,29 @@ import Portfolio from "./pages/Portfolio";
 
 const queryClient = new QueryClient();
 
-const App = () => {
-  return (
-    <QueryClientProvider client={queryClient}>
+const App = () => (
+  <QueryClientProvider client={queryClient}>
+    <TooltipProvider>
       <LocationProvider>
         <BrowserRouter>
           <ErrorBoundary fallback={<div>Something went wrong</div>}>
             <ScrollToTop />
-            <TooltipProvider>
-              <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/portfolio/:userId" element={<Portfolio />} />
-                <Route path="/category/:category/:subcategory" element={<Category />} />
-                <Route path="/product/:id" element={<Product />} />
-                <Route path="/profile" element={<Profile />} />
-                <Route path="/wishlist" element={<Wishlist />} />
-                <Route path="/admin" element={<Admin />} />
-                <Route path="/featured-listings" element={<FeaturedListings />} />
-              </Routes>
-              <Toaster />
-            </TooltipProvider>
+            <Toaster />
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/portfolio/:userId" element={<Portfolio />} />
+              <Route path="/category/:category/:subcategory" element={<Category />} />
+              <Route path="/product/:id" element={<Product />} />
+              <Route path="/profile" element={<Profile />} />
+              <Route path="/wishlist" element={<Wishlist />} />
+              <Route path="/admin" element={<Admin />} />
+              <Route path="/featured-listings" element={<FeaturedListings />} />
+            </Routes>
           </ErrorBoundary>
         </BrowserRouter>
       </LocationProvider>
-    </QueryClientProvider>
-  );
-};
+    </TooltipProvider>
+  </QueryClientProvider>
+);
 
 export default App;

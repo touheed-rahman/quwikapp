@@ -16,9 +16,6 @@ interface UserProfile {
   avatar_url?: string;
   followers_count: number;
   following_count: number;
-  email?: string;
-  location?: string;
-  updated_at: string;
 }
 
 const Portfolio = () => {
@@ -35,7 +32,7 @@ const Portfolio = () => {
         const [profileResponse, listingsResponse] = await Promise.all([
           supabase
             .from('profiles')
-            .select('*, followers_count, following_count')
+            .select('*')
             .eq('id', userId)
             .single(),
           supabase
@@ -49,29 +46,20 @@ const Portfolio = () => {
         if (profileResponse.error) throw profileResponse.error;
         if (listingsResponse.error) throw listingsResponse.error;
 
-        // Set default values for new fields if they're null
-        const profileData: UserProfile = {
-          ...profileResponse.data,
-          followers_count: profileResponse.data.followers_count || 0,
-          following_count: profileResponse.data.following_count || 0,
-          bio: profileResponse.data.bio || null
-        };
-
-        setProfile(profileData);
+        setProfile(profileResponse.data);
         setListings(listingsResponse.data);
 
         // Check if current user is following this profile
         const { data: { user } } = await supabase.auth.getUser();
         if (user) {
-          const { data: followData, error: followError } = await supabase
-            .rpc('check_if_following', {
-              follower_uid: user.id,
-              following_uid: userId
-            });
+          const { data: followData } = await supabase
+            .from('follows')
+            .select('id')
+            .eq('follower_id', user.id)
+            .eq('following_id', userId)
+            .maybeSingle();
           
-          if (!followError) {
-            setIsFollowing(!!followData);
-          }
+          setIsFollowing(!!followData);
         }
       } catch (error) {
         console.error('Error fetching profile:', error);
@@ -99,15 +87,18 @@ const Portfolio = () => {
     try {
       if (isFollowing) {
         const { error } = await supabase
-          .rpc('unfollow_user', {
-            following_uid: userId
-          });
+          .from('follows')
+          .delete()
+          .eq('follower_id', user.id)
+          .eq('following_id', userId);
           
         if (error) throw error;
       } else {
         const { error } = await supabase
-          .rpc('follow_user', {
-            following_uid: userId
+          .from('follows')
+          .insert({
+            follower_id: user.id,
+            following_id: userId
           });
           
         if (error) throw error;
@@ -116,20 +107,14 @@ const Portfolio = () => {
       setIsFollowing(!isFollowing);
       
       // Refresh profile to get updated counts
-      const { data, error } = await supabase
+      const { data } = await supabase
         .from('profiles')
-        .select('*, followers_count, following_count')
+        .select('*')
         .eq('id', userId)
         .single();
         
-      if (!error && data) {
-        const profileData: UserProfile = {
-          ...data,
-          followers_count: data.followers_count || 0,
-          following_count: data.following_count || 0,
-          bio: data.bio || null
-        };
-        setProfile(profileData);
+      if (data) {
+        setProfile(data);
       }
     } catch (error: any) {
       toast({
