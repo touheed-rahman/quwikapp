@@ -57,10 +57,6 @@ const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
     }
   }, [isOpen, filter]);
 
-  const handleFilterChange = (newFilter: 'all' | 'buying' | 'selling') => {
-    setFilter(newFilter);
-  };
-
   const fetchConversations = async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -98,23 +94,24 @@ const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
     }
   };
 
+  const handleFilterChange = (newFilter: 'all' | 'buying' | 'selling') => {
+    setFilter(newFilter);
+  };
+
   const handleDelete = async (conversationId: string) => {
     try {
-      // First delete all messages
+      // Delete all messages first
       await supabase
         .from('messages')
         .delete()
         .eq('conversation_id', conversationId);
 
       // Then delete the conversation
-      const { error } = await supabase
+      await supabase
         .from('conversations')
         .delete()
         .eq('id', conversationId);
 
-      if (error) throw error;
-
-      // Update local state to remove the deleted conversation
       setConversations(prev => prev.filter(conv => conv.id !== conversationId));
       
       if (location.pathname.includes('/chat/')) {
