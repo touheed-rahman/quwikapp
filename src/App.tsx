@@ -1,4 +1,6 @@
+
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { useState } from "react"; // Add missing import
 import Header from "@/components/Header";
 import CategoryFilter from "@/components/CategoryFilter";
 import HeroSearch from "@/components/HeroSearch";
@@ -10,7 +12,6 @@ import { useLocation } from "@/contexts/LocationContext";
 import { useListings } from "@/hooks/useListings";
 import RecentListings from "@/components/listings/RecentListings";
 import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
 import ProductCard from "@/components/ProductCard";

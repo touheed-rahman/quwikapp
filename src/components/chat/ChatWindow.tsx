@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -55,6 +56,10 @@ const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
       fetchConversations();
     }
   }, [isOpen, filter]);
+
+  const handleFilterChange = (newFilter: 'all' | 'buying' | 'selling') => {
+    setFilter(newFilter);
+  };
 
   const fetchConversations = async () => {
     try {
