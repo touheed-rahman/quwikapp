@@ -15,13 +15,13 @@ const MessageList = ({ messages, sessionUserId }: MessageListProps) => {
           className={`flex ${message.sender_id === sessionUserId ? "justify-end" : "justify-start"}`}
         >
           <div
-            className={`max-w-[85%] md:max-w-[70%] rounded-lg p-3 ${
+            className={`max-w-[85%] break-words md:max-w-[70%] rounded-lg p-3 ${
               message.sender_id === sessionUserId 
                 ? "bg-blue-100 text-blue-900" 
                 : "bg-white border"
             }`}
           >
-            <p className="break-words">{message.content}</p>
+            <div className="whitespace-pre-wrap break-words">{message.content}</div>
             <div className={`text-xs mt-1 ${
               message.sender_id === sessionUserId 
                 ? "text-blue-700" 
@@ -37,4 +37,3 @@ const MessageList = ({ messages, sessionUserId }: MessageListProps) => {
 };
 
 export default MessageList;
-

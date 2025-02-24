@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -48,13 +47,19 @@ const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'buying' | 'selling'>('all');
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const location = useLocation();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (isOpen) {
-      fetchConversations();
-    }
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      setIsAuthenticated(!!session);
+      if (isOpen && session) {
+        fetchConversations();
+      }
+    };
+    checkAuth();
   }, [isOpen, filter]);
 
   const fetchConversations = async () => {
@@ -121,6 +126,14 @@ const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
       console.error('Error deleting conversation:', error);
     }
   };
+
+  if (isAuthenticated === null) {
+    return null; // Don't render anything while checking auth
+  }
+
+  if (!isAuthenticated) {
+    return null; // Don't show the chat window if not authenticated
+  }
 
   return (
     <Card 

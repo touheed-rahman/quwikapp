@@ -62,18 +62,6 @@ export const useProductActions = (productId: string | undefined, sellerId: strin
         .single();
 
       if (createError) throw createError;
-
-      // Send initial message
-      const { error: messageError } = await supabase
-        .from('messages')
-        .insert({
-          conversation_id: newConversation.id,
-          sender_id: session.user.id,
-          content: "Hi, is this still available?"
-        });
-
-      if (messageError) throw messageError;
-
       navigate(`/chat/${newConversation.id}`);
     } catch (error: any) {
       toast({

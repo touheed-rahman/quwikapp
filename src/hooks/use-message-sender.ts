@@ -10,9 +10,7 @@ export function useMessageSender(conversationId: string | undefined, sessionUser
   const handleSend = async (isInitialMessage?: boolean, offerAmount?: number) => {
     let messageContent = newMessage;
 
-    if (isInitialMessage) {
-      messageContent = "Hi, is this still available?";
-    } else if (offerAmount !== undefined) {
+    if (offerAmount !== undefined) {
       messageContent = `I would like to make an offer of ₹${offerAmount.toLocaleString()}`;
     }
 
