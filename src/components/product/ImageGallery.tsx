@@ -1,5 +1,5 @@
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 
@@ -16,23 +16,31 @@ const ImageGallery = ({
 }: ImageGalleryProps) => {
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const imageCache = useRef<Map<string, string>>(new Map());
 
   const getImageUrl = useCallback((imagePath: string) => {
-    return supabase.storage.from('listings').getPublicUrl(imagePath).data.publicUrl;
+    if (imageCache.current.has(imagePath)) {
+      return imageCache.current.get(imagePath);
+    }
+    const url = supabase.storage.from('listings').getPublicUrl(imagePath).data.publicUrl;
+    imageCache.current.set(imagePath, url);
+    return url;
   }, []);
 
-  // Auto-slide every 5 seconds
+  // Preload next and previous images
   useEffect(() => {
-    const timer = setInterval(() => {
-      if (!isDialogOpen) { // Don't auto-slide when dialog is open
-        setCurrentImageIndex(currentImageIndex === images.length - 1 ? 0 : currentImageIndex + 1);
-      }
-    }, 5000);
+    const preloadImages = () => {
+      const nextIndex = (currentImageIndex + 1) % images.length;
+      const prevIndex = currentImageIndex === 0 ? images.length - 1 : currentImageIndex - 1;
+      
+      [nextIndex, prevIndex].forEach(index => {
+        const img = new Image();
+        img.src = getImageUrl(images[index]);
+      });
+    };
+    preloadImages();
+  }, [currentImageIndex, images, getImageUrl]);
 
-    return () => clearInterval(timer);
-  }, [currentImageIndex, images.length, setCurrentImageIndex, isDialogOpen]);
-
-  // Touch slide handling
   const handleTouchStart = (e: React.TouchEvent) => {
     setTouchStart(e.touches[0].clientX);
   };
@@ -43,12 +51,10 @@ const ImageGallery = ({
     const touchEnd = e.changedTouches[0].clientX;
     const diff = touchStart - touchEnd;
 
-    if (Math.abs(diff) > 50) { // Minimum swipe distance
+    if (Math.abs(diff) > 50) {
       if (diff > 0) {
-        // Swipe left
         setCurrentImageIndex(currentImageIndex === images.length - 1 ? 0 : currentImageIndex + 1);
       } else {
-        // Swipe right
         setCurrentImageIndex(currentImageIndex === 0 ? images.length - 1 : currentImageIndex - 1);
       }
     }
@@ -57,11 +63,15 @@ const ImageGallery = ({
 
   return (
     <>
-      <div className="relative aspect-4/3 rounded-lg overflow-hidden bg-black/5">
+      <div 
+        className="relative aspect-4/3 rounded-lg overflow-hidden bg-black/5"
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+      >
         <img
           src={getImageUrl(images[currentImageIndex])}
-          alt="Product image"
-          className="w-full h-full object-contain cursor-pointer"
+          alt="Product"
+          className="w-full h-full object-contain cursor-pointer transition-transform duration-200"
           onClick={() => setIsDialogOpen(true)}
           loading="eager"
         />
@@ -70,9 +80,7 @@ const ImageGallery = ({
             <button
               key={index}
               className={`w-2 h-2 rounded-full transition-colors ${
-                index === currentImageIndex
-                  ? "bg-white"
-                  : "bg-white/50 hover:bg-white/75"
+                index === currentImageIndex ? "bg-white" : "bg-white/50 hover:bg-white/75"
               }`}
               onClick={(e) => {
                 e.stopPropagation();
@@ -83,12 +91,11 @@ const ImageGallery = ({
         </div>
       </div>
 
-      {/* Thumbnail strip */}
-      <div className="mt-4 flex gap-2 overflow-x-auto pb-2 px-1">
+      <div className="mt-4 flex gap-2 overflow-x-auto pb-2 px-1 snap-x">
         {images.map((image, index) => (
           <button
             key={index}
-            className={`relative flex-shrink-0 w-16 h-16 rounded-md overflow-hidden ${
+            className={`flex-shrink-0 w-16 h-16 rounded-md overflow-hidden snap-center ${
               index === currentImageIndex ? 'ring-2 ring-primary' : ''
             }`}
             onClick={() => setCurrentImageIndex(index)}
@@ -103,12 +110,11 @@ const ImageGallery = ({
         ))}
       </div>
 
-      {/* Fullscreen dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="max-w-3xl w-full h-[80vh] flex items-center justify-center">
+        <DialogContent className="max-w-3xl w-full h-[80vh] flex items-center justify-center p-0">
           <img
             src={getImageUrl(images[currentImageIndex])}
-            alt="Product image fullscreen"
+            alt="Product fullscreen"
             className="max-w-full max-h-full object-contain"
           />
         </DialogContent>
