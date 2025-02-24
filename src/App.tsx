@@ -1,6 +1,6 @@
 
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import { useState } from "react"; // Add missing import
+import { useState } from "react";
 import Header from "@/components/Header";
 import CategoryFilter from "@/components/CategoryFilter";
 import HeroSearch from "@/components/HeroSearch";
@@ -8,6 +8,7 @@ import ChatWindow from "@/components/chat/ChatWindow";
 import MobileNavigation from "@/components/navigation/MobileNavigation";
 import FloatingSellButton from "@/components/navigation/FloatingSellButton";
 import WelcomeDialog from "@/components/dialogs/WelcomeDialog";
+import { LocationProvider } from "@/contexts/LocationContext";
 import { useLocation } from "@/contexts/LocationContext";
 import { useListings } from "@/hooks/useListings";
 import RecentListings from "@/components/listings/RecentListings";
@@ -19,18 +20,6 @@ import CategorySubcategories from "./pages/CategorySubcategories";
 
 const ITEMS_PER_PAGE = 20;
 const FEATURED_ITEMS_LIMIT = 6;
-
-const App = () => {
-  return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<Index />} />
-        <Route path="/category/:categoryId" element={<CategorySubcategories />} />
-        {/* Add other routes here */}
-      </Routes>
-    </Router>
-  );
-};
 
 const Index = () => {
   const [showAllProducts, setShowAllProducts] = useState(false);
@@ -118,6 +107,20 @@ const Index = () => {
         <ChatWindow isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} />
       </main>
     </div>
+  );
+};
+
+const App = () => {
+  return (
+    <LocationProvider>
+      <Router>
+        <Routes>
+          <Route path="/" element={<Index />} />
+          <Route path="/category/:categoryId" element={<CategorySubcategories />} />
+          {/* Add other routes here */}
+        </Routes>
+      </Router>
+    </LocationProvider>
   );
 };
 
