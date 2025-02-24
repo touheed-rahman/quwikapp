@@ -1228,6 +1228,13 @@ export type Database = {
             }
             Returns: string
           }
+      check_if_following: {
+        Args: {
+          follower_uid: string
+          following_uid: string
+        }
+        Returns: boolean
+      }
       disablelongtransactions: {
         Args: Record<PropertyKey, never>
         Returns: string
@@ -1289,6 +1296,12 @@ export type Database = {
           geom2: unknown
         }
         Returns: boolean
+      }
+      follow_user: {
+        Args: {
+          following_uid: string
+        }
+        Returns: undefined
       }
       geography:
         | {
@@ -4066,6 +4079,12 @@ export type Database = {
           "": unknown
         }
         Returns: string
+      }
+      unfollow_user: {
+        Args: {
+          following_uid: string
+        }
+        Returns: undefined
       }
       unlockrows: {
         Args: {
