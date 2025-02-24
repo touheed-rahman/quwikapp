@@ -105,7 +105,7 @@ const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
 
   const handleDelete = async (conversationId: string) => {
     try {
-      // First delete all messages
+      // Delete all messages first
       await supabase
         .from('messages')
         .delete()
@@ -117,7 +117,6 @@ const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
         .delete()
         .eq('id', conversationId);
 
-      // Update local state
       setConversations(prev => prev.filter(conv => conv.id !== conversationId));
       
       if (location.pathname.includes('/chat/')) {
