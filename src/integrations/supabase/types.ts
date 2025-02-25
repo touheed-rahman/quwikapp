@@ -153,6 +153,42 @@ export type Database = {
         }
         Relationships: []
       }
+      follows: {
+        Row: {
+          created_at: string
+          follower_id: string
+          following_id: string
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          follower_id: string
+          following_id: string
+          id?: string
+        }
+        Update: {
+          created_at?: string
+          follower_id?: string
+          following_id?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "follows_follower_id_fkey"
+            columns: ["follower_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "follows_following_id_fkey"
+            columns: ["following_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       listing_notifications: {
         Row: {
           created_at: string | null
@@ -475,8 +511,11 @@ export type Database = {
       profiles: {
         Row: {
           avatar_url: string | null
+          bio: string | null
           created_at: string
           email: string | null
+          followers_count: number | null
+          following_count: number | null
           full_name: string | null
           id: string
           location: string | null
@@ -484,8 +523,11 @@ export type Database = {
         }
         Insert: {
           avatar_url?: string | null
+          bio?: string | null
           created_at?: string
           email?: string | null
+          followers_count?: number | null
+          following_count?: number | null
           full_name?: string | null
           id: string
           location?: string | null
@@ -493,8 +535,11 @@ export type Database = {
         }
         Update: {
           avatar_url?: string | null
+          bio?: string | null
           created_at?: string
           email?: string | null
+          followers_count?: number | null
+          following_count?: number | null
           full_name?: string | null
           id?: string
           location?: string | null
@@ -1183,6 +1228,13 @@ export type Database = {
             }
             Returns: string
           }
+      check_if_following: {
+        Args: {
+          follower_uid: string
+          following_uid: string
+        }
+        Returns: boolean
+      }
       disablelongtransactions: {
         Args: Record<PropertyKey, never>
         Returns: string
@@ -1244,6 +1296,12 @@ export type Database = {
           geom2: unknown
         }
         Returns: boolean
+      }
+      follow_user: {
+        Args: {
+          following_uid: string
+        }
+        Returns: undefined
       }
       geography:
         | {
@@ -4021,6 +4079,12 @@ export type Database = {
           "": unknown
         }
         Returns: string
+      }
+      unfollow_user: {
+        Args: {
+          following_uid: string
+        }
+        Returns: undefined
       }
       unlockrows: {
         Args: {

@@ -1,39 +1,61 @@
 
-import type { Message } from "./types/chat-detail";
+import { Message } from "@/components/chat/types/chat-detail";
+import { cn } from "@/lib/utils";
+import { useEffect, useRef } from "react";
 
 interface MessageListProps {
   messages: Message[];
-  sessionUserId: string;
+  currentUserId?: string;
+  unreadMessages?: Message[];
 }
 
-const MessageList = ({ messages, sessionUserId }: MessageListProps) => {
+export const MessageList = ({ messages, currentUserId, unreadMessages = [] }: MessageListProps) => {
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
+  const isUnread = (message: Message) => {
+    return unreadMessages.some(unread => unread.id === message.id);
+  };
+
   return (
-    <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50">
-      {messages.map((message) => (
-        <div
-          key={message.id}
-          className={`flex ${message.sender_id === sessionUserId ? "justify-end" : "justify-start"}`}
-        >
+    <div className="flex-1 space-y-4 p-4 overflow-y-auto">
+      {messages.map((message) => {
+        const isCurrentUser = message.sender_id === currentUserId;
+        const unread = isUnread(message);
+
+        return (
           <div
-            className={`max-w-[85%] break-words md:max-w-[70%] rounded-lg p-3 ${
-              message.sender_id === sessionUserId 
-                ? "bg-blue-100 text-blue-900" 
-                : "bg-white border"
-            }`}
+            key={message.id}
+            className={cn(
+              "flex",
+              isCurrentUser ? "justify-end" : "justify-start"
+            )}
           >
-            <div className="whitespace-pre-wrap break-words">{message.content}</div>
-            <div className={`text-xs mt-1 ${
-              message.sender_id === sessionUserId 
-                ? "text-blue-700" 
-                : "text-muted-foreground"
-            }`}>
-              {new Date(message.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+            <div
+              className={cn(
+                "relative max-w-[80%] rounded-lg px-3 py-2 text-sm",
+                isCurrentUser
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-muted",
+                unread && "font-bold"
+              )}
+            >
+              {message.content}
+              {unread && (
+                <div className="absolute -left-2 -top-1 h-2 w-2 rounded-full bg-red-500" />
+              )}
             </div>
           </div>
-        </div>
-      ))}
+        );
+      })}
+      <div ref={messagesEndRef} />
     </div>
   );
 };
-
-export default MessageList;

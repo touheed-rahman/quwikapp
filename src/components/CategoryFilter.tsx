@@ -38,7 +38,7 @@ const categoryIcons: Record<string, any> = {
 };
 
 const categoryColors: Record<string, string> = {
-  mobile: "bg-blue-500",
+  mobile: "bg-[#8B5CF6]", // Changed to a vivid purple color
   vehicles: "bg-blue-500",
   electronics: "bg-purple-500",
   furniture: "bg-orange-500",
