@@ -5,11 +5,11 @@ import { useEffect, useRef } from "react";
 
 interface MessageListProps {
   messages: Message[];
-  currentUserId?: string;
+  sessionUserId?: string;
   unreadMessages?: Message[];
 }
 
-export const MessageList = ({ messages, currentUserId, unreadMessages = [] }: MessageListProps) => {
+const MessageList = ({ messages, sessionUserId, unreadMessages = [] }: MessageListProps) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -27,7 +27,7 @@ export const MessageList = ({ messages, currentUserId, unreadMessages = [] }: Me
   return (
     <div className="flex-1 space-y-4 p-4 overflow-y-auto">
       {messages.map((message) => {
-        const isCurrentUser = message.sender_id === currentUserId;
+        const isCurrentUser = message.sender_id === sessionUserId;
         const unread = isUnread(message);
 
         return (
@@ -59,3 +59,5 @@ export const MessageList = ({ messages, currentUserId, unreadMessages = [] }: Me
     </div>
   );
 };
+
+export default MessageList;

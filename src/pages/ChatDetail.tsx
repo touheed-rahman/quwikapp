@@ -3,7 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import ChatDetailHeader from "@/components/chat/ChatDetailHeader";
-import { MessageList } from "@/components/chat/MessageList"; // Changed from default to named import
+import MessageList from "@/components/chat/MessageList";
 import ChatInput from "@/components/chat/ChatInput";
 import { useChat } from "@/hooks/use-chat";
 
@@ -42,7 +42,7 @@ const ChatDetail = () => {
   return (
     <div className="flex flex-col h-[100dvh] bg-background">
       <ChatDetailHeader conversationDetails={conversationDetails} />
-      <MessageList messages={messages} currentUserId={sessionUser.id} />
+      <MessageList messages={messages} sessionUserId={sessionUser.id} />
       <ChatInput
         newMessage={newMessage}
         setNewMessage={setNewMessage}
