@@ -9,7 +9,11 @@ interface MessageListProps {
   unreadMessages?: Message[];
 }
 
-const MessageList = ({ messages, sessionUserId, unreadMessages = [] }: MessageListProps) => {
+const MessageList: React.FC<MessageListProps> = ({ 
+  messages, 
+  sessionUserId, 
+  unreadMessages = [] 
+}) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
