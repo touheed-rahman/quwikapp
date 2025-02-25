@@ -47,6 +47,10 @@ export default function MakeOfferDialog({
 
     setIsSubmitting(true);
     try {
+      // Get the current user's session
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error("No session found");
+
       // First create the offer record
       const { error: offerError } = await supabase.from("offers").insert({
         conversation_id: conversationId,
@@ -55,11 +59,12 @@ export default function MakeOfferDialog({
 
       if (offerError) throw offerError;
 
-      // Then send the message with just the number
+      // Then send the message with just the number and mark it as an offer
       const { error: messageError } = await supabase.from("messages").insert({
         conversation_id: conversationId,
         content: `${parseFloat(amount)}`,
-        type: 'offer'
+        is_offer: true,
+        sender_id: session.user.id
       });
 
       if (messageError) throw messageError;
