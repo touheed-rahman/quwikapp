@@ -3,17 +3,17 @@ import { Message } from "@/components/chat/types/chat-detail";
 import { cn } from "@/lib/utils";
 import { useEffect, useRef } from "react";
 
-interface MessageListProps {
+export interface MessageListProps {
   messages: Message[];
   sessionUserId?: string;
   unreadMessages?: Message[];
 }
 
-const MessageList: React.FC<MessageListProps> = ({ 
+export const MessageList = ({ 
   messages, 
   sessionUserId, 
   unreadMessages = [] 
-}) => {
+}: MessageListProps) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -63,5 +63,3 @@ const MessageList: React.FC<MessageListProps> = ({
     </div>
   );
 };
-
-export default MessageList;

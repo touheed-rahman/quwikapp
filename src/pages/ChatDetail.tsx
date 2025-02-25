@@ -3,7 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import ChatDetailHeader from "@/components/chat/ChatDetailHeader";
-import MessageList from "@/components/chat/MessageList";
+import { MessageList } from "@/components/chat/MessageList";
 import ChatInput from "@/components/chat/ChatInput";
 import { useChat } from "@/hooks/use-chat";
 
@@ -21,6 +21,10 @@ const ChatDetail = () => {
     chatDisabled,
     disabledReason
   } = useChat(id);
+
+  const handleBack = () => {
+    navigate('/chat');
+  };
 
   if (!sessionUser) {
     return (
@@ -41,7 +45,10 @@ const ChatDetail = () => {
 
   return (
     <div className="flex flex-col h-[100dvh] bg-background">
-      <ChatDetailHeader conversationDetails={conversationDetails} />
+      <ChatDetailHeader 
+        conversationDetails={conversationDetails} 
+        onBack={handleBack}
+      />
       <MessageList messages={messages} sessionUserId={sessionUser.id} />
       <ChatInput
         newMessage={newMessage}
