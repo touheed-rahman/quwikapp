@@ -1,8 +1,33 @@
-
 INSERT INTO cities (name, state_id, latitude, longitude)
 WITH data AS (
   SELECT * FROM (
     VALUES
+      -- Andhra Pradesh
+      ('Visakhapatnam', (SELECT id FROM states WHERE name = 'Andhra Pradesh'), 17.6868, 83.2185),
+      ('Vijayawada', (SELECT id FROM states WHERE name = 'Andhra Pradesh'), 16.5062, 80.6480),
+      ('Guntur', (SELECT id FROM states WHERE name = 'Andhra Pradesh'), 16.3067, 80.4365),
+      ('Nellore', (SELECT id FROM states WHERE name = 'Andhra Pradesh'), 14.4426, 79.9865),
+      ('Kurnool', (SELECT id FROM states WHERE name = 'Andhra Pradesh'), 15.8281, 78.0373),
+      
+      -- Arunachal Pradesh
+      ('Itanagar', (SELECT id FROM states WHERE name = 'Arunachal Pradesh'), 27.0844, 93.6053),
+      ('Naharlagun', (SELECT id FROM states WHERE name = 'Arunachal Pradesh'), 27.1044, 93.6953),
+      ('Pasighat', (SELECT id FROM states WHERE name = 'Arunachal Pradesh'), 28.0678, 95.3932),
+      
+      -- Assam
+      ('Guwahati', (SELECT id FROM states WHERE name = 'Assam'), 26.1445, 91.7362),
+      ('Silchar', (SELECT id FROM states WHERE name = 'Assam'), 24.8333, 92.7789),
+      ('Dibrugarh', (SELECT id FROM states WHERE name = 'Assam'), 27.4728, 94.9120),
+      ('Jorhat', (SELECT id FROM states WHERE name = 'Assam'), 26.7509, 94.2037),
+      ('Nagaon', (SELECT id FROM states WHERE name = 'Assam'), 26.3452, 92.6840),
+      
+      -- Bihar
+      ('Patna', (SELECT id FROM states WHERE name = 'Bihar'), 25.5941, 85.1376),
+      ('Gaya', (SELECT id FROM states WHERE name = 'Bihar'), 24.7914, 85.0002),
+      ('Muzaffarpur', (SELECT id FROM states WHERE name = 'Bihar'), 26.1209, 85.3647),
+      ('Bhagalpur', (SELECT id FROM states WHERE name = 'Bihar'), 25.2425, 87.0079),
+      ('Darbhanga', (SELECT id FROM states WHERE name = 'Bihar'), 26.1542, 85.8918),
+      
       -- Maharashtra
       ('Mumbai', (SELECT id FROM states WHERE name = 'Maharashtra'), 19.0760, 72.8777),
       ('Pune', (SELECT id FROM states WHERE name = 'Maharashtra'), 18.5204, 73.8567),
