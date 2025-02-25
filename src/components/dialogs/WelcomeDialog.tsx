@@ -16,18 +16,15 @@ interface WelcomeDialogProps {
 }
 
 const WelcomeDialog = ({ open, onOpenChange }: WelcomeDialogProps) => {
-  const [shouldShow, setShouldShow] = useState(true);
+  const [shouldShow, setShouldShow] = useState(false);
 
   useEffect(() => {
     const hasSeenWelcome = localStorage.getItem('hasSeenWelcome');
-    if (hasSeenWelcome) {
-      setShouldShow(false);
-      onOpenChange(false);
-    } else {
+    if (!hasSeenWelcome) {
       setShouldShow(true);
       localStorage.setItem('hasSeenWelcome', 'true');
     }
-  }, [onOpenChange]);
+  }, []);
 
   const handleClose = () => {
     setShouldShow(false);

@@ -96,7 +96,7 @@ const CategoryFilter = () => {
         {rows.length > initialRows && (
           <button
             onClick={() => setShowAll(!showAll)}
-            className="w-full flex items-center justify-center gap-2 text-sm font-medium text-primary hover:text-primary/80 transition-colors p-2"
+            className="w-full flex items-center justify-center gap-2 text-sm font-medium text-primary hover:text-primary/80 transition-colors p-2 border-none bg-transparent outline-none focus:outline-none focus:bg-transparent active:bg-transparent"
           >
             {showAll ? (
               <>

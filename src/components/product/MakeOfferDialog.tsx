@@ -47,12 +47,22 @@ export default function MakeOfferDialog({
 
     setIsSubmitting(true);
     try {
-      const { error } = await supabase.from("offers").insert({
+      // First create the offer record
+      const { error: offerError } = await supabase.from("offers").insert({
         conversation_id: conversationId,
         amount: parseFloat(amount),
       });
 
-      if (error) throw error;
+      if (offerError) throw offerError;
+
+      // Then send the message with just the number
+      const { error: messageError } = await supabase.from("messages").insert({
+        conversation_id: conversationId,
+        content: `${parseFloat(amount)}`,
+        type: 'offer'
+      });
+
+      if (messageError) throw messageError;
 
       toast({
         title: "Success",
