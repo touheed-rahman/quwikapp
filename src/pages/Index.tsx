@@ -1,12 +1,27 @@
 
 import { useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import HeroSearch from "@/components/HeroSearch";
 import FeaturedListings from "@/components/listings/FeaturedListings";
 import CategoryListings from "@/components/listings/CategoryListings";
 import RecentListings from "@/components/listings/RecentListings";
 import SeoHead from "@/components/seo/SeoHead";
+import { useListings } from "@/hooks/useListings";
+import { useLocation } from "@/contexts/LocationContext";
 
 const Index = () => {
+  const { selectedLocation } = useLocation();
+  const { data: listings = [], isLoading, error } = useListings({
+    selectedLocation,
+  });
+  const [showAllProducts, setShowAllProducts] = useState(false);
+  const itemsPerPage = 12;
+
+  const getFirstImageUrl = (images: string[]) => {
+    if (!images || images.length === 0) return "/placeholder.svg";
+    return supabase.storage.from('listings').getPublicUrl(images[0]).data.publicUrl;
+  };
+
   useEffect(() => {
     // Preload important images for performance
     const images = ['/og-image.png'];
@@ -47,9 +62,23 @@ const Index = () => {
       />
       <main className="container mx-auto px-4 py-8 space-y-8">
         <HeroSearch />
-        <FeaturedListings />
-        <CategoryListings />
-        <RecentListings />
+        <FeaturedListings 
+          listings={listings}
+          getFirstImageUrl={getFirstImageUrl}
+        />
+        <CategoryListings 
+          listings={listings}
+          getFirstImageUrl={getFirstImageUrl}
+        />
+        <RecentListings 
+          listings={listings}
+          isLoading={isLoading}
+          error={error}
+          showAllProducts={showAllProducts}
+          setShowAllProducts={setShowAllProducts}
+          getFirstImageUrl={getFirstImageUrl}
+          itemsPerPage={itemsPerPage}
+        />
       </main>
     </>
   );
