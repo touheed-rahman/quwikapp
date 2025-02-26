@@ -17,6 +17,7 @@ import { useProductActions } from "@/hooks/useProductActions";
 import { useToast } from "@/components/ui/use-toast";
 
 interface Seller {
+  id: string;
   full_name: string;
   created_at: string;
 }

@@ -11,6 +11,7 @@ import ProductCard from "@/components/ProductCard";
 import { useToast } from "@/components/ui/use-toast";
 import { UserCheck, UserPlus } from "lucide-react";
 import SeoHead from "@/components/seo/SeoHead";
+import { ProductCondition } from "@/types/categories";
 
 const SellerProfile = () => {
   const { id } = useParams();
@@ -188,7 +189,7 @@ const SellerProfile = () => {
                 location={listing.location}
                 image={getFirstImageUrl(listing.images)}
                 date={new Date(listing.created_at).toLocaleDateString()}
-                condition={listing.condition}
+                condition={listing.condition as ProductCondition}
                 featured={listing.featured}
               />
             ))}
