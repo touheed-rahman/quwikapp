@@ -39,6 +39,23 @@ const ProductPage = () => {
     handleMakeOffer
   } = useProductActions(id, product?.user_id);
 
+  // Fetch seller data
+  const { data: seller } = useQuery({
+    queryKey: ['seller', product?.user_id],
+    queryFn: async () => {
+      if (!product?.user_id) return null;
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', product.user_id)
+        .single();
+      
+      if (error) throw error;
+      return data as Seller;
+    },
+    enabled: !!product?.user_id
+  });
+
   useEffect(() => {
     const getSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
@@ -69,8 +86,6 @@ const ProductPage = () => {
 
   // Extract just the area name from the location string
   const displayLocation = product.location?.split(',')[0] || 'Location not specified';
-
-  const seller = product.profiles as Seller;
 
   return (
     <div className="min-h-screen bg-background">
