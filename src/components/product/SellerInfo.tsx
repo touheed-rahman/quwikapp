@@ -2,9 +2,11 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { MessageCircle, Tag } from "lucide-react";
+import { Link } from "react-router-dom";
 
 interface SellerInfoProps {
   seller: {
+    id: string;
     full_name: string;
     created_at: string;
   };
@@ -25,7 +27,12 @@ const SellerInfo = ({ seller, onChatClick, onMakeOffer }: SellerInfoProps) => {
           </span>
         </div>
         <div>
-          <h3 className="font-semibold">{sellerName}</h3>
+          <Link 
+            to={`/seller/${seller.id}`}
+            className="font-semibold hover:text-primary transition-colors"
+          >
+            {sellerName}
+          </Link>
           <p className="text-sm text-muted-foreground">
             Member since {memberYear}
           </p>

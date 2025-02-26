@@ -23,6 +23,7 @@ import FreshRecommendations from "./pages/FreshRecommendations";
 import RecentSubcategoryListings from "./pages/RecentSubcategoryListings";
 import React from 'react';
 import CategorySubcategories from "./pages/CategorySubcategories";
+import SellerProfile from "./pages/SellerProfile";
 
 // Create a client outside of the component to avoid recreating it on every render
 const queryClient = new QueryClient({
@@ -83,6 +84,7 @@ const App = () => (
               <Route path="/category/:category/:subcategory" element={<Subcategory />} />
               <Route path="/fresh-recommendations" element={<FreshRecommendations />} />
               <Route path="/recent-listings/:category" element={<RecentSubcategoryListings />} />
+              <Route path="/seller/:id" element={<SellerProfile />} />
               <Route
                 path="/sell"
                 element={
