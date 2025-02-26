@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -7,6 +8,7 @@ import { ConversationItem } from "./ConversationItem";
 import { ChatFilters } from "./ChatFilters";
 import { useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/components/ui/use-toast";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -41,6 +43,7 @@ interface Conversation {
   listing: ListingDetails;
   seller: Profile;
   buyer: Profile;
+  deleted_at?: string | null;
 }
 
 const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
@@ -50,6 +53,7 @@ const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const location = useLocation();
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -78,6 +82,7 @@ const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
           seller:profiles!conversations_seller_id_fkey(id, full_name, avatar_url),
           buyer:profiles!conversations_buyer_id_fkey(id, full_name, avatar_url)
         `)
+        .is('deleted_at', null)
         .order('last_message_at', { ascending: false });
 
       if (filter === 'buying') {
@@ -94,6 +99,11 @@ const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
       setConversations(data || []);
     } catch (error) {
       console.error('Error fetching conversations:', error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to load conversations"
+      });
     } finally {
       setIsLoading(false);
     }
@@ -105,34 +115,38 @@ const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
 
   const handleDelete = async (conversationId: string) => {
     try {
-      // Delete all messages first
-      await supabase
-        .from('messages')
-        .delete()
-        .eq('conversation_id', conversationId);
-
-      // Then delete the conversation
+      const now = new Date().toISOString();
       await supabase
         .from('conversations')
-        .delete()
+        .update({ deleted_at: now })
         .eq('id', conversationId);
 
       setConversations(prev => prev.filter(conv => conv.id !== conversationId));
       
-      if (location.pathname.includes('/chat/')) {
+      if (location.pathname.includes(`/chat/${conversationId}`)) {
         navigate('/chat');
       }
+
+      toast({
+        title: "Success",
+        description: "Chat deleted successfully"
+      });
     } catch (error) {
       console.error('Error deleting conversation:', error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to delete conversation"
+      });
     }
   };
 
   if (isAuthenticated === null) {
-    return null; // Don't render anything while checking auth
+    return null;
   }
 
   if (!isAuthenticated) {
-    return null; // Don't show the chat window if not authenticated
+    return null;
   }
 
   return (
