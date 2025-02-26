@@ -1,5 +1,5 @@
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import HeroSearch from "@/components/HeroSearch";
 import FeaturedListings from "@/components/listings/FeaturedListings";
