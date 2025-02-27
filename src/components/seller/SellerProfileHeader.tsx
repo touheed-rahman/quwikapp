@@ -1,4 +1,3 @@
-
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -13,6 +12,7 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { Link } from "react-router-dom";
 
 interface Profile {
   id: string;
@@ -58,7 +58,6 @@ const FollowersList = ({ profileId }: { profileId: string }) => {
 
     fetchFollowers();
 
-    // Subscribe to real-time changes
     const channel = supabase
       .channel('followers')
       .on('postgres_changes', 
@@ -82,12 +81,16 @@ const FollowersList = ({ profileId }: { profileId: string }) => {
   return (
     <ScrollArea className="h-[300px] pr-4">
       {followers.map((follower) => (
-        <div key={follower.id} className="flex items-center gap-3 py-2">
+        <Link
+          key={follower.id}
+          to={`/seller/${follower.id}`}
+          className="flex items-center gap-3 py-2 hover:bg-accent rounded-lg px-2 transition-colors"
+        >
           <Avatar className="h-8 w-8">
             <AvatarFallback>{follower.full_name[0]}</AvatarFallback>
           </Avatar>
           <span className="font-medium">{follower.full_name}</span>
-        </div>
+        </Link>
       ))}
       {followers.length === 0 && (
         <p className="text-center text-muted-foreground py-4">No followers yet</p>
@@ -119,7 +122,6 @@ const FollowingList = ({ profileId }: { profileId: string }) => {
 
     fetchFollowing();
 
-    // Subscribe to real-time changes
     const channel = supabase
       .channel('following')
       .on('postgres_changes', 
@@ -143,12 +145,16 @@ const FollowingList = ({ profileId }: { profileId: string }) => {
   return (
     <ScrollArea className="h-[300px] pr-4">
       {following.map((user) => (
-        <div key={user.id} className="flex items-center gap-3 py-2">
+        <Link
+          key={user.id}
+          to={`/seller/${user.id}`}
+          className="flex items-center gap-3 py-2 hover:bg-accent rounded-lg px-2 transition-colors"
+        >
           <Avatar className="h-8 w-8">
             <AvatarFallback>{user.full_name[0]}</AvatarFallback>
           </Avatar>
           <span className="font-medium">{user.full_name}</span>
-        </div>
+        </Link>
       ))}
       {following.length === 0 && (
         <p className="text-center text-muted-foreground py-4">Not following anyone</p>

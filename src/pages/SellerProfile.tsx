@@ -33,7 +33,7 @@ const SellerProfile = () => {
       
       <Header />
       
-      <main className="container mx-auto px-4 pt-4 pb-8 max-w-7xl">
+      <main className="container mx-auto px-4 mt-8 pb-8 max-w-7xl">
         <SellerProfileHeader
           profile={profile}
           isFollowing={isFollowing}
@@ -43,7 +43,9 @@ const SellerProfile = () => {
           isMobile={isMobile}
         />
         
-        <SellerListings listings={listings} />
+        <div className="mt-8">
+          <SellerListings listings={listings} />
+        </div>
       </main>
     </div>
   );
