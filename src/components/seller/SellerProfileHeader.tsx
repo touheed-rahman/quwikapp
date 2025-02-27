@@ -73,7 +73,7 @@ const SellerProfileHeader = ({
   }, [profileId]);
 
   return (
-    <Card className="p-6 shadow-md hover:shadow-lg transition-shadow duration-200">
+    <Card className="p-6 shadow-md hover:shadow-lg transition-shadow duration-200 bg-white">
       <div className="flex flex-col md:flex-row md:items-start justify-between gap-6">
         <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
           <Avatar className="h-24 w-24 md:h-32 md:w-32 ring-2 ring-primary/10">
