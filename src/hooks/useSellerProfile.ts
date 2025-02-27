@@ -1,8 +1,28 @@
-
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
+import { ProductCondition } from "@/types/categories";
+
+interface Listing {
+  id: string;
+  title: string;
+  price: number;
+  location: string;
+  images: string[];
+  created_at: string;
+  condition: ProductCondition;
+  featured: boolean;
+}
+
+interface Profile {
+  id: string;
+  full_name: string;
+  created_at: string;
+  location: string | null;
+  followers_count: number;
+  following_count: number;
+}
 
 export const useSellerProfile = (id: string | undefined) => {
   const { toast } = useToast();
@@ -20,7 +40,7 @@ export const useSellerProfile = (id: string | undefined) => {
         .single();
       
       if (error) throw error;
-      return data;
+      return data as Profile;
     },
   });
 
@@ -36,7 +56,18 @@ export const useSellerProfile = (id: string | undefined) => {
         .order('created_at', { ascending: false });
       
       if (error) throw error;
-      return data;
+      
+      // Transform the data to ensure condition is of type ProductCondition
+      return (data || []).map(listing => ({
+        id: listing.id,
+        title: listing.title,
+        price: listing.price,
+        location: listing.location || '',
+        images: listing.images,
+        created_at: listing.created_at,
+        condition: listing.condition as ProductCondition,
+        featured: listing.featured
+      })) as Listing[];
     },
   });
 
