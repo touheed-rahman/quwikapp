@@ -12,6 +12,8 @@ import {
 } from "@/components/ui/dialog";
 import FollowersList from "./FollowersList";
 import FollowingList from "./FollowingList";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 interface SellerProfileHeaderProps {
   profile: {
@@ -29,13 +31,47 @@ interface SellerProfileHeaderProps {
 }
 
 const SellerProfileHeader = ({
-  profile,
+  profile: initialProfile,
   isFollowing,
   currentUserId,
   profileId,
   handleFollow,
   isMobile,
 }: SellerProfileHeaderProps) => {
+  const [profile, setProfile] = useState(initialProfile);
+
+  useEffect(() => {
+    setProfile(initialProfile);
+  }, [initialProfile]);
+
+  useEffect(() => {
+    const channel = supabase
+      .channel('profile_changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'profiles',
+          filter: `id=eq.${profileId}`,
+        },
+        (payload: any) => {
+          if (payload.new) {
+            setProfile(prev => ({
+              ...prev,
+              followers_count: payload.new.followers_count,
+              following_count: payload.new.following_count
+            }));
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      channel.unsubscribe();
+    };
+  }, [profileId]);
+
   return (
     <Card className="p-6 shadow-md hover:shadow-lg transition-shadow duration-200">
       <div className="flex flex-col md:flex-row md:items-start justify-between gap-6">
@@ -46,7 +82,7 @@ const SellerProfileHeader = ({
             </AvatarFallback>
           </Avatar>
           
-          <div className="text-center md:text-left space-y-3">
+          <div className="text-center md:text-left space-y-4 mt-2">
             <h1 className="text-2xl md:text-3xl font-bold tracking-tight">
               {profile.full_name}
             </h1>
