@@ -2,7 +2,23 @@
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Calendar, MapPin, UserCheck, UserPlus } from "lucide-react";
+import { Calendar, MapPin, UserCheck, UserPlus, Users } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
+
+interface Profile {
+  id: string;
+  full_name: string;
+  avatar_url?: string;
+}
 
 interface SellerProfileHeaderProps {
   profile: {
@@ -19,6 +35,128 @@ interface SellerProfileHeaderProps {
   isMobile: boolean;
 }
 
+const FollowersList = ({ profileId }: { profileId: string }) => {
+  const [followers, setFollowers] = useState<Profile[]>([]);
+
+  useEffect(() => {
+    const fetchFollowers = async () => {
+      const { data } = await supabase
+        .from('follows')
+        .select(`
+          follower:profiles!follows_follower_id_fkey(
+            id,
+            full_name,
+            avatar_url
+          )
+        `)
+        .eq('following_id', profileId);
+
+      if (data) {
+        setFollowers(data.map(item => item.follower));
+      }
+    };
+
+    fetchFollowers();
+
+    // Subscribe to real-time changes
+    const channel = supabase
+      .channel('followers')
+      .on('postgres_changes', 
+        { 
+          event: '*', 
+          schema: 'public', 
+          table: 'follows',
+          filter: `following_id=eq.${profileId}`
+        }, 
+        () => {
+          fetchFollowers();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      channel.unsubscribe();
+    };
+  }, [profileId]);
+
+  return (
+    <ScrollArea className="h-[300px] pr-4">
+      {followers.map((follower) => (
+        <div key={follower.id} className="flex items-center gap-3 py-2">
+          <Avatar className="h-8 w-8">
+            <AvatarFallback>{follower.full_name[0]}</AvatarFallback>
+          </Avatar>
+          <span className="font-medium">{follower.full_name}</span>
+        </div>
+      ))}
+      {followers.length === 0 && (
+        <p className="text-center text-muted-foreground py-4">No followers yet</p>
+      )}
+    </ScrollArea>
+  );
+};
+
+const FollowingList = ({ profileId }: { profileId: string }) => {
+  const [following, setFollowing] = useState<Profile[]>([]);
+
+  useEffect(() => {
+    const fetchFollowing = async () => {
+      const { data } = await supabase
+        .from('follows')
+        .select(`
+          following:profiles!follows_following_id_fkey(
+            id,
+            full_name,
+            avatar_url
+          )
+        `)
+        .eq('follower_id', profileId);
+
+      if (data) {
+        setFollowing(data.map(item => item.following));
+      }
+    };
+
+    fetchFollowing();
+
+    // Subscribe to real-time changes
+    const channel = supabase
+      .channel('following')
+      .on('postgres_changes', 
+        { 
+          event: '*', 
+          schema: 'public', 
+          table: 'follows',
+          filter: `follower_id=eq.${profileId}`
+        }, 
+        () => {
+          fetchFollowing();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      channel.unsubscribe();
+    };
+  }, [profileId]);
+
+  return (
+    <ScrollArea className="h-[300px] pr-4">
+      {following.map((user) => (
+        <div key={user.id} className="flex items-center gap-3 py-2">
+          <Avatar className="h-8 w-8">
+            <AvatarFallback>{user.full_name[0]}</AvatarFallback>
+          </Avatar>
+          <span className="font-medium">{user.full_name}</span>
+        </div>
+      ))}
+      {following.length === 0 && (
+        <p className="text-center text-muted-foreground py-4">Not following anyone</p>
+      )}
+    </ScrollArea>
+  );
+};
+
 const SellerProfileHeader = ({
   profile,
   isFollowing,
@@ -28,7 +166,7 @@ const SellerProfileHeader = ({
   isMobile,
 }: SellerProfileHeaderProps) => {
   return (
-    <Card className="p-6 mb-8 shadow-md hover:shadow-lg transition-shadow duration-200">
+    <Card className="p-6 shadow-md hover:shadow-lg transition-shadow duration-200">
       <div className="flex flex-col md:flex-row md:items-start justify-between gap-6">
         <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
           <Avatar className="h-24 w-24 md:h-32 md:w-32 ring-2 ring-primary/10">
@@ -57,15 +195,38 @@ const SellerProfileHeader = ({
               )}
             </div>
 
-            <div className="flex items-center justify-center md:justify-start gap-6 pt-2">
-              <span className="text-sm">
-                <strong className="text-foreground">{profile.followers_count || 0}</strong>
-                <span className="text-muted-foreground ml-1">followers</span>
-              </span>
-              <span className="text-sm">
-                <strong className="text-foreground">{profile.following_count || 0}</strong>
-                <span className="text-muted-foreground ml-1">following</span>
-              </span>
+            <div className="flex items-center justify-center md:justify-start gap-6">
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button variant="ghost" size="sm" className="gap-1">
+                    <strong>{profile.followers_count || 0}</strong>
+                    <span className="text-muted-foreground">followers</span>
+                    <Users className="h-4 w-4 ml-1 text-muted-foreground" />
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Followers</DialogTitle>
+                  </DialogHeader>
+                  <FollowersList profileId={profileId} />
+                </DialogContent>
+              </Dialog>
+
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button variant="ghost" size="sm" className="gap-1">
+                    <strong>{profile.following_count || 0}</strong>
+                    <span className="text-muted-foreground">following</span>
+                    <Users className="h-4 w-4 ml-1 text-muted-foreground" />
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Following</DialogTitle>
+                  </DialogHeader>
+                  <FollowingList profileId={profileId} />
+                </DialogContent>
+              </Dialog>
             </div>
           </div>
         </div>
