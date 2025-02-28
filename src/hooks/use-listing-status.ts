@@ -1,72 +1,52 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/components/ui/use-toast';
 import type { Listing } from '@/components/chat/types/chat-detail';
-import type { RealtimeChannel } from '@supabase/supabase-js';
 
 export function useListingStatus(listingId: string | undefined) {
   const [isDisabled, setIsDisabled] = useState(false);
-  const [disabledReason, setDisabledReason] = useState<string>('');
+  const [disabledReason, setDisabledReason] = useState('');
+  const { toast } = useToast();
 
   useEffect(() => {
     if (!listingId) return;
 
     const checkListingStatus = async () => {
-      const { data: listing, error } = await supabase
-        .from('listings')
-        .select('status, deleted_at')
-        .eq('id', listingId)
-        .single();
+      try {
+        const { data, error } = await supabase
+          .from('listings')
+          .select('status, deleted_at')
+          .eq('id', listingId)
+          .single();
 
-      if (error) {
-        console.error('Error fetching listing status:', error);
-        return;
-      }
+        if (error) throw error;
 
-      if (listing.deleted_at) {
-        setIsDisabled(true);
-        setDisabledReason('This item has been deleted');
-      } else if (listing.status === 'sold') {
-        setIsDisabled(true);
-        setDisabledReason('This item has been sold');
-      } else {
-        setIsDisabled(false);
-        setDisabledReason('');
+        if (data.deleted_at) {
+          setIsDisabled(true);
+          setDisabledReason('This listing has been deleted.');
+        } else if (data.status === 'sold') {
+          setIsDisabled(true);
+          setDisabledReason('This listing has been marked as sold.');
+        } else if (data.status === 'suspended') {
+          setIsDisabled(true);
+          setDisabledReason('This listing has been suspended by admin.');
+        } else {
+          setIsDisabled(false);
+          setDisabledReason('');
+        }
+      } catch (error) {
+        console.error('Error checking listing status:', error);
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Failed to check listing status."
+        });
       }
     };
 
     checkListingStatus();
-
-    const channel = supabase
-      .channel(`listing_status_${listingId}`)
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'listings',
-          filter: `id=eq.${listingId}`
-        },
-        (payload) => {
-          const listing = payload.new as Listing;
-          if (listing.deleted_at) {
-            setIsDisabled(true);
-            setDisabledReason('This item has been deleted');
-          } else if (listing.status === 'sold') {
-            setIsDisabled(true);
-            setDisabledReason('This item has been sold');
-          } else {
-            setIsDisabled(false);
-            setDisabledReason('');
-          }
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [listingId]);
+  }, [listingId, toast]);
 
   return { isDisabled, disabledReason };
 }

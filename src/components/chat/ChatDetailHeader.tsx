@@ -28,18 +28,27 @@ const ChatDetailHeader = ({ conversationDetails, onBack }: ChatDetailHeaderProps
     
     setIsDeleting(true);
     try {
-      const { error } = await supabase
+      // Delete all messages first
+      const { error: messagesError } = await supabase
+        .from('messages')
+        .delete()
+        .eq('conversation_id', conversationDetails.id);
+        
+      if (messagesError) throw messagesError;
+
+      // Then delete the conversation
+      const { error: conversationError } = await supabase
         .from('conversations')
         .delete()
         .eq('id', conversationDetails.id);
-
-      if (error) throw error;
+        
+      if (conversationError) throw conversationError;
 
       toast({
         title: "Chat deleted",
         description: "The conversation has been deleted successfully."
       });
-      navigate('/chat');
+      navigate('/');
     } catch (error) {
       console.error('Error deleting conversation:', error);
       toast({

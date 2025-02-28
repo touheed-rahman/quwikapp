@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { X } from "lucide-react";
@@ -22,7 +22,7 @@ const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
   const [userId, setUserId] = useState<string | null>(null);
   
   // Check authentication state
-  useState(() => {
+  useEffect(() => {
     const checkAuth = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       setIsAuthenticated(!!session);
@@ -30,7 +30,7 @@ const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
     };
     
     checkAuth();
-  });
+  }, []);
   
   const { conversations, isLoading, handleDelete } = useConversations(
     filter,

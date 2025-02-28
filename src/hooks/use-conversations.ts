@@ -87,6 +87,11 @@ export function useConversations(
         description: "The conversation has been permanently deleted.",
       });
       
+      // If we're currently viewing this conversation, redirect to home
+      if (window.location.pathname.includes(`/chat/${conversationId}`)) {
+        navigate('/');
+      }
+      
       return true;
     } catch (error: any) {
       console.error('Error deleting conversation:', error);
@@ -102,6 +107,7 @@ export function useConversations(
   return {
     conversations,
     isLoading,
-    handleDelete
+    handleDelete,
+    fetchConversations
   };
 }
