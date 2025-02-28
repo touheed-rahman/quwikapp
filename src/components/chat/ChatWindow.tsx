@@ -5,9 +5,9 @@ import { Card } from "@/components/ui/card";
 import { X } from "lucide-react";
 import { ChatFilters } from "./ChatFilters";
 import { useLocation, useNavigate } from "react-router-dom";
-import { useChatAuth } from "@/hooks/use-chat-auth";
-import { useConversations } from "@/hooks/use-conversations";
 import ConversationList from "./ConversationList";
+import { useConversations } from "@/hooks/use-conversations";
+import { supabase } from "@/integrations/supabase/client";
 
 interface ChatWindowProps {
   isOpen: boolean;
@@ -18,7 +18,20 @@ const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
   const [filter, setFilter] = useState<'all' | 'buying' | 'selling'>('all');
   const location = useLocation();
   const navigate = useNavigate();
-  const { isAuthenticated, userId } = useChatAuth();
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
+  
+  // Check authentication state
+  useState(() => {
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      setIsAuthenticated(!!session);
+      setUserId(session?.user?.id || null);
+    };
+    
+    checkAuth();
+  });
+  
   const { conversations, isLoading, handleDelete } = useConversations(
     filter,
     userId,
