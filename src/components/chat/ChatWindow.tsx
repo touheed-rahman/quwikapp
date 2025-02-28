@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -13,6 +14,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useToast } from "@/components/ui/use-toast";
 
 interface ChatWindowProps {
   isOpen: boolean;
@@ -48,24 +50,35 @@ const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
   const [isLoading, setIsLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'buying' | 'selling'>('all');
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
   const location = useLocation();
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   useEffect(() => {
     const checkAuth = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       setIsAuthenticated(!!session);
+      if (session?.user) {
+        setUserId(session.user.id);
+      }
+      
       if (isOpen && session) {
         fetchConversations();
       }
     };
     checkAuth();
-  }, [isOpen, filter]);
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (isAuthenticated && userId) {
+      fetchConversations();
+    }
+  }, [filter, isAuthenticated, userId]);
 
   const fetchConversations = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
+      if (!userId) {
         setIsLoading(false);
         return;
       }
@@ -81,11 +94,11 @@ const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
         .order('last_message_at', { ascending: false });
 
       if (filter === 'buying') {
-        query = query.eq('buyer_id', user.id);
+        query = query.eq('buyer_id', userId);
       } else if (filter === 'selling') {
-        query = query.eq('seller_id', user.id);
+        query = query.eq('seller_id', userId);
       } else {
-        query = query.or(`buyer_id.eq.${user.id},seller_id.eq.${user.id}`);
+        query = query.or(`buyer_id.eq.${userId},seller_id.eq.${userId}`);
       }
 
       const { data, error } = await query;
@@ -106,24 +119,43 @@ const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
   const handleDelete = async (conversationId: string) => {
     try {
       // Delete all messages first
-      await supabase
+      const { error: messagesError } = await supabase
         .from('messages')
         .delete()
         .eq('conversation_id', conversationId);
+        
+      if (messagesError) {
+        throw messagesError;
+      }
 
       // Then delete the conversation
-      await supabase
+      const { error: conversationError } = await supabase
         .from('conversations')
         .delete()
         .eq('id', conversationId);
+        
+      if (conversationError) {
+        throw conversationError;
+      }
 
+      // Update the UI by removing the deleted conversation
       setConversations(prev => prev.filter(conv => conv.id !== conversationId));
       
-      if (location.pathname.includes('/chat/')) {
+      toast({
+        title: "Chat deleted",
+        description: "The conversation has been permanently deleted.",
+      });
+      
+      if (location.pathname.includes(`/chat/${conversationId}`)) {
         navigate('/');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error deleting conversation:', error);
+      toast({
+        variant: "destructive",
+        title: "Delete failed",
+        description: "There was an error deleting the conversation.",
+      });
     }
   };
 
