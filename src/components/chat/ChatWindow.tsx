@@ -30,13 +30,30 @@ const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
     };
     
     checkAuth();
+
+    // Listen for auth changes
+    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+      setIsAuthenticated(!!session);
+      setUserId(session?.user?.id || null);
+    });
+
+    return () => {
+      authListener?.subscription.unsubscribe();
+    };
   }, []);
   
-  const { conversations, isLoading, handleDelete } = useConversations(
+  const { conversations, isLoading, handleDelete, fetchConversations } = useConversations(
     filter,
     userId,
     isAuthenticated
   );
+
+  // Re-fetch conversations when the window is opened
+  useEffect(() => {
+    if (isOpen && isAuthenticated && userId) {
+      fetchConversations();
+    }
+  }, [isOpen, isAuthenticated, userId, fetchConversations]);
 
   const handleFilterChange = (newFilter: 'all' | 'buying' | 'selling') => {
     setFilter(newFilter);

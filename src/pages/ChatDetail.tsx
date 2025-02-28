@@ -1,4 +1,5 @@
 
+import { useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -6,6 +7,7 @@ import ChatDetailHeader from "@/components/chat/ChatDetailHeader";
 import { MessageList } from "@/components/chat/MessageList";
 import ChatInput from "@/components/chat/ChatInput";
 import { useChat } from "@/hooks/use-chat";
+import { supabase } from "@/integrations/supabase/client";
 
 const ChatDetail = () => {
   const { id } = useParams();
@@ -21,6 +23,48 @@ const ChatDetail = () => {
     chatDisabled,
     disabledReason
   } = useChat(id);
+
+  // Check if conversation still exists or has been deleted
+  useEffect(() => {
+    if (!id || !sessionUser) return;
+    
+    const checkConversation = async () => {
+      const { data, error } = await supabase
+        .from('conversations')
+        .select('deleted')
+        .eq('id', id)
+        .maybeSingle();
+        
+      if (error || !data || data.deleted) {
+        navigate('/');
+      }
+    };
+    
+    checkConversation();
+    
+    // Listen for changes to conversation
+    const channel = supabase
+      .channel(`conversation-status-${id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'conversations',
+          filter: `id=eq.${id}`
+        },
+        (payload) => {
+          if (payload.new && (payload.new as any).deleted) {
+            navigate('/');
+          }
+        }
+      )
+      .subscribe();
+      
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [id, sessionUser, navigate]);
 
   const handleBack = () => {
     navigate('/chat');

@@ -39,6 +39,7 @@ export const useProductActions = (productId: string | undefined, sellerId: strin
         .select('id')
         .eq('listing_id', productId)
         .eq('buyer_id', session.user.id)
+        .eq('deleted', false) // Only get non-deleted conversations
         .maybeSingle();
 
       if (conversationError && conversationError.code !== 'PGRST116') {
@@ -57,6 +58,7 @@ export const useProductActions = (productId: string | undefined, sellerId: strin
           listing_id: productId,
           buyer_id: session.user.id,
           seller_id: sellerId,
+          deleted: false
         })
         .select()
         .single();

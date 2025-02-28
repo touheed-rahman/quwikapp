@@ -17,6 +17,11 @@ export const ConversationItem = ({
   userId, 
   unreadCount = 0 
 }: ConversationItemProps) => {
+  // Don't render deleted conversations
+  if (conversation.deleted) {
+    return null;
+  }
+  
   return (
     <div
       className={cn(

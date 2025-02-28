@@ -96,6 +96,33 @@ export function useConversationDetails(
     };
 
     fetchConversationDetails();
+    
+    // Subscribe to changes in the conversation
+    const channel = supabase
+      .channel(`conv-details-${conversationId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'conversations',
+          filter: `id=eq.${conversationId}`
+        },
+        (payload) => {
+          if (payload.new && (payload.new as any).deleted) {
+            toast({
+              title: "Conversation deleted",
+              description: "This conversation has been deleted."
+            });
+            navigate('/');
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [conversationId, sessionUser, toast, navigate]);
 
   return conversationDetails;
