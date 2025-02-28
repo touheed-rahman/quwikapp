@@ -28,18 +28,10 @@ const ChatDetailHeader = ({ conversationDetails, onBack }: ChatDetailHeaderProps
     
     setIsDeleting(true);
     try {
-      // Delete all messages first
-      const { error: messagesError } = await supabase
-        .from('messages')
-        .delete()
-        .eq('conversation_id', conversationDetails.id);
-        
-      if (messagesError) throw messagesError;
-
-      // Then delete the conversation
+      // Mark the conversation as deleted instead of actually deleting it
       const { error: conversationError } = await supabase
         .from('conversations')
-        .delete()
+        .update({ deleted: true })
         .eq('id', conversationDetails.id);
         
       if (conversationError) throw conversationError;

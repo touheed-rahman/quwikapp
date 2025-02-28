@@ -27,6 +27,7 @@ export function useConversationDetails(
             listing:listings(id, title, price, status, deleted_at)
           `)
           .eq('id', conversationId)
+          .eq('deleted', false) // Only select non-deleted conversations
           .maybeSingle();
 
         if (error) throw error;
@@ -48,6 +49,7 @@ export function useConversationDetails(
                 listing_id: listingId,
                 buyer_id: sessionUser.id,
                 seller_id: listing.user_id,
+                deleted: false // Initialize as not deleted
               })
               .select(`
                 *,

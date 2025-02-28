@@ -36,6 +36,7 @@ export function useConversations(
           seller:profiles!conversations_seller_id_fkey(id, full_name, avatar_url),
           buyer:profiles!conversations_buyer_id_fkey(id, full_name, avatar_url)
         `)
+        .eq('deleted', false) // Only show non-deleted conversations
         .order('last_message_at', { ascending: false });
 
       if (filter === 'buying') {
@@ -59,24 +60,14 @@ export function useConversations(
 
   const handleDelete = async (conversationId: string) => {
     try {
-      // Delete all messages first
-      const { error: messagesError } = await supabase
-        .from('messages')
-        .delete()
-        .eq('conversation_id', conversationId);
-        
-      if (messagesError) {
-        throw messagesError;
-      }
-
-      // Then delete the conversation
-      const { error: conversationError } = await supabase
+      // Instead of actually deleting the conversation, we'll mark it as deleted
+      const { error: updateError } = await supabase
         .from('conversations')
-        .delete()
+        .update({ deleted: true })
         .eq('id', conversationId);
         
-      if (conversationError) {
-        throw conversationError;
+      if (updateError) {
+        throw updateError;
       }
 
       // Update the UI by removing the deleted conversation
