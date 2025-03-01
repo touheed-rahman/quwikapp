@@ -25,6 +25,7 @@ export interface Listing {
   view_count?: number;
   save_count?: number;
   km_driven?: number | null;
+  year?: number | null;
   city_id?: string;
 }
 
@@ -61,7 +62,9 @@ export const useListings = ({ selectedLocation }: UseListingsProps) => {
 
         return (listings || []).map(listing => ({
           ...listing,
-          condition: listing.condition as ProductCondition
+          condition: listing.condition as ProductCondition,
+          year: listing.year || null,
+          km_driven: listing.km_driven || null
         }));
       } catch (error) {
         console.error('Error in listing query:', error);

@@ -48,7 +48,9 @@ const MyAds = () => {
       
       return data.map(listing => ({
         ...listing,
-        condition: listing.condition as ProductCondition
+        condition: listing.condition as ProductCondition,
+        year: listing.year || null,
+        km_driven: listing.km_driven || null
       }));
     }
   });

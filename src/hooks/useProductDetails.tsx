@@ -27,6 +27,8 @@ export const useProductDetails = (id: string | undefined) => {
       return {
         ...data,
         condition: data.condition as ProductCondition,
+        year: data.year || null,
+        km_driven: data.km_driven || null
       };
     },
     enabled: !!id,

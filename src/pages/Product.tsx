@@ -111,7 +111,7 @@ const ProductPage = () => {
               description={product.description}
               category={product.category}
               km_driven={product.km_driven}
-              year={product.year}
+              year={product.year || null}
             />
 
             {seller && (
