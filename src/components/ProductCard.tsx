@@ -112,8 +112,6 @@ const ProductCard = ({
 
   const displayLocation = location?.split('|')[0]?.split(',')[0] || 'Location not specified';
 
-  const isVehicle = category === 'vehicles';
-
   return (
     <Link to={`/product/${id}`}>
       <Card className="group overflow-hidden border-[1.5px] border-neutral-200 hover:border-primary/50 hover:shadow-lg transition-all duration-200">
@@ -153,14 +151,14 @@ const ProductCard = ({
               <span>{displayLocation}</span>
             </div>
             <div className="flex gap-1">
-              {!isVehicle && condition && (
+              {condition && (
                 <Badge 
                   className={`text-[10px] px-2 py-0.5 rounded-full ring-2 ${getConditionColor(condition)}`}
                 >
                   {capitalizeFirstLetter(condition)}
                 </Badge>
               )}
-              {isVehicle && km_driven !== null && km_driven > 0 && (
+              {category === 'vehicles' && km_driven !== null && km_driven > 0 && (
                 <Badge 
                   className="text-[10px] px-2 py-0.5 rounded-full ring-2 bg-gray-100 text-gray-800 ring-gray-200"
                 >

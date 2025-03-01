@@ -47,8 +47,7 @@ export const useListingForm = () => {
       return false;
     }
     
-    // Only validate condition for non-vehicle listings
-    if (formData.category !== 'vehicles' && !condition) {
+    if (!condition) {
       toast({
         title: "Missing Condition",
         description: "Please select the condition of your item",
@@ -84,35 +83,14 @@ export const useListingForm = () => {
       return false;
     }
 
-    // Validate vehicle-specific fields
-    if (formData.category === 'vehicles') {
-      if (!formData.km_driven && formData.km_driven !== 0) {
-        toast({
-          title: "Missing Kilometers Driven",
-          description: "Please enter the kilometers driven",
-          variant: "destructive"
-        });
-        return false;
-      }
-      
-      if (!formData.year) {
-        toast({
-          title: "Missing Manufacturing Year",
-          description: "Please enter the manufacturing year",
-          variant: "destructive"
-        });
-        return false;
-      }
-      
-      const currentYear = new Date().getFullYear();
-      if (formData.year < 1900 || formData.year > currentYear) {
-        toast({
-          title: "Invalid Year",
-          description: `Year must be between 1900 and ${currentYear}`,
-          variant: "destructive"
-        });
-        return false;
-      }
+    // Validate km_driven for vehicles
+    if (formData.category === 'vehicles' && (!formData.km_driven && formData.km_driven !== 0)) {
+      toast({
+        title: "Missing Kilometers Driven",
+        description: "Please enter the kilometers driven",
+        variant: "destructive"
+      });
+      return false;
     }
 
     return true;
@@ -158,13 +136,12 @@ export const useListingForm = () => {
         price: parseFloat(price),
         category: formData.category,
         subcategory: formData.subcategory,
-        condition: formData.category === 'vehicles' ? null : condition,
+        condition,
         location: selectedLocation,
         images: uploadedImagePaths,
         user_id: user.id,
         status: 'pending',
-        km_driven: formData.category === 'vehicles' ? formData.km_driven : null,
-        year: formData.category === 'vehicles' ? formData.year : null
+        km_driven: formData.category === 'vehicles' ? formData.km_driven : null
       };
 
       const { error } = await supabase.from('listings').insert(listingData);

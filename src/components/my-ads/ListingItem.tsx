@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
@@ -21,7 +22,6 @@ const ListingItem = ({ listing, onMarkAsSold, showSoldButton, onListingDeleted }
   const isSold = listing.status === 'sold';
   // Extract just the area name before any special characters
   const cityName = listing.location?.split(/[|,]/)[0].trim() || 'Location not specified';
-  const isVehicle = listing.category === 'vehicles';
 
   const handleDeleteClick = async () => {
     await handleDelete(
@@ -69,24 +69,13 @@ const ListingItem = ({ listing, onMarkAsSold, showSoldButton, onListingDeleted }
               <p className="text-xs text-muted-foreground">
                 {cityName}
               </p>
-              {!isVehicle && (
-                <Badge variant="secondary" className="text-xs">
-                  {listing.condition}
+              <Badge variant="secondary" className="text-xs">
+                {listing.condition}
+              </Badge>
+              {listing.category === 'vehicles' && listing.km_driven !== null && (
+                <Badge variant="outline" className="text-xs">
+                  {listing.km_driven.toLocaleString()} km
                 </Badge>
-              )}
-              {isVehicle && (
-                <>
-                  {listing.km_driven !== null && (
-                    <Badge variant="outline" className="text-xs">
-                      {listing.km_driven.toLocaleString()} km
-                    </Badge>
-                  )}
-                  {listing.year && (
-                    <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700">
-                      Year {listing.year}
-                    </Badge>
-                  )}
-                </>
               )}
               {listing.status === 'rejected' && (
                 <Badge variant="destructive" className="text-xs">
