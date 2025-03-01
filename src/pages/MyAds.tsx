@@ -16,6 +16,8 @@ interface Listing {
   id: string;
   status: string;
   condition: ProductCondition;
+  year: number | null;
+  km_driven: number | null;
   [key: string]: any;
 }
 
