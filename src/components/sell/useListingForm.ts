@@ -14,6 +14,11 @@ export const useListingForm = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
 
+  // Make formData accessible globally for the km_driven field
+  if (typeof window !== 'undefined') {
+    window.formDataRef = formData;
+  }
+
   const validateForm = (selectedLocation: string | null) => {
     if (!title.trim()) {
       toast({
@@ -73,6 +78,16 @@ export const useListingForm = () => {
       toast({
         title: "Missing Category",
         description: "Please select a category and subcategory",
+        variant: "destructive"
+      });
+      return false;
+    }
+
+    // Validate km_driven for vehicles
+    if (formData.category === 'vehicles' && (!formData.km_driven && formData.km_driven !== 0)) {
+      toast({
+        title: "Missing Kilometers Driven",
+        description: "Please enter the kilometers driven",
         variant: "destructive"
       });
       return false;

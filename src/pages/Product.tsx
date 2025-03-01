@@ -109,6 +109,8 @@ const ProductPage = () => {
               createdAt={product.created_at}
               condition={product.condition}
               description={product.description}
+              category={product.category}
+              km_driven={product.km_driven}
             />
 
             {seller && (

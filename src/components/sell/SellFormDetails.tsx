@@ -8,6 +8,7 @@ import LocationSelector from "@/components/LocationSelector";
 import { useLocation } from "@/contexts/LocationContext";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useState, useEffect } from "react";
 
 interface SellFormDetailsProps {
   title: string;
@@ -22,8 +23,6 @@ interface SellFormDetailsProps {
   onBack: () => void;
   onSubmit: (e: React.FormEvent) => void;
   category?: string;
-  kmDriven?: string;
-  setKmDriven?: (value: string) => void;
 }
 
 const SellFormDetails = ({
@@ -39,10 +38,16 @@ const SellFormDetails = ({
   onBack,
   onSubmit,
   category,
-  kmDriven,
-  setKmDriven
 }: SellFormDetailsProps) => {
   const { selectedLocation, setSelectedLocation } = useLocation();
+  const [kmDriven, setKmDriven] = useState("");
+
+  // Update form data in parent component
+  useEffect(() => {
+    if (category === 'vehicles' && window.formDataRef) {
+      window.formDataRef.km_driven = kmDriven ? parseInt(kmDriven) : 0;
+    }
+  }, [kmDriven, category]);
 
   return (
     <form onSubmit={onSubmit} className="space-y-6">
@@ -51,7 +56,7 @@ const SellFormDetails = ({
         <DescriptionInput value={description} onChange={setDescription} />
         <ConditionSelect value={condition} onChange={setCondition} />
         <PriceInput value={price} onChange={setPrice} />
-        {category === 'vehicles' && setKmDriven && (
+        {category === 'vehicles' && (
           <div className="space-y-2">
             <Label htmlFor="kmDriven">Kilometers Driven *</Label>
             <Input

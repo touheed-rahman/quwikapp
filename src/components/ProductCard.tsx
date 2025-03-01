@@ -19,6 +19,7 @@ interface ProductCardProps {
   featured?: boolean;
   condition?: ProductCondition;
   category?: string;
+  km_driven?: number | null;
 }
 
 const ProductCard = ({
@@ -29,6 +30,8 @@ const ProductCard = ({
   image,
   featured,
   condition,
+  category,
+  km_driven
 }: ProductCardProps) => {
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -147,13 +150,22 @@ const ProductCard = ({
               <MapPin className="h-3 w-3" />
               <span>{displayLocation}</span>
             </div>
-            {condition && (
-              <Badge 
-                className={`text-[10px] px-2 py-0.5 rounded-full ring-2 ${getConditionColor(condition)}`}
-              >
-                {capitalizeFirstLetter(condition)}
-              </Badge>
-            )}
+            <div className="flex gap-1">
+              {condition && (
+                <Badge 
+                  className={`text-[10px] px-2 py-0.5 rounded-full ring-2 ${getConditionColor(condition)}`}
+                >
+                  {capitalizeFirstLetter(condition)}
+                </Badge>
+              )}
+              {category === 'vehicles' && km_driven !== null && km_driven > 0 && (
+                <Badge 
+                  className="text-[10px] px-2 py-0.5 rounded-full ring-2 bg-gray-100 text-gray-800 ring-gray-200"
+                >
+                  {km_driven.toLocaleString()} km
+                </Badge>
+              )}
+            </div>
           </div>
         </div>
       </Card>
