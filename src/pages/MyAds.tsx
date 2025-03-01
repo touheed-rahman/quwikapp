@@ -16,8 +16,6 @@ interface Listing {
   id: string;
   status: string;
   condition: ProductCondition;
-  year: number | null;
-  km_driven: number | null;
   [key: string]: any;
 }
 
@@ -50,9 +48,7 @@ const MyAds = () => {
       
       return data.map(listing => ({
         ...listing,
-        condition: listing.condition as ProductCondition,
-        year: listing.year || null,
-        km_driven: listing.km_driven || null
+        condition: listing.condition as ProductCondition
       }));
     }
   });

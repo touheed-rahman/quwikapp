@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -14,9 +13,6 @@ interface Listing {
   created_at: string;
   condition: ProductCondition;
   featured: boolean;
-  category: string;
-  km_driven: number | null;
-  year: number | null;
 }
 
 interface Profile {
@@ -70,10 +66,7 @@ export const useSellerProfile = (id: string | undefined) => {
         images: listing.images,
         created_at: listing.created_at,
         condition: listing.condition as ProductCondition,
-        featured: listing.featured,
-        category: listing.category,
-        km_driven: listing.km_driven || null,
-        year: listing.year || null
+        featured: listing.featured
       })) as Listing[];
     },
   });
