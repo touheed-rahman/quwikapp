@@ -21,4 +21,5 @@ export interface Conversation {
   listing: ListingDetails;
   seller: Profile;
   buyer: Profile;
+  deleted?: boolean;
 }
