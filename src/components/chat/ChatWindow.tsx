@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { X } from "lucide-react";
@@ -48,12 +48,12 @@ const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
     isAuthenticated
   );
 
-  // Re-fetch conversations when the window is opened
+  // Re-fetch conversations when the window is opened or filter changes
   useEffect(() => {
-    if (isOpen && isAuthenticated && userId) {
+    if (isAuthenticated && userId) {
       fetchConversations();
     }
-  }, [isOpen, isAuthenticated, userId, fetchConversations]);
+  }, [isOpen, filter, isAuthenticated, userId, fetchConversations]);
 
   const handleFilterChange = (newFilter: 'all' | 'buying' | 'selling') => {
     setFilter(newFilter);
@@ -66,9 +66,9 @@ const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
     }
   };
 
-  const handleSelectConversation = () => {
+  const handleSelectConversation = useCallback(() => {
     onClose();
-  };
+  }, [onClose]);
 
   if (isAuthenticated === null) {
     return null; // Don't render anything while checking auth

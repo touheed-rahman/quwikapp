@@ -27,26 +27,32 @@ const ConversationList = ({
 }: ConversationListProps) => {
   const navigate = useNavigate();
 
-  const handleConversationClick = (conversationId: string) => {
-    navigate(`/chat/${conversationId}`);
-    onSelectConversation(conversationId);
+  const handleConversationClick = (conversation: Conversation) => {
+    // Skip deleted conversations
+    if (conversation.deleted) return;
+    
+    navigate(`/chat/${conversation.id}`);
+    onSelectConversation(conversation.id);
   };
+
+  // Filter out any deleted conversations just to be sure
+  const availableConversations = conversations.filter(conv => !conv.deleted);
 
   if (isLoading) {
     return <div className="p-4 text-center text-muted-foreground">Loading...</div>;
   }
 
-  if (conversations.length === 0) {
+  if (availableConversations.length === 0) {
     return <div className="p-4 text-center text-muted-foreground">No conversations</div>;
   }
 
   return (
     <ScrollArea className="flex-1">
-      {conversations.map((conversation) => (
+      {availableConversations.map((conversation) => (
         <div key={conversation.id} className="group relative">
           <ConversationItem
             conversation={conversation}
-            onClick={() => handleConversationClick(conversation.id)}
+            onClick={() => handleConversationClick(conversation)}
           />
           <div className="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity">
             <DropdownMenu>

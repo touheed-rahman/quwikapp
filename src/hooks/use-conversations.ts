@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
 import { useNavigate } from 'react-router-dom';
@@ -15,13 +15,7 @@ export function useConversations(
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  useEffect(() => {
-    if (isAuthenticated && userId) {
-      fetchConversations();
-    }
-  }, [filter, isAuthenticated, userId]);
-
-  const fetchConversations = async () => {
+  const fetchConversations = useCallback(async () => {
     try {
       if (!userId) {
         setIsLoading(false);
@@ -56,11 +50,58 @@ export function useConversations(
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [filter, userId]);
+
+  useEffect(() => {
+    if (isAuthenticated && userId) {
+      fetchConversations();
+      
+      // Subscribe to changes in conversations
+      const channel = supabase
+        .channel(`user-conversations-${userId}`)
+        .on(
+          'postgres_changes',
+          {
+            event: 'UPDATE',
+            schema: 'public',
+            table: 'conversations',
+            filter: `buyer_id=eq.${userId}`,
+          },
+          (payload) => {
+            if (payload.new && (payload.new as any).deleted) {
+              setConversations(prev => prev.filter(conv => conv.id !== (payload.new as any).id));
+            } else {
+              fetchConversations();
+            }
+          }
+        )
+        .on(
+          'postgres_changes',
+          {
+            event: 'UPDATE',
+            schema: 'public',
+            table: 'conversations',
+            filter: `seller_id=eq.${userId}`,
+          },
+          (payload) => {
+            if (payload.new && (payload.new as any).deleted) {
+              setConversations(prev => prev.filter(conv => conv.id !== (payload.new as any).id));
+            } else {
+              fetchConversations();
+            }
+          }
+        )
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(channel);
+      };
+    }
+  }, [filter, isAuthenticated, userId, fetchConversations]);
 
   const handleDelete = async (conversationId: string) => {
     try {
-      // Instead of actually deleting the conversation, we'll mark it as deleted
+      // Mark the conversation as deleted
       const { error: updateError } = await supabase
         .from('conversations')
         .update({ deleted: true })
@@ -70,7 +111,7 @@ export function useConversations(
         throw updateError;
       }
 
-      // Update the UI by removing the deleted conversation
+      // Remove the deleted conversation from the state
       setConversations(prev => prev.filter(conv => conv.id !== conversationId));
       
       toast({

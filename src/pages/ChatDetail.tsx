@@ -8,10 +8,12 @@ import { MessageList } from "@/components/chat/MessageList";
 import ChatInput from "@/components/chat/ChatInput";
 import { useChat } from "@/hooks/use-chat";
 import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/components/ui/use-toast";
 
 const ChatDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const {
     messages,
     isLoading,
@@ -24,7 +26,7 @@ const ChatDetail = () => {
     disabledReason
   } = useChat(id);
 
-  // Check if conversation still exists or has been deleted
+  // Check if conversation exists or has been deleted
   useEffect(() => {
     if (!id || !sessionUser) return;
     
@@ -35,7 +37,22 @@ const ChatDetail = () => {
         .eq('id', id)
         .maybeSingle();
         
-      if (error || !data || data.deleted) {
+      if (error) {
+        console.error("Error checking conversation:", error);
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Could not verify conversation status."
+        });
+        navigate('/');
+        return;
+      }
+      
+      if (!data || data.deleted) {
+        toast({
+          title: "Conversation not available",
+          description: "This conversation has been deleted or doesn't exist."
+        });
         navigate('/');
       }
     };
@@ -55,6 +72,10 @@ const ChatDetail = () => {
         },
         (payload) => {
           if (payload.new && (payload.new as any).deleted) {
+            toast({
+              title: "Conversation deleted",
+              description: "This conversation has been deleted."
+            });
             navigate('/');
           }
         }
@@ -64,7 +85,7 @@ const ChatDetail = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [id, sessionUser, navigate]);
+  }, [id, sessionUser, navigate, toast]);
 
   const handleBack = () => {
     navigate('/chat');

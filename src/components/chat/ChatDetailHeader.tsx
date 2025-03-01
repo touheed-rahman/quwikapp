@@ -28,7 +28,7 @@ const ChatDetailHeader = ({ conversationDetails, onBack }: ChatDetailHeaderProps
     
     setIsDeleting(true);
     try {
-      // Mark the conversation as deleted instead of actually deleting it
+      // Mark the conversation as deleted
       const { error: conversationError } = await supabase
         .from('conversations')
         .update({ deleted: true })
@@ -40,7 +40,14 @@ const ChatDetailHeader = ({ conversationDetails, onBack }: ChatDetailHeaderProps
         title: "Chat deleted",
         description: "The conversation has been deleted successfully."
       });
-      navigate('/');
+      
+      // Navigate to the chat list
+      navigate('/chat');
+      
+      // Force a delay to ensure state is updated properly
+      setTimeout(() => {
+        navigate('/');
+      }, 100);
     } catch (error) {
       console.error('Error deleting conversation:', error);
       toast({
@@ -86,9 +93,10 @@ const ChatDetailHeader = ({ conversationDetails, onBack }: ChatDetailHeaderProps
             <DropdownMenuItem 
               className="text-destructive focus:text-destructive"
               onClick={handleDelete}
+              disabled={isDeleting}
             >
               <Trash2 className="mr-2 h-4 w-4" />
-              Delete Chat
+              {isDeleting ? "Deleting..." : "Delete Chat"}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
