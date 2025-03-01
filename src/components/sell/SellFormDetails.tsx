@@ -41,34 +41,57 @@ const SellFormDetails = ({
 }: SellFormDetailsProps) => {
   const { selectedLocation, setSelectedLocation } = useLocation();
   const [kmDriven, setKmDriven] = useState("");
+  const [year, setYear] = useState("");
+  const isVehicle = category === 'vehicles';
 
   // Update form data in parent component
   useEffect(() => {
-    if (category === 'vehicles' && window.formDataRef) {
+    if (isVehicle && window.formDataRef) {
       window.formDataRef.km_driven = kmDriven ? parseInt(kmDriven) : 0;
+      window.formDataRef.year = year ? parseInt(year) : null;
     }
-  }, [kmDriven, category]);
+  }, [kmDriven, year, isVehicle]);
+
+  // Get current year for the year input max value
+  const currentYear = new Date().getFullYear();
 
   return (
     <form onSubmit={onSubmit} className="space-y-6">
       <div className="bg-white rounded-lg shadow-sm border p-4 md:p-6 space-y-6">
         <TitleInput value={title} onChange={setTitle} />
         <DescriptionInput value={description} onChange={setDescription} />
-        <ConditionSelect value={condition} onChange={setCondition} />
+        {!isVehicle && (
+          <ConditionSelect value={condition} onChange={setCondition} />
+        )}
         <PriceInput value={price} onChange={setPrice} />
-        {category === 'vehicles' && (
-          <div className="space-y-2">
-            <Label htmlFor="kmDriven">Kilometers Driven *</Label>
-            <Input
-              id="kmDriven"
-              type="number"
-              placeholder="Enter kilometers driven"
-              value={kmDriven}
-              onChange={(e) => setKmDriven(e.target.value)}
-              min="0"
-              required
-            />
-          </div>
+        {isVehicle && (
+          <>
+            <div className="space-y-2">
+              <Label htmlFor="kmDriven">Kilometers Driven *</Label>
+              <Input
+                id="kmDriven"
+                type="number"
+                placeholder="Enter kilometers driven"
+                value={kmDriven}
+                onChange={(e) => setKmDriven(e.target.value)}
+                min="0"
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="year">Manufacturing Year *</Label>
+              <Input
+                id="year"
+                type="number"
+                placeholder="Enter manufacturing year"
+                value={year}
+                onChange={(e) => setYear(e.target.value)}
+                min="1900"
+                max={currentYear}
+                required
+              />
+            </div>
+          </>
         )}
         <div>
           <label className="text-sm font-medium mb-1.5 block">

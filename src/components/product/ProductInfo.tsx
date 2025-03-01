@@ -1,5 +1,5 @@
 
-import { Heart, Share2, MapPin, Calendar, Clock } from "lucide-react";
+import { Heart, Share2, MapPin, Calendar, Clock, CalendarRange } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
@@ -15,6 +15,7 @@ interface ProductInfoProps {
   description: string;
   category?: string;
   km_driven?: number | null;
+  year?: number | null;
 }
 
 const ProductInfo = ({
@@ -25,10 +26,12 @@ const ProductInfo = ({
   condition,
   description,
   category,
-  km_driven
+  km_driven,
+  year
 }: ProductInfoProps) => {
   // Extract just the area name
   const displayLocation = location?.split(/[|,]/)[0].trim() || 'Location not specified';
+  const isVehicle = category === 'vehicles';
 
   return (
     <div className="space-y-4 md:space-y-6">
@@ -58,21 +61,34 @@ const ProductInfo = ({
           <Calendar className="h-4 w-4" />
           <span>{new Date(createdAt).toLocaleDateString()}</span>
         </div>
-        {category === 'vehicles' && km_driven !== null && (
+        {isVehicle && km_driven !== null && (
           <div className="flex items-center gap-1">
             <Clock className="h-4 w-4" />
             <span>{km_driven.toLocaleString()} km driven</span>
           </div>
         )}
+        {isVehicle && year !== null && (
+          <div className="flex items-center gap-1">
+            <CalendarRange className="h-4 w-4" />
+            <span>Year {year}</span>
+          </div>
+        )}
       </div>
 
       <div className="flex flex-wrap gap-2">
-        <Badge className="bg-primary/10 text-primary hover:bg-primary/20">
-          {condition}
-        </Badge>
-        {category === 'vehicles' && km_driven !== null && (
+        {!isVehicle && (
+          <Badge className="bg-primary/10 text-primary hover:bg-primary/20">
+            {condition}
+          </Badge>
+        )}
+        {isVehicle && km_driven !== null && (
           <Badge variant="outline">
             {km_driven.toLocaleString()} km
+          </Badge>
+        )}
+        {isVehicle && year !== null && (
+          <Badge variant="outline" className="bg-blue-50 text-blue-700 hover:bg-blue-100">
+            Year {year}
           </Badge>
         )}
       </div>

@@ -15,6 +15,7 @@ export interface Listing {
   featured_requested: boolean;
   category: string;
   km_driven: number | null;
+  year: number | null;
   subcategory: string;
 }
 

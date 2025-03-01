@@ -12,6 +12,9 @@ interface Listing {
   created_at: string;
   condition: ProductCondition;
   featured: boolean;
+  category: string;
+  km_driven: number | null;
+  year: number | null;
 }
 
 interface SellerListingsProps {
@@ -41,6 +44,8 @@ const SellerListings = ({ listings }: SellerListingsProps) => {
             date={new Date(listing.created_at).toLocaleDateString()}
             condition={listing.condition}
             featured={listing.featured}
+            category={listing.category}
+            km_driven={listing.km_driven}
           />
         ))}
       </div>
