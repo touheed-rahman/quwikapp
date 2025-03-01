@@ -110,7 +110,12 @@ const ProductCard = ({
     return str.charAt(0).toUpperCase() + str.slice(1);
   };
 
-  const displayLocation = location?.split('|')[0]?.split(',')[0] || 'Location not specified';
+  const formatLocation = (location: string) => {
+    // Extract just the first part of the location (usually the city/area name)
+    const firstPart = location?.split('|')[0]?.split(',')[0]?.trim();
+    // Return a shortened version or placeholder if not available
+    return firstPart || 'Location not specified';
+  };
 
   return (
     <Link to={`/product/${id}`}>
@@ -146,9 +151,9 @@ const ProductCard = ({
             {title}
           </h3>
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-1 text-xs text-muted-foreground">
-              <MapPin className="h-3 w-3" />
-              <span>{displayLocation}</span>
+            <div className="flex items-center gap-1 text-[10px] text-muted-foreground overflow-hidden max-w-[120px]">
+              <MapPin className="h-3 w-3 flex-shrink-0" />
+              <span className="truncate" title={location}>{formatLocation(location)}</span>
             </div>
             <div className="flex gap-1">
               {condition && (
