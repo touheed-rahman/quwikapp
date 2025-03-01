@@ -81,7 +81,7 @@ const ProductInfo = ({
         <ScrollArea className="h-[200px] w-full p-4">
           <div className="space-y-4">
             <h2 className="font-semibold">Description</h2>
-            <p className="text-muted-foreground whitespace-pre-wrap">{description}</p>
+            <p className="text-black whitespace-pre-wrap">{description}</p>
           </div>
         </ScrollArea>
       </Card>
