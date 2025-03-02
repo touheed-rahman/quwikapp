@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { ProductCondition } from "@/types/categories";
-import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface ProductInfoProps {
   title: string;
@@ -77,13 +76,11 @@ const ProductInfo = ({
         )}
       </div>
 
-      <Card className="overflow-hidden">
-        <ScrollArea className="h-[200px] w-full p-4">
-          <div className="space-y-4">
-            <h2 className="font-semibold">Description</h2>
-            <p className="text-black whitespace-pre-wrap">{description}</p>
-          </div>
-        </ScrollArea>
+      <Card className="p-4">
+        <div className="space-y-4">
+          <h2 className="font-semibold">Description</h2>
+          <p className="text-black whitespace-pre-wrap">{description}</p>
+        </div>
       </Card>
     </div>
   );
