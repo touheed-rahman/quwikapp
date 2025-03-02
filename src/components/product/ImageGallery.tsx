@@ -24,9 +24,10 @@ const ImageGallery = ({
     const options = {
       width,
       height,
-      resize: 'contain' as 'contain' | 'cover' | 'fill', // Type assertion to match TransformOptions
-      quality: isMobile ? 80 : 90 // Lower quality on mobile for faster loading
+      resize: 'contain' as const, // Using const assertion for TypeScript
+      quality: isMobile ? 75 : 85 // Lower quality on mobile for faster loading
     };
+    
     const url = supabase.storage.from('listings').getPublicUrl(imagePath, {
       transform: options,
     }).data.publicUrl;
@@ -71,13 +72,18 @@ const ImageGallery = ({
   return (
     <>
       <div 
-        className="relative rounded-lg overflow-hidden bg-black/5"
-        style={{ aspectRatio: isMobile ? '4/3' : '16/9' }}
+        className="relative rounded-lg overflow-hidden bg-black/5 w-full"
+        style={{ 
+          aspectRatio: isMobile ? '4/3' : '16/9',
+          maxHeight: isMobile ? '300px' : '500px'
+        }}
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
       >
         <img
-          src={getImageUrl(images[currentImageIndex], isMobile ? 400 : 800, isMobile ? 300 : 600)}
+          src={getImageUrl(images[currentImageIndex], 
+            isMobile ? 400 : 800, 
+            isMobile ? 300 : 450)}
           alt="Product image"
           className="w-full h-full object-contain cursor-pointer"
           onClick={() => setIsDialogOpen(true)}
@@ -123,9 +129,11 @@ const ImageGallery = ({
 
       {/* Fullscreen dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="max-w-3xl w-full h-[80vh] flex items-center justify-center p-2 sm:p-4">
+        <DialogContent className="max-w-3xl w-[95vw] h-[80vh] flex items-center justify-center p-2 sm:p-4">
           <img
-            src={getImageUrl(images[currentImageIndex], isMobile ? 600 : 1200, isMobile ? 800 : 1000)}
+            src={getImageUrl(images[currentImageIndex], 
+              isMobile ? 600 : 1200, 
+              isMobile ? 800 : 1000)}
             alt="Product image fullscreen"
             className="max-w-full max-h-full object-contain"
           />
