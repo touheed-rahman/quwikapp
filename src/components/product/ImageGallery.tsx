@@ -24,7 +24,7 @@ const ImageGallery = ({
     const options = {
       width,
       height,
-      resize: 'contain',
+      resize: 'contain' as 'contain' | 'cover' | 'fill', // Type assertion to match TransformOptions
       quality: isMobile ? 80 : 90 // Lower quality on mobile for faster loading
     };
     const url = supabase.storage.from('listings').getPublicUrl(imagePath, {
