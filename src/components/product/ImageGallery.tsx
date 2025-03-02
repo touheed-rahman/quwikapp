@@ -16,53 +16,10 @@ const ImageGallery = ({
 }: ImageGalleryProps) => {
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [imagesLoaded, setImagesLoaded] = useState<boolean[]>([]);
 
-  // Generate optimized image URLs with size parameters
-  const getImageUrl = useCallback((imagePath: string, size: 'small' | 'medium' | 'large' = 'medium') => {
-    let width = 800; // Default medium size
-    
-    if (size === 'small') {
-      width = 200; // Thumbnail size
-    } else if (size === 'large') {
-      width = 1200; // Full size for dialog
-    }
-    
-    // Use Supabase's transform URL parameters to resize the image
-    const publicUrl = supabase.storage.from('listings').getPublicUrl(imagePath).data.publicUrl;
-    // Add a cache-busting parameter to prevent browser caching issues
-    return `${publicUrl}?width=${width}&quality=${size === 'small' ? 70 : 80}&t=${encodeURIComponent(imagePath.split('/').pop() || '')}`;
+  const getImageUrl = useCallback((imagePath: string) => {
+    return supabase.storage.from('listings').getPublicUrl(imagePath).data.publicUrl;
   }, []);
-
-  // Preload the current and adjacent images
-  useEffect(() => {
-    const preloadImages = () => {
-      const imagesToPreload = [currentImageIndex];
-      
-      // Add next image
-      if (currentImageIndex < images.length - 1) {
-        imagesToPreload.push(currentImageIndex + 1);
-      }
-      
-      // Add previous image
-      if (currentImageIndex > 0) {
-        imagesToPreload.push(currentImageIndex - 1);
-      }
-      
-      // Preload these images
-      imagesToPreload.forEach(index => {
-        const img = new Image();
-        img.src = getImageUrl(images[index]);
-      });
-    };
-    
-    preloadImages();
-  }, [currentImageIndex, images, getImageUrl]);
-
-  // Initialize imagesLoaded array
-  useEffect(() => {
-    setImagesLoaded(new Array(images.length).fill(false));
-  }, [images.length]);
 
   // Auto-slide every 5 seconds
   useEffect(() => {
@@ -98,40 +55,16 @@ const ImageGallery = ({
     setTouchStart(null);
   };
 
-  const handleImageLoad = (index: number) => {
-    const newImagesLoaded = [...imagesLoaded];
-    newImagesLoaded[index] = true;
-    setImagesLoaded(newImagesLoaded);
-  };
-
   return (
     <>
-      <div 
-        className="relative aspect-4/3 rounded-lg overflow-hidden bg-gray-100"
-        onTouchStart={handleTouchStart}
-        onTouchEnd={handleTouchEnd}
-      >
-        {images.map((image, index) => (
-          <div 
-            key={index}
-            className={`absolute inset-0 transition-opacity duration-300 ${
-              index === currentImageIndex ? "opacity-100" : "opacity-0 pointer-events-none"
-            }`}
-          >
-            <div className="w-full h-full flex items-center justify-center">
-              <img
-                src={getImageUrl(image)}
-                alt={`Product image ${index + 1}`}
-                className="w-full h-full object-contain cursor-pointer"
-                onClick={() => setIsDialogOpen(true)}
-                loading={index === currentImageIndex ? "eager" : "lazy"}
-                onLoad={() => handleImageLoad(index)}
-                style={{ objectFit: "contain" }}
-              />
-            </div>
-          </div>
-        ))}
-
+      <div className="relative aspect-4/3 rounded-lg overflow-hidden bg-black/5">
+        <img
+          src={getImageUrl(images[currentImageIndex])}
+          alt="Product image"
+          className="w-full h-full object-contain cursor-pointer"
+          onClick={() => setIsDialogOpen(true)}
+          loading="eager"
+        />
         <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
           {images.map((_, index) => (
             <button
@@ -151,17 +84,17 @@ const ImageGallery = ({
       </div>
 
       {/* Thumbnail strip */}
-      <div className="mt-4 flex gap-2 overflow-x-auto pb-2 px-1 items-center">
+      <div className="mt-4 flex gap-2 overflow-x-auto pb-2 px-1">
         {images.map((image, index) => (
           <button
             key={index}
-            className={`relative flex-shrink-0 w-16 h-16 rounded-md overflow-hidden bg-gray-100 ${
+            className={`relative flex-shrink-0 w-16 h-16 rounded-md overflow-hidden ${
               index === currentImageIndex ? 'ring-2 ring-primary' : ''
             }`}
             onClick={() => setCurrentImageIndex(index)}
           >
             <img
-              src={getImageUrl(image, 'small')}
+              src={getImageUrl(image)}
               alt={`Thumbnail ${index + 1}`}
               className="w-full h-full object-cover"
               loading="lazy"
@@ -172,9 +105,9 @@ const ImageGallery = ({
 
       {/* Fullscreen dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="max-w-3xl w-full h-[80vh] flex items-center justify-center p-0 bg-black/90">
+        <DialogContent className="max-w-3xl w-full h-[80vh] flex items-center justify-center">
           <img
-            src={getImageUrl(images[currentImageIndex], 'large')}
+            src={getImageUrl(images[currentImageIndex])}
             alt="Product image fullscreen"
             className="max-w-full max-h-full object-contain"
           />
