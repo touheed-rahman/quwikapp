@@ -2,7 +2,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { useIsMobile } from "@/hooks/use-mobile";
 
 interface ImageGalleryProps {
   images: string[];
@@ -17,23 +16,10 @@ const ImageGallery = ({
 }: ImageGalleryProps) => {
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const isMobile = useIsMobile();
 
-  const getImageUrl = useCallback((imagePath: string, width = 800, height = 600) => {
-    // Get optimized image URLs with consistent dimensions
-    const options = {
-      width,
-      height,
-      resize: 'contain' as const, // Using const assertion for TypeScript
-      quality: isMobile ? 75 : 85 // Lower quality on mobile for faster loading
-    };
-    
-    const url = supabase.storage.from('listings').getPublicUrl(imagePath, {
-      transform: options,
-    }).data.publicUrl;
-    
-    return url;
-  }, [isMobile]);
+  const getImageUrl = useCallback((imagePath: string) => {
+    return supabase.storage.from('listings').getPublicUrl(imagePath).data.publicUrl;
+  }, []);
 
   // Auto-slide every 5 seconds
   useEffect(() => {
@@ -71,19 +57,9 @@ const ImageGallery = ({
 
   return (
     <>
-      <div 
-        className="relative rounded-lg overflow-hidden bg-black/5 w-full"
-        style={{ 
-          aspectRatio: isMobile ? '4/3' : '16/9',
-          maxHeight: isMobile ? '300px' : '500px'
-        }}
-        onTouchStart={handleTouchStart}
-        onTouchEnd={handleTouchEnd}
-      >
+      <div className="relative aspect-4/3 rounded-lg overflow-hidden bg-black/5">
         <img
-          src={getImageUrl(images[currentImageIndex], 
-            isMobile ? 400 : 800, 
-            isMobile ? 300 : 450)}
+          src={getImageUrl(images[currentImageIndex])}
           alt="Product image"
           className="w-full h-full object-contain cursor-pointer"
           onClick={() => setIsDialogOpen(true)}
@@ -118,7 +94,7 @@ const ImageGallery = ({
             onClick={() => setCurrentImageIndex(index)}
           >
             <img
-              src={getImageUrl(image, 100, 100)}
+              src={getImageUrl(image)}
               alt={`Thumbnail ${index + 1}`}
               className="w-full h-full object-cover"
               loading="lazy"
@@ -129,11 +105,9 @@ const ImageGallery = ({
 
       {/* Fullscreen dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="max-w-3xl w-[95vw] h-[80vh] flex items-center justify-center p-2 sm:p-4">
+        <DialogContent className="max-w-3xl w-full h-[80vh] flex items-center justify-center">
           <img
-            src={getImageUrl(images[currentImageIndex], 
-              isMobile ? 600 : 1200, 
-              isMobile ? 800 : 1000)}
+            src={getImageUrl(images[currentImageIndex])}
             alt="Product image fullscreen"
             className="max-w-full max-h-full object-contain"
           />
