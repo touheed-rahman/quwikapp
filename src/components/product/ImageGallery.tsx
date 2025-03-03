@@ -1,5 +1,5 @@
 
-import { useEffect, useState, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -22,17 +22,6 @@ const ImageGallery = ({
   const getImageUrl = useCallback((imagePath: string) => {
     return supabase.storage.from('listings').getPublicUrl(imagePath).data.publicUrl;
   }, []);
-
-  // Auto-slide every 5 seconds
-  useEffect(() => {
-    const timer = setInterval(() => {
-      if (!isDialogOpen) { // Don't auto-slide when dialog is open
-        setCurrentImageIndex(currentImageIndex === images.length - 1 ? 0 : currentImageIndex + 1);
-      }
-    }, 5000);
-
-    return () => clearInterval(timer);
-  }, [currentImageIndex, images.length, setCurrentImageIndex, isDialogOpen]);
 
   // Touch slide handling
   const handleTouchStart = (e: React.TouchEvent) => {
@@ -93,26 +82,6 @@ const ImageGallery = ({
             />
           ))}
         </div>
-      </div>
-
-      {/* Thumbnail strip */}
-      <div className="mt-2 flex gap-2 overflow-x-auto pb-2 px-1 scrollbar-hide">
-        {images.map((image, index) => (
-          <button
-            key={index}
-            className={`relative flex-shrink-0 w-14 h-14 rounded-md overflow-hidden ${
-              index === currentImageIndex ? 'ring-2 ring-primary' : ''
-            }`}
-            onClick={() => setCurrentImageIndex(index)}
-          >
-            <img
-              src={getImageUrl(image)}
-              alt={`Thumbnail ${index + 1}`}
-              className="w-full h-full object-cover"
-              loading="lazy"
-            />
-          </button>
-        ))}
       </div>
 
       {/* Fullscreen dialog */}
