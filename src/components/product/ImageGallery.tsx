@@ -2,6 +2,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface ImageGalleryProps {
   images: string[];
@@ -16,6 +17,7 @@ const ImageGallery = ({
 }: ImageGalleryProps) => {
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const isMobile = useIsMobile();
 
   const getImageUrl = useCallback((imagePath: string) => {
     return supabase.storage.from('listings').getPublicUrl(imagePath).data.publicUrl;
@@ -57,14 +59,23 @@ const ImageGallery = ({
 
   return (
     <>
-      <div className="relative aspect-4/3 rounded-lg overflow-hidden bg-black/5">
-        <img
-          src={getImageUrl(images[currentImageIndex])}
-          alt="Product image"
-          className="w-full h-full object-contain cursor-pointer"
-          onClick={() => setIsDialogOpen(true)}
-          loading="eager"
-        />
+      <div 
+        className="relative aspect-4/3 rounded-lg overflow-hidden bg-black/5"
+        style={{ 
+          maxHeight: isMobile ? '300px' : '500px',
+        }}
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+      >
+        <div className="w-full h-full flex items-center justify-center">
+          <img
+            src={getImageUrl(images[currentImageIndex])}
+            alt="Product image"
+            className="object-contain w-full h-full max-h-[300px] md:max-h-[500px]"
+            onClick={() => setIsDialogOpen(true)}
+            loading="eager"
+          />
+        </div>
         <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
           {images.map((_, index) => (
             <button
@@ -105,7 +116,7 @@ const ImageGallery = ({
 
       {/* Fullscreen dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="max-w-3xl w-full h-[80vh] flex items-center justify-center">
+        <DialogContent className="max-w-3xl w-full h-[80vh] md:h-auto p-1 md:p-6 flex items-center justify-center">
           <img
             src={getImageUrl(images[currentImageIndex])}
             alt="Product image fullscreen"
