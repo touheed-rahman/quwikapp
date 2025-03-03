@@ -91,8 +91,8 @@ const ProductPage = () => {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      <main className="container mx-auto px-4 pt-20 pb-24">
-        <div className="grid lg:grid-cols-2 gap-8">
+      <main className="container mx-auto px-2 sm:px-4 pt-16 pb-20 overflow-x-hidden max-w-full">
+        <div className="grid lg:grid-cols-2 gap-4 lg:gap-8">
           <div>
             <ImageGallery
               images={product.images}
@@ -101,7 +101,7 @@ const ProductPage = () => {
             />
           </div>
 
-          <div className="space-y-6">
+          <div className="space-y-4 lg:space-y-6">
             <ProductInfo
               title={product.title}
               price={product.price}

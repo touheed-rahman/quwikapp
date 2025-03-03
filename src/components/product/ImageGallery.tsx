@@ -60,9 +60,10 @@ const ImageGallery = ({
   return (
     <>
       <div 
-        className="relative aspect-4/3 rounded-lg overflow-hidden bg-black/5"
+        className="relative rounded-lg overflow-hidden bg-black/5"
         style={{ 
-          maxHeight: isMobile ? '300px' : '500px',
+          height: isMobile ? '250px' : '400px',
+          width: '100%'
         }}
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
@@ -71,7 +72,7 @@ const ImageGallery = ({
           <img
             src={getImageUrl(images[currentImageIndex])}
             alt="Product image"
-            className="object-contain w-full h-full max-h-[300px] md:max-h-[500px]"
+            className="object-contain w-full h-full"
             onClick={() => setIsDialogOpen(true)}
             loading="eager"
           />
@@ -95,11 +96,11 @@ const ImageGallery = ({
       </div>
 
       {/* Thumbnail strip */}
-      <div className="mt-4 flex gap-2 overflow-x-auto pb-2 px-1">
+      <div className="mt-2 flex gap-2 overflow-x-auto pb-2 px-1 scrollbar-hide">
         {images.map((image, index) => (
           <button
             key={index}
-            className={`relative flex-shrink-0 w-16 h-16 rounded-md overflow-hidden ${
+            className={`relative flex-shrink-0 w-14 h-14 rounded-md overflow-hidden ${
               index === currentImageIndex ? 'ring-2 ring-primary' : ''
             }`}
             onClick={() => setCurrentImageIndex(index)}
