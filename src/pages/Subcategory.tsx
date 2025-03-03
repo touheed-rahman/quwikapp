@@ -26,6 +26,35 @@ const SubcategoryPage = () => {
   const { selectedLocation, setSelectedLocation } = useLocation();
   const [searchQuery, setSearchQuery] = useState(searchParams.get('q') || "");
 
+  // Query for featured products in this subcategory (limit 4)
+  const { data: featuredListings = [] } = useQuery({
+    queryKey: ['featured-subcategory-listings', category, subcategory],
+    queryFn: async () => {
+      try {
+        const { data, error } = await supabase
+          .from('listings')
+          .select('*')
+          .eq('status', 'approved')
+          .is('deleted_at', null)
+          .eq('category', category || '')
+          .eq('subcategory', subcategory || '')
+          .eq('featured', true)
+          .limit(4);
+
+        if (error) {
+          console.error('Error fetching featured listings:', error);
+          throw error;
+        }
+
+        return data || [];
+      } catch (error) {
+        console.error('Error in featured listings queryFn:', error);
+        return [];
+      }
+    },
+    enabled: !!category && !!subcategory
+  });
+
   const { data: listings = [], isLoading } = useQuery({
     queryKey: ['subcategory-listings', category, subcategory, sortBy, condition, selectedLocation, searchQuery],
     queryFn: async () => {
@@ -78,8 +107,9 @@ const SubcategoryPage = () => {
           throw error;
         }
 
-        console.log('Fetched listings:', data);
-        return data || [];
+        // Filter out the featured listings that would be shown at the top
+        const featuredIds = new Set(featuredListings.map(item => item.id));
+        return (data || []).filter(item => !featuredIds.has(item.id));
       } catch (error) {
         console.error('Error in queryFn:', error);
         return [];
@@ -149,9 +179,31 @@ const SubcategoryPage = () => {
           </div>
         </div>
 
+        {/* Featured listings section */}
+        {featuredListings.length > 0 && (
+          <div className="mb-8">
+            <h2 className="text-xl font-bold mb-4 text-primary">Featured {subcategory}</h2>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+              {featuredListings.map((listing) => (
+                <ProductCard
+                  key={listing.id}
+                  id={listing.id}
+                  title={listing.title}
+                  price={listing.price}
+                  location={listing.location || "Location not specified"}
+                  image={getFirstImageUrl(listing.images)}
+                  condition={listing.condition as ProductCondition}
+                  featured={true}
+                  date={new Date(listing.created_at).toLocaleDateString()}
+                />
+              ))}
+            </div>
+          </div>
+        )}
+
         {isLoading ? (
           <div className="text-center py-8">Loading listings...</div>
-        ) : listings.length === 0 ? (
+        ) : listings.length === 0 && featuredListings.length === 0 ? (
           <div className="text-center py-8">
             <p className="text-lg text-muted-foreground">
               No listings found for this subcategory
@@ -163,20 +215,29 @@ const SubcategoryPage = () => {
             )}
           </div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-            {listings.map((listing) => (
-              <ProductCard
-                key={listing.id}
-                id={listing.id}
-                title={listing.title}
-                price={listing.price}
-                location={listing.location || "Location not specified"}
-                image={getFirstImageUrl(listing.images)}
-                condition={listing.condition as ProductCondition}
-                date={new Date(listing.created_at).toLocaleDateString()}
-              />
-            ))}
-          </div>
+          <>
+            {listings.length > 0 && (
+              <>
+                {featuredListings.length > 0 && (
+                  <h2 className="text-xl font-bold mb-4">More {subcategory}</h2>
+                )}
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                  {listings.map((listing) => (
+                    <ProductCard
+                      key={listing.id}
+                      id={listing.id}
+                      title={listing.title}
+                      price={listing.price}
+                      location={listing.location || "Location not specified"}
+                      image={getFirstImageUrl(listing.images)}
+                      condition={listing.condition as ProductCondition}
+                      date={new Date(listing.created_at).toLocaleDateString()}
+                    />
+                  ))}
+                </div>
+              </>
+            )}
+          </>
         )}
       </main>
     </div>
@@ -184,4 +245,3 @@ const SubcategoryPage = () => {
 };
 
 export default SubcategoryPage;
-
