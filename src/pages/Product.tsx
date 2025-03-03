@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -31,7 +30,7 @@ const ProductPage = () => {
   const { toast } = useToast();
 
   const { data: product, isLoading, isError } = useProductDetails(id);
-  const { data: relatedProducts = [] } = useRelatedProducts(id, product?.category);
+  const { data: relatedProducts = [] } = useRelatedProducts(id, product?.category, product?.subcategory);
   const {
     isOfferDialogOpen,
     setIsOfferDialogOpen,
