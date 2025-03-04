@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card";
 import { BellRing, Check } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
+import MobileNavigation from "@/components/navigation/MobileNavigation";
 
 interface Notification {
   id: string;
@@ -81,6 +82,10 @@ const Notifications = () => {
     };
   }, [toast]);
 
+  const handleOpenChat = () => {
+    // This will be handled by the parent component that passes the onChatOpen prop
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -126,6 +131,7 @@ const Notifications = () => {
           </div>
         </Card>
       </main>
+      <MobileNavigation onChatOpen={handleOpenChat} />
     </div>
   );
 };

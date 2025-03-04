@@ -1,140 +1,30 @@
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { useEffect, useState } from "react";
-import { supabase } from "./integrations/supabase/client";
-import { LocationProvider } from "./contexts/LocationContext";
-import ScrollToTop from "./components/utils/ScrollToTop";
-import ErrorBoundary from "./components/utils/ErrorBoundary";
-import Index from "./pages/Index";
-import Sell from "./pages/Sell";
-import Product from "./pages/Product";
-import Categories from "./pages/Categories";
-import ChatDetail from "./pages/ChatDetail";
+import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import Home from "./pages/Home";
+import Category from "./pages/Category";
+import Subcategory from "./pages/Subcategory";
+import Listing from "./pages/Listing";
 import Profile from "./pages/Profile";
-import AdminPanel from "./pages/Admin";
+import Sell from "./pages/Sell";
 import MyAds from "./pages/MyAds";
 import Wishlist from "./pages/Wishlist";
-import Subcategory from "./pages/Subcategory";
-import AdminLogin from "./pages/AdminLogin";
-import FreshRecommendations from "./pages/FreshRecommendations";
-import RecentSubcategoryListings from "./pages/RecentSubcategoryListings";
-import React from 'react';
-import CategorySubcategories from "./pages/CategorySubcategories";
-import SellerProfile from "./pages/SellerProfile";
+import EditListing from "./pages/EditListing";
+import Notifications from "./pages/Notifications";
 
-// Create a client outside of the component to avoid recreating it on every render
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      retry: 1,
-      meta: {
-        onError: (error: Error) => {
-          console.error('Query error:', error);
-        },
-      },
-    },
-  },
-});
-
-const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
-  const [session, setSession] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setLoading(false);
-    });
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
-
-  if (loading) {
-    return <div>Loading...</div>;
-  }
-
-  if (!session) {
-    return <Navigate to="/profile" />;
-  }
-
-  return <>{children}</>;
+const App = () => {
+  return (
+    <Routes>
+      <Route path="/" element={<Home />} />
+      <Route path="/category/:category" element={<Category />} />
+      <Route path="/category/:category/:subcategory" element={<Subcategory />} />
+      <Route path="/listing/:listingId" element={<Listing />} />
+      <Route path="/profile" element={<Profile />} />
+      <Route path="/sell" element={<Sell />} />
+      <Route path="/my-ads" element={<MyAds />} />
+      <Route path="/wishlist" element={<Wishlist />} />
+      <Route path="/edit-listing/:listingId" element={<EditListing />} />
+      <Route path="/notifications" element={<Notifications />} />
+    </Routes>
+  );
 };
-
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <LocationProvider>
-        <BrowserRouter>
-          <ErrorBoundary>
-            <ScrollToTop />
-            <Toaster />
-            <Sonner />
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/category/:categoryId" element={<CategorySubcategories />} />
-              <Route path="/category/:category/:subcategory" element={<Subcategory />} />
-              <Route path="/fresh-recommendations" element={<FreshRecommendations />} />
-              <Route path="/recent-listings/:category" element={<RecentSubcategoryListings />} />
-              <Route path="/seller/:id" element={<SellerProfile />} />
-              <Route
-                path="/sell"
-                element={
-                  <PrivateRoute>
-                    <Sell />
-                  </PrivateRoute>
-                }
-              />
-              <Route path="/product/:id" element={<Product />} />
-              <Route path="/categories" element={<Categories />} />
-              <Route
-                path="/chat/:id"
-                element={
-                  <PrivateRoute>
-                    <ChatDetail />
-                  </PrivateRoute>
-                }
-              />
-              <Route path="/profile" element={<Profile />} />
-              <Route path="/admin/login" element={<AdminLogin />} />
-              <Route
-                path="/admin"
-                element={
-                  <PrivateRoute>
-                    <AdminPanel />
-                  </PrivateRoute>
-                }
-              />
-              <Route
-                path="/my-ads"
-                element={
-                  <PrivateRoute>
-                    <MyAds />
-                  </PrivateRoute>
-                }
-              />
-              <Route
-                path="/wishlist"
-                element={
-                  <PrivateRoute>
-                    <Wishlist />
-                  </PrivateRoute>
-                }
-              />
-            </Routes>
-          </ErrorBoundary>
-        </BrowserRouter>
-      </LocationProvider>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
 
 export default App;
