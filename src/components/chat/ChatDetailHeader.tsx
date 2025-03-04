@@ -1,107 +1,74 @@
 
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { ArrowLeft, Circle } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, MoreVertical, Trash2 } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/components/ui/use-toast";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { Avatar } from "@/components/ui/avatar";
 import type { ConversationDetails } from "./types/chat-detail";
+import { cn } from "@/lib/utils";
 
 interface ChatDetailHeaderProps {
   conversationDetails: ConversationDetails | null;
   onBack: () => void;
+  isOnline?: boolean;
 }
 
-const ChatDetailHeader = ({ conversationDetails, onBack }: ChatDetailHeaderProps) => {
-  const navigate = useNavigate();
-  const { toast } = useToast();
-  const [isDeleting, setIsDeleting] = useState(false);
+const ChatDetailHeader = ({ 
+  conversationDetails, 
+  onBack,
+  isOnline = false
+}: ChatDetailHeaderProps) => {
+  if (!conversationDetails) return null;
 
-  const handleDelete = async () => {
-    if (!conversationDetails?.id || isDeleting) return;
-    
-    setIsDeleting(true);
-    try {
-      // Mark the conversation as deleted
-      const { error: conversationError } = await supabase
-        .from('conversations')
-        .update({ deleted: true })
-        .eq('id', conversationDetails.id);
-        
-      if (conversationError) throw conversationError;
-
-      toast({
-        title: "Chat deleted",
-        description: "The conversation has been deleted successfully."
-      });
-      
-      // Navigate to the chat list
-      navigate('/chat');
-      
-      // Force a delay to ensure state is updated properly
-      setTimeout(() => {
-        navigate('/');
-      }, 100);
-    } catch (error) {
-      console.error('Error deleting conversation:', error);
-      toast({
-        title: "Error",
-        description: "Failed to delete the conversation. Please try again.",
-        variant: "destructive"
-      });
-    } finally {
-      setIsDeleting(false);
-    }
-  };
+  // Determine if listing is no longer available
+  const isListingAvailable = !(
+    !conversationDetails.listing || 
+    conversationDetails.listing.deleted_at || 
+    conversationDetails.listing.status === 'sold'
+  );
+  
+  // Get the first character of the seller's name for the avatar
+  const nameInitial = conversationDetails.seller?.full_name?.[0] || 'S';
 
   return (
-    <div className="flex items-center justify-between p-4 border-b bg-white">
-      <div className="flex items-center gap-3">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={onBack}
-          className="mr-2"
-        >
-          <ArrowLeft className="h-5 w-5" />
-        </Button>
-        <div>
-          <h2 className="font-semibold">
-            {conversationDetails?.listing?.title || "Loading..."}
+    <header className="border-b p-4 flex items-center gap-3 bg-background/95 backdrop-blur sticky top-0 z-10">
+      <Button variant="ghost" size="icon" onClick={onBack} className="mr-1">
+        <ArrowLeft className="h-5 w-5" />
+      </Button>
+      
+      <div className="relative">
+        <Avatar className="h-10 w-10">
+          <div className="bg-primary/90 text-white w-full h-full rounded-full flex items-center justify-center">
+            {nameInitial}
+          </div>
+        </Avatar>
+        
+        {isOnline && (
+          <div className="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 bg-green-500 rounded-full border-2 border-background" />
+        )}
+      </div>
+      
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2">
+          <h2 className="font-semibold truncate">
+            {conversationDetails.seller?.full_name || 'Seller'}
+            {isOnline && (
+              <span className="ml-2 inline-flex items-center text-xs font-medium text-green-600">
+                <Circle className="h-2 w-2 mr-1 fill-green-500 text-green-500" />
+                Online
+              </span>
+            )}
           </h2>
-          <p className="text-sm text-muted-foreground">
-            {conversationDetails?.listing?.price
-              ? `₹${conversationDetails.listing.price.toLocaleString()}`
-              : ""}
-          </p>
         </div>
+        <p className={cn(
+          "text-sm truncate",
+          isListingAvailable ? "text-muted-foreground" : "text-destructive"
+        )}>
+          {isListingAvailable 
+            ? conversationDetails.listing?.title
+            : "This item is no longer available"
+          }
+        </p>
       </div>
-      <div className="flex items-center gap-2">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" disabled={isDeleting}>
-              <MoreVertical className="h-5 w-5" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem 
-              className="text-destructive focus:text-destructive"
-              onClick={handleDelete}
-              disabled={isDeleting}
-            >
-              <Trash2 className="mr-2 h-4 w-4" />
-              {isDeleting ? "Deleting..." : "Delete Chat"}
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
-    </div>
+    </header>
   );
 };
 

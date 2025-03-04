@@ -9,7 +9,7 @@ import { Loader2 } from "lucide-react";
 import StatusTabs from "@/components/my-ads/StatusTabs";
 import ListingGrid from "@/components/my-ads/ListingGrid";
 import { ProductCondition } from "@/types/categories";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import type { RealtimePostgresChangesPayload } from "@supabase/supabase-js";
 
 interface Listing {
@@ -27,8 +27,21 @@ type DatabaseChangesPayload = RealtimePostgresChangesPayload<{
 const MyAds = () => {
   const { toast } = useToast();
   const [searchParams] = useSearchParams();
-  const initialTab = searchParams.get('tab') || "pending";
+  const navigate = useNavigate();
+  const initialTab = searchParams.get('tab') || "approved"; // Default to approved
   const [selectedTab, setSelectedTab] = useState(initialTab);
+
+  // Redirect to approved tab if no tab is selected
+  useEffect(() => {
+    if (!searchParams.get('tab')) {
+      navigate('?tab=approved', { replace: true });
+    }
+  }, [searchParams, navigate]);
+
+  // Update selectedTab when URL params change
+  useEffect(() => {
+    setSelectedTab(searchParams.get('tab') || "approved");
+  }, [searchParams]);
 
   const { data: listings = [], isLoading, refetch } = useQuery({
     queryKey: ['my-listings', selectedTab],

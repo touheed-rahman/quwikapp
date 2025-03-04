@@ -42,7 +42,9 @@ export const ConversationItem = ({
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <span className="font-medium">{conversation.seller.full_name}</span>
+              <span className={cn("font-medium", unreadCount > 0 && "font-bold")}>
+                {conversation.seller.full_name}
+              </span>
               <Badge variant="outline" className="h-5 text-xs bg-primary/10 text-primary border-primary">
                 <Check className="h-3 w-3 mr-1" />
                 Verified
@@ -61,7 +63,10 @@ export const ConversationItem = ({
             {conversation.listing.title}
             {conversation.listing.price && ` - ₹${conversation.listing.price}`}
           </p>
-          <p className="text-sm text-muted-foreground truncate mt-1">
+          <p className={cn(
+            "text-sm text-muted-foreground truncate mt-1", 
+            unreadCount > 0 && "font-bold text-foreground"
+          )}>
             {conversation.last_message}
           </p>
         </div>

@@ -17,13 +17,17 @@ interface ConversationListProps {
   isLoading: boolean;
   onDelete: (conversationId: string) => Promise<boolean>;
   onSelectConversation: (conversationId: string) => void;
+  unreadCounts?: Record<string, number>;
+  userId?: string;
 }
 
 const ConversationList = ({ 
   conversations, 
   isLoading, 
   onDelete,
-  onSelectConversation
+  onSelectConversation,
+  unreadCounts = {},
+  userId
 }: ConversationListProps) => {
   const navigate = useNavigate();
 
@@ -53,6 +57,8 @@ const ConversationList = ({
           <ConversationItem
             conversation={conversation}
             onClick={() => handleConversationClick(conversation)}
+            userId={userId}
+            unreadCount={unreadCounts[conversation.id] || 0}
           />
           <div className="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity">
             <DropdownMenu>

@@ -12,6 +12,7 @@ export function useConversations(
 ) {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [unreadCounts, setUnreadCounts] = useState<Record<string, number>>({});
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -45,6 +46,24 @@ export function useConversations(
       if (error) throw error;
       
       setConversations(data || []);
+      
+      // Fetch unread counts for each conversation
+      if (data && data.length > 0) {
+        const { data: notifications, error: notificationsError } = await supabase
+          .from('notifications')
+          .select('conversation_id, unread_count')
+          .eq('user_id', userId);
+          
+        if (notificationsError) throw notificationsError;
+        
+        if (notifications) {
+          const counts: Record<string, number> = {};
+          notifications.forEach(notification => {
+            counts[notification.conversation_id] = notification.unread_count || 0;
+          });
+          setUnreadCounts(counts);
+        }
+      }
     } catch (error) {
       console.error('Error fetching conversations:', error);
     } finally {
@@ -57,7 +76,7 @@ export function useConversations(
       fetchConversations();
       
       // Subscribe to changes in conversations
-      const channel = supabase
+      const conversationsChannel = supabase
         .channel(`user-conversations-${userId}`)
         .on(
           'postgres_changes',
@@ -92,9 +111,27 @@ export function useConversations(
           }
         )
         .subscribe();
+        
+      // Subscribe to notifications changes
+      const notificationsChannel = supabase
+        .channel(`user-notifications-${userId}`)
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'notifications',
+            filter: `user_id=eq.${userId}`,
+          },
+          () => {
+            fetchConversations();
+          }
+        )
+        .subscribe();
 
       return () => {
-        supabase.removeChannel(channel);
+        supabase.removeChannel(conversationsChannel);
+        supabase.removeChannel(notificationsChannel);
       };
     }
   }, [filter, isAuthenticated, userId, fetchConversations]);
@@ -139,6 +176,7 @@ export function useConversations(
   return {
     conversations,
     isLoading,
+    unreadCounts,
     handleDelete,
     fetchConversations
   };

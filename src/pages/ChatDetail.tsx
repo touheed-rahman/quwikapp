@@ -1,4 +1,3 @@
-
 import { useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Loader2 } from "lucide-react";
@@ -9,11 +8,14 @@ import ChatInput from "@/components/chat/ChatInput";
 import { useChat } from "@/hooks/use-chat";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
+import { useOnlineUsers } from "@/hooks/use-online-users";
 
 const ChatDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { onlineUsers } = useOnlineUsers();
+  
   const {
     messages,
     isLoading,
@@ -108,11 +110,21 @@ const ChatDetail = () => {
     );
   }
 
+  // Determine if the other user is online
+  const otherUserId = conversationDetails 
+    ? (sessionUser.id === conversationDetails.buyer_id 
+      ? conversationDetails.seller_id 
+      : conversationDetails.buyer_id)
+    : null;
+  
+  const isOtherUserOnline = otherUserId ? onlineUsers.has(otherUserId) : false;
+
   return (
     <div className="flex flex-col h-[100dvh] bg-background">
       <ChatDetailHeader 
         conversationDetails={conversationDetails} 
         onBack={handleBack}
+        isOnline={isOtherUserOnline}
       />
       <MessageList messages={messages} sessionUserId={sessionUser.id} />
       <ChatInput

@@ -1,11 +1,23 @@
 
 import { TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useSearchParams, useNavigate } from "react-router-dom";
+import { useEffect } from "react";
 
 interface StatusTabsProps {
   selectedTab: string;
 }
 
 const StatusTabs = ({ selectedTab }: StatusTabsProps) => {
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+  
+  // If no tab is explicitly selected in URL, redirect to approved tab
+  useEffect(() => {
+    if (!searchParams.get('tab')) {
+      navigate('?tab=approved', { replace: true });
+    }
+  }, [searchParams, navigate]);
+
   return (
     <div className="px-4 pt-2 w-full">
       <TabsList className="w-full grid grid-cols-4 gap-2 h-auto p-1">
@@ -39,4 +51,3 @@ const StatusTabs = ({ selectedTab }: StatusTabsProps) => {
 };
 
 export default StatusTabs;
-
