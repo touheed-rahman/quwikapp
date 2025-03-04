@@ -61,9 +61,7 @@ const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
 
   const handleClose = () => {
     onClose();
-    if (location.pathname.includes('/chat/')) {
-      navigate('/');
-    }
+    navigate('/');
   };
 
   const handleSelectConversation = useCallback(() => {
@@ -103,6 +101,8 @@ const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
         isLoading={isLoading}
         onDelete={handleDelete}
         onSelectConversation={handleSelectConversation}
+        unreadCounts={{}}
+        userId={userId || undefined}
       />
     </Card>
   );

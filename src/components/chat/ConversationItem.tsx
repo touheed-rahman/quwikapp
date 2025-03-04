@@ -50,7 +50,7 @@ export const ConversationItem = ({
                 Verified
               </Badge>
               {unreadCount > 0 && (
-                <Badge variant="default" className="bg-primary/90 text-white">
+                <Badge variant="default" className="bg-destructive text-white">
                   {unreadCount}
                 </Badge>
               )}
