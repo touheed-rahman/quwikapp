@@ -1,14 +1,15 @@
+
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
-import Home from "./pages/Home";
-import Category from "./pages/Category";
-import Subcategory from "./pages/Subcategory";
-import Listing from "./pages/Listing";
-import Profile from "./pages/Profile";
-import Sell from "./pages/Sell";
-import MyAds from "./pages/MyAds";
-import Wishlist from "./pages/Wishlist";
-import EditListing from "./pages/EditListing";
-import Notifications from "./pages/Notifications";
+import Home from "@/pages/Index";
+import Category from "@/pages/CategoryGrid";
+import Subcategory from "@/pages/Subcategory";
+import Listing from "@/pages/Product";
+import Profile from "@/pages/Profile";
+import Sell from "@/pages/Sell";
+import MyAds from "@/pages/MyAds";
+import Wishlist from "@/pages/Wishlist";
+import EditListing from "@/pages/Sell";
+import Notifications from "@/pages/Notifications";
 
 const App = () => {
   return (
