@@ -31,14 +31,19 @@ export const ConversationItem = ({
       onClick={onClick}
     >
       <div className="flex items-start gap-3">
-        <Avatar className="h-12 w-12">
-          <div className={cn(
-            "w-full h-full rounded-full flex items-center justify-center text-white",
-            userId === conversation.buyer_id ? "bg-primary/90" : "bg-orange-500/90"
-          )}>
-            {conversation.seller.full_name?.[0] || 'U'}
-          </div>
-        </Avatar>
+        <div className="relative">
+          <Avatar className="h-12 w-12">
+            <div className={cn(
+              "w-full h-full rounded-full flex items-center justify-center text-white",
+              userId === conversation.buyer_id ? "bg-primary/90" : "bg-orange-500/90"
+            )}>
+              {conversation.seller.full_name?.[0] || 'U'}
+            </div>
+          </Avatar>
+          {unreadCount > 0 && (
+            <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border border-white"></div>
+          )}
+        </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
