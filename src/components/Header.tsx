@@ -83,7 +83,7 @@ const Header = () => {
         <div className="flex items-center gap-2 ml-auto">
           {session ? (
             <>
-              <Link to="/notifications" className="shrink-0 relative">
+              <Link to="/notifications" className="shrink-0">
                 <Button variant="ghost" size="icon" className="relative hidden md:flex flex-col items-center justify-center h-16 w-16 gap-0.5">
                   <Bell className="h-5 w-5" />
                   <span className="text-[10px]">Notifications</span>

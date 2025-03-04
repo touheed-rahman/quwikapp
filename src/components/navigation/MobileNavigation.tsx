@@ -1,6 +1,6 @@
 
 import { Link } from "react-router-dom";
-import { Home, MessageSquare, Plus, ListOrdered, Heart, Bell } from "lucide-react";
+import { Home, MessageSquare, Plus, ListOrdered, Heart } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -66,19 +66,6 @@ const MobileNavigation = ({ onChatOpen }: MobileNavigationProps) => {
         <Home className="h-6 w-6 text-primary" />
         <span className="text-xs">Home</span>
       </Link>
-      
-      <Link to="/notifications" className="flex flex-col items-center gap-1 relative">
-        <Bell className="h-6 w-6 text-muted-foreground hover:text-primary transition-colors" />
-        <span className="text-xs hover:text-primary transition-colors">Alerts</span>
-        {unreadCount > 0 && (
-          <Badge 
-            className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center bg-destructive hover:bg-destructive p-0"
-          >
-            {unreadCount}
-          </Badge>
-        )}
-      </Link>
-      
       <div className="relative">
         <button 
           onClick={onChatOpen}
@@ -95,7 +82,6 @@ const MobileNavigation = ({ onChatOpen }: MobileNavigationProps) => {
           </Badge>
         )}
       </div>
-      
       <Link
         to="/sell"
         className="flex flex-col items-center -mt-8"
@@ -105,10 +91,13 @@ const MobileNavigation = ({ onChatOpen }: MobileNavigationProps) => {
         </div>
         <span className="text-xs mt-1">Sell Now</span>
       </Link>
-      
       <Link to="/my-ads" className="flex flex-col items-center gap-1">
         <ListOrdered className="h-6 w-6 text-muted-foreground hover:text-primary transition-colors" />
         <span className="text-xs hover:text-primary transition-colors">My Ads</span>
+      </Link>
+      <Link to="/wishlist" className="flex flex-col items-center gap-1">
+        <Heart className="h-6 w-6 text-muted-foreground hover:text-primary transition-colors" />
+        <span className="text-xs hover:text-primary transition-colors">Wishlist</span>
       </Link>
     </div>
   );
