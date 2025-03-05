@@ -1,3 +1,4 @@
+
 import { useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Loader2 } from "lucide-react";
@@ -9,6 +10,8 @@ import { useChat } from "@/hooks/use-chat";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import { useOnlineUsers } from "@/hooks/use-online-users";
+import QuickMessageSuggestions from "@/components/chat/QuickMessageSuggestions";
+import ChatTipBox from "@/components/chat/ChatTipBox";
 
 const ChatDetail = () => {
   const { id } = useParams();
@@ -93,6 +96,12 @@ const ChatDetail = () => {
     navigate('/chat');
   };
 
+  const handleQuickMessage = (message: string) => {
+    setNewMessage(message);
+    // Optional: automatically send the message
+    // setTimeout(() => handleSend(), 100);
+  };
+
   if (!sessionUser) {
     return (
       <div className="flex flex-col items-center justify-center h-screen bg-background">
@@ -118,6 +127,8 @@ const ChatDetail = () => {
     : null;
   
   const isOtherUserOnline = otherUserId ? onlineUsers.has(otherUserId) : false;
+  const isBuyer = conversationDetails && sessionUser.id === conversationDetails.buyer_id;
+  const isEmptyChat = messages.length === 0;
 
   return (
     <div className="flex flex-col h-[100dvh] bg-background">
@@ -126,7 +137,18 @@ const ChatDetail = () => {
         onBack={handleBack}
         isOnline={isOtherUserOnline}
       />
-      <MessageList messages={messages} sessionUserId={sessionUser.id} />
+      <div className="flex-1 overflow-y-auto">
+        <MessageList messages={messages} sessionUserId={sessionUser.id} />
+        
+        {/* Show tip box for buyers when chat is empty */}
+        {isEmptyChat && isBuyer && <ChatTipBox />}
+      </div>
+      
+      {/* Quick message suggestions for buyers */}
+      {isBuyer && (
+        <QuickMessageSuggestions onSendQuickMessage={handleQuickMessage} />
+      )}
+      
       <ChatInput
         newMessage={newMessage}
         setNewMessage={setNewMessage}
