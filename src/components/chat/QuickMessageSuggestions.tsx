@@ -32,8 +32,8 @@ const QuickMessageSuggestions: React.FC<QuickMessageSuggestionsProps> = ({
   const quickMessages = isBuyer ? buyerMessages : sellerMessages;
 
   return (
-    <div className="p-4 bg-background border-t">
-      <div className="flex flex-wrap gap-2 justify-center max-w-4xl mx-auto">
+    <div className="p-3 bg-background border-t">
+      <div className="flex flex-wrap gap-2 max-w-3xl mx-auto">
         {quickMessages.map((message) => (
           <Button
             key={message}

@@ -49,7 +49,7 @@ const ChatDetail = () => {
           title: "Error",
           description: "Could not verify conversation status."
         });
-        navigate('/chat');
+        navigate('/');
         return;
       }
       
@@ -58,7 +58,7 @@ const ChatDetail = () => {
           title: "Conversation not available",
           description: "This conversation has been deleted or doesn't exist."
         });
-        navigate('/chat');
+        navigate('/');
       }
     };
     
@@ -81,7 +81,7 @@ const ChatDetail = () => {
               title: "Conversation deleted",
               description: "This conversation has been deleted."
             });
-            navigate('/chat');
+            navigate('/');
           }
         }
       )
