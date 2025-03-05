@@ -1,4 +1,3 @@
-
 import { useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Loader2 } from "lucide-react";
@@ -144,10 +143,11 @@ const ChatDetail = () => {
         {isEmptyChat && isBuyer && <ChatTipBox />}
       </div>
       
-      {/* Quick message suggestions for buyers */}
-      {isBuyer && (
-        <QuickMessageSuggestions onSendQuickMessage={handleQuickMessage} />
-      )}
+      {/* Quick message suggestions for both buyers and sellers */}
+      <QuickMessageSuggestions 
+        onSendQuickMessage={handleQuickMessage} 
+        isBuyer={isBuyer}
+      />
       
       <ChatInput
         newMessage={newMessage}

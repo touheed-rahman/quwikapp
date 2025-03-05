@@ -4,10 +4,14 @@ import { Button } from "@/components/ui/button";
 
 interface QuickMessageSuggestionsProps {
   onSendQuickMessage: (message: string) => void;
+  isBuyer: boolean;
 }
 
-const QuickMessageSuggestions: React.FC<QuickMessageSuggestionsProps> = ({ onSendQuickMessage }) => {
-  const quickMessages = [
+const QuickMessageSuggestions: React.FC<QuickMessageSuggestionsProps> = ({ 
+  onSendQuickMessage, 
+  isBuyer 
+}) => {
+  const buyerMessages = [
     "Hello",
     "Is it available?",
     "Okay",
@@ -16,19 +20,32 @@ const QuickMessageSuggestions: React.FC<QuickMessageSuggestionsProps> = ({ onSen
     "Not interested"
   ];
 
+  const sellerMessages = [
+    "Yes, it's available",
+    "Are you interested?",
+    "When would you like to meet?",
+    "Thank you for your interest",
+    "The price is negotiable",
+    "I can deliver it"
+  ];
+
+  const quickMessages = isBuyer ? buyerMessages : sellerMessages;
+
   return (
-    <div className="p-2 overflow-x-auto flex gap-2 bg-background border-t">
-      {quickMessages.map((message) => (
-        <Button
-          key={message}
-          variant="outline"
-          size="sm"
-          className="whitespace-nowrap text-xs py-1 px-3 h-auto rounded-full bg-white hover:bg-primary/5"
-          onClick={() => onSendQuickMessage(message)}
-        >
-          {message}
-        </Button>
-      ))}
+    <div className="p-3 bg-background border-t">
+      <div className="flex flex-wrap gap-2 max-w-3xl mx-auto">
+        {quickMessages.map((message) => (
+          <Button
+            key={message}
+            variant="outline"
+            size="sm"
+            className="whitespace-nowrap text-sm py-2 px-4 h-auto rounded-full bg-white hover:bg-primary/5"
+            onClick={() => onSendQuickMessage(message)}
+          >
+            {message}
+          </Button>
+        ))}
+      </div>
     </div>
   );
 };
