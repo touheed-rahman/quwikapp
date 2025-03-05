@@ -1,4 +1,3 @@
-
 import { Bell, MessageSquare, User, HelpCircle, ListOrdered } from "lucide-react";
 import { Button } from "./ui/button";
 import { Link } from "react-router-dom";
@@ -8,6 +7,8 @@ import { Badge } from "./ui/badge";
 import { useIsMobile } from "@/hooks/use-mobile";
 import ChatWindow from "@/components/chat/ChatWindow";
 import FeedbackDialog from "@/components/feedback/FeedbackDialog";
+import { toast } from "@/hooks/use-toast";
+import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 
 const Header = () => {
   const [session, setSession] = useState<any>(null);
@@ -71,6 +72,14 @@ const Header = () => {
     };
   }, [session?.user]);
 
+  const handleNotificationClick = () => {
+    toast({
+      title: "Coming Soon",
+      description: "Notifications feature will be available soon!",
+      duration: 3000,
+    });
+  };
+
   return (
     <header className="fixed top-0 left-0 right-0 bg-white border-b z-50">
       <div className="container mx-auto px-4 h-16 flex items-center gap-4">
@@ -83,19 +92,22 @@ const Header = () => {
         <div className="flex items-center gap-2 ml-auto">
           {session ? (
             <>
-              <Link to="/notifications" className="shrink-0">
-                <Button variant="ghost" size="icon" className="relative hidden md:flex flex-col items-center justify-center h-16 w-16 gap-0.5">
-                  <Bell className="h-5 w-5" />
-                  <span className="text-[10px]">Notifications</span>
-                  {unreadCount > 0 && (
-                    <Badge 
-                      className="absolute top-2 right-2 h-5 w-5 flex items-center justify-center bg-destructive hover:bg-destructive p-0"
-                    >
-                      {unreadCount}
-                    </Badge>
-                  )}
-                </Button>
-              </Link>
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="relative hidden md:flex flex-col items-center justify-center h-16 w-16 gap-0.5"
+                onClick={handleNotificationClick}
+              >
+                <Bell className="h-5 w-5" />
+                <span className="text-[10px]">Notifications</span>
+                {unreadCount > 0 && (
+                  <Badge 
+                    className="absolute top-2 right-2 h-5 w-5 flex items-center justify-center bg-destructive hover:bg-destructive p-0"
+                  >
+                    {unreadCount}
+                  </Badge>
+                )}
+              </Button>
               <div className="relative hidden md:block">
                 <Button 
                   variant="ghost" 

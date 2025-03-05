@@ -1,9 +1,9 @@
-
 import { Link } from "react-router-dom";
 import { Home, MessageSquare, Plus, ListOrdered, Heart } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
 
 interface MobileNavigationProps {
   onChatOpen: () => void;
@@ -60,6 +60,15 @@ const MobileNavigation = ({ onChatOpen }: MobileNavigationProps) => {
     getSession();
   }, []);
 
+  const handleNotificationClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    toast({
+      title: "Coming Soon",
+      description: "Notifications feature will be available soon!",
+      duration: 3000,
+    });
+  };
+
   return (
     <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t flex items-center justify-between px-6 py-2 z-50">
       <Link to="/" className="flex flex-col items-center gap-1">
@@ -95,10 +104,10 @@ const MobileNavigation = ({ onChatOpen }: MobileNavigationProps) => {
         <ListOrdered className="h-6 w-6 text-muted-foreground hover:text-primary transition-colors" />
         <span className="text-xs hover:text-primary transition-colors">My Ads</span>
       </Link>
-      <Link to="/wishlist" className="flex flex-col items-center gap-1">
+      <button onClick={handleNotificationClick} className="flex flex-col items-center gap-1">
         <Heart className="h-6 w-6 text-muted-foreground hover:text-primary transition-colors" />
         <span className="text-xs hover:text-primary transition-colors">Wishlist</span>
-      </Link>
+      </button>
     </div>
   );
 };
