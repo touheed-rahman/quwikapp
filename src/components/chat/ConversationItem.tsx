@@ -25,7 +25,7 @@ export const ConversationItem = ({
   return (
     <div
       className={cn(
-        "px-4 py-3 hover:bg-muted/50 transition-colors cursor-pointer border-b",
+        "px-4 py-3 hover:bg-muted/50 transition-colors cursor-pointer border-b relative",
         unreadCount > 0 && "bg-primary/5"
       )}
       onClick={onClick}
@@ -50,7 +50,7 @@ export const ConversationItem = ({
                 Verified
               </Badge>
               {unreadCount > 0 && (
-                <Badge variant="default" className="bg-primary/90 text-white">
+                <Badge variant="default" className="bg-primary text-white ml-1 py-0 px-2 h-5 min-w-5 flex items-center justify-center rounded-full">
                   {unreadCount}
                 </Badge>
               )}

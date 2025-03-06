@@ -8,6 +8,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import ConversationList from "./ConversationList";
 import { useConversations } from "@/hooks/use-conversations";
 import { supabase } from "@/integrations/supabase/client";
+import { ChatHeader } from "./ChatHeader";
 
 interface ChatWindowProps {
   isOpen: boolean;
@@ -16,6 +17,7 @@ interface ChatWindowProps {
 
 const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
   const [filter, setFilter] = useState<'all' | 'buying' | 'selling'>('all');
+  const [searchTerm, setSearchTerm] = useState('');
   const location = useLocation();
   const navigate = useNavigate();
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
@@ -42,7 +44,13 @@ const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
     };
   }, []);
   
-  const { conversations, isLoading, handleDelete, fetchConversations } = useConversations(
+  const { 
+    conversations, 
+    isLoading, 
+    handleDelete,
+    fetchConversations,
+    unreadCounts 
+  } = useConversations(
     filter,
     userId,
     isAuthenticated
@@ -70,6 +78,16 @@ const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
     onClose();
   }, [onClose]);
 
+  // Filter conversations based on search term
+  const filteredConversations = searchTerm.trim() 
+    ? conversations.filter(conv => 
+        conv.listing.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        conv.seller.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        conv.buyer.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (conv.last_message && conv.last_message.toLowerCase().includes(searchTerm.toLowerCase()))
+      )
+    : conversations;
+
   if (isAuthenticated === null) {
     return null; // Don't render anything while checking auth
   }
@@ -84,25 +102,24 @@ const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
         isOpen ? 'translate-x-0' : 'translate-x-full'
       }`}
     >
-      <div className="flex items-center justify-between p-4 border-b">
-        <h2 className="text-lg font-semibold">Messages</h2>
-        <Button variant="ghost" size="icon" onClick={handleClose}>
-          <X className="h-5 w-5" />
-        </Button>
-      </div>
+      <ChatHeader 
+        onClose={handleClose}
+        searchTerm={searchTerm}
+        onSearchChange={setSearchTerm}
+      />
 
       <ChatFilters 
-        activeTab={filter}
-        setActiveTab={setFilter}
         filter={filter}
         onFilterChange={handleFilterChange}
       />
 
       <ConversationList 
-        conversations={conversations}
+        conversations={filteredConversations}
         isLoading={isLoading}
         onDelete={handleDelete}
         onSelectConversation={handleSelectConversation}
+        unreadCounts={unreadCounts}
+        userId={userId}
       />
     </Card>
   );
