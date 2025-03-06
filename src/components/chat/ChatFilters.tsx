@@ -2,11 +2,15 @@
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface ChatFiltersProps {
+  activeTab: 'all' | 'buying' | 'selling';
+  setActiveTab: (tab: 'all' | 'buying' | 'selling') => void;
   filter: 'all' | 'buying' | 'selling';
   onFilterChange: (filter: 'all' | 'buying' | 'selling') => void;
 }
 
 export const ChatFilters = ({ 
+  activeTab, 
+  setActiveTab,
   filter,
   onFilterChange
 }: ChatFiltersProps) => {

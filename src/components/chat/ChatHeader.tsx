@@ -5,14 +5,13 @@ import { Search, X } from "lucide-react";
 
 interface ChatHeaderProps {
   onClose: () => void;
-  title: string;
 }
 
-export const ChatHeader = ({ onClose, title }: ChatHeaderProps) => {
+export const ChatHeader = ({ onClose }: ChatHeaderProps) => {
   return (
     <div className="border-b p-4 flex items-center justify-between gap-4">
       <div className="flex items-center gap-3 flex-1">
-        <h3 className="font-semibold text-xl">{title}</h3>
+        <h3 className="font-semibold text-xl">Chats</h3>
         <div className="relative flex-1 max-w-xs">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input 

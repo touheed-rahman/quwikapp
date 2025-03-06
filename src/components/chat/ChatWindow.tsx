@@ -92,6 +92,8 @@ const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
       </div>
 
       <ChatFilters 
+        activeTab={filter}
+        setActiveTab={setFilter}
         filter={filter}
         onFilterChange={handleFilterChange}
       />
