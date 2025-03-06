@@ -11,7 +11,7 @@ import MobileNavigation from "@/components/navigation/MobileNavigation"; // Fixe
 const Chat = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { sessionUser } = useSessionUser();
+  const { sessionUser } = useSessionUser(undefined); // Pass undefined since it's expecting a parameter
   const [filter, setFilter] = useState<'all' | 'buying' | 'selling'>('all');
   
   // Use proper arguments for useConversations
@@ -66,7 +66,7 @@ const Chat = () => {
           userId={sessionUser.id}
         />
       </div>
-      <MobileNavigation onChatOpen={() => {}} pathname={location.pathname} />
+      <MobileNavigation onChatOpen={() => {}} /> {/* Remove the pathname prop as it's not in the interface */}
     </div>
   );
 };
