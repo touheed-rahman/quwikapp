@@ -6,15 +6,15 @@ import { useSessionUser } from "@/hooks/use-session-user";
 import { ChatHeader } from "@/components/chat/ChatHeader";
 import { ChatFilters } from "@/components/chat/ChatFilters";
 import ConversationList from "@/components/chat/ConversationList";
-import { MobileNavigation } from "@/components/navigation/MobileNavigation";
+import MobileNavigation from "@/components/navigation/MobileNavigation"; // Fixed import
 
 const Chat = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { sessionUser } = useSessionUser();
   const [filter, setFilter] = useState<'all' | 'buying' | 'selling'>('all');
-  const [activeFilter, setActiveFilter] = useState<string>('all');
   
+  // Use proper arguments for useConversations
   const { 
     conversations, 
     isLoading, 
@@ -29,16 +29,6 @@ const Chat = () => {
 
   const handleFilterChange = (newFilter: 'all' | 'buying' | 'selling') => {
     setFilter(newFilter);
-  };
-
-  const handleQuickFilterChange = (filter: string) => {
-    setActiveFilter(filter);
-    // Additional filtering logic can be added here
-  };
-
-  const handleSelectConversation = (conversationId: string) => {
-    // Mark messages as read or other actions before navigating
-    navigate(`/chat/${conversationId}`);
   };
 
   if (!sessionUser) {
@@ -57,19 +47,21 @@ const Chat = () => {
 
   return (
     <div className="flex flex-col h-[100dvh] bg-background">
-      <ChatHeader onBack={() => navigate('/')} title="Chats" />
+      {/* Fixed ChatHeader props to match component definition */}
+      <ChatHeader onClose={() => navigate('/')} title="Chats" />
+      
+      {/* Fixed ChatFilters props to match component definition */}
       <ChatFilters 
         filter={filter}
         onFilterChange={handleFilterChange}
-        activeFilter={activeFilter}
-        onQuickFilterChange={handleQuickFilterChange}
       />
+      
       <div className="flex-1 overflow-hidden">
         <ConversationList 
           conversations={conversations}
           isLoading={isLoading}
           onDelete={handleDelete}
-          onSelectConversation={handleSelectConversation}
+          onSelectConversation={(conversationId) => navigate(`/chat/${conversationId}`)}
           unreadCounts={unreadCounts}
           userId={sessionUser.id}
         />
