@@ -2,15 +2,9 @@
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ConversationItem } from "./ConversationItem";
 import { Button } from "@/components/ui/button";
-import { MoreVertical, Trash2 } from "lucide-react";
+import { Trash2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import type { Conversation } from "./types/conversation";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 
 interface ConversationListProps {
   conversations: Conversation[];
@@ -53,38 +47,14 @@ const ConversationList = ({
   return (
     <ScrollArea className="flex-1">
       {availableConversations.map((conversation) => (
-        <div key={conversation.id} className="group relative">
+        <div key={conversation.id} className="relative">
           <ConversationItem
             conversation={conversation}
             onClick={() => handleConversationClick(conversation)}
             userId={userId}
             unreadCount={unreadCounts[conversation.id] || 0}
+            onDelete={onDelete}
           />
-          <div className="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon">
-                  <MoreVertical className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem 
-                  className="text-destructive focus:text-destructive"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onDelete(conversation.id).then(success => {
-                      if (success && window.location.pathname.includes(`/chat/${conversation.id}`)) {
-                        navigate('/');
-                      }
-                    });
-                  }}
-                >
-                  <Trash2 className="mr-2 h-4 w-4" />
-                  Delete Chat
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
         </div>
       ))}
     </ScrollArea>

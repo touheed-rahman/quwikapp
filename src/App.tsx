@@ -13,6 +13,7 @@ import Sell from "./pages/Sell";
 import Product from "./pages/Product";
 import Categories from "./pages/Categories";
 import ChatDetail from "./pages/ChatDetail";
+import Chat from "./pages/Chat";
 import Profile from "./pages/Profile";
 import AdminPanel from "./pages/Admin";
 import MyAds from "./pages/MyAds";
@@ -95,6 +96,14 @@ const App = () => (
               />
               <Route path="/product/:id" element={<Product />} />
               <Route path="/categories" element={<Categories />} />
+              <Route
+                path="/chat"
+                element={
+                  <PrivateRoute>
+                    <Chat />
+                  </PrivateRoute>
+                }
+              />
               <Route
                 path="/chat/:id"
                 element={
