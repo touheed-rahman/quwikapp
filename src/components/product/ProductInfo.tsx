@@ -1,9 +1,11 @@
 
-import { Heart, Share2, MapPin, Calendar, Clock } from "lucide-react";
+import { Heart, Share2, MapPin, Calendar, Clock, Copy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { ProductCondition } from "@/types/categories";
+import { useToast } from "@/components/ui/use-toast";
+import { useState } from "react";
 
 interface ProductInfoProps {
   title: string;
@@ -14,6 +16,8 @@ interface ProductInfoProps {
   description: string;
   category?: string;
   km_driven?: number | null;
+  adNumber?: string;
+  id?: string;
 }
 
 const ProductInfo = ({
@@ -24,10 +28,53 @@ const ProductInfo = ({
   condition,
   description,
   category,
-  km_driven
+  km_driven,
+  adNumber,
+  id
 }: ProductInfoProps) => {
+  const { toast } = useToast();
+  const [copying, setCopying] = useState(false);
+  
   // Extract just the area name
   const displayLocation = location?.split(/[|,]/)[0].trim() || 'Location not specified';
+
+  const handleShare = async () => {
+    const url = `${window.location.origin}/product/${id}`;
+    
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: title,
+          text: `Check out this listing: ${title}`,
+          url: url
+        });
+      } catch (error) {
+        copyToClipboard(url);
+      }
+    } else {
+      copyToClipboard(url);
+    }
+  };
+
+  const copyToClipboard = (text: string) => {
+    setCopying(true);
+    navigator.clipboard.writeText(text)
+      .then(() => {
+        toast({
+          title: "Link copied!",
+          description: "Product link copied to clipboard",
+        });
+        setTimeout(() => setCopying(false), 2000);
+      })
+      .catch(err => {
+        toast({
+          title: "Failed to copy",
+          description: "Could not copy the link to clipboard",
+          variant: "destructive"
+        });
+        setCopying(false);
+      });
+  };
 
   return (
     <div className="space-y-3 md:space-y-6 overflow-hidden">
@@ -37,10 +84,31 @@ const ProductInfo = ({
           <p className="text-xl md:text-4xl font-bold text-primary">
             ₹{price.toLocaleString()}
           </p>
+          {adNumber && (
+            <div className="flex items-center gap-2 mt-1">
+              <Badge variant="outline" className="bg-primary/5 hover:bg-primary/10">
+                {adNumber}
+              </Badge>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="h-7 px-2" 
+                onClick={() => copyToClipboard(adNumber)}
+              >
+                <Copy className="h-3 w-3 mr-1" />
+                <span className="text-xs">Copy</span>
+              </Button>
+            </div>
+          )}
         </div>
         <div className="flex gap-2 self-end md:self-start">
-          <Button variant="outline" size="icon" className="h-8 w-8 md:h-10 md:w-10 rounded-full">
-            <Share2 className="h-4 w-4 md:h-5 md:w-5" />
+          <Button 
+            variant="outline" 
+            size="icon" 
+            className="h-8 w-8 md:h-10 md:w-10 rounded-full"
+            onClick={handleShare}
+          >
+            <Share2 className={`h-4 w-4 md:h-5 md:w-5 ${copying ? 'text-primary' : ''}`} />
           </Button>
           <Button variant="outline" size="icon" className="h-8 w-8 md:h-10 md:w-10 rounded-full">
             <Heart className="h-4 w-4 md:h-5 md:w-5" />

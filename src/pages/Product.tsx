@@ -110,6 +110,8 @@ const ProductPage = () => {
               description={product.description}
               category={product.category}
               km_driven={product.km_driven}
+              adNumber={product.adNumber}
+              id={product.id}
             />
 
             {seller && (
