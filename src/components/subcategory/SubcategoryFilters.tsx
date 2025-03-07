@@ -111,8 +111,8 @@ const SubcategoryFilters = ({
             <div className="grid md:grid-cols-3 gap-4 pt-2">
               <div>
                 <Label htmlFor="condition-filter" className="text-sm mb-2 block">Condition</Label>
-                <Select value={condition} onValueChange={setCondition} id="condition-filter">
-                  <SelectTrigger>
+                <Select value={condition} onValueChange={setCondition}>
+                  <SelectTrigger aria-labelledby="condition-filter">
                     <SelectValue placeholder="Condition" />
                   </SelectTrigger>
                   <SelectContent>
@@ -126,9 +126,9 @@ const SubcategoryFilters = ({
               </div>
               
               <div>
-                <Label htmlFor="date-posted" className="text-sm mb-2 block">Date Posted</Label>
-                <Select id="date-posted" value={datePosted} onValueChange={setDatePosted}>
-                  <SelectTrigger>
+                <Label htmlFor="date-filter" className="text-sm mb-2 block">Date Posted</Label>
+                <Select value={datePosted} onValueChange={setDatePosted}>
+                  <SelectTrigger aria-labelledby="date-filter">
                     <SelectValue placeholder="Date Posted" />
                   </SelectTrigger>
                   <SelectContent>
