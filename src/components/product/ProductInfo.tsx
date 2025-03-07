@@ -1,5 +1,5 @@
 
-import { Heart, Share2, MapPin, Calendar, Clock, Copy } from "lucide-react";
+import { Heart, Share2, MapPin, Calendar, Clock, Copy, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
@@ -18,6 +18,7 @@ interface ProductInfoProps {
   km_driven?: number | null;
   adNumber?: string;
   id?: string;
+  viewCount?: number;
 }
 
 const ProductInfo = ({
@@ -30,7 +31,8 @@ const ProductInfo = ({
   category,
   km_driven,
   adNumber,
-  id
+  id,
+  viewCount = 0
 }: ProductInfoProps) => {
   const { toast } = useToast();
   const [copying, setCopying] = useState(false);
@@ -131,6 +133,10 @@ const ProductInfo = ({
             <span>{km_driven.toLocaleString()} km driven</span>
           </div>
         )}
+        <div className="flex items-center gap-1">
+          <Eye className="h-3 w-3 md:h-4 md:w-4" />
+          <span>{viewCount} views</span>
+        </div>
       </div>
 
       <div className="flex flex-wrap gap-2">

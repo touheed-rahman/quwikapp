@@ -17,7 +17,13 @@ const SubcategoryPage = () => {
     setSelectedLocation,
     searchQuery,
     setSearchQuery,
-    featuredListings
+    featuredListings,
+    priceRange,
+    setPriceRange,
+    datePosted,
+    setDatePosted,
+    minPrice,
+    maxPrice
   } = useSubcategoryData();
 
   return (
@@ -38,6 +44,12 @@ const SubcategoryPage = () => {
             setCondition={setCondition}
             selectedLocation={selectedLocation}
             setSelectedLocation={setSelectedLocation}
+            priceRange={priceRange}
+            setPriceRange={setPriceRange}
+            minPrice={minPrice}
+            maxPrice={maxPrice}
+            datePosted={datePosted}
+            setDatePosted={setDatePosted}
           />
         </div>
 
@@ -56,6 +68,8 @@ const SubcategoryPage = () => {
           selectedLocation={selectedLocation}
           searchQuery={searchQuery}
           featuredListings={featuredListings}
+          priceRange={priceRange}
+          datePosted={datePosted}
         />
       </main>
     </div>

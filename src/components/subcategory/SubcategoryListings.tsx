@@ -3,6 +3,7 @@ import { ProductCondition } from "@/types/categories";
 import ProductCard from "@/components/ProductCard";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
+import { addDays, startOfDay, startOfWeek, startOfMonth } from "date-fns";
 
 interface SubcategoryListingsProps {
   category: string | undefined;
@@ -12,6 +13,8 @@ interface SubcategoryListingsProps {
   selectedLocation: string;
   searchQuery: string;
   featuredListings: any[];
+  priceRange?: [number, number];
+  datePosted?: string;
 }
 
 const SubcategoryListings = ({
@@ -22,12 +25,14 @@ const SubcategoryListings = ({
   selectedLocation,
   searchQuery,
   featuredListings,
+  priceRange = [0, 1000000],
+  datePosted = 'all'
 }: SubcategoryListingsProps) => {
   const { data: listings = [], isLoading } = useQuery({
-    queryKey: ['subcategory-listings', category, subcategory, sortBy, condition, selectedLocation, searchQuery],
+    queryKey: ['subcategory-listings', category, subcategory, sortBy, condition, selectedLocation, searchQuery, priceRange, datePosted],
     queryFn: async () => {
       try {
-        console.log('Fetching listings with params:', { category, subcategory, sortBy, condition, selectedLocation, searchQuery });
+        console.log('Fetching listings with params:', { category, subcategory, sortBy, condition, selectedLocation, searchQuery, priceRange, datePosted });
         
         let query = supabase
           .from('listings')
@@ -58,6 +63,35 @@ const SubcategoryListings = ({
 
         if (searchQuery) {
           query = query.ilike('title', `%${searchQuery}%`);
+        }
+        
+        // Apply price range filter
+        if (priceRange && priceRange.length === 2) {
+          query = query.gte('price', priceRange[0]).lte('price', priceRange[1]);
+        }
+        
+        // Apply date filter
+        if (datePosted !== 'all') {
+          let dateFilter;
+          const now = new Date();
+          
+          switch (datePosted) {
+            case 'today':
+              dateFilter = startOfDay(now).toISOString();
+              break;
+            case 'week':
+              dateFilter = startOfWeek(now).toISOString();
+              break;
+            case 'month':
+              dateFilter = startOfMonth(now).toISOString();
+              break;
+            default:
+              dateFilter = null;
+          }
+          
+          if (dateFilter) {
+            query = query.gte('created_at', dateFilter);
+          }
         }
 
         if (sortBy === 'price-asc') {

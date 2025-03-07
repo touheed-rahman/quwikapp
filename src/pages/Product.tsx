@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -112,6 +113,7 @@ const ProductPage = () => {
               km_driven={product.km_driven}
               adNumber={product.adNumber}
               id={product.id}
+              viewCount={product.view_count}
             />
 
             {seller && (
