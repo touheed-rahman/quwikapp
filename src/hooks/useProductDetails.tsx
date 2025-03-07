@@ -10,15 +10,27 @@ export const useProductDetails = (id: string | undefined) => {
       if (!id) throw new Error('Product ID is required');
 
       // First, increment the view count for this product
-      // Using a direct update with an increment expression rather than RPC
-      const { error: updateError } = await supabase
-        .from('listings')
-        .update({ 
-          view_count: supabase.sql`coalesce(view_count, 0) + 1` 
-        })
-        .eq('id', id);
-      
-      if (updateError) console.error('Error incrementing view count:', updateError);
+      try {
+        // Get the current view count
+        const { data: viewData } = await supabase
+          .from('listings')
+          .select('view_count')
+          .eq('id', id)
+          .single();
+        
+        // Calculate the new view count
+        const newViewCount = ((viewData?.view_count || 0) + 1);
+        
+        // Update with the new view count
+        const { error: updateError } = await supabase
+          .from('listings')
+          .update({ view_count: newViewCount })
+          .eq('id', id);
+        
+        if (updateError) console.error('Error incrementing view count:', updateError);
+      } catch (error) {
+        console.error('Error in view count update process:', error);
+      }
 
       // Then fetch the product details with updated view count
       const { data, error } = await supabase
