@@ -10,9 +10,12 @@ export const useProductDetails = (id: string | undefined) => {
       if (!id) throw new Error('Product ID is required');
 
       // First, increment the view count for this product
+      // Using a direct update with an increment expression rather than RPC
       const { error: updateError } = await supabase
         .from('listings')
-        .update({ view_count: supabase.rpc('increment_counter', { row_id: id }) })
+        .update({ 
+          view_count: supabase.sql`coalesce(view_count, 0) + 1` 
+        })
         .eq('id', id);
       
       if (updateError) console.error('Error incrementing view count:', updateError);
