@@ -32,10 +32,11 @@ export function useChat(conversationId: string | undefined) {
         ? conversationDetails.seller_id 
         : conversationDetails.buyer_id;
       
-      const { data, error } = await supabase
-        .from('blocked_users')
+      // Check if either user has blocked the other
+      const { data, error } = await supabase.from('user_blocks')
         .select('*')
-        .or(`and(blocker_id.eq.${otherUserId},blocked_id.eq.${sessionUser.id}),and(blocker_id.eq.${sessionUser.id},blocked_id.eq.${otherUserId})`)
+        .or(`blocker_id.eq.${otherUserId},blocker_id.eq.${sessionUser.id}`)
+        .or(`blocked_id.eq.${sessionUser.id},blocked_id.eq.${otherUserId}`)
         .maybeSingle();
         
       if (error) {

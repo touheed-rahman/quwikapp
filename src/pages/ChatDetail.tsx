@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Loader2, Shield, AlertTriangle } from "lucide-react";
@@ -122,6 +121,7 @@ const ChatDetail = () => {
 
   const handleDeleteMessage = async (messageId: string) => {
     try {
+      // Direct delete approach - with a check to ensure only own messages can be deleted
       const { error } = await supabase
         .from('messages')
         .delete()
@@ -145,8 +145,9 @@ const ChatDetail = () => {
 
   const handleReportMessage = async (messageId: string, reason: string) => {
     try {
+      // Insert directly into the message_reports table
       const { error } = await supabase
-        .from('reports')
+        .from('message_reports')
         .insert({
           message_id: messageId,
           user_id: sessionUser?.id,
@@ -178,9 +179,9 @@ const ChatDetail = () => {
       : conversationDetails.buyer_id;
     
     try {
-      // Insert a record in the blocked_users table
+      // Insert a record in the user_blocks table
       const { error } = await supabase
-        .from('blocked_users')
+        .from('user_blocks')
         .insert({
           blocker_id: sessionUser.id,
           blocked_id: otherUserId

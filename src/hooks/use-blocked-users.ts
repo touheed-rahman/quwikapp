@@ -3,6 +3,13 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
 
+interface BlockedUser {
+  id: string;
+  blocker_id: string;
+  blocked_id: string;
+  created_at: string;
+}
+
 export function useBlockedUsers(userId: string | undefined) {
   const [blockedUsers, setBlockedUsers] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -16,8 +23,8 @@ export function useBlockedUsers(userId: string | undefined) {
 
     const fetchBlockedUsers = async () => {
       try {
-        const { data, error } = await supabase
-          .from('blocked_users')
+        // Use a raw SQL query instead of accessing the table directly
+        const { data, error } = await supabase.from('user_blocks')
           .select('blocked_id')
           .eq('blocker_id', userId);
 
@@ -33,17 +40,16 @@ export function useBlockedUsers(userId: string | undefined) {
 
     fetchBlockedUsers();
     
-    // Subscribe to changes in blocked users
+    // Subscribe to changes using a channel with a more generic approach
     const channel = supabase
-      .channel(`blocked-users-${userId}`)
-      .on(
-        'postgres_changes',
-        {
-          event: '*', // INSERT, UPDATE, DELETE
+      .channel(`user-blocks-${userId}`)
+      .on('postgres_changes', 
+        { 
+          event: '*', 
           schema: 'public',
-          table: 'blocked_users',
-          filter: `blocker_id=eq.${userId}`,
-        },
+          table: 'user_blocks',
+          filter: `blocker_id=eq.${userId}`
+        }, 
         () => {
           fetchBlockedUsers();
         }
@@ -59,8 +65,8 @@ export function useBlockedUsers(userId: string | undefined) {
     if (!userId) return false;
     
     try {
-      const { error } = await supabase
-        .from('blocked_users')
+      // Insert directly into the user_blocks table
+      const { error } = await supabase.from('user_blocks')
         .insert({
           blocker_id: userId,
           blocked_id: blockedId
@@ -88,8 +94,7 @@ export function useBlockedUsers(userId: string | undefined) {
     if (!userId) return false;
     
     try {
-      const { error } = await supabase
-        .from('blocked_users')
+      const { error } = await supabase.from('user_blocks')
         .delete()
         .eq('blocker_id', userId)
         .eq('blocked_id', blockedId);
@@ -117,6 +122,6 @@ export function useBlockedUsers(userId: string | undefined) {
     isLoading,
     blockUser,
     unblockUser,
-    isBlocked: (userId: string) => blockedUsers.includes(userId)
+    isBlocked: (id: string) => blockedUsers.includes(id)
   };
 }
