@@ -1,7 +1,6 @@
 
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { Loader2, AlertTriangle, MoreVertical, Trash2, Flag, Ban } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import ChatDetailHeader from "@/components/chat/ChatDetailHeader";
 import { MessageList } from "@/components/chat/MessageList";
@@ -12,23 +11,12 @@ import { useToast } from "@/components/ui/use-toast";
 import { useOnlineUsers } from "@/hooks/use-online-users";
 import QuickMessageSuggestions from "@/components/chat/QuickMessageSuggestions";
 import ChatTipBox from "@/components/chat/ChatTipBox";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 import { useBlockedUsers } from "@/hooks/use-blocked-users";
+import NotSignedInView from "@/components/chat/NotSignedInView";
+import ChatLoadingView from "@/components/chat/ChatLoadingView";
+import ChatActionsMenu from "@/components/chat/ChatActionsMenu";
+import BlockUserDialog from "@/components/chat/BlockUserDialog";
+import ReportDialog from "@/components/chat/ReportDialog";
 
 const ChatDetail = () => {
   const { id } = useParams();
@@ -37,6 +25,7 @@ const ChatDetail = () => {
   const { onlineUsers } = useOnlineUsers();
   
   const [blockDialogOpen, setBlockDialogOpen] = useState(false);
+  const [reportDialogOpen, setReportDialogOpen] = useState(false);
   
   const {
     messages,
@@ -189,20 +178,11 @@ const ChatDetail = () => {
   };
 
   if (!sessionUser) {
-    return (
-      <div className="flex flex-col items-center justify-center h-screen bg-background">
-        <p className="text-lg mb-4">Please sign in to view this chat</p>
-        <Button onClick={() => navigate('/profile')}>Sign In</Button>
-      </div>
-    );
+    return <NotSignedInView />;
   }
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-screen bg-background">
-        <Loader2 className="h-8 w-8 animate-spin" />
-      </div>
-    );
+    return <ChatLoadingView />;
   }
 
   // Determine if the other user is online
@@ -225,28 +205,10 @@ const ChatDetail = () => {
           isOnline={isOtherUserOnline}
         />
         
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="mr-2 opacity-100 flex">
-              <MoreVertical className="h-5 w-5" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-56">
-            <DropdownMenuItem
-              className="flex items-center cursor-pointer"
-              onClick={() => setBlockDialogOpen(true)}
-            >
-              <Ban className="mr-2 h-4 w-4" />
-              Block User
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              className="flex items-center text-destructive cursor-pointer" 
-            >
-              <Flag className="mr-2 h-4 w-4" />
-              Report Conversation
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <ChatActionsMenu 
+          onBlockUser={() => setBlockDialogOpen(true)}
+          onReportConversation={() => setReportDialogOpen(true)}
+        />
       </div>
       
       <div className="flex-1 overflow-y-auto">
@@ -276,28 +238,19 @@ const ChatDetail = () => {
       />
       
       {/* Block User Dialog */}
-      <AlertDialog open={blockDialogOpen} onOpenChange={setBlockDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle className="flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5 text-destructive" />
-              Block User
-            </AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to block this user? You will no longer receive messages from them, and they won't be able to contact you.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction 
-              onClick={handleBlockUser}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              Block User
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <BlockUserDialog 
+        open={blockDialogOpen} 
+        onOpenChange={setBlockDialogOpen} 
+        onConfirm={handleBlockUser} 
+      />
+      
+      {/* Report Conversation Dialog */}
+      <ReportDialog 
+        open={reportDialogOpen} 
+        onOpenChange={setReportDialogOpen}
+        conversationId={id}
+        sessionUserId={sessionUser.id}
+      />
     </div>
   );
 };
