@@ -3,12 +3,6 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
 
-interface BlockedUser {
-  id: string;
-  blocked_id: string;
-  created_at: string;
-}
-
 export function useBlockedUsers(userId: string | undefined) {
   const [blockedUsers, setBlockedUsers] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
