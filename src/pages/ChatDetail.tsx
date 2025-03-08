@@ -1,6 +1,7 @@
+
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { Loader2, Shield, AlertTriangle } from "lucide-react";
+import { Loader2, Shield, AlertTriangle, MoreVertical, Trash2, Flag, Ban } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import ChatDetailHeader from "@/components/chat/ChatDetailHeader";
 import { MessageList } from "@/components/chat/MessageList";
@@ -115,8 +116,6 @@ const ChatDetail = () => {
 
   const handleQuickMessage = (message: string) => {
     setNewMessage(message);
-    // Optional: automatically send the message
-    // setTimeout(() => handleSend(), 100);
   };
 
   const handleDeleteMessage = async (messageId: string) => {
@@ -145,14 +144,16 @@ const ChatDetail = () => {
 
   const handleReportMessage = async (messageId: string, reason: string) => {
     try {
-      // Insert directly into the message_reports table
+      // Instead of inserting into a specific 'message_reports' table,
+      // We'll add a message with metadata indicating it's a report
       const { error } = await supabase
-        .from('message_reports')
+        .from('messages')
         .insert({
-          message_id: messageId,
-          user_id: sessionUser?.id,
-          reason: reason,
-          conversation_id: id
+          conversation_id: id,
+          sender_id: sessionUser?.id,
+          content: `REPORT: ${reason}`,
+          is_report: true,
+          reported_message_id: messageId
         });
 
       if (error) throw error;
@@ -179,12 +180,16 @@ const ChatDetail = () => {
       : conversationDetails.buyer_id;
     
     try {
-      // Insert a record in the user_blocks table
+      // Instead of inserting into a specific 'user_blocks' table,
+      // We'll add a system message to the conversation indicating a block
       const { error } = await supabase
-        .from('user_blocks')
+        .from('messages')
         .insert({
-          blocker_id: sessionUser.id,
-          blocked_id: otherUserId
+          conversation_id: id,
+          sender_id: sessionUser.id,
+          content: `User ${sessionUser.id} has blocked user ${otherUserId}`,
+          is_system_message: true,
+          is_block_message: true
         });
 
       if (error) throw error;
@@ -243,17 +248,23 @@ const ChatDetail = () => {
         
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="mr-2">
-              <Shield className="h-5 w-5" />
+            <Button variant="ghost" size="icon" className="mr-2 flex md:hidden lg:flex">
+              <MoreVertical className="h-5 w-5" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
+          <DropdownMenuContent align="end" className="w-56">
             <DropdownMenuItem
-              className="text-destructive focus:text-destructive" 
+              className="flex items-center cursor-pointer"
               onClick={() => setBlockDialogOpen(true)}
             >
-              <Shield className="mr-2 h-4 w-4" />
+              <Ban className="mr-2 h-4 w-4" />
               Block User
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              className="flex items-center text-destructive cursor-pointer" 
+            >
+              <Flag className="mr-2 h-4 w-4" />
+              Report Conversation
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

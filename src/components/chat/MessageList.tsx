@@ -1,7 +1,7 @@
 
 import { Message } from "@/components/chat/types/chat-detail";
 import { cn } from "@/lib/utils";
-import { MoreHorizontal, Trash2, AlertTriangle, Flag } from "lucide-react";
+import { MoreVertical, Trash2, AlertTriangle, Flag } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import {
   DropdownMenu,
@@ -85,19 +85,24 @@ export const MessageList = ({
       {messages.map((message) => {
         const isCurrentUser = message.sender_id === sessionUserId;
         const unread = isUnread(message);
+        
+        // Skip system or block messages
+        if (message.is_system_message || message.is_block_message || message.is_report) {
+          return null;
+        }
 
         return (
           <div
             key={message.id}
             className={cn(
-              "flex group",
+              "flex group relative",
               isCurrentUser ? "justify-end" : "justify-start"
             )}
           >
-            <div className="relative">
+            <div className="relative max-w-[80%]">
               <div
                 className={cn(
-                  "relative max-w-[80%] rounded-lg px-3 py-2 text-sm",
+                  "rounded-lg px-3 py-2 text-sm",
                   isCurrentUser
                     ? "bg-primary text-primary-foreground"
                     : "bg-muted",
@@ -111,31 +116,33 @@ export const MessageList = ({
               </div>
               
               <div className={cn(
-                "absolute top-0 opacity-0 group-hover:opacity-100 transition-opacity",
-                isCurrentUser ? "-left-8" : "-right-8"
+                "absolute top-0",
+                isCurrentUser ? "-left-10" : "-right-10",
+                "md:opacity-0 md:group-hover:opacity-100 opacity-100 transition-opacity"
               )}>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-7 w-7">
-                      <MoreHorizontal className="h-4 w-4" />
+                    <Button variant="ghost" size="icon" className="h-7 w-7 rounded-full bg-muted/50 hover:bg-muted">
+                      <MoreVertical className="h-4 w-4" />
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align={isCurrentUser ? "start" : "end"}>
+                  <DropdownMenuContent align={isCurrentUser ? "start" : "end"} className="w-48">
                     {isCurrentUser && (
                       <DropdownMenuItem 
-                        className="text-destructive focus:text-destructive"
+                        className="flex items-center text-destructive cursor-pointer"
                         onClick={() => handleDeleteClick(message.id)}
                       >
                         <Trash2 className="mr-2 h-4 w-4" />
-                        Delete
+                        Delete Message
                       </DropdownMenuItem>
                     )}
                     {!isCurrentUser && (
                       <DropdownMenuItem 
+                        className="flex items-center cursor-pointer"
                         onClick={() => handleReportClick(message.id)}
                       >
                         <Flag className="mr-2 h-4 w-4" />
-                        Report
+                        Report Message
                       </DropdownMenuItem>
                     )}
                   </DropdownMenuContent>

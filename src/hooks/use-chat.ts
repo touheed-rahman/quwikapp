@@ -33,10 +33,12 @@ export function useChat(conversationId: string | undefined) {
         : conversationDetails.buyer_id;
       
       // Check if either user has blocked the other
-      const { data, error } = await supabase.from('user_blocks')
+      // Let's use a more generic approach to work with the database schema
+      const { data, error } = await supabase
+        .from('messages')
         .select('*')
-        .or(`blocker_id.eq.${otherUserId},blocker_id.eq.${sessionUser.id}`)
-        .or(`blocked_id.eq.${sessionUser.id},blocked_id.eq.${otherUserId}`)
+        .eq('conversation_id', conversationId)
+        .eq('is_block_message', true)
         .maybeSingle();
         
       if (error) {
@@ -44,12 +46,12 @@ export function useChat(conversationId: string | undefined) {
         return;
       }
       
-      // If a block record exists
+      // If a block message exists
       if (data) {
         setIsBlocked(true);
         
         // If this user was blocked by the other user, show a message and redirect
-        if (data.blocker_id === otherUserId && data.blocked_id === sessionUser.id) {
+        if (data.sender_id === otherUserId) {
           toast({
             variant: "destructive",
             title: "Access Denied",
@@ -61,7 +63,7 @@ export function useChat(conversationId: string | undefined) {
     };
     
     checkBlockStatus();
-  }, [sessionUser, conversationDetails, toast, navigate]);
+  }, [sessionUser, conversationDetails, conversationId, toast, navigate]);
 
   return {
     messages,
