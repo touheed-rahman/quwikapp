@@ -118,7 +118,7 @@ export const MessageList = ({
               <div className={cn(
                 "absolute top-0",
                 isCurrentUser ? "-left-10" : "-right-10",
-                "md:opacity-0 md:group-hover:opacity-100 opacity-100 transition-opacity"
+                "opacity-100 transition-opacity"
               )}>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>

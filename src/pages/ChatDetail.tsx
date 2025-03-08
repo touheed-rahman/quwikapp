@@ -1,7 +1,7 @@
 
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { Loader2, Shield, AlertTriangle, MoreVertical, Trash2, Flag, Ban } from "lucide-react";
+import { Loader2, AlertTriangle, MoreVertical, Trash2, Flag, Ban } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import ChatDetailHeader from "@/components/chat/ChatDetailHeader";
 import { MessageList } from "@/components/chat/MessageList";
@@ -144,8 +144,7 @@ const ChatDetail = () => {
 
   const handleReportMessage = async (messageId: string, reason: string) => {
     try {
-      // Instead of inserting into a specific 'message_reports' table,
-      // We'll add a message with metadata indicating it's a report
+      // Add a report message to the conversation
       const { error } = await supabase
         .from('messages')
         .insert({
@@ -180,8 +179,7 @@ const ChatDetail = () => {
       : conversationDetails.buyer_id;
     
     try {
-      // Instead of inserting into a specific 'user_blocks' table,
-      // We'll add a system message to the conversation indicating a block
+      // Add a system message to indicate blocking
       const { error } = await supabase
         .from('messages')
         .insert({
@@ -248,7 +246,7 @@ const ChatDetail = () => {
         
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="mr-2 flex md:hidden lg:flex">
+            <Button variant="ghost" size="icon" className="mr-2 opacity-100 flex">
               <MoreVertical className="h-5 w-5" />
             </Button>
           </DropdownMenuTrigger>

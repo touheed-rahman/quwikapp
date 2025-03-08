@@ -24,7 +24,7 @@ export function useChat(conversationId: string | undefined) {
 
   // Check if the current user is blocked
   useEffect(() => {
-    if (!sessionUser || !conversationDetails) return;
+    if (!sessionUser || !conversationDetails || !conversationId) return;
     
     const checkBlockStatus = async () => {
       // Determine the other user
@@ -32,8 +32,7 @@ export function useChat(conversationId: string | undefined) {
         ? conversationDetails.seller_id 
         : conversationDetails.buyer_id;
       
-      // Check if either user has blocked the other
-      // Let's use a more generic approach to work with the database schema
+      // Check if either user has blocked the other using messages with is_block_message flag
       const { data, error } = await supabase
         .from('messages')
         .select('*')

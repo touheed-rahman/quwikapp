@@ -4,6 +4,10 @@ export interface Message {
   content: string;
   sender_id: string;
   created_at: string;
+  is_system_message?: boolean;
+  is_block_message?: boolean;
+  is_report?: boolean;
+  reported_message_id?: string;
 }
 
 export interface Listing {
