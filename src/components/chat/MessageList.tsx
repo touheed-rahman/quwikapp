@@ -1,25 +1,9 @@
 
 import { Message } from "@/components/chat/types/chat-detail";
-import { cn } from "@/lib/utils";
-import { MoreVertical, Trash2, AlertTriangle, Flag } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { Button } from "@/components/ui/button";
+import MessageItem from "@/components/chat/MessageItem";
+import DeleteMessageDialog from "@/components/chat/DeleteMessageDialog";
+import ReportMessageDialog from "@/components/chat/ReportMessageDialog";
 
 export interface MessageListProps {
   messages: Message[];
@@ -40,7 +24,6 @@ export const MessageList = ({
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [reportDialogOpen, setReportDialogOpen] = useState(false);
   const [selectedMessageId, setSelectedMessageId] = useState<string | null>(null);
-  const [reportReason, setReportReason] = useState("inappropriate_content");
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -72,9 +55,9 @@ export const MessageList = ({
     }
   };
 
-  const confirmReport = async () => {
+  const confirmReport = async (reason: string) => {
     if (selectedMessageId && onReportMessage) {
-      await onReportMessage(selectedMessageId, reportReason);
+      await onReportMessage(selectedMessageId, reason);
       setReportDialogOpen(false);
       setSelectedMessageId(null);
     }
@@ -86,134 +69,32 @@ export const MessageList = ({
         const isCurrentUser = message.sender_id === sessionUserId;
         const unread = isUnread(message);
         
-        // Skip system or block messages
-        if (message.is_system_message || message.is_block_message || message.is_report) {
-          return null;
-        }
-
         return (
-          <div
+          <MessageItem 
             key={message.id}
-            className={cn(
-              "flex group relative",
-              isCurrentUser ? "justify-end" : "justify-start"
-            )}
-          >
-            <div className="relative max-w-[80%]">
-              <div
-                className={cn(
-                  "rounded-lg px-3 py-2 text-sm",
-                  isCurrentUser
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-muted",
-                  unread && "font-bold"
-                )}
-              >
-                {message.content}
-                {unread && (
-                  <div className="absolute -left-2 -top-1 h-2 w-2 rounded-full bg-red-500" />
-                )}
-              </div>
-              
-              <div className={cn(
-                "absolute top-0",
-                isCurrentUser ? "-left-10" : "-right-10",
-                "opacity-100 transition-opacity"
-              )}>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-7 w-7 rounded-full bg-muted/50 hover:bg-muted">
-                      <MoreVertical className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align={isCurrentUser ? "start" : "end"} className="w-48">
-                    {isCurrentUser && (
-                      <DropdownMenuItem 
-                        className="flex items-center text-destructive cursor-pointer"
-                        onClick={() => handleDeleteClick(message.id)}
-                      >
-                        <Trash2 className="mr-2 h-4 w-4" />
-                        Delete Message
-                      </DropdownMenuItem>
-                    )}
-                    {!isCurrentUser && (
-                      <DropdownMenuItem 
-                        className="flex items-center cursor-pointer"
-                        onClick={() => handleReportClick(message.id)}
-                      >
-                        <Flag className="mr-2 h-4 w-4" />
-                        Report Message
-                      </DropdownMenuItem>
-                    )}
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-            </div>
-          </div>
+            message={message}
+            isCurrentUser={isCurrentUser}
+            unread={unread}
+            onDeleteClick={handleDeleteClick}
+            onReportClick={handleReportClick}
+          />
         );
       })}
       <div ref={messagesEndRef} />
 
       {/* Delete Message Dialog */}
-      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle className="flex items-center gap-2">
-              <Trash2 className="h-5 w-5 text-destructive" />
-              Delete Message
-            </AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to delete this message? This action cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction 
-              onClick={confirmDelete}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <DeleteMessageDialog 
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirmDelete={confirmDelete}
+      />
 
       {/* Report Message Dialog */}
-      <AlertDialog open={reportDialogOpen} onOpenChange={setReportDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle className="flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5 text-destructive" />
-              Report Message
-            </AlertDialogTitle>
-            <AlertDialogDescription>
-              Why are you reporting this message?
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <div className="py-4">
-            <select 
-              value={reportReason} 
-              onChange={(e) => setReportReason(e.target.value)}
-              className="w-full p-2 rounded-md border border-input"
-            >
-              <option value="inappropriate_content">Inappropriate Content</option>
-              <option value="harassment">Harassment</option>
-              <option value="spam">Spam</option>
-              <option value="scam">Scam</option>
-              <option value="other">Other</option>
-            </select>
-          </div>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction 
-              onClick={confirmReport}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              Report
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <ReportMessageDialog 
+        open={reportDialogOpen}
+        onOpenChange={setReportDialogOpen}
+        onConfirmReport={confirmReport}
+      />
     </div>
   );
 };
