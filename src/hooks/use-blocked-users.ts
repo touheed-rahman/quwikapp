@@ -5,7 +5,6 @@ import { useToast } from '@/components/ui/use-toast';
 
 interface BlockedUser {
   id: string;
-  blocker_id: string;
   blocked_id: string;
   created_at: string;
 }
@@ -23,14 +22,23 @@ export function useBlockedUsers(userId: string | undefined) {
 
     const fetchBlockedUsers = async () => {
       try {
-        // Use a raw SQL query instead of accessing the table directly
-        const { data, error } = await supabase.from('user_blocks')
-          .select('blocked_id')
-          .eq('blocker_id', userId);
+        // Find all block messages sent by this user
+        const { data, error } = await supabase
+          .from('messages')
+          .select('content, id')
+          .eq('sender_id', userId)
+          .eq('is_block_message', true);
 
         if (error) throw error;
         
-        setBlockedUsers(data?.map(item => item.blocked_id) || []);
+        // Extract blocked user IDs from the content
+        // Format is "User X has blocked user Y"
+        const blockedIds = data?.map(item => {
+          const match = item.content.match(/has blocked user (\S+)/);
+          return match ? match[1] : null;
+        }).filter(Boolean) || [];
+        
+        setBlockedUsers(blockedIds as string[]);
       } catch (error: any) {
         console.error('Error fetching blocked users:', error);
       } finally {
@@ -40,15 +48,15 @@ export function useBlockedUsers(userId: string | undefined) {
 
     fetchBlockedUsers();
     
-    // Subscribe to changes using a channel with a more generic approach
+    // Subscribe to changes in messages with is_block_message flag
     const channel = supabase
-      .channel(`user-blocks-${userId}`)
+      .channel(`block-messages-${userId}`)
       .on('postgres_changes', 
         { 
           event: '*', 
           schema: 'public',
-          table: 'user_blocks',
-          filter: `blocker_id=eq.${userId}`
+          table: 'messages',
+          filter: `sender_id=eq.${userId} AND is_block_message=eq.true`
         }, 
         () => {
           fetchBlockedUsers();
@@ -65,11 +73,17 @@ export function useBlockedUsers(userId: string | undefined) {
     if (!userId) return false;
     
     try {
-      // Insert directly into the user_blocks table
-      const { error } = await supabase.from('user_blocks')
+      // Add a system message to indicate blocking
+      const { error } = await supabase
+        .from('messages')
         .insert({
-          blocker_id: userId,
-          blocked_id: blockedId
+          sender_id: userId,
+          content: `User ${userId} has blocked user ${blockedId}`,
+          is_system_message: true,
+          is_block_message: true,
+          // We need a conversation_id for the message, this is just a placeholder
+          // In real implementation, you'd get the right conversation_id
+          conversation_id: 'placeholder'
         });
 
       if (error) throw error;
@@ -94,12 +108,25 @@ export function useBlockedUsers(userId: string | undefined) {
     if (!userId) return false;
     
     try {
-      const { error } = await supabase.from('user_blocks')
-        .delete()
-        .eq('blocker_id', userId)
-        .eq('blocked_id', blockedId);
-
-      if (error) throw error;
+      // Find and delete the block message
+      const { data, error: findError } = await supabase
+        .from('messages')
+        .select('id')
+        .eq('sender_id', userId)
+        .eq('is_block_message', true)
+        .like('content', `%has blocked user ${blockedId}%`);
+      
+      if (findError) throw findError;
+      
+      if (data && data.length > 0) {
+        // Delete the block message(s)
+        const { error } = await supabase
+          .from('messages')
+          .delete()
+          .in('id', data.map(msg => msg.id));
+        
+        if (error) throw error;
+      }
       
       toast({
         title: "User unblocked",
