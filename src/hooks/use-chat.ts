@@ -5,74 +5,25 @@ import { useMessageList } from './use-message-list';
 import { useMessageSender } from './use-message-sender';
 import { useChatNotifications } from './use-chat-notifications';
 import { useListingStatus } from './use-listing-status';
-import { useEffect, useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/components/ui/use-toast';
-import { useNavigate } from 'react-router-dom';
 
 export function useChat(conversationId: string | undefined) {
-  const { sessionUser, loading: userLoading } = useSessionUser(conversationId);
+  const { sessionUser, loading } = useSessionUser(conversationId);
   const conversationDetails = useConversationDetails(conversationId, sessionUser);
   const { messages, isLoading: messagesLoading } = useMessageList(conversationId, sessionUser?.id);
   const { newMessage, setNewMessage, handleSend } = useMessageSender(conversationId, sessionUser?.id);
   const { isDisabled, disabledReason } = useListingStatus(conversationDetails?.listing?.id);
-  const [isBlocked, setIsBlocked] = useState(false);
-  const { toast } = useToast();
-  const navigate = useNavigate();
   
   useChatNotifications(conversationId, sessionUser?.id);
 
-  // Check if the current user is blocked
-  useEffect(() => {
-    if (!sessionUser || !conversationDetails || !conversationId) return;
-    
-    const checkBlockStatus = async () => {
-      // Determine the other user
-      const otherUserId = sessionUser.id === conversationDetails.buyer_id 
-        ? conversationDetails.seller_id 
-        : conversationDetails.buyer_id;
-      
-      // Check if either user has blocked the other using messages with is_block_message flag
-      const { data, error } = await supabase
-        .from('messages')
-        .select('sender_id')
-        .eq('conversation_id', conversationId)
-        .eq('is_block_message', true)
-        .maybeSingle();
-        
-      if (error) {
-        console.error('Error checking block status:', error);
-        return;
-      }
-      
-      // If a block message exists
-      if (data) {
-        setIsBlocked(true);
-        
-        // If this user was blocked by the other user, show a message and redirect
-        if (data.sender_id === otherUserId) {
-          toast({
-            variant: "destructive",
-            title: "Access Denied",
-            description: "You have been blocked by this user."
-          });
-          navigate('/chat');
-        }
-      }
-    };
-    
-    checkBlockStatus();
-  }, [sessionUser, conversationDetails, conversationId, toast, navigate]);
-
   return {
     messages,
-    isLoading: userLoading || messagesLoading,
+    isLoading: loading || messagesLoading,
     sessionUser,
     conversationDetails,
     newMessage,
     setNewMessage,
     handleSend,
-    chatDisabled: isDisabled || isBlocked,
-    disabledReason: isBlocked ? "This conversation is no longer available." : disabledReason
+    chatDisabled: isDisabled,
+    disabledReason
   };
 }

@@ -1,6 +1,7 @@
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import ChatDetailHeader from "@/components/chat/ChatDetailHeader";
 import { MessageList } from "@/components/chat/MessageList";
@@ -11,21 +12,12 @@ import { useToast } from "@/components/ui/use-toast";
 import { useOnlineUsers } from "@/hooks/use-online-users";
 import QuickMessageSuggestions from "@/components/chat/QuickMessageSuggestions";
 import ChatTipBox from "@/components/chat/ChatTipBox";
-import { useBlockedUsers } from "@/hooks/use-blocked-users";
-import NotSignedInView from "@/components/chat/NotSignedInView";
-import ChatLoadingView from "@/components/chat/ChatLoadingView";
-import ChatActionsMenu from "@/components/chat/ChatActionsMenu";
-import BlockUserDialog from "@/components/chat/BlockUserDialog";
-import ReportDialog from "@/components/chat/ReportDialog";
 
 const ChatDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { toast } = useToast();
   const { onlineUsers } = useOnlineUsers();
-  
-  const [blockDialogOpen, setBlockDialogOpen] = useState(false);
-  const [reportDialogOpen, setReportDialogOpen] = useState(false);
   
   const {
     messages,
@@ -38,8 +30,6 @@ const ChatDetail = () => {
     chatDisabled,
     disabledReason
   } = useChat(id);
-
-  const { blockUser } = useBlockedUsers(sessionUser?.id);
 
   // Check if conversation exists or has been deleted
   useEffect(() => {
@@ -108,81 +98,25 @@ const ChatDetail = () => {
 
   const handleQuickMessage = (message: string) => {
     setNewMessage(message);
-  };
-
-  const handleDeleteMessage = async (messageId: string) => {
-    try {
-      // Direct delete approach - with a check to ensure only own messages can be deleted
-      const { error } = await supabase
-        .from('messages')
-        .delete()
-        .eq('id', messageId)
-        .eq('sender_id', sessionUser?.id || ''); // Ensure only own messages can be deleted
-
-      if (error) throw error;
-      
-      toast({
-        title: "Message deleted",
-        description: "Your message has been deleted."
-      });
-    } catch (error: any) {
-      toast({
-        variant: "destructive",
-        title: "Error deleting message",
-        description: error.message || "Failed to delete message"
-      });
-    }
-  };
-
-  const handleReportMessage = async (messageId: string, reason: string) => {
-    try {
-      // Add a report message to the conversation
-      const { error } = await supabase
-        .from('messages')
-        .insert({
-          conversation_id: id,
-          sender_id: sessionUser?.id,
-          content: `REPORT: ${reason}`,
-          is_report: true,
-          reported_message_id: messageId
-        });
-
-      if (error) throw error;
-      
-      toast({
-        title: "Message reported",
-        description: "Thank you for helping keep our community safe."
-      });
-    } catch (error: any) {
-      toast({
-        variant: "destructive",
-        title: "Error reporting message",
-        description: error.message || "Failed to report message"
-      });
-    }
-  };
-
-  const handleBlockUser = async () => {
-    if (!conversationDetails || !sessionUser || !id) return;
-    
-    // Determine the user to block
-    const otherUserId = sessionUser.id === conversationDetails.buyer_id 
-      ? conversationDetails.seller_id 
-      : conversationDetails.buyer_id;
-    
-    const success = await blockUser(otherUserId, id);
-    
-    if (success) {
-      navigate('/chat'); // Go back to chat list
-    }
+    // Optional: automatically send the message
+    // setTimeout(() => handleSend(), 100);
   };
 
   if (!sessionUser) {
-    return <NotSignedInView />;
+    return (
+      <div className="flex flex-col items-center justify-center h-screen bg-background">
+        <p className="text-lg mb-4">Please sign in to view this chat</p>
+        <Button onClick={() => navigate('/profile')}>Sign In</Button>
+      </div>
+    );
   }
 
   if (isLoading) {
-    return <ChatLoadingView />;
+    return (
+      <div className="flex items-center justify-center h-screen bg-background">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
   }
 
   // Determine if the other user is online
@@ -198,26 +132,13 @@ const ChatDetail = () => {
 
   return (
     <div className="flex flex-col h-[100dvh] bg-background">
-      <div className="flex items-center justify-between">
-        <ChatDetailHeader 
-          conversationDetails={conversationDetails} 
-          onBack={handleBack}
-          isOnline={isOtherUserOnline}
-        />
-        
-        <ChatActionsMenu 
-          onBlockUser={() => setBlockDialogOpen(true)}
-          onReportConversation={() => setReportDialogOpen(true)}
-        />
-      </div>
-      
+      <ChatDetailHeader 
+        conversationDetails={conversationDetails} 
+        onBack={handleBack}
+        isOnline={isOtherUserOnline}
+      />
       <div className="flex-1 overflow-y-auto">
-        <MessageList 
-          messages={messages} 
-          sessionUserId={sessionUser.id} 
-          onDeleteMessage={handleDeleteMessage}
-          onReportMessage={handleReportMessage}
-        />
+        <MessageList messages={messages} sessionUserId={sessionUser.id} />
         
         {/* Show tip box for buyers when chat is empty */}
         {isEmptyChat && isBuyer && <ChatTipBox />}
@@ -235,21 +156,6 @@ const ChatDetail = () => {
         handleSend={handleSend}
         disabled={chatDisabled}
         disabledReason={disabledReason}
-      />
-      
-      {/* Block User Dialog */}
-      <BlockUserDialog 
-        open={blockDialogOpen} 
-        onOpenChange={setBlockDialogOpen} 
-        onConfirm={handleBlockUser} 
-      />
-      
-      {/* Report Conversation Dialog */}
-      <ReportDialog 
-        open={reportDialogOpen} 
-        onOpenChange={setReportDialogOpen}
-        conversationId={id}
-        sessionUserId={sessionUser.id}
       />
     </div>
   );
