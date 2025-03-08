@@ -27,6 +27,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { useBlockedUsers } from "@/hooks/use-blocked-users";
 
 const ChatDetail = () => {
   const { id } = useParams();
@@ -47,6 +48,8 @@ const ChatDetail = () => {
     chatDisabled,
     disabledReason
   } = useChat(id);
+
+  const { blockUser } = useBlockedUsers(sessionUser?.id);
 
   // Check if conversation exists or has been deleted
   useEffect(() => {
@@ -170,39 +173,17 @@ const ChatDetail = () => {
   };
 
   const handleBlockUser = async () => {
-    if (!conversationDetails || !sessionUser) return;
+    if (!conversationDetails || !sessionUser || !id) return;
     
     // Determine the user to block
     const otherUserId = sessionUser.id === conversationDetails.buyer_id 
       ? conversationDetails.seller_id 
       : conversationDetails.buyer_id;
     
-    try {
-      // Add a system message to indicate blocking
-      const { error } = await supabase
-        .from('messages')
-        .insert({
-          conversation_id: id,
-          sender_id: sessionUser.id,
-          content: `User ${sessionUser.id} has blocked user ${otherUserId}`,
-          is_system_message: true,
-          is_block_message: true
-        });
-
-      if (error) throw error;
-      
-      toast({
-        title: "User blocked",
-        description: "You will no longer receive messages from this user."
-      });
-      
+    const success = await blockUser(otherUserId, id);
+    
+    if (success) {
       navigate('/chat'); // Go back to chat list
-    } catch (error: any) {
-      toast({
-        variant: "destructive",
-        title: "Error blocking user",
-        description: error.message || "Failed to block user"
-      });
     }
   };
 

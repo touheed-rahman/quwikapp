@@ -35,7 +35,7 @@ export function useChat(conversationId: string | undefined) {
       // Check if either user has blocked the other using messages with is_block_message flag
       const { data, error } = await supabase
         .from('messages')
-        .select('*')
+        .select('sender_id')
         .eq('conversation_id', conversationId)
         .eq('is_block_message', true)
         .maybeSingle();

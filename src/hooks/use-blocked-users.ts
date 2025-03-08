@@ -69,7 +69,7 @@ export function useBlockedUsers(userId: string | undefined) {
     };
   }, [userId]);
 
-  const blockUser = async (blockedId: string) => {
+  const blockUser = async (blockedId: string, conversationId: string) => {
     if (!userId) return false;
     
     try {
@@ -81,9 +81,7 @@ export function useBlockedUsers(userId: string | undefined) {
           content: `User ${userId} has blocked user ${blockedId}`,
           is_system_message: true,
           is_block_message: true,
-          // We need a conversation_id for the message, this is just a placeholder
-          // In real implementation, you'd get the right conversation_id
-          conversation_id: 'placeholder'
+          conversation_id: conversationId
         });
 
       if (error) throw error;
@@ -120,12 +118,12 @@ export function useBlockedUsers(userId: string | undefined) {
       
       if (data && data.length > 0) {
         // Delete the block message(s)
-        const { error } = await supabase
+        const deleteResult = await supabase
           .from('messages')
           .delete()
           .in('id', data.map(msg => msg.id));
         
-        if (error) throw error;
+        if (deleteResult.error) throw deleteResult.error;
       }
       
       toast({
