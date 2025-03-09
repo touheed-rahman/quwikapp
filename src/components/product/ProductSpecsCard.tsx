@@ -37,7 +37,23 @@ const ProductSpecsCard = ({
       'furnishing': 'Furnishing',
       'storage': 'Storage',
       'screen_size': 'Screen Size',
-      'battery': 'Battery'
+      'battery': 'Battery',
+      // Job specific fields
+      'job_type': 'Job Type',
+      'salary': 'Salary',
+      'company': 'Company',
+      'experience': 'Experience Required',
+      'education': 'Education Required',
+      // Service specific fields
+      'service_type': 'Service Type',
+      'duration': 'Duration',
+      'availability': 'Availability',
+      'provider': 'Service Provider',
+      // Book & hobby specific fields
+      'author': 'Author',
+      'genre': 'Genre',
+      'publisher': 'Publisher',
+      'equipment_type': 'Equipment Type'
     };
     
     return labelMap[key] || key.split('_').map(word => 
@@ -56,11 +72,20 @@ const ProductSpecsCard = ({
       case 'fuel_type':
       case 'transmission':
       case 'furnishing':
+      case 'job_type':
+      case 'service_type':
+      case 'availability':
         return value.charAt(0).toUpperCase() + value.slice(1);
       case 'bedrooms':
         return `${value} ${value === 1 ? 'Bedroom' : 'Bedrooms'}`;
       case 'bathrooms':
         return `${value} ${value === 1 ? 'Bathroom' : 'Bathrooms'}`;
+      case 'salary':
+        return typeof value === 'number' ? `₹${value.toLocaleString()} per month` : value;
+      case 'experience':
+        return typeof value === 'number' ? `${value} years` : value;
+      case 'duration':
+        return typeof value === 'number' ? `${value} hours` : value;
       default:
         return typeof value === 'object' ? JSON.stringify(value) : value.toString();
     }
