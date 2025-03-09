@@ -105,7 +105,7 @@ const ProductPage = () => {
             <ProductInfo
               title={product.title}
               price={product.price}
-              location={displayLocation}
+              location={product.location}
               createdAt={product.created_at}
               condition={product.condition}
               description={product.description}
@@ -114,6 +114,8 @@ const ProductPage = () => {
               adNumber={product.adNumber}
               id={product.id}
               viewCount={product.view_count}
+              brand={product.brand}
+              specs={product.specs}
             />
 
             {seller && (

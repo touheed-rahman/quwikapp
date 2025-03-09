@@ -8,7 +8,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
 import { useState, useEffect } from "react";
 import { categories } from "@/types/categories";
 
@@ -60,9 +59,18 @@ const CategorySpecificFields = ({
   const currentYear = new Date().getFullYear();
   const yearOptions = Array.from({ length: 30 }, (_, i) => currentYear - i);
 
+  // Check if brand should be shown for this category
+  const shouldShowBrand = category === 'electronics' || category === 'mobile' || 
+                        subcategory === 'spare-parts';
+
   // Update parent component when values change
   useEffect(() => {
-    const formFields: Record<string, any> = { brand: brand || null };
+    const formFields: Record<string, any> = {};
+    
+    // Only include brand if it's relevant for this category
+    if (shouldShowBrand && brand) {
+      formFields.brand = brand;
+    }
     
     if (category === 'vehicles') {
       formFields.km_driven = kmDriven ? parseInt(kmDriven) : 0;
@@ -104,7 +112,7 @@ const CategorySpecificFields = ({
     
     updateFormData(formFields);
   }, [
-    category, brand, kmDriven, yearManufactured, fuelType, transmission, color,
+    category, subcategory, shouldShowBrand, brand, kmDriven, yearManufactured, fuelType, transmission, color,
     modelNumber, warranty, material, dimensions, size, styleType,
     bedrooms, bathrooms, areaSize, furnishing, storage, screenSize, batteryCapacity,
     updateFormData
@@ -121,20 +129,21 @@ const CategorySpecificFields = ({
         {subcategoryName} Details
       </h3>
       
-      {/* Brand field - common across most categories */}
-      <div className="space-y-2">
-        <Label htmlFor="brand">
-          Brand {category !== 'furniture' && category !== 'services' && '*'}
-        </Label>
-        <Input
-          id="brand"
-          type="text"
-          placeholder="Enter brand name"
-          value={brand}
-          onChange={(e) => setBrand(e.target.value)}
-          required={category !== 'furniture' && category !== 'services'}
-        />
-      </div>
+      {/* Brand field - only shown for relevant categories */}
+      {shouldShowBrand && (
+        <div className="space-y-2">
+          <Label htmlFor="brand">
+            Brand
+          </Label>
+          <Input
+            id="brand"
+            type="text"
+            placeholder="Enter brand name"
+            value={brand}
+            onChange={(e) => setBrand(e.target.value)}
+          />
+        </div>
+      )}
       
       {/* VEHICLES specific fields */}
       {category === 'vehicles' && (

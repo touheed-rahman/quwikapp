@@ -56,6 +56,8 @@ export const useProductDetails = (id: string | undefined) => {
         ...data,
         condition: data.condition as ProductCondition,
         adNumber,
+        brand: data.brand || null,
+        specs: data.specs || null
       };
     },
     enabled: !!id,

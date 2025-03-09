@@ -7,7 +7,6 @@ import FormActions from "./FormActions";
 import LocationSelector from "@/components/LocationSelector";
 import { useLocation } from "@/contexts/LocationContext";
 import CategorySpecificFields from "./CategorySpecificFields";
-import { useState, useEffect } from "react";
 
 interface SellFormDetailsProps {
   title: string;

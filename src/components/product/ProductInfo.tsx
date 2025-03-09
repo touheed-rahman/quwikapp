@@ -93,9 +93,12 @@ const ProductInfo = ({
         return value.toString();
       case 'fuel_type':
       case 'transmission':
+      case 'furnishing':
         return value.charAt(0).toUpperCase() + value.slice(1);
-      case 'color':
-        return value;
+      case 'bedrooms':
+        return `${value} ${value === 1 ? 'Bedroom' : 'Bedrooms'}`;
+      case 'bathrooms':
+        return `${value} ${value === 1 ? 'Bathroom' : 'Bathrooms'}`;
       default:
         return typeof value === 'object' ? JSON.stringify(value) : value.toString();
     }
@@ -127,6 +130,11 @@ const ProductInfo = ({
       word.charAt(0).toUpperCase() + word.slice(1)
     ).join(' ');
   };
+
+  // Check if we have specifications to show
+  const hasSpecs = (specs && Object.values(specs).some(value => value !== null)) || 
+                   (brand) || 
+                   (category === 'vehicles' && km_driven !== null);
 
   return (
     <div className="space-y-3 md:space-y-6 overflow-hidden">
@@ -213,22 +221,50 @@ const ProductInfo = ({
       </Card>
 
       {/* Display category-specific details if available */}
-      {specs && Object.keys(specs).length > 0 && (
+      {hasSpecs && (
         <Card className="p-3 md:p-4 max-w-full">
           <div className="space-y-2 md:space-y-4">
-            <h2 className="font-semibold text-sm md:text-base">Specifications</h2>
+            <h2 className="font-semibold text-sm md:text-base">Item Details</h2>
             <Table>
               <TableBody>
-                {Object.entries(specs).filter(([_, value]) => value !== null).map(([key, value]) => (
-                  <TableRow key={key}>
+                {/* Show brand if available */}
+                {brand && (
+                  <TableRow>
                     <TableCell className="font-medium text-xs md:text-sm py-2">
-                      {getSpecLabel(key)}
+                      Brand
                     </TableCell>
                     <TableCell className="text-xs md:text-sm py-2">
-                      {formatSpecValue(key, value)}
+                      {brand}
                     </TableCell>
                   </TableRow>
-                ))}
+                )}
+                
+                {/* Show km_driven for vehicles */}
+                {category === 'vehicles' && km_driven !== null && (
+                  <TableRow>
+                    <TableCell className="font-medium text-xs md:text-sm py-2">
+                      Kilometers Driven
+                    </TableCell>
+                    <TableCell className="text-xs md:text-sm py-2">
+                      {km_driven.toLocaleString()} km
+                    </TableCell>
+                  </TableRow>
+                )}
+                
+                {/* Show all other specs */}
+                {specs && Object.entries(specs)
+                  .filter(([_, value]) => value !== null)
+                  .map(([key, value]) => (
+                    <TableRow key={key}>
+                      <TableCell className="font-medium text-xs md:text-sm py-2">
+                        {getSpecLabel(key)}
+                      </TableCell>
+                      <TableCell className="text-xs md:text-sm py-2">
+                        {formatSpecValue(key, value)}
+                      </TableCell>
+                    </TableRow>
+                  ))
+                }
               </TableBody>
             </Table>
           </div>
