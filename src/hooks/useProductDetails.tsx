@@ -52,12 +52,17 @@ export const useProductDetails = (id: string | undefined) => {
       // Use the first 4 characters of the ID and format it as "QUWIK-XXXX"
       const adNumber = `QUWIK-${id.substring(0, 4).toUpperCase()}`;
 
+      // Ensure specs is a proper object even if it's null or undefined
+      const specs = data.specs && typeof data.specs === 'object' 
+        ? data.specs as Record<string, any>
+        : {};
+
       return {
         ...data,
         condition: data.condition as ProductCondition,
         adNumber,
         brand: data.brand || null,
-        specs: data.specs || null
+        specs
       };
     },
     enabled: !!id,
