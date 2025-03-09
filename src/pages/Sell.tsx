@@ -70,6 +70,7 @@ const Sell = () => {
             onBack={handleBack}
             onSubmit={handleSubmitForm}
             category={formData.category}
+            subcategory={formData.subcategory}
           />
         )}
       </div>

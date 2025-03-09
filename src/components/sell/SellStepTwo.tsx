@@ -17,6 +17,7 @@ interface SellStepTwoProps {
   onBack: () => void;
   onSubmit: (e: React.FormEvent) => void;
   category?: string;
+  subcategory?: string;
 }
 
 const SellStepTwo = memo(({
@@ -31,7 +32,8 @@ const SellStepTwo = memo(({
   isSubmitting,
   onBack,
   onSubmit,
-  category
+  category,
+  subcategory
 }: SellStepTwoProps) => {
   const { selectedLocation } = useLocation();
 
@@ -55,6 +57,7 @@ const SellStepTwo = memo(({
           onBack={onBack}
           onSubmit={onSubmit}
           category={category}
+          subcategory={subcategory}
         />
       </div>
     </div>

@@ -6,16 +6,8 @@ import PriceInput from "./PriceInput";
 import FormActions from "./FormActions";
 import LocationSelector from "@/components/LocationSelector";
 import { useLocation } from "@/contexts/LocationContext";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import CategorySpecificFields from "./CategorySpecificFields";
 import { useState, useEffect } from "react";
-import { 
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 
 interface SellFormDetailsProps {
   title: string;
@@ -30,6 +22,7 @@ interface SellFormDetailsProps {
   onBack: () => void;
   onSubmit: (e: React.FormEvent) => void;
   category?: string;
+  subcategory?: string;
 }
 
 const SellFormDetails = ({
@@ -45,29 +38,19 @@ const SellFormDetails = ({
   onBack,
   onSubmit,
   category,
+  subcategory,
 }: SellFormDetailsProps) => {
   const { selectedLocation, setSelectedLocation } = useLocation();
-  const [kmDriven, setKmDriven] = useState("");
-  const [brand, setBrand] = useState("");
-  const [yearManufactured, setYearManufactured] = useState("");
 
-  // Update form data in parent component
-  useEffect(() => {
-    if (category === 'vehicles' && window.formDataRef) {
-      window.formDataRef.km_driven = kmDriven ? parseInt(kmDriven) : 0;
-      window.formDataRef.brand = brand || null;
-      window.formDataRef.specs = {
-        ...window.formDataRef.specs,
-        year: yearManufactured ? parseInt(yearManufactured) : null
+  // Handle category-specific form updates
+  const updateFormData = (fields: Record<string, any>) => {
+    if (window.formDataRef) {
+      window.formDataRef = {
+        ...window.formDataRef,
+        ...fields
       };
-    } else if (category === 'electronics' && window.formDataRef) {
-      window.formDataRef.brand = brand || null;
     }
-  }, [kmDriven, brand, yearManufactured, category]);
-
-  // Generate year options for vehicle manufacture year
-  const currentYear = new Date().getFullYear();
-  const yearOptions = Array.from({ length: 30 }, (_, i) => currentYear - i);
+  };
 
   return (
     <form onSubmit={onSubmit} className="space-y-6">
@@ -77,80 +60,13 @@ const SellFormDetails = ({
         <ConditionSelect value={condition} onChange={setCondition} />
         <PriceInput value={price} onChange={setPrice} />
         
-        {/* Category specific fields */}
-        {category === 'vehicles' && (
-          <div className="space-y-6">
-            <div className="space-y-2">
-              <Label htmlFor="kmDriven">Kilometers Driven *</Label>
-              <Input
-                id="kmDriven"
-                type="number"
-                placeholder="Enter kilometers driven"
-                value={kmDriven}
-                onChange={(e) => setKmDriven(e.target.value)}
-                min="0"
-                required
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="vehicleBrand">Brand *</Label>
-              <Input
-                id="vehicleBrand"
-                type="text"
-                placeholder="Enter vehicle brand"
-                value={brand}
-                onChange={(e) => setBrand(e.target.value)}
-                required
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="yearManufactured">Year of Manufacture *</Label>
-              <Select 
-                value={yearManufactured} 
-                onValueChange={setYearManufactured}
-              >
-                <SelectTrigger id="yearManufactured">
-                  <SelectValue placeholder="Select year" />
-                </SelectTrigger>
-                <SelectContent>
-                  {yearOptions.map(year => (
-                    <SelectItem key={year} value={year.toString()}>
-                      {year}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-        )}
-        
-        {category === 'electronics' && (
-          <div className="space-y-2">
-            <Label htmlFor="electronicsBrand">Brand *</Label>
-            <Input
-              id="electronicsBrand"
-              type="text"
-              placeholder="Enter brand name"
-              value={brand}
-              onChange={(e) => setBrand(e.target.value)}
-              required
-            />
-          </div>
-        )}
-        
-        {category === 'furniture' && (
-          <div className="space-y-2">
-            <Label htmlFor="furnitureBrand">Brand (Optional)</Label>
-            <Input
-              id="furnitureBrand"
-              type="text"
-              placeholder="Enter brand name (if applicable)"
-              value={brand}
-              onChange={(e) => setBrand(e.target.value)}
-            />
-          </div>
+        {/* Only show category specific fields if we have both category and subcategory */}
+        {category && subcategory && (
+          <CategorySpecificFields 
+            category={category} 
+            subcategory={subcategory}
+            updateFormData={updateFormData}
+          />
         )}
         
         <div>

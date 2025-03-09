@@ -14,7 +14,7 @@ export const useListingForm = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  // Make formData accessible globally for the km_driven field
+  // Make formData accessible globally for the form fields
   if (typeof window !== 'undefined') {
     window.formDataRef = formData;
   }
@@ -83,7 +83,7 @@ export const useListingForm = () => {
       return false;
     }
 
-    // Validate km_driven for vehicles
+    // Category-specific validations
     if (formData.category === 'vehicles' && (!formData.km_driven && formData.km_driven !== 0)) {
       toast({
         title: "Missing Kilometers Driven",
@@ -129,7 +129,8 @@ export const useListingForm = () => {
       });
 
       const uploadedImagePaths = await Promise.all(imageUploadPromises);
-      
+
+      // Prepare the listing data with all the fields
       const listingData = {
         title,
         description,
@@ -141,7 +142,10 @@ export const useListingForm = () => {
         images: uploadedImagePaths,
         user_id: user.id,
         status: 'pending',
-        km_driven: formData.category === 'vehicles' ? formData.km_driven : null
+        // Include specs and other category-specific fields
+        km_driven: formData.km_driven || null,
+        brand: formData.brand || null,
+        specs: formData.specs || null
       };
 
       const { error } = await supabase.from('listings').insert(listingData);

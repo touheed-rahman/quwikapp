@@ -365,8 +365,12 @@ export type Database = {
           conversation_id: string
           created_at: string
           id: string
+          is_block_message: boolean | null
           is_offer: boolean | null
+          is_report: boolean | null
+          is_system_message: boolean | null
           read_at: string | null
+          reported_message_id: string | null
           sender_id: string
         }
         Insert: {
@@ -374,8 +378,12 @@ export type Database = {
           conversation_id: string
           created_at?: string
           id?: string
+          is_block_message?: boolean | null
           is_offer?: boolean | null
+          is_report?: boolean | null
+          is_system_message?: boolean | null
           read_at?: string | null
+          reported_message_id?: string | null
           sender_id: string
         }
         Update: {
@@ -383,8 +391,12 @@ export type Database = {
           conversation_id?: string
           created_at?: string
           id?: string
+          is_block_message?: boolean | null
           is_offer?: boolean | null
+          is_report?: boolean | null
+          is_system_message?: boolean | null
           read_at?: string | null
+          reported_message_id?: string | null
           sender_id?: string
         }
         Relationships: [
@@ -393,6 +405,13 @@ export type Database = {
             columns: ["conversation_id"]
             isOneToOne: false
             referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "messages_reported_message_id_fkey"
+            columns: ["reported_message_id"]
+            isOneToOne: false
+            referencedRelation: "messages"
             referencedColumns: ["id"]
           },
           {

@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/card";
 import { ProductCondition } from "@/types/categories";
 import { useToast } from "@/components/ui/use-toast";
 import { useState } from "react";
+import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
 
 interface ProductInfoProps {
   title: string;
@@ -19,6 +20,8 @@ interface ProductInfoProps {
   adNumber?: string;
   id?: string;
   viewCount?: number;
+  brand?: string | null;
+  specs?: Record<string, any> | null;
 }
 
 const ProductInfo = ({
@@ -32,7 +35,9 @@ const ProductInfo = ({
   km_driven,
   adNumber,
   id,
-  viewCount = 0
+  viewCount = 0,
+  brand,
+  specs
 }: ProductInfoProps) => {
   const { toast } = useToast();
   const [copying, setCopying] = useState(false);
@@ -76,6 +81,51 @@ const ProductInfo = ({
         });
         setCopying(false);
       });
+  };
+
+  // Helper function to format specs values for display
+  const formatSpecValue = (key: string, value: any): string => {
+    if (value === null || value === undefined) return 'Not specified';
+    
+    // Format specific keys
+    switch(key) {
+      case 'year':
+        return value.toString();
+      case 'fuel_type':
+      case 'transmission':
+        return value.charAt(0).toUpperCase() + value.slice(1);
+      case 'color':
+        return value;
+      default:
+        return typeof value === 'object' ? JSON.stringify(value) : value.toString();
+    }
+  };
+
+  // Helper function to get user-friendly label for spec keys
+  const getSpecLabel = (key: string): string => {
+    const labelMap: Record<string, string> = {
+      'year': 'Year',
+      'fuel_type': 'Fuel Type',
+      'transmission': 'Transmission',
+      'color': 'Color',
+      'model_number': 'Model Number',
+      'warranty': 'Warranty',
+      'material': 'Material',
+      'dimensions': 'Dimensions',
+      'size': 'Size',
+      'style': 'Style',
+      'bedrooms': 'Bedrooms',
+      'bathrooms': 'Bathrooms',
+      'area_size': 'Area',
+      'furnishing': 'Furnishing',
+      'storage': 'Storage',
+      'screen_size': 'Screen Size',
+      'battery': 'Battery'
+    };
+    
+    return labelMap[key] || key.split('_').map(word => 
+      word.charAt(0).toUpperCase() + word.slice(1)
+    ).join(' ');
   };
 
   return (
@@ -143,9 +193,14 @@ const ProductInfo = ({
         <Badge className="bg-primary/10 text-primary hover:bg-primary/20">
           {condition}
         </Badge>
-        {category === 'vehicles' && km_driven !== null && (
+        {km_driven !== null && km_driven > 0 && (
           <Badge variant="outline">
             {km_driven.toLocaleString()} km
+          </Badge>
+        )}
+        {brand && (
+          <Badge variant="outline" className="bg-gray-100">
+            {brand}
           </Badge>
         )}
       </div>
@@ -156,6 +211,29 @@ const ProductInfo = ({
           <p className="text-black whitespace-pre-wrap text-xs md:text-sm break-words max-w-full overflow-x-hidden">{description}</p>
         </div>
       </Card>
+
+      {/* Display category-specific details if available */}
+      {specs && Object.keys(specs).length > 0 && (
+        <Card className="p-3 md:p-4 max-w-full">
+          <div className="space-y-2 md:space-y-4">
+            <h2 className="font-semibold text-sm md:text-base">Specifications</h2>
+            <Table>
+              <TableBody>
+                {Object.entries(specs).filter(([_, value]) => value !== null).map(([key, value]) => (
+                  <TableRow key={key}>
+                    <TableCell className="font-medium text-xs md:text-sm py-2">
+                      {getSpecLabel(key)}
+                    </TableCell>
+                    <TableCell className="text-xs md:text-sm py-2">
+                      {formatSpecValue(key, value)}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </Card>
+      )}
     </div>
   );
 };
