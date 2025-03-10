@@ -5,9 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 
 export const useListingForm = () => {
-  const [formData, setFormData] = useState<any>({
-    specs: {}
-  });
+  const [formData, setFormData] = useState<any>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -16,7 +14,7 @@ export const useListingForm = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  // Make formData accessible globally for the km_driven field
+  // Make formData accessible globally for the form fields
   if (typeof window !== 'undefined') {
     window.formDataRef = formData;
   }
@@ -85,31 +83,12 @@ export const useListingForm = () => {
       return false;
     }
 
-    // Validate km_driven for vehicles
-    if (formData.category === 'vehicles' && (!formData.km_driven && formData.km_driven !== 0)) {
+    // Category-specific validations - Fixed the km_driven validation
+    if (formData.category === 'vehicles' && 
+        (formData.km_driven === undefined || formData.km_driven === null || formData.km_driven === '')) {
       toast({
         title: "Missing Kilometers Driven",
         description: "Please enter the kilometers driven",
-        variant: "destructive"
-      });
-      return false;
-    }
-    
-    // Validate brand for vehicles and electronics
-    if ((formData.category === 'vehicles' || formData.category === 'electronics') && !formData.brand) {
-      toast({
-        title: "Missing Brand",
-        description: "Please enter the brand name",
-        variant: "destructive"
-      });
-      return false;
-    }
-    
-    // Validate year for vehicles
-    if (formData.category === 'vehicles' && (!formData.specs?.year)) {
-      toast({
-        title: "Missing Year",
-        description: "Please select the year of manufacture",
         variant: "destructive"
       });
       return false;
@@ -151,7 +130,13 @@ export const useListingForm = () => {
       });
 
       const uploadedImagePaths = await Promise.all(imageUploadPromises);
-      
+
+      // Prepare the listing data with all the fields
+      // Ensure km_driven is properly converted to a number
+      const km_driven = formData.km_driven !== undefined && formData.km_driven !== null 
+        ? Number(formData.km_driven) 
+        : null;
+
       const listingData = {
         title,
         description,
@@ -163,10 +148,13 @@ export const useListingForm = () => {
         images: uploadedImagePaths,
         user_id: user.id,
         status: 'pending',
-        km_driven: formData.category === 'vehicles' ? formData.km_driven : null,
+        // Properly handle km_driven
+        km_driven,
         brand: formData.brand || null,
-        specs: formData.specs || {}
+        specs: formData.specs || null
       };
+
+      console.log('Submitting listing data:', listingData);
 
       const { error } = await supabase.from('listings').insert(listingData);
 

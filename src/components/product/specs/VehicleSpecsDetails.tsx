@@ -65,14 +65,16 @@ const VehicleSpecsDetails = ({
           </TableRow>
         )}
         
-        {/* Show km_driven for vehicles */}
+        {/* Show km_driven for vehicles - Improved handling of km_driven */}
         {km_driven !== null && km_driven !== undefined && (
           <TableRow>
             <TableCell className="font-medium text-xs md:text-sm py-2">
               Kilometers Driven
             </TableCell>
             <TableCell className="text-xs md:text-sm py-2">
-              {km_driven.toLocaleString()} km
+              {typeof km_driven === 'number' 
+                ? km_driven.toLocaleString() + ' km' 
+                : 'Not specified'}
             </TableCell>
           </TableRow>
         )}

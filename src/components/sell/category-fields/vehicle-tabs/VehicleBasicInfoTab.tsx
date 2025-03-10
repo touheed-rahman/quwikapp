@@ -8,6 +8,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Info } from "lucide-react";
 
 interface VehicleBasicInfoTabProps {
   kmDriven: string;
@@ -60,10 +62,36 @@ const VehicleBasicInfoTab = ({
     "July", "August", "September", "October", "November", "December"
   ];
 
+  const renderFieldWithTooltip = (
+    label: string, 
+    id: string, 
+    children: React.ReactNode, 
+    tooltip: string,
+    required: boolean = false
+  ) => (
+    <div className="space-y-2">
+      <div className="flex items-center gap-1.5">
+        <Label htmlFor={id}>{label}{required && " *"}</Label>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Info size={14} className="text-muted-foreground cursor-help" />
+            </TooltipTrigger>
+            <TooltipContent>
+              <p className="max-w-xs text-xs">{tooltip}</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      </div>
+      {children}
+    </div>
+  );
+
   return (
     <div className="space-y-4">
-      <div className="space-y-2">
-        <Label htmlFor="kmDriven">Kilometers Driven *</Label>
+      {renderFieldWithTooltip(
+        "Kilometers Driven", 
+        "kmDriven", 
         <Input
           id="kmDriven"
           type="number"
@@ -72,11 +100,14 @@ const VehicleBasicInfoTab = ({
           onChange={(e) => setKmDriven(e.target.value)}
           min="0"
           required
-        />
-      </div>
+        />,
+        "Total distance the vehicle has been driven in kilometers",
+        true
+      )}
       
-      <div className="space-y-2">
-        <Label htmlFor="yearManufactured">Year of Manufacture *</Label>
+      {renderFieldWithTooltip(
+        "Year of Manufacture", 
+        "yearManufactured", 
         <Select 
           value={yearManufactured} 
           onValueChange={setYearManufactured}
@@ -91,11 +122,14 @@ const VehicleBasicInfoTab = ({
               </SelectItem>
             ))}
           </SelectContent>
-        </Select>
-      </div>
+        </Select>,
+        "The year when the vehicle was manufactured",
+        true
+      )}
       
-      <div className="space-y-2">
-        <Label htmlFor="makeMonth">Make Month</Label>
+      {renderFieldWithTooltip(
+        "Make Month", 
+        "makeMonth", 
         <Select 
           value={makeMonth} 
           onValueChange={setMakeMonth}
@@ -110,11 +144,13 @@ const VehicleBasicInfoTab = ({
               </SelectItem>
             ))}
           </SelectContent>
-        </Select>
-      </div>
+        </Select>,
+        "The month when the vehicle was manufactured"
+      )}
       
-      <div className="space-y-2">
-        <Label htmlFor="fuelType">Fuel Type</Label>
+      {renderFieldWithTooltip(
+        "Fuel Type", 
+        "fuelType", 
         <Select 
           value={fuelType} 
           onValueChange={setFuelType}
@@ -130,11 +166,13 @@ const VehicleBasicInfoTab = ({
             <SelectItem value="cng">CNG</SelectItem>
             <SelectItem value="lpg">LPG</SelectItem>
           </SelectContent>
-        </Select>
-      </div>
+        </Select>,
+        "The type of fuel the vehicle uses"
+      )}
       
-      <div className="space-y-2">
-        <Label htmlFor="transmission">Transmission</Label>
+      {renderFieldWithTooltip(
+        "Transmission", 
+        "transmission", 
         <Select 
           value={transmission} 
           onValueChange={setTransmission}
@@ -147,22 +185,26 @@ const VehicleBasicInfoTab = ({
             <SelectItem value="automatic">Automatic</SelectItem>
             <SelectItem value="semi-automatic">Semi-Automatic</SelectItem>
           </SelectContent>
-        </Select>
-      </div>
+        </Select>,
+        "The type of transmission system in the vehicle"
+      )}
       
-      <div className="space-y-2">
-        <Label htmlFor="color">Color</Label>
+      {renderFieldWithTooltip(
+        "Color", 
+        "color", 
         <Input
           id="color"
           type="text"
           placeholder="Enter vehicle color"
           value={color}
           onChange={(e) => setColor(e.target.value)}
-        />
-      </div>
+        />,
+        "The exterior color of the vehicle"
+      )}
       
-      <div className="space-y-2">
-        <Label htmlFor="engineCapacity">Engine Capacity (cc)</Label>
+      {renderFieldWithTooltip(
+        "Engine Capacity (cc)", 
+        "engineCapacity", 
         <Input
           id="engineCapacity"
           type="number"
@@ -170,22 +212,26 @@ const VehicleBasicInfoTab = ({
           value={engineCapacity}
           onChange={(e) => setEngineCapacity(e.target.value)}
           min="0"
-        />
-      </div>
+        />,
+        "The engine capacity in cubic centimeters (cc)"
+      )}
       
-      <div className="space-y-2">
-        <Label htmlFor="registrationPlace">Registration Place</Label>
+      {renderFieldWithTooltip(
+        "Registration Place", 
+        "registrationPlace", 
         <Input
           id="registrationPlace"
           type="text"
           placeholder="Enter registration place"
           value={registrationPlace}
           onChange={(e) => setRegistrationPlace(e.target.value)}
-        />
-      </div>
+        />,
+        "The location where the vehicle is registered"
+      )}
       
-      <div className="space-y-2">
-        <Label htmlFor="insuranceType">Insurance Type</Label>
+      {renderFieldWithTooltip(
+        "Insurance Type", 
+        "insuranceType", 
         <Select 
           value={insuranceType} 
           onValueChange={setInsuranceType}
@@ -198,8 +244,9 @@ const VehicleBasicInfoTab = ({
             <SelectItem value="third-party">Third Party</SelectItem>
             <SelectItem value="none">No Insurance</SelectItem>
           </SelectContent>
-        </Select>
-      </div>
+        </Select>,
+        "The type of insurance coverage for the vehicle"
+      )}
     </div>
   );
 };

@@ -23,7 +23,7 @@ const ProductSpecsCard = ({
   // Check if we have specifications to show
   const hasSpecs = (specs && Object.values(specs).some(value => value !== null)) || 
                    (brand) || 
-                   (category === 'vehicles' && km_driven !== null);
+                   (category === 'vehicles' && km_driven !== null && km_driven !== undefined);
 
   if (!hasSpecs) {
     return null;
