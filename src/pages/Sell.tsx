@@ -1,10 +1,11 @@
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import SellStepOne from "@/components/sell/SellStepOne";
 import SellStepTwo from "@/components/sell/SellStepTwo";
 import ChatWindow from "@/components/chat/ChatWindow";
 import { useLocation } from "@/contexts/LocationContext";
 import { useListingForm } from "@/components/sell/useListingForm";
+import ScrollToTop from "@/components/utils/ScrollToTop";
 
 const Sell = () => {
   const [step, setStep] = useState(1);
@@ -25,17 +26,24 @@ const Sell = () => {
     handleSubmit
   } = useListingForm();
 
+  // Ensure the page scrolls to top when mounted
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [step]);
+
   const handleStepOneComplete = useCallback((data: any) => {
     setFormData((prevData: any) => ({ ...prevData, ...data }));
     // Add RAF to smooth out the transition
     requestAnimationFrame(() => {
       setStep(2);
+      window.scrollTo(0, 0);
     });
   }, [setFormData]);
 
   const handleBack = useCallback(() => {
     requestAnimationFrame(() => {
       setStep(1);
+      window.scrollTo(0, 0);
     });
   }, []);
 
@@ -53,6 +61,7 @@ const Sell = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <ScrollToTop />
       <div className="relative">
         {step === 1 ? (
           <SellStepOne onNext={handleStepOneComplete} />

@@ -1,3 +1,5 @@
+
+import React from "react";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
@@ -212,7 +214,7 @@ const ProductSpecsCard = ({
             )}
             
             {/* Show km_driven for vehicles */}
-            {category === 'vehicles' && km_driven !== null && (
+            {category === 'vehicles' && km_driven !== null && km_driven !== undefined && (
               <TableRow>
                 <TableCell className="font-medium text-xs md:text-sm py-2">
                   Kilometers Driven

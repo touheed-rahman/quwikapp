@@ -84,7 +84,7 @@ export const useListingForm = () => {
     }
 
     // Category-specific validations
-    if (formData.category === 'vehicles' && (!formData.km_driven && formData.km_driven !== 0)) {
+    if (formData.category === 'vehicles' && formData.km_driven === undefined) {
       toast({
         title: "Missing Kilometers Driven",
         description: "Please enter the kilometers driven",
@@ -143,10 +143,12 @@ export const useListingForm = () => {
         user_id: user.id,
         status: 'pending',
         // Include specs and other category-specific fields
-        km_driven: formData.km_driven || null,
+        km_driven: formData.km_driven !== undefined ? Number(formData.km_driven) : null,
         brand: formData.brand || null,
         specs: formData.specs || null
       };
+
+      console.log('Submitting listing data:', listingData);
 
       const { error } = await supabase.from('listings').insert(listingData);
 
