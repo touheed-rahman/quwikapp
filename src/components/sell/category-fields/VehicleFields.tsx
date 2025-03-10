@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -62,9 +63,13 @@ const VehicleFields = ({ updateFormData }: VehicleFieldsProps) => {
   useEffect(() => {
     const formFields: Record<string, any> = {};
     
-    // Convert kmDriven to a number and ensure it's passed correctly
-    // This is the key fix - making sure km_driven is always a valid number
-    formFields.km_driven = kmDriven ? parseInt(kmDriven, 10) : 0;
+    // CRITICAL FIX: Always set km_driven as a number, default to 0 if empty
+    const kmDrivenNumber = kmDriven && kmDriven.trim() !== "" 
+      ? parseInt(kmDriven, 10) 
+      : 0;
+    
+    // Always include km_driven as a number, never undefined
+    formFields.km_driven = kmDrivenNumber;
     
     formFields.specs = {
       // Basic information

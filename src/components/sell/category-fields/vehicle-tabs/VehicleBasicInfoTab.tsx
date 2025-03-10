@@ -71,7 +71,9 @@ const VehicleBasicInfoTab = ({
   ) => (
     <div className="space-y-2">
       <div className="flex items-center gap-1.5">
-        <Label htmlFor={id}>{label}{required && " *"}</Label>
+        <Label htmlFor={id} className={required ? "after:content-['*'] after:text-red-500 after:ml-0.5" : ""}>
+          {label}
+        </Label>
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
@@ -100,8 +102,9 @@ const VehicleBasicInfoTab = ({
           onChange={(e) => setKmDriven(e.target.value)}
           min="0"
           required
+          className={!kmDriven ? "border-red-300 focus:ring-red-500" : ""}
         />,
-        "Total distance the vehicle has been driven in kilometers",
+        "Total distance the vehicle has been driven in kilometers. This field is required.",
         true
       )}
       
@@ -123,8 +126,7 @@ const VehicleBasicInfoTab = ({
             ))}
           </SelectContent>
         </Select>,
-        "The year when the vehicle was manufactured",
-        true
+        "The year when the vehicle was manufactured"
       )}
       
       {renderFieldWithTooltip(

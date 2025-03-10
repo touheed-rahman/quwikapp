@@ -83,15 +83,19 @@ export const useListingForm = () => {
       return false;
     }
 
-    // Category-specific validations - Fixed the km_driven validation
-    if (formData.category === 'vehicles' && 
-        (formData.km_driven === undefined || formData.km_driven === null || formData.km_driven === '')) {
-      toast({
-        title: "Missing Kilometers Driven",
-        description: "Please enter the kilometers driven",
-        variant: "destructive"
-      });
-      return false;
+    // Improved validation for vehicles: km_driven should always be a number
+    if (formData.category === 'vehicles') {
+      // Check if km_driven is defined and is a number (should be 0 or greater)
+      if (formData.km_driven === undefined || 
+          formData.km_driven === null || 
+          isNaN(Number(formData.km_driven))) {
+        toast({
+          title: "Missing Kilometers Driven",
+          description: "Please enter the kilometers driven",
+          variant: "destructive"
+        });
+        return false;
+      }
     }
 
     return true;
@@ -132,11 +136,6 @@ export const useListingForm = () => {
       const uploadedImagePaths = await Promise.all(imageUploadPromises);
 
       // Prepare the listing data with all the fields
-      // Ensure km_driven is properly converted to a number
-      const km_driven = formData.km_driven !== undefined && formData.km_driven !== null 
-        ? Number(formData.km_driven) 
-        : null;
-
       const listingData = {
         title,
         description,
@@ -148,8 +147,8 @@ export const useListingForm = () => {
         images: uploadedImagePaths,
         user_id: user.id,
         status: 'pending',
-        // Properly handle km_driven
-        km_driven,
+        // Include specs and other category-specific fields
+        km_driven: formData.km_driven !== undefined ? Number(formData.km_driven) : null,
         brand: formData.brand || null,
         specs: formData.specs || null
       };
