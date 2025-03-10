@@ -1,4 +1,3 @@
-
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
@@ -21,10 +20,42 @@ const ProductSpecsCard = ({
   // Helper function to get user-friendly label for spec keys
   const getSpecLabel = (key: string): string => {
     const labelMap: Record<string, string> = {
+      // Vehicle specific fields
       'year': 'Year',
       'fuel_type': 'Fuel Type',
       'transmission': 'Transmission',
       'color': 'Color',
+      'engine_capacity': 'Engine Capacity',
+      'insurance_type': 'Insurance Type',
+      'make_month': 'Make Month',
+      'registration_place': 'Registration Place',
+      'abs': 'ABS',
+      'accidental': 'Accidental History',
+      'adjustable_external_mirror': 'Adjustable External Mirror',
+      'adjustable_steering': 'Adjustable Steering',
+      'air_conditioning': 'Air Conditioning',
+      'airbags': 'Number of Airbags',
+      'alloy_wheels': 'Alloy Wheels',
+      'anti_theft_device': 'Anti Theft Device',
+      'aux_compatibility': 'AUX Compatibility',
+      'battery_condition': 'Battery Condition',
+      'bluetooth': 'Bluetooth',
+      'certified': 'Vehicle Certified',
+      'cruise_control': 'Cruise Control',
+      'lock_system': 'Lock System',
+      'navigation_system': 'Navigation System',
+      'parking_sensors': 'Parking Sensors',
+      'power_steering': 'Power Steering',
+      'power_windows': 'Power Windows',
+      'radio': 'AM/FM Radio',
+      'rear_parking_camera': 'Rear Parking Camera',
+      'service_history': 'Service History',
+      'sunroof': 'Sunroof',
+      'tyre_condition': 'Tyre Condition',
+      'usb_compatibility': 'USB Compatibility',
+      'exchange': 'Exchange Available',
+      
+      // Other category fields
       'model_number': 'Model Number',
       'warranty': 'Warranty',
       'material': 'Material',
@@ -86,9 +117,63 @@ const ProductSpecsCard = ({
         return typeof value === 'number' ? `${value} years` : value;
       case 'duration':
         return typeof value === 'number' ? `${value} hours` : value;
+      case 'engine_capacity':
+        return typeof value === 'number' ? `${value} cc` : value;
+      // Format boolean values
+      case 'abs':
+      case 'accidental':
+      case 'adjustable_steering':
+      case 'alloy_wheels':
+      case 'anti_theft_device':
+      case 'aux_compatibility':
+      case 'bluetooth':
+      case 'certified':
+      case 'cruise_control':
+      case 'navigation_system': 
+      case 'parking_sensors':
+      case 'power_steering':
+      case 'rear_parking_camera':
+      case 'sunroof':
+      case 'usb_compatibility':
+      case 'exchange':
+        return value === true || value === 'Yes' || value === 'yes' ? 'Yes' : 'No';
       default:
         return typeof value === 'object' ? JSON.stringify(value) : value.toString();
     }
+  };
+
+  // Group vehicle specs for better organization
+  const groupVehicleSpecs = () => {
+    if (!specs || category !== 'vehicles') return [];
+
+    const groups = [
+      {
+        title: 'Basic Information',
+        keys: ['year', 'fuel_type', 'transmission', 'color', 'engine_capacity', 'make_month', 'registration_place', 'insurance_type']
+      },
+      {
+        title: 'Features',
+        keys: ['air_conditioning', 'airbags', 'alloy_wheels', 'cruise_control', 'sunroof', 'navigation_system', 'power_steering', 'power_windows']
+      },
+      {
+        title: 'Safety & Security',
+        keys: ['abs', 'anti_theft_device', 'parking_sensors', 'rear_parking_camera', 'lock_system']
+      },
+      {
+        title: 'Condition & History',
+        keys: ['accidental', 'battery_condition', 'tyre_condition', 'service_history', 'certified']
+      },
+      {
+        title: 'Connectivity',
+        keys: ['bluetooth', 'aux_compatibility', 'usb_compatibility', 'radio']
+      },
+      {
+        title: 'Additional',
+        keys: ['adjustable_external_mirror', 'adjustable_steering', 'exchange']
+      }
+    ];
+
+    return groups;
   };
 
   // Check if we have specifications to show
@@ -99,6 +184,8 @@ const ProductSpecsCard = ({
   if (!hasSpecs) {
     return null;
   }
+
+  const vehicleSpecGroups = groupVehicleSpecs();
 
   return (
     <Card className="p-3 md:p-4 max-w-full">
@@ -136,20 +223,57 @@ const ProductSpecsCard = ({
               </TableRow>
             )}
             
-            {/* Show all other specs */}
-            {specs && Object.entries(specs)
-              .filter(([_, value]) => value !== null)
-              .map(([key, value]) => (
-                <TableRow key={key}>
-                  <TableCell className="font-medium text-xs md:text-sm py-2">
-                    {getSpecLabel(key)}
-                  </TableCell>
-                  <TableCell className="text-xs md:text-sm py-2">
-                    {formatSpecValue(key, value)}
-                  </TableCell>
-                </TableRow>
-              ))
-            }
+            {/* For vehicles, show grouped specs */}
+            {category === 'vehicles' && vehicleSpecGroups.length > 0 ? (
+              <>
+                {vehicleSpecGroups.map((group, groupIndex) => (
+                  <React.Fragment key={`group-${groupIndex}`}>
+                    {/* Only show group if it has at least one value */}
+                    {group.keys.some(key => specs && specs[key] !== undefined && specs[key] !== null) && (
+                      <>
+                        {/* Group Title */}
+                        <TableRow>
+                          <TableCell 
+                            colSpan={2} 
+                            className="font-semibold text-xs md:text-sm py-2 bg-gray-50"
+                          >
+                            {group.title}
+                          </TableCell>
+                        </TableRow>
+                        
+                        {/* Group Specs */}
+                        {group.keys.map(key => 
+                          specs && specs[key] !== undefined && specs[key] !== null && (
+                            <TableRow key={key}>
+                              <TableCell className="font-medium text-xs md:text-sm py-2 pl-5">
+                                {getSpecLabel(key)}
+                              </TableCell>
+                              <TableCell className="text-xs md:text-sm py-2">
+                                {formatSpecValue(key, specs[key])}
+                              </TableCell>
+                            </TableRow>
+                          )
+                        )}
+                      </>
+                    )}
+                  </React.Fragment>
+                ))}
+              </>
+            ) : (
+              /* For other categories, show all specs in a flat list */
+              specs && Object.entries(specs)
+                .filter(([_, value]) => value !== null)
+                .map(([key, value]) => (
+                  <TableRow key={key}>
+                    <TableCell className="font-medium text-xs md:text-sm py-2">
+                      {getSpecLabel(key)}
+                    </TableCell>
+                    <TableCell className="text-xs md:text-sm py-2">
+                      {formatSpecValue(key, value)}
+                    </TableCell>
+                  </TableRow>
+                ))
+            )}
           </TableBody>
         </Table>
       </div>
