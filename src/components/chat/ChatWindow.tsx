@@ -49,6 +49,7 @@ const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
     isLoading, 
     handleDelete,
     fetchConversations,
+    refreshConversations,
     unreadCounts 
   } = useConversations(
     filter,
@@ -69,10 +70,27 @@ const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
 
   // Re-fetch conversations when the window is opened or filter changes
   useEffect(() => {
-    if (isAuthenticated && userId) {
-      fetchConversations();
+    if (isOpen && isAuthenticated && userId) {
+      console.log('Chat window opened, refreshing conversations');
+      refreshConversations();
     }
-  }, [isOpen, filter, isAuthenticated, userId, fetchConversations]);
+  }, [isOpen, filter, isAuthenticated, userId, refreshConversations]);
+
+  // Additionally fetch when tab becomes visible
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible' && isAuthenticated && userId) {
+        console.log('Tab became visible, refreshing conversations');
+        refreshConversations();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [isAuthenticated, userId, refreshConversations]);
 
   const handleFilterChange = (newFilter: 'all' | 'buying' | 'selling') => {
     setFilter(newFilter);
@@ -92,9 +110,9 @@ const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
   // Filter conversations based on search term
   const filteredConversations = searchTerm.trim() 
     ? conversations.filter(conv => 
-        conv.listing.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        conv.seller.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        conv.buyer.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        conv.listing?.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        conv.seller?.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        conv.buyer?.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         (conv.last_message && conv.last_message.toLowerCase().includes(searchTerm.toLowerCase()))
       )
     : conversations;

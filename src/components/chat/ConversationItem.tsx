@@ -3,9 +3,10 @@ import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Check } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Conversation } from "./types/conversation";
 
 interface ConversationItemProps {
-  conversation: any;
+  conversation: Conversation;
   onClick: () => void;
   userId?: string;
   unreadCount?: number;
@@ -18,9 +19,21 @@ export const ConversationItem = ({
   unreadCount = 0 
 }: ConversationItemProps) => {
   // Don't render deleted conversations
-  if (conversation.deleted) {
+  if (conversation.deleted || (conversation.deleted_by && userId === conversation.deleted_by)) {
     return null;
   }
+
+  // Ensure we have the necessary data before rendering
+  if (!conversation.seller || !conversation.buyer || !conversation.listing) {
+    console.error("Missing conversation data", conversation);
+    return null;
+  }
+  
+  // Determine if the current user is the buyer
+  const isBuyer = userId === conversation.buyer_id;
+  
+  // Get the other user (if you're the buyer, get the seller, and vice versa)
+  const otherUser = isBuyer ? conversation.seller : conversation.buyer;
   
   return (
     <div
@@ -34,16 +47,16 @@ export const ConversationItem = ({
         <Avatar className="h-12 w-12">
           <div className={cn(
             "w-full h-full rounded-full flex items-center justify-center text-white",
-            userId === conversation.buyer_id ? "bg-primary/90" : "bg-orange-500/90"
+            isBuyer ? "bg-primary/90" : "bg-orange-500/90"
           )}>
-            {conversation.seller.full_name?.[0] || 'U'}
+            {otherUser.full_name?.[0] || 'U'}
           </div>
         </Avatar>
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <span className={cn("font-medium", unreadCount > 0 && "font-bold")}>
-                {conversation.seller.full_name}
+                {otherUser.full_name}
               </span>
               <Badge variant="outline" className="h-5 text-xs bg-primary/10 text-primary border-primary">
                 <Check className="h-3 w-3 mr-1" />
@@ -56,7 +69,7 @@ export const ConversationItem = ({
               )}
             </div>
             <span className="text-sm text-muted-foreground">
-              {new Date(conversation.last_message_at).toLocaleDateString()}
+              {conversation.last_message_at ? new Date(conversation.last_message_at).toLocaleDateString() : ''}
             </span>
           </div>
           <p className="text-sm font-medium text-primary/90 mt-1">
@@ -67,7 +80,7 @@ export const ConversationItem = ({
             "text-sm text-muted-foreground truncate mt-1", 
             unreadCount > 0 && "font-bold text-foreground"
           )}>
-            {conversation.last_message}
+            {conversation.last_message || "No messages yet"}
           </p>
         </div>
       </div>
