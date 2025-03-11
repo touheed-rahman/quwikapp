@@ -19,7 +19,7 @@ const CategorySubcategories = () => {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      <main className="container mx-auto px-4 pt-16 pb-24">
+      <main className="container mx-auto px-4 pt-24 pb-24">
         <motion.div 
           className="space-y-6 max-w-3xl mx-auto"
           initial={{ opacity: 0 }}
