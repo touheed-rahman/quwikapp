@@ -7,7 +7,7 @@ export function useImageUpload(conversationId: string | undefined, sessionUserId
   const { toast } = useToast();
   const [isUploading, setIsUploading] = useState(false);
 
-  const handleUploadImage = async (file: File) => {
+  const handleUploadImage = async (file: File): Promise<void> => {
     if (!sessionUserId || !conversationId) return;
     
     try {
@@ -25,7 +25,7 @@ export function useImageUpload(conversationId: string | undefined, sessionUserId
         .from('chat_images')
         .getPublicUrl(filePath);
         
-      if (onImageUploaded) {
+      if (onImageUploaded && urlData) {
         onImageUploaded(urlData.publicUrl);
       }
       
@@ -33,8 +33,6 @@ export function useImageUpload(conversationId: string | undefined, sessionUserId
         title: "Image uploaded",
         description: "Your image has been sent successfully.",
       });
-
-      return urlData.publicUrl;
     } catch (error: any) {
       console.error('Error uploading image:', error);
       toast({

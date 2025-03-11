@@ -1,18 +1,12 @@
 
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ConversationItem } from "./ConversationItem";
-import { Button } from "@/components/ui/button";
-import { MoreVertical } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import type { Conversation } from "./types/conversation";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { useState, useEffect } from "react";
 import DeleteChatDialog from "./dialogs/DeleteChatDialog";
+import { Button } from "@/components/ui/button";
+import { Trash2 } from "lucide-react";
 
 interface ConversationListProps {
   conversations: Conversation[];
@@ -37,15 +31,13 @@ const ConversationList = ({
   const [isDeleting, setIsDeleting] = useState(false);
   const [localConversations, setLocalConversations] = useState<Conversation[]>([]);
   
-  // Initialize local state with filtered conversations
+  // Initialize local state with conversations
   useEffect(() => {
-    setLocalConversations(conversations.filter(conv => !conv.deleted));
+    // Filter conversations that should be shown to this user
+    setLocalConversations(conversations);
   }, [conversations]);
 
   const handleConversationClick = (conversation: Conversation) => {
-    // Skip deleted conversations
-    if (conversation.deleted) return;
-    
     navigate(`/chat/${conversation.id}`);
     onSelectConversation(conversation.id);
   };
@@ -99,24 +91,16 @@ const ConversationList = ({
               userId={userId}
               unreadCount={unreadCounts[conversation.id] || 0}
             />
-            <div className="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity">
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon">
-                    <MoreVertical className="h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem 
-                    className="text-destructive focus:text-destructive"
-                    onClick={(e) => confirmDelete(conversation, e)}
-                    disabled={isDeleting}
-                  >
-                    {isDeleting && selectedConversation?.id === conversation.id ? 
-                      "Deleting..." : "Delete Chat"}
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+            <div className="absolute right-2 top-1/2 -translate-y-1/2">
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
+                onClick={(e) => confirmDelete(conversation, e)}
+                disabled={isDeleting && selectedConversation?.id === conversation.id}
+              >
+                <Trash2 className="h-4 w-4 text-destructive" />
+              </Button>
             </div>
           </div>
         ))}

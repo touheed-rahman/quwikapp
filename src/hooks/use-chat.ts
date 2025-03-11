@@ -5,7 +5,6 @@ import { useMessageList } from './use-message-list';
 import { useMessageSender } from './use-message-sender';
 import { useChatNotifications } from './use-chat-notifications';
 import { useListingStatus } from './use-listing-status';
-import { ConversationDetails } from '@/components/chat/types/chat-detail';
 
 export function useChat(conversationId: string | undefined) {
   const { sessionUser, loading } = useSessionUser(conversationId);
@@ -26,7 +25,7 @@ export function useChat(conversationId: string | undefined) {
     newMessage,
     setNewMessage,
     handleSend,
-    handleImageUpload,
+    handleImageUpload: handleImageUpload as (file: File) => Promise<void>, // Fix type issue
     chatDisabled: isDisabled,
     disabledReason
   };

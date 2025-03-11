@@ -24,6 +24,16 @@ export function useConversations(
         return;
       }
 
+      // First, get conversation participants where the user has not deleted the conversation
+      const { data: participantData, error: participantError } = await supabase
+        .from('conversation_participants')
+        .select('conversation_id')
+        .eq('user_id', userId)
+        .not('deleted_at', 'is', null);
+        
+      // Get the IDs of deleted conversations
+      const deletedConversationIds = participantData ? participantData.map(p => p.conversation_id) : [];
+      
       let query = supabase
         .from('conversations')
         .select(`
@@ -32,7 +42,6 @@ export function useConversations(
           seller:profiles!conversations_seller_id_fkey(id, full_name, avatar_url),
           buyer:profiles!conversations_buyer_id_fkey(id, full_name, avatar_url)
         `)
-        .eq('deleted', false) // Only show non-deleted conversations
         .order('last_message_at', { ascending: false });
 
       if (filter === 'buying') {
@@ -46,7 +55,12 @@ export function useConversations(
       const { data, error } = await query;
       if (error) throw error;
       
-      setConversations(data || []);
+      // Filter out conversations that user has deleted
+      const filteredConversations = data ? data.filter(conv => 
+        !deletedConversationIds.includes(conv.id)
+      ) : [];
+      
+      setConversations(filteredConversations || []);
       
       // Fetch unread counts for each conversation
       if (data && data.length > 0) {
@@ -76,43 +90,48 @@ export function useConversations(
     if (isAuthenticated && userId) {
       fetchConversations();
       
+      // Subscribe to changes in conversation_participants
+      const participantsChannel = supabase
+        .channel(`user-conversation-participants-${userId}`)
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'conversation_participants',
+            filter: `user_id=eq.${userId}`,
+          },
+          () => {
+            fetchConversations();
+          }
+        )
+        .subscribe();
+        
       // Subscribe to changes in conversations
       const conversationsChannel = supabase
         .channel(`user-conversations-${userId}`)
         .on(
           'postgres_changes',
           {
-            event: 'UPDATE',
+            event: '*',
             schema: 'public',
             table: 'conversations',
             filter: `buyer_id=eq.${userId}`,
           },
-          (payload) => {
-            if (payload.new && (payload.new as any).deleted) {
-              // Immediately remove deleted conversation from state
-              setConversations(prev => prev.filter(conv => conv.id !== (payload.new as any).id));
-            } else {
-              // Refresh conversations for other updates
-              fetchConversations();
-            }
+          () => {
+            fetchConversations();
           }
         )
         .on(
           'postgres_changes',
           {
-            event: 'UPDATE',
+            event: '*',
             schema: 'public',
             table: 'conversations',
             filter: `seller_id=eq.${userId}`,
           },
-          (payload) => {
-            if (payload.new && (payload.new as any).deleted) {
-              // Immediately remove deleted conversation from state
-              setConversations(prev => prev.filter(conv => conv.id !== (payload.new as any).id));
-            } else {
-              // Refresh conversations for other updates
-              fetchConversations();
-            }
+          () => {
+            fetchConversations();
           }
         )
         .subscribe();
@@ -135,6 +154,7 @@ export function useConversations(
         .subscribe();
 
       return () => {
+        supabase.removeChannel(participantsChannel);
         supabase.removeChannel(conversationsChannel);
         supabase.removeChannel(notificationsChannel);
       };
@@ -147,14 +167,17 @@ export function useConversations(
       
       setIsDeleting(true);
       
-      // Mark the conversation as deleted
-      const { error: updateError } = await supabase
-        .from('conversations')
-        .update({ deleted: true })
-        .eq('id', conversationId);
+      // Mark the conversation as deleted for this user only
+      const { error } = await supabase
+        .from('conversation_participants')
+        .upsert({ 
+          conversation_id: conversationId,
+          user_id: userId,
+          deleted_at: new Date().toISOString()
+        });
         
-      if (updateError) {
-        throw updateError;
+      if (error) {
+        throw error;
       }
 
       // Remove the deleted conversation from the state immediately
@@ -162,7 +185,7 @@ export function useConversations(
       
       toast({
         title: "Chat deleted",
-        description: "The conversation has been permanently deleted.",
+        description: "The conversation has been removed from your chat list.",
       });
       
       // If we're currently viewing this conversation, redirect to home

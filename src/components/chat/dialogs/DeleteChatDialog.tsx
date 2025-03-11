@@ -42,7 +42,7 @@ const DeleteChatDialog = ({
         <DialogHeader>
           <DialogTitle>Delete Chat</DialogTitle>
           <DialogDescription>
-            This will permanently delete this conversation and all messages. This action cannot be undone.
+            This will remove this conversation from your chat list. Are you sure you want to continue?
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>
