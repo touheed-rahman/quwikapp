@@ -1,9 +1,13 @@
 
-import { Gauge, LayoutGrid, Users, BarChart3, ArrowLeft } from "lucide-react";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { useNavigate } from "react-router-dom";
+import { 
+  HomeIcon, 
+  ListIcon, 
+  UserIcon, 
+  AreaChartIcon, 
+  ArrowLeftIcon,
+  SparklesIcon 
+} from "lucide-react";
 
 interface AdminNavTabsProps {
   activeTab: string;
@@ -11,63 +15,86 @@ interface AdminNavTabsProps {
   showBackButton?: boolean;
 }
 
-const AdminNavTabs = ({ activeTab, setActiveTab, showBackButton = false }: AdminNavTabsProps) => {
-  const navigate = useNavigate();
-  
+export default function AdminNavTabs({ 
+  activeTab, 
+  setActiveTab,
+  showBackButton = false
+}: AdminNavTabsProps) {
+  const handleTabChange = (tab: string) => {
+    setActiveTab(tab);
+  };
+
+  const handleBackToDashboard = () => {
+    setActiveTab('dashboard');
+  };
+
   return (
-    <div className="hidden md:flex items-center space-x-1 ml-8 relative">
+    <div className="hidden md:flex space-x-2 lg:space-x-4 items-center">
       {showBackButton && (
-        <motion.div 
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          className="absolute -left-12"
+        <Button
+          variant="outline"
+          size="sm"
+          className="mr-2"
+          onClick={handleBackToDashboard}
         >
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            className="rounded-full w-8 h-8 p-0 bg-primary/10 text-primary hover:bg-primary/20"
-            onClick={() => setActiveTab('dashboard')}
-          >
-            <ArrowLeft className="h-4 w-4" />
-            <span className="sr-only">Back to dashboard</span>
-          </Button>
-        </motion.div>
+          <ArrowLeftIcon className="mr-1 h-4 w-4" />
+          Dashboard
+        </Button>
       )}
-      
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="bg-primary/10 p-1 rounded-lg border border-primary/20 shadow-sm">
-          <TabsTrigger 
-            value="dashboard" 
-            className={`${activeTab === 'dashboard' ? 'bg-primary text-white shadow-md' : 'hover:bg-primary/5'} px-4 py-2.5 transition-all duration-200 rounded-md flex items-center gap-2`}
+
+      {!showBackButton && (
+        <>
+          <Button
+            variant={activeTab === 'dashboard' ? 'default' : 'ghost'}
+            size="sm"
+            onClick={() => handleTabChange('dashboard')}
+            className="flex items-center"
           >
-            <Gauge className="w-4 h-4" />
+            <HomeIcon className="h-4 w-4 mr-1" />
             Dashboard
-          </TabsTrigger>
-          <TabsTrigger 
-            value="listings" 
-            className={`${activeTab === 'listings' ? 'bg-primary text-white shadow-md' : 'hover:bg-primary/5'} px-4 py-2.5 transition-all duration-200 rounded-md flex items-center gap-2`}
+          </Button>
+
+          <Button
+            variant={activeTab === 'listings' ? 'default' : 'ghost'}
+            size="sm"
+            onClick={() => handleTabChange('listings')}
+            className="flex items-center"
           >
-            <LayoutGrid className="w-4 h-4" />
+            <ListIcon className="h-4 w-4 mr-1" />
             Listings
-          </TabsTrigger>
-          <TabsTrigger 
-            value="users" 
-            className={`${activeTab === 'users' ? 'bg-primary text-white shadow-md' : 'hover:bg-primary/5'} px-4 py-2.5 transition-all duration-200 rounded-md flex items-center gap-2`}
+          </Button>
+
+          <Button
+            variant={activeTab === 'users' ? 'default' : 'ghost'}
+            size="sm"
+            onClick={() => handleTabChange('users')}
+            className="flex items-center"
           >
-            <Users className="w-4 h-4" />
+            <UserIcon className="h-4 w-4 mr-1" />
             Users
-          </TabsTrigger>
-          <TabsTrigger 
-            value="analytics" 
-            className={`${activeTab === 'analytics' ? 'bg-primary text-white shadow-md' : 'hover:bg-primary/5'} px-4 py-2.5 transition-all duration-200 rounded-md flex items-center gap-2`}
+          </Button>
+
+          <Button
+            variant={activeTab === 'analytics' ? 'default' : 'ghost'}
+            size="sm"
+            onClick={() => handleTabChange('analytics')}
+            className="flex items-center"
           >
-            <BarChart3 className="w-4 h-4" />
+            <AreaChartIcon className="h-4 w-4 mr-1" />
             Analytics
-          </TabsTrigger>
-        </TabsList>
-      </Tabs>
+          </Button>
+          
+          <Button
+            variant={activeTab === 'features' ? 'default' : 'ghost'}
+            size="sm"
+            onClick={() => handleTabChange('features')}
+            className="flex items-center"
+          >
+            <SparklesIcon className="h-4 w-4 mr-1" />
+            Features
+          </Button>
+        </>
+      )}
     </div>
   );
-};
-
-export default AdminNavTabs;
+}

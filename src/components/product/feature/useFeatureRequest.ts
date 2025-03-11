@@ -22,10 +22,20 @@ export function useFeatureRequest(
     phone: "",
     address: ""
   });
+  const [freeRequestsCount, setFreeRequestsCount] = useState<number | null>(null);
+  const [hasFreeFeatures, setHasFreeFeatures] = useState<boolean>(true);
+  const [featurePricing, setFeaturePricing] = useState<Record<string, any>>({});
+  const [isLoadingPricing, setIsLoadingPricing] = useState(false);
   
   const { toast } = useToast();
   const { generateInvoice } = useInvoiceGeneration();
-  const { createFeatureOrder, updateOrderInvoiceUrl, updateListingFeatureStatus } = useOrderManagement();
+  const { 
+    createFeatureOrder, 
+    updateOrderInvoiceUrl, 
+    updateListingFeatureStatus,
+    getFeatureRequestCount,
+    getFeaturePrice
+  } = useOrderManagement();
 
   const handleUserDetailsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -33,6 +43,46 @@ export function useFeatureRequest(
       ...prev,
       [name]: value
     }));
+  };
+
+  const loadUserFeaturesStatus = async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+
+      setIsLoadingPricing(true);
+      const count = await getFeatureRequestCount(session.user.id);
+      setFreeRequestsCount(count);
+      setHasFreeFeatures(count < 3);
+
+      // Load pricing for the category and subcategory
+      const { data: listing } = await supabase
+        .from('listings')
+        .select('category, subcategory')
+        .eq('id', productId)
+        .single();
+
+      if (listing) {
+        const homepagePrice = await getFeaturePrice(listing.category, listing.subcategory, 'homepage');
+        const productPagePrice = await getFeaturePrice(listing.category, listing.subcategory, 'productPage');
+        const bothPrice = await getFeaturePrice(listing.category, listing.subcategory, 'both');
+
+        setFeaturePricing({
+          homepage: homepagePrice,
+          productPage: productPagePrice,
+          both: bothPrice
+        });
+      }
+    } catch (error: any) {
+      console.error("Failed to load features status:", error);
+      toast({
+        title: "Error",
+        description: "Failed to check feature availability. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoadingPricing(false);
+    }
   };
 
   const handleSubmitFeatureRequest = async (featureOptions: FeatureOption[]) => {
@@ -48,12 +98,19 @@ export function useFeatureRequest(
       const invoiceNumber = `INV-${Date.now().toString().substring(7)}`;
       const selectedFeatureOption = featureOptions.find(o => o.id === selectedOption) as FeatureOption;
       
+      // Check if the user still has free features available
+      const userHasFreeFeatures = await getFeatureRequestCount(session.user.id) < 3;
+      
+      // Set the actual price based on whether they've used up free features
+      const actualPrice = userHasFreeFeatures ? 0 : selectedFeatureOption.price;
+      const paymentStatus = actualPrice === 0 ? "completed" : "pending";
+      
       const orderData = {
         listing_id: productId,
         buyer_id: session.user.id,
         seller_id: session.user.id,
-        amount: 0,
-        payment_status: "completed",
+        amount: actualPrice,
+        payment_status: paymentStatus,
         invoice_number: invoiceNumber,
         order_type: "feature",
         feature_type: selectedOption,
@@ -80,9 +137,14 @@ export function useFeatureRequest(
       setPaymentComplete(true);
       toast({
         title: "Feature Request Submitted!",
-        description: "Your listing has been submitted for featuring. An admin will review and approve it soon.",
+        description: userHasFreeFeatures 
+          ? "Your listing has been submitted for featuring. An admin will review and approve it soon." 
+          : "Your feature request has been submitted. Please proceed with payment to activate the feature.",
         variant: "default",
       });
+      
+      // Refresh the free features count
+      loadUserFeaturesStatus();
       
       setTimeout(() => {
         onFeatureSuccess();
@@ -115,6 +177,7 @@ export function useFeatureRequest(
       });
       return;
     }
+    loadUserFeaturesStatus();
     setStep(2);
   };
 
@@ -146,9 +209,14 @@ export function useFeatureRequest(
     paymentComplete,
     invoiceUrl,
     userDetails,
+    freeRequestsCount,
+    hasFreeFeatures,
+    isLoadingPricing,
+    featurePricing,
     handleUserDetailsChange,
     handleNext,
     handleDetailsNext,
-    handleDownloadInvoice
+    handleDownloadInvoice,
+    loadUserFeaturesStatus
   };
 }

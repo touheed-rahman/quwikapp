@@ -11,6 +11,7 @@ import FeatureSuccess from "./feature/FeatureSuccess";
 import { useFeatureRequest } from "./feature/useFeatureRequest";
 import { Home, ShoppingBag, Tag } from "lucide-react";
 import { FeatureOption } from "./feature/types";
+import { useEffect } from "react";
 
 interface FeatureDialogProps {
   isOpen: boolean;
@@ -38,11 +39,23 @@ export default function FeatureDialog({
     paymentComplete,
     invoiceUrl,
     userDetails,
+    freeRequestsCount,
+    hasFreeFeatures,
+    isLoadingPricing,
+    featurePricing,
     handleUserDetailsChange,
     handleNext,
     handleDetailsNext,
-    handleDownloadInvoice
+    handleDownloadInvoice,
+    loadUserFeaturesStatus
   } = useFeatureRequest(productId, productTitle, onFeatureSuccess, onClose);
+
+  // Load user features status when dialog opens
+  useEffect(() => {
+    if (isOpen) {
+      loadUserFeaturesStatus();
+    }
+  }, [isOpen]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Feature options with both paid and free options
   const getFeaturePricing = (): FeatureOption[] => {
@@ -51,24 +64,24 @@ export default function FeatureDialog({
         id: "homepage",
         title: "Homepage Feature",
         description: "Your listing will be featured on our homepage",
-        price: 0,
-        originalPrice: 499,
+        price: hasFreeFeatures ? 0 : (featurePricing?.homepage?.price || 499),
+        originalPrice: featurePricing?.homepage?.original_price || 499,
         icon: <Home className="h-5 w-5 text-secondary" />
       },
       {
         id: "productPage",
         title: "Category Feature",
         description: "Your listing will be featured in its category page",
-        price: 0,
-        originalPrice: 299,
+        price: hasFreeFeatures ? 0 : (featurePricing?.productPage?.price || 299),
+        originalPrice: featurePricing?.productPage?.original_price || 299,
         icon: <Tag className="h-5 w-5 text-primary" />
       },
       {
         id: "both",
         title: "Premium Feature",
         description: "Your listing will be featured everywhere!",
-        price: 0,
-        originalPrice: 799,
+        price: hasFreeFeatures ? 0 : (featurePricing?.both?.price || 799),
+        originalPrice: featurePricing?.both?.original_price || 799,
         icon: <ShoppingBag className="h-5 w-5 text-accent" />
       }
     ];
@@ -89,6 +102,10 @@ export default function FeatureDialog({
             <FeatureOptionsStep
               selectedOption={selectedOption}
               setSelectedOption={setSelectedOption}
+              freeRequestsCount={freeRequestsCount}
+              hasFreeFeatures={hasFreeFeatures}
+              isLoadingPricing={isLoadingPricing}
+              featurePricing={featurePricing}
             />
             
             <DialogFooter>
@@ -118,7 +135,7 @@ export default function FeatureDialog({
                 onClick={() => handleDetailsNext(featureOptions)} 
                 disabled={isSubmitting}
               >
-                {isSubmitting ? 'Processing...' : 'Submit Request'}
+                {isSubmitting ? 'Processing...' : hasFreeFeatures ? 'Submit Request' : 'Submit & Pay'}
               </Button>
             </DialogFooter>
           </>

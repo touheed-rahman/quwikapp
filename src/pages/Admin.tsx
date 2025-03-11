@@ -15,6 +15,7 @@ import AdminAnalytics from "@/components/admin/AdminAnalytics";
 import DashboardMetrics from "@/components/admin/DashboardMetrics";
 import ListingManagement from "@/components/admin/ListingManagement";
 import UserManagement from "@/components/admin/UserManagement";
+import FeatureManagement from "@/components/admin/FeatureManagement";
 
 const AdminPanel = () => {
   const navigate = useNavigate();
@@ -146,6 +147,10 @@ const AdminPanel = () => {
               
               <TabsContent value="analytics">
                 <AdminAnalytics />
+              </TabsContent>
+              
+              <TabsContent value="features">
+                <FeatureManagement />
               </TabsContent>
             </Tabs>
           </motion.div>
