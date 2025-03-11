@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -22,6 +23,7 @@ interface Profile {
   location: string | null;
   followers_count: number;
   following_count: number;
+  avatar_url?: string;
 }
 
 export const useSellerProfile = (id: string | undefined) => {

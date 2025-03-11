@@ -25,8 +25,7 @@ const DescriptionInput = ({ value, onChange }: DescriptionInputProps) => {
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder="Include condition, features and reason for selling"
-          className="min-h-[120px] resize-none border-primary/20 focus-visible:ring-primary/30 shadow-sm transition-all duration-200"
-          maxLength={2000}
+          className="min-h-[100px] resize-none border-primary/20 focus-visible:ring-primary/30 shadow-sm transition-all duration-200"
           required
         />
       </div>

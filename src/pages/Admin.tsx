@@ -11,7 +11,6 @@ import {
   Gauge, 
   BarChart3,
   Activity,
-  ArrowRight
 } from "lucide-react";
 import DashboardMetrics from "@/components/admin/DashboardMetrics";
 import ListingManagement from "@/components/admin/ListingManagement";
@@ -20,7 +19,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Separator } from "@/components/ui/separator";
 import { motion, AnimatePresence } from "framer-motion";
 import { Card } from "@/components/ui/card";
 
@@ -29,23 +27,6 @@ const AdminPanel = () => {
   const location = useLocation();
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('dashboard');
-  const [sidebarOpen, setSidebarOpen] = useState(true);
-  
-  useEffect(() => {
-    // Handle window resize for mobile responsiveness
-    const handleResize = () => {
-      if (window.innerWidth < 768) {
-        setSidebarOpen(false);
-      } else {
-        setSidebarOpen(true);
-      }
-    };
-    
-    window.addEventListener('resize', handleResize);
-    handleResize(); // Initial check
-    
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
   
   // Check if there's a filter passed from dashboard metrics
   useEffect(() => {
@@ -110,111 +91,73 @@ const AdminPanel = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
-      <div className="bg-white shadow-sm border-b h-16 fixed top-0 left-0 right-0 z-50 flex items-center px-4">
-        <div className="flex items-center justify-between w-full">
-          <div className="flex items-center gap-2">
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              className="md:hidden"
-              onClick={() => setSidebarOpen(!sidebarOpen)}
-            >
-              <LayoutGrid className="h-5 w-5" />
-            </Button>
+      <div className="bg-white shadow-sm border-b py-2 fixed top-0 left-0 right-0 z-50">
+        <div className="container mx-auto px-4">
+          <div className="flex items-center justify-between w-full">
             <div className="flex items-center gap-2">
               <Shield className="w-6 h-6 text-primary" />
-              <h1 className="text-xl font-bold hidden md:block">Quwik Admin</h1>
+              <h1 className="text-xl font-bold">Quwik Admin</h1>
             </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={handleLogout}
-              className="gap-2"
-            >
-              <LogOut className="w-4 h-4" />
-              <span className="hidden md:inline">Logout</span>
-            </Button>
+            
+            <div className="flex items-center">
+              <TabsList className="bg-muted/60">
+                <TabsTrigger 
+                  value="dashboard" 
+                  onClick={() => setActiveTab('dashboard')}
+                  className={activeTab === 'dashboard' ? 'bg-white' : ''}
+                >
+                  <Gauge className="w-4 h-4 mr-2" />
+                  <span className="hidden sm:inline">Dashboard</span>
+                </TabsTrigger>
+                
+                <TabsTrigger 
+                  value="listings" 
+                  onClick={() => setActiveTab('listings')}
+                  className={activeTab === 'listings' ? 'bg-white' : ''}
+                >
+                  <LayoutGrid className="w-4 h-4 mr-2" />
+                  <span className="hidden sm:inline">Listings</span>
+                </TabsTrigger>
+                
+                <TabsTrigger 
+                  value="users" 
+                  onClick={() => setActiveTab('users')}
+                  className={activeTab === 'users' ? 'bg-white' : ''}
+                >
+                  <Users className="w-4 h-4 mr-2" />
+                  <span className="hidden sm:inline">Users</span>
+                </TabsTrigger>
+                
+                <TabsTrigger 
+                  value="analytics" 
+                  onClick={() => setActiveTab('analytics')}
+                  className={activeTab === 'analytics' ? 'bg-white' : ''}
+                >
+                  <BarChart3 className="w-4 h-4 mr-2" />
+                  <span className="hidden sm:inline">Analytics</span>
+                </TabsTrigger>
+              </TabsList>
+              
+              <div className="ml-4 flex items-center gap-2">
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={handleLogout}
+                  className="text-foreground hover:text-foreground gap-2"
+                >
+                  <LogOut className="w-4 h-4" />
+                  <span className="hidden md:inline">Logout</span>
+                </Button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
       
       <div className="flex pt-16 flex-grow">
-        {/* Sidebar */}
-        <AnimatePresence>
-          {sidebarOpen && (
-            <motion.div 
-              className="w-64 bg-white shadow-md h-[calc(100vh-4rem)] fixed left-0 top-16 z-40 overflow-y-auto"
-              initial={{ x: -280 }}
-              animate={{ x: 0 }}
-              exit={{ x: -280 }}
-              transition={{ duration: 0.3, ease: "easeOut" }}
-            >
-              <div className="p-4">
-                <div className="space-y-1 mt-2">
-                  <Button 
-                    variant={activeTab === 'dashboard' ? "default" : "ghost"} 
-                    className="w-full justify-start text-base font-medium"
-                    onClick={() => setActiveTab('dashboard')}
-                  >
-                    <Gauge className="w-5 h-5 mr-2" />
-                    Dashboard
-                  </Button>
-                  
-                  <Button 
-                    variant={activeTab === 'listings' ? "default" : "ghost"} 
-                    className="w-full justify-start text-base font-medium"
-                    onClick={() => setActiveTab('listings')}
-                  >
-                    <LayoutGrid className="w-5 h-5 mr-2" />
-                    Listings
-                  </Button>
-                  
-                  <Button 
-                    variant={activeTab === 'users' ? "default" : "ghost"} 
-                    className="w-full justify-start text-base font-medium"
-                    onClick={() => setActiveTab('users')}
-                  >
-                    <Users className="w-5 h-5 mr-2" />
-                    Users
-                  </Button>
-                  
-                  <Button 
-                    variant={activeTab === 'analytics' ? "default" : "ghost"} 
-                    className="w-full justify-start text-base font-medium"
-                    onClick={() => setActiveTab('analytics')}
-                  >
-                    <BarChart3 className="w-5 h-5 mr-2" />
-                    Analytics
-                  </Button>
-                  
-                  <Button 
-                    variant={activeTab === 'notifications' ? "default" : "ghost"} 
-                    className="w-full justify-start text-base font-medium"
-                    onClick={() => setActiveTab('notifications')}
-                  >
-                    <Bell className="w-5 h-5 mr-2" />
-                    Notifications
-                  </Button>
-                  
-                  <Button 
-                    variant={activeTab === 'settings' ? "default" : "ghost"} 
-                    className="w-full justify-start text-base font-medium"
-                    onClick={() => setActiveTab('settings')}
-                  >
-                    <Settings className="w-5 h-5 mr-2" />
-                    Settings
-                  </Button>
-                </div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-        
         {/* Main content */}
         <motion.div 
-          className={`flex-1 p-4 md:p-6 transition-all duration-300 ${sidebarOpen ? 'md:ml-64' : ''}`}
+          className="flex-1 p-4 md:p-6 transition-all duration-300 container mx-auto"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.3 }}

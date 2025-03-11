@@ -113,8 +113,8 @@ const ProductCard = ({
 
   return (
     <Link to={`/product/${id}`} className="block">
-      <Card className="group overflow-hidden border border-neutral-200 hover:border-primary/50 hover:shadow-md transition-all duration-200">
-        <div className="relative aspect-[4/3] overflow-hidden bg-gray-100">
+      <Card className="overflow-hidden border border-neutral-200 hover:border-primary/50 hover:shadow-md transition-all duration-200">
+        <div className="relative aspect-square overflow-hidden bg-gray-100">
           <img
             src={image || "/placeholder.svg"}
             alt={title}
@@ -127,7 +127,7 @@ const ProductCard = ({
           <Button
             variant="ghost"
             size="icon"
-            className={`absolute top-2 right-2 bg-white/90 h-8 w-8 shadow-sm ${
+            className={`absolute top-2 right-2 bg-white/90 h-8 w-8 shadow-sm hover:text-foreground ${
               isWishlisted ? "text-red-500" : ""
             } ${isLoading ? "opacity-50" : ""}`}
             onClick={handleWishlist}

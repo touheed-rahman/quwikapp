@@ -38,7 +38,7 @@
 
   /* Content spacing for fixed header */
   main {
-    @apply pt-20; /* Add space for the fixed navbar */
+    @apply pt-24; /* Increased space for the fixed navbar */
   }
 
   /* Enhanced text and headings */
@@ -67,16 +67,19 @@
     @apply transition-colors duration-200;
   }
   
-  /* Text becomes white on hover only when the element has a primary background */
-  .bg-primary:hover,
-  .hover\:bg-primary:hover,
-  button[class*="bg-primary"]:hover, 
-  a[class*="bg-primary"]:hover,
-  [role="button"][class*="bg-primary"]:hover,
-  button:hover:not([class*="hover\:bg-white"], [class*="hover\:bg-background"], [class*="hover\:bg-card"], [class*="hover\:bg-muted"]),
-  .active\:bg-primary.active,
-  button.active[class*="active\:bg-primary"] {
-    @apply text-white;
+  /* Button with primary background gets white text */
+  .bg-primary,
+  button[class*="bg-primary"], 
+  a[class*="bg-primary"],
+  [role="button"][class*="bg-primary"] {
+    @apply text-primary-foreground;
+  }
+
+  /* Background remains primary but text stays the same when hovering */
+  button:hover:not([class*="hover:text-white"], [class*="hover:text-primary-foreground"]),
+  a:hover:not([class*="hover:text-white"], [class*="hover:text-primary-foreground"]),
+  [role="button"]:hover:not([class*="hover:text-white"], [class*="hover:text-primary-foreground"]) {
+    @apply text-foreground;
   }
 
   /* Enhanced button hover effects */
@@ -108,9 +111,9 @@
   @apply bg-white/95 backdrop-blur-sm border border-input/50 shadow-lg;
 }
 
-/* Enhanced transitions */
+/* Enhanced transitions - faster for better performance */
 .transition-all {
-  @apply duration-200 ease-in-out;
+  @apply duration-100 ease-in-out;
 }
 
 /* Enhanced focus styles */
@@ -125,7 +128,7 @@
 
 /* Enhanced responsive padding */
 .section-padding {
-  @apply py-20 px-6 md:px-12 lg:px-24;
+  @apply py-16 px-4 md:px-8 lg:px-16;
 }
 
 /* Enhanced container width */
