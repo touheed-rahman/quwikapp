@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/select";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Info } from "lucide-react";
+import { useEffect } from "react";
 
 interface VehicleBasicInfoTabProps {
   kmDriven: string;
@@ -68,6 +69,13 @@ const VehicleBasicInfoTab = ({
     "July", "August", "September", "October", "November", "December"
   ];
 
+  // Set default km to 1 if it's empty or 0
+  useEffect(() => {
+    if (!kmDriven || kmDriven === "0") {
+      setKmDriven("1");
+    }
+  }, [kmDriven, setKmDriven]);
+
   const renderFieldWithTooltip = (
     label: string, 
     id: string, 
@@ -95,6 +103,18 @@ const VehicleBasicInfoTab = ({
     </div>
   );
 
+  const handleKmChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    const numValue = parseInt(value, 10);
+    
+    // Set to 1 if the value is empty, 0, or not a valid number
+    if (!value || value === "0" || isNaN(numValue)) {
+      setKmDriven("1");
+    } else {
+      setKmDriven(value);
+    }
+  };
+
   return (
     <div className="space-y-4">
       {renderFieldWithTooltip(
@@ -105,10 +125,10 @@ const VehicleBasicInfoTab = ({
           type="number"
           placeholder="Enter kilometers driven"
           value={kmDriven}
-          onChange={(e) => setKmDriven(e.target.value)}
+          onChange={handleKmChange}
           min="1"
           required
-          className={!kmDriven || kmDriven === "0" ? "border-red-300 focus:ring-red-500" : ""}
+          className={(parseInt(kmDriven) <= 0 || !kmDriven) ? "border-red-300 focus:ring-red-500" : ""}
         />,
         "Total distance the vehicle has been driven in kilometers. This field is required.",
         true

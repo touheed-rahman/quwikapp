@@ -23,7 +23,7 @@ interface VehicleFieldsProps {
 
 const VehicleFields = ({ updateFormData, subcategory = "" }: VehicleFieldsProps) => {
   const { toast } = useToast();
-  const [kmDriven, setKmDriven] = useState("0"); // Initialize with "0" instead of empty string
+  const [kmDriven, setKmDriven] = useState("1"); // Initialize with "1" as a minimum valid value
   const [yearManufactured, setYearManufactured] = useState("");
   const [fuelType, setFuelType] = useState("");
   const [transmission, setTransmission] = useState("");
@@ -69,18 +69,18 @@ const VehicleFields = ({ updateFormData, subcategory = "" }: VehicleFieldsProps)
 
   // Update parent component when values change
   useEffect(() => {
-    // Always ensure kmDriven is a number and not undefined/null/empty
-    let kmDrivenNumber = 0;
+    // Always ensure kmDriven is a number and valid (minimum 1)
+    let kmDrivenNumber = 1; // Default to 1 as minimum valid value
     
     if (kmDriven && kmDriven.trim() !== "") {
       const parsed = parseInt(kmDriven, 10);
-      if (!isNaN(parsed)) {
+      if (!isNaN(parsed) && parsed > 0) {
         kmDrivenNumber = parsed;
       }
     }
     
     const formFields: Record<string, any> = {
-      // CRITICAL: Always set km_driven as a number
+      // CRITICAL: Always set km_driven as a number, minimum 1
       km_driven: kmDrivenNumber,
     };
     
