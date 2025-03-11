@@ -25,10 +25,10 @@ const ListingActions = ({ listingId, onStatusUpdate, onDelete }: ListingActionsP
       <Button
         variant="outline"
         size="sm"
-        className="bg-green-500 hover:bg-green-600 text-white"
+        className="bg-emerald-600 hover:bg-emerald-700 text-white"
         onClick={() => onStatusUpdate(listingId, 'approved')}
       >
-        <CheckCircle2 className="h-4 w-4 mr-1 text-white" />
+        <CheckCircle2 className="h-4 w-4 mr-1" />
         Approve
       </Button>
       <Button
@@ -37,7 +37,7 @@ const ListingActions = ({ listingId, onStatusUpdate, onDelete }: ListingActionsP
         className="bg-red-500 hover:bg-red-600 text-white"
         onClick={() => onStatusUpdate(listingId, 'rejected')}
       >
-        <XCircle className="h-4 w-4 mr-1 text-white" />
+        <XCircle className="h-4 w-4 mr-1" />
         Reject
       </Button>
       <AlertDialog>
@@ -47,7 +47,7 @@ const ListingActions = ({ listingId, onStatusUpdate, onDelete }: ListingActionsP
             size="sm"
             className="bg-red-500 hover:bg-red-600 text-white font-medium"
           >
-            <Trash2 className="h-4 w-4 mr-1 text-white" />
+            <Trash2 className="h-4 w-4 mr-1" />
             Delete
           </Button>
         </AlertDialogTrigger>

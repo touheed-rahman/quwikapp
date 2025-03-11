@@ -1,4 +1,3 @@
-
 import { Bell, MessageSquare, User, HelpCircle, ListOrdered } from "lucide-react";
 import { Button } from "./ui/button";
 import { Link } from "react-router-dom";
@@ -148,7 +147,7 @@ const Header = () => {
                 <span className="text-[10px] text-foreground">Help</span>
               </Button>
               <Link to="/sell" className="hidden md:block shrink-0">
-                <Button className="bg-primary hover:bg-primary/90 text-white">Sell Now</Button>
+                <Button>Sell Now</Button>
               </Link>
             </>
           ) : (
@@ -163,7 +162,7 @@ const Header = () => {
                 <span className="text-[10px] text-foreground">Help</span>
               </Button>
               <Link to="/profile">
-                <Button className="bg-primary hover:bg-primary/90 text-white">Sign In</Button>
+                <Button>Sign In</Button>
               </Link>
             </>
           )}

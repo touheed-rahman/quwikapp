@@ -40,19 +40,19 @@ const categoryIcons: Record<string, any> = {
 };
 
 const categoryColors: Record<string, string> = {
-  mobile: "bg-[#8B5CF6]", // Vivid purple color
+  mobile: "bg-primary",
   vehicles: "bg-blue-500",
-  furniture: "bg-orange-500",
-  property: "bg-green-500",
+  furniture: "bg-orange-500", 
+  property: "bg-emerald-600",
   jobs: "bg-indigo-500",
   bikes: "bg-red-500",
-  education: "bg-yellow-500",
+  education: "bg-amber-500",
   pets: "bg-pink-500",
   fashion: "bg-teal-500",
   gaming: "bg-violet-500",
   books: "bg-cyan-500",
   services: "bg-emerald-500",
-  electronics: "bg-purple-500",
+  electronics: "bg-blue-600",
 };
 
 const CategoryFilter = () => {
@@ -123,7 +123,7 @@ const CategoryFilter = () => {
                 >
                   {row.map((category) => {
                     const Icon = categoryIcons[category.id] || Car;
-                    const bgColor = categoryColors[category.id] || "bg-gray-500";
+                    const bgColor = categoryColors[category.id] || "bg-primary";
                     
                     return (
                       <motion.button
@@ -134,7 +134,7 @@ const CategoryFilter = () => {
                         whileTap={{ scale: 0.95 }}
                       >
                         <motion.div 
-                          className={`p-3 md:p-3.5 rounded-full ${bgColor} shadow-md`}
+                          className={`p-3.5 md:p-4 rounded-full ${bgColor} shadow-md`}
                           whileHover={{ 
                             scale: 1.1,
                             boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)"
