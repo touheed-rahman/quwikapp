@@ -8,7 +8,7 @@ import Header from "@/components/Header";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/components/ui/use-toast";
-import { Loader2, ShoppingBag, ChevronLeft } from "lucide-react";
+import { Loader2, ShoppingBag, ChevronLeft, Download } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 // Define an Order type for TypeScript
@@ -27,6 +27,7 @@ interface Order {
   contact_name?: string;
   contact_phone?: string;
   contact_address?: string;
+  invoice_url?: string;
   listing?: {
     id: string;
     title: string;
@@ -104,6 +105,18 @@ export default function MyOrders() {
     });
   }
 
+  const handleDownloadInvoice = (order: Order) => {
+    if (order.invoice_url) {
+      window.open(order.invoice_url, '_blank');
+    } else {
+      toast({
+        title: "Invoice not available",
+        description: "The invoice is not available for download yet.",
+        variant: "default",
+      });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -149,7 +162,7 @@ export default function MyOrders() {
                             Invoice #{order.invoice_number}
                           </CardDescription>
                         </div>
-                        <Badge variant={order.payment_status === 'completed' ? 'success' : 'outline'}>
+                        <Badge variant={order.payment_status === 'completed' ? 'default' : 'outline'} className={order.payment_status === 'completed' ? 'bg-green-600' : ''}>
                           {order.payment_status === 'completed' ? 'Paid' : 'Pending'}
                         </Badge>
                       </div>
@@ -181,6 +194,19 @@ export default function MyOrders() {
                           <p><span className="font-medium">Contact:</span> {order.contact_name}</p>
                           <p><span className="font-medium">Phone:</span> {order.contact_phone}</p>
                           <p><span className="font-medium">Address:</span> {order.contact_address}</p>
+                        </div>
+                      )}
+                      
+                      {order.payment_status === 'completed' && (
+                        <div className="mt-4">
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="flex items-center gap-1"
+                            onClick={() => handleDownloadInvoice(order)}
+                          >
+                            <Download className="h-4 w-4" /> Download Invoice
+                          </Button>
                         </div>
                       )}
                     </CardContent>

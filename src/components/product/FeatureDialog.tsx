@@ -14,7 +14,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { CheckCircle, Home, Tag, ShoppingBag } from "lucide-react";
+import { CheckCircle, Home, Tag, ShoppingBag, Download } from "lucide-react";
+import { generateInvoicePDF } from "@/utils/pdfUtils";
 
 interface FeatureDialogProps {
   isOpen: boolean;
@@ -54,6 +55,7 @@ export default function FeatureDialog({
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [step, setStep] = useState(1);
   const [paymentComplete, setPaymentComplete] = useState(false);
+  const [invoiceUrl, setInvoiceUrl] = useState<string | null>(null);
   const [userDetails, setUserDetails] = useState<UserDetails>({
     name: "",
     phone: "",
@@ -128,6 +130,56 @@ export default function FeatureDialog({
     }));
   };
 
+  const generateInvoice = async (order: any) => {
+    try {
+      // Generate invoice PDF
+      const invoiceData = {
+        invoiceNumber: order.invoice_number,
+        date: new Date().toLocaleDateString(),
+        customerName: userDetails.name,
+        customerAddress: userDetails.address,
+        customerPhone: userDetails.phone,
+        items: [
+          {
+            description: `Feature Plan: ${selectedOption} for listing "${productTitle}"`,
+            amount: 0,
+            originalPrice: featureOptions.find(o => o.id === selectedOption)?.originalPrice || 0
+          }
+        ],
+        total: 0,
+        companyName: "Quwik",
+        companyAddress: "Bangalore, India",
+        discount: featureOptions.find(o => o.id === selectedOption)?.originalPrice || 0
+      };
+
+      const pdfBlob = await generateInvoicePDF(invoiceData);
+      
+      // Upload to Supabase storage
+      const fileName = `invoice_${order.invoice_number}.pdf`;
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('invoices')
+        .upload(`public/${fileName}`, pdfBlob, {
+          contentType: 'application/pdf',
+          upsert: true
+        });
+
+      if (uploadError) {
+        console.error("Error uploading invoice:", uploadError);
+        return null;
+      }
+
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('invoices')
+        .getPublicUrl(`public/${fileName}`);
+
+      return publicUrl;
+    } catch (error) {
+      console.error("Error generating invoice:", error);
+      return null;
+    }
+  };
+
   const handleSubmitFeatureRequest = async () => {
     if (!selectedOption) return;
     
@@ -150,41 +202,86 @@ export default function FeatureDialog({
         })
         .eq("id", productId);
 
-      if (error) throw error;
+      if (error) {
+        // Check if it's a column not found error
+        if (error.message.includes('column "feature_contact_address" does not exist')) {
+          // Try without the problematic fields
+          const { error: retryError } = await supabase
+            .from("listings")
+            .update({
+              featured_requested: true,
+              feature_plan: selectedOption,
+              feature_requested_at: new Date().toISOString()
+            })
+            .eq("id", productId);
+            
+          if (retryError) throw retryError;
+        } else {
+          throw error;
+        }
+      }
 
       // Generate a free invoice record
       const invoiceNumber = `INV-${Date.now().toString().substring(7)}`;
       
       // Use direct fetch with the REST API to bypass TypeScript issues
-      const url = `${process.env.SUPABASE_URL || 'https://cgrtrdwvkkhraizqukwt.supabase.co'}/rest/v1/orders`;
-      const apiKey = process.env.SUPABASE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNncnRyZHd2a2tocmFpenF1a3d0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzgwNjE2NTIsImV4cCI6MjA1MzYzNzY1Mn0.mnC-NB_broDr4nOHggi0ngeDC1CxZsda6X-wyEMD2tE';
+      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://cgrtrdwvkkhraizqukwt.supabase.co';
+      const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNncnRyZHd2a2tocmFpenF1a3d0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzgwNjE2NTIsImV4cCI6MjA1MzYzNzY1Mn0.mnC-NB_broDr4nOHggi0ngeDC1CxZsda6X-wyEMD2tE';
       
-      const response = await fetch(url, {
+      const orderData = {
+        product_id: productId,
+        buyer_id: session.user.id,
+        seller_id: session.user.id,
+        amount: 0,
+        payment_status: "completed",
+        invoice_number: invoiceNumber,
+        order_type: "feature",
+        feature_plan: selectedOption,
+        contact_name: userDetails.name,
+        contact_phone: userDetails.phone,
+        contact_address: userDetails.address
+      };
+      
+      // Create order
+      const createOrderResponse = await fetch(`${supabaseUrl}/rest/v1/orders`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'apikey': apiKey,
+          'apikey': supabaseKey,
           'Authorization': `Bearer ${session.access_token}`
         },
-        body: JSON.stringify({
-          product_id: productId,
-          buyer_id: session.user.id,
-          seller_id: session.user.id,
-          amount: 0,
-          payment_status: "completed",
-          invoice_number: invoiceNumber,
-          order_type: "feature",
-          feature_plan: selectedOption,
-          contact_name: userDetails.name,
-          contact_phone: userDetails.phone,
-          contact_address: userDetails.address
-        })
+        body: JSON.stringify(orderData)
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
+      if (!createOrderResponse.ok) {
+        const errorData = await createOrderResponse.json();
         console.error("Order creation error:", errorData);
-        throw new Error('Failed to create order: ' + (errorData.message || response.statusText));
+        throw new Error('Failed to create order: ' + (errorData.message || createOrderResponse.statusText));
+      }
+
+      const orderResult = await createOrderResponse.json();
+      
+      // Generate and upload invoice
+      const invoiceUrl = await generateInvoice({
+        ...orderData,
+        id: orderResult[0]?.id
+      });
+      
+      if (invoiceUrl) {
+        // Update order with invoice URL
+        await fetch(`${supabaseUrl}/rest/v1/orders?id=eq.${orderResult[0]?.id}`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            'apikey': supabaseKey,
+            'Authorization': `Bearer ${session.access_token}`
+          },
+          body: JSON.stringify({ 
+            invoice_url: invoiceUrl 
+          })
+        });
+        
+        setInvoiceUrl(invoiceUrl);
       }
 
       setPaymentComplete(true);
@@ -202,7 +299,8 @@ export default function FeatureDialog({
         setSelectedOption(null);
         setPaymentComplete(false);
         setUserDetails({ name: "", phone: "", address: "" });
-      }, 2000);
+        setInvoiceUrl(null);
+      }, 5000);
       
     } catch (error: any) {
       console.error("Feature request error:", error);
@@ -213,6 +311,12 @@ export default function FeatureDialog({
       });
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleDownloadInvoice = () => {
+    if (invoiceUrl) {
+      window.open(invoiceUrl, '_blank');
     }
   };
 
@@ -228,6 +332,16 @@ export default function FeatureDialog({
             <p className="text-center text-muted-foreground mb-6">
               Your free featured listing will be active soon after admin review.
             </p>
+            
+            {invoiceUrl && (
+              <Button 
+                variant="outline" 
+                className="flex items-center gap-2 mb-4"
+                onClick={handleDownloadInvoice}
+              >
+                <Download className="h-4 w-4" /> Download Invoice
+              </Button>
+            )}
           </div>
         ) : step === 1 ? (
           <>
