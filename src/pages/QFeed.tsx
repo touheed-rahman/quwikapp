@@ -1,429 +1,345 @@
 
-import { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
-import { MessageCircle, UserPlus, UserCheck, Share } from "lucide-react";
-import { useToast } from "@/components/ui/use-toast";
-import Header from "@/components/Header";
-import { motion, AnimatePresence } from "framer-motion";
+import { useState, useRef, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import Header from '@/components/Header';
+import { supabase } from '@/integrations/supabase/client';
+import { Button } from '@/components/ui/button';
+import { 
+  MessageSquare, 
+  Heart, 
+  Send, 
+  User,
+  ChevronLeft,
+  ChevronRight,
+  Share 
+} from 'lucide-react';
+import MobileNavigation from '@/components/navigation/MobileNavigation';
+import { useToast } from '@/components/ui/use-toast';
+import ChatWindow from '@/components/chat/ChatWindow';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Avatar } from '@/components/ui/avatar';
+import { motion } from 'framer-motion';
 
-interface VideoItem {
+interface VideoData {
   id: string;
   listing_id: string;
   video_url: string;
-  user_id: string;
-  user_name: string;
-  title: string;
-  price: number;
+  listing: {
+    id: string;
+    title: string;
+    price: number;
+    images: string[];
+  };
+  profile: {
+    id: string;
+    full_name: string;
+    avatar_url: string;
+  };
   created_at: string;
 }
 
 const QFeed = () => {
-  const [videos, setVideos] = useState<VideoItem[]>([]);
+  const [videos, setVideos] = useState<VideoData[]>([]);
+  const [loading, setLoading] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [isLoading, setIsLoading] = useState(true);
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
-  const [followingMap, setFollowingMap] = useState<Record<string, boolean>>({});
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [productId, setProductId] = useState<string | null>(null);
   const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
-  const observerRef = useRef<IntersectionObserver | null>(null);
+  const [isFollowing, setIsFollowing] = useState<{[key: string]: boolean}>({});
 
-  // Get current user
-  useEffect(() => {
-    const getSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      setCurrentUserId(session?.user?.id || null);
-    };
-    getSession();
-  }, []);
+  const searchParams = new URLSearchParams(location.search);
+  const productParam = searchParams.get('product');
 
-  // Fetch videos
   useEffect(() => {
     const fetchVideos = async () => {
-      setIsLoading(true);
-      const { data, error } = await supabase
-        .from('product_videos')
-        .select(`
-          id,
-          listing_id,
-          video_url,
-          created_at,
-          listings!inner(
-            title,
-            price,
-            user_id
-          ),
-          profiles!inner(
-            full_name
-          )
-        `)
-        .order('created_at', { ascending: false })
-        .limit(10);
+      setLoading(true);
+      try {
+        const { data, error } = await supabase
+          .from('product_videos' as any)
+          .select(`
+            id,
+            listing_id,
+            video_url,
+            listings:listing_id(id, title, price, images, user_id),
+            profiles:user_id(id, full_name, avatar_url),
+            created_at
+          `)
+          .order('created_at', { ascending: false });
 
-      if (error) {
-        console.error("Error fetching videos:", error);
-        return;
-      }
+        if (error) {
+          console.error('Error fetching videos:', error);
+          return;
+        }
 
-      if (data) {
-        const formattedVideos = data.map(item => ({
-          id: item.id,
-          listing_id: item.listing_id,
-          video_url: supabase.storage.from('product_videos').getPublicUrl(item.video_url).data.publicUrl,
-          user_id: item.listings.user_id,
-          user_name: item.profiles.full_name,
-          title: item.listings.title,
-          price: item.listings.price,
-          created_at: item.created_at
-        }));
-        setVideos(formattedVideos);
-        videoRefs.current = videoRefs.current.slice(0, formattedVideos.length);
+        if (data) {
+          const formattedData = data.map((item: any) => ({
+            id: item.id,
+            listing_id: item.listing_id,
+            video_url: item.video_url,
+            listing: item.listings,
+            profile: item.profiles,
+            created_at: item.created_at
+          }));
+
+          setVideos(formattedData);
+          
+          // If product param exists, find its index
+          if (productParam) {
+            const videoIndex = formattedData.findIndex(v => v.listing_id === productParam);
+            if (videoIndex !== -1) {
+              setCurrentIndex(videoIndex);
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Error:', error);
+      } finally {
+        setLoading(false);
       }
-      setIsLoading(false);
     };
 
     fetchVideos();
-  }, []);
+  }, [productParam]);
 
-  // Fetch following status for each seller
   useEffect(() => {
-    if (!currentUserId || videos.length === 0) return;
+    const checkFollowStatus = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) return;
 
-    const fetchFollowingStatus = async () => {
-      const sellerIds = [...new Set(videos.map(video => video.user_id))];
-      
-      const { data, error } = await supabase
-        .from('follows')
-        .select('following_id')
-        .eq('follower_id', currentUserId)
-        .in('following_id', sellerIds);
-
-      if (error) {
-        console.error("Error fetching following status:", error);
-        return;
+      // Check follow status for all video creators
+      for (const video of videos) {
+        if (!video.profile?.id) continue;
+        
+        const { data, error } = await supabase
+          .from('follows')
+          .select('id')
+          .eq('follower_id', session.user.id)
+          .eq('following_id', video.profile.id)
+          .single();
+        
+        setIsFollowing(prev => ({
+          ...prev,
+          [video.profile.id]: !!data
+        }));
       }
-
-      const followingStatus: Record<string, boolean> = {};
-      sellerIds.forEach(id => {
-        followingStatus[id] = false;
-      });
-
-      if (data) {
-        data.forEach(follow => {
-          followingStatus[follow.following_id] = true;
-        });
-      }
-
-      setFollowingMap(followingStatus);
     };
 
-    fetchFollowingStatus();
-  }, [currentUserId, videos]);
+    if (videos.length > 0) {
+      checkFollowStatus();
+    }
+  }, [videos]);
 
-  // Intersection Observer to play/pause videos
   useEffect(() => {
-    if (videos.length === 0) return;
-
-    observerRef.current = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          const video = entry.target as HTMLVideoElement;
-          if (entry.isIntersecting) {
-            video.play().catch(e => console.error("Video play error:", e));
-          } else {
-            video.pause();
-          }
-        });
-      },
-      { threshold: 0.6 }
-    );
-
-    videoRefs.current.forEach(videoEl => {
-      if (videoEl) {
-        observerRef.current?.observe(videoEl);
+    // Pause all videos first
+    videoRefs.current.forEach((videoRef, index) => {
+      if (videoRef && index !== currentIndex) {
+        videoRef.pause();
       }
     });
 
-    return () => {
-      if (observerRef.current) {
-        observerRef.current.disconnect();
-      }
-    };
-  }, [videos, videoRefs]);
+    // Play current video
+    if (videoRefs.current[currentIndex]) {
+      videoRefs.current[currentIndex]?.play();
+    }
+  }, [currentIndex]);
 
-  const handleVideoClick = (videoEl: HTMLVideoElement) => {
-    if (videoEl.paused) {
-      videoEl.play().catch(e => console.error("Video play error:", e));
+  const handleVideoEnd = () => {
+    // Go to next video when current one ends
+    if (currentIndex < videos.length - 1) {
+      setCurrentIndex(currentIndex + 1);
     } else {
-      videoEl.pause();
+      setCurrentIndex(0);
     }
   };
 
-  const handleChatWithSeller = async (userId: string, listingId: string) => {
-    if (!currentUserId) {
-      toast({
-        title: "Sign in required",
-        description: "Please sign in to chat with the seller",
-        variant: "destructive"
-      });
+  const handlePrevVideo = () => {
+    if (currentIndex > 0) {
+      setCurrentIndex(currentIndex - 1);
+    }
+  };
+
+  const handleNextVideo = () => {
+    if (currentIndex < videos.length - 1) {
+      setCurrentIndex(currentIndex + 1);
+    } else {
+      setCurrentIndex(0);
+    }
+  };
+
+  const handleChatWithSeller = (video: VideoData) => {
+    setProductId(video.listing_id);
+    setIsChatOpen(true);
+  };
+
+  const handleFollowToggle = async (profileId: string) => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.user) {
       navigate('/profile');
       return;
     }
 
-    if (currentUserId === userId) {
-      toast({
-        title: "Cannot chat with yourself",
-        description: "This is your own listing",
-        variant: "destructive"
-      });
-      return;
-    }
+    const isCurrentlyFollowing = isFollowing[profileId];
 
-    try {
-      // Find existing conversation
-      const { data: existingConversation, error: conversationError } = await supabase
-        .from('conversations')
-        .select('id')
-        .eq('listing_id', listingId)
-        .eq('buyer_id', currentUserId)
-        .eq('deleted', false) // Only get non-deleted conversations
-        .maybeSingle();
-
-      if (conversationError && conversationError.code !== 'PGRST116') {
-        throw conversationError;
-      }
-
-      if (existingConversation) {
-        navigate(`/chat/${existingConversation.id}`);
-        return;
-      }
-
-      // Create new conversation
-      const { data: newConversation, error: createError } = await supabase
-        .from('conversations')
-        .insert({
-          listing_id: listingId,
-          buyer_id: currentUserId,
-          seller_id: userId,
-          deleted: false
-        })
-        .select()
-        .single();
-
-      if (createError) throw createError;
-      navigate(`/chat/${newConversation.id}`);
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: "Failed to start conversation. Please try again.",
-        variant: "destructive"
-      });
-      console.error('Chat error:', error);
+    if (isCurrentlyFollowing) {
+      await supabase.rpc('unfollow_user', { following_uid: profileId });
+      setIsFollowing(prev => ({ ...prev, [profileId]: false }));
+      toast({ title: "Unfollowed successfully" });
+    } else {
+      await supabase.rpc('follow_user', { following_uid: profileId });
+      setIsFollowing(prev => ({ ...prev, [profileId]: true }));
+      toast({ title: "Followed successfully" });
     }
   };
 
-  const handleFollowSeller = async (userId: string) => {
-    if (!currentUserId) {
-      toast({
-        title: "Sign in required",
-        description: "Please sign in to follow this seller",
-        variant: "destructive"
-      });
-      navigate('/profile');
-      return;
-    }
-
-    if (currentUserId === userId) {
-      toast({
-        title: "Cannot follow yourself",
-        description: "You cannot follow your own profile",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    try {
-      if (followingMap[userId]) {
-        // Unfollow
-        await supabase
-          .from('follows')
-          .delete()
-          .eq('follower_id', currentUserId)
-          .eq('following_id', userId);
-
-        setFollowingMap(prev => ({
-          ...prev,
-          [userId]: false
-        }));
-
-        toast({
-          title: "Unfollowed",
-          description: "You are no longer following this seller"
-        });
-      } else {
-        // Follow
-        await supabase
-          .from('follows')
-          .insert({
-            follower_id: currentUserId,
-            following_id: userId
-          });
-
-        setFollowingMap(prev => ({
-          ...prev,
-          [userId]: true
-        }));
-
-        toast({
-          title: "Following",
-          description: "You are now following this seller"
-        });
-      }
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: "Failed to update follow status. Please try again.",
-        variant: "destructive"
-      });
-      console.error('Follow error:', error);
+  const handleShare = (video: VideoData) => {
+    if (navigator.share) {
+      navigator.share({
+        title: video.listing.title,
+        text: `Check out this product: ${video.listing.title}`,
+        url: `${window.location.origin}/product/${video.listing_id}`
+      }).catch(err => console.error('Error sharing:', err));
+    } else {
+      navigator.clipboard.writeText(`${window.location.origin}/product/${video.listing_id}`);
+      toast({ title: "Link copied to clipboard" });
     }
   };
 
-  const handleShare = async (video: VideoItem) => {
-    try {
-      const url = `${window.location.origin}/product/${video.listing_id}`;
-      
-      if (navigator.share) {
-        await navigator.share({
-          title: video.title,
-          text: `Check out ${video.title} on Quwik!`,
-          url
-        });
-      } else {
-        await navigator.clipboard.writeText(url);
-        toast({
-          title: "Link copied!",
-          description: "Product link copied to clipboard"
-        });
-      }
-    } catch (error) {
-      console.error('Error sharing:', error);
-    }
-  };
-
-  const handleProductClick = (listingId: string) => {
-    navigate(`/product/${listingId}`);
-  };
-
-  const handleSellerProfile = (userId: string) => {
-    navigate(`/seller/${userId}`);
-  };
-
-  if (isLoading) {
+  if (loading) {
     return (
-      <div className="h-screen flex items-center justify-center bg-gray-900">
-        <div className="animate-pulse flex flex-col items-center">
-          <div className="w-20 h-20 bg-gray-700 rounded-full mb-4"></div>
-          <div className="h-4 bg-gray-700 rounded w-32 mb-2"></div>
-          <div className="h-4 bg-gray-700 rounded w-24"></div>
+      <div className="min-h-screen bg-black">
+        <Header />
+        <div className="pt-16 h-screen flex items-center justify-center">
+          <Skeleton className="h-full w-full max-w-md mx-auto" />
         </div>
+        <MobileNavigation onChatOpen={() => setIsChatOpen(true)} />
       </div>
     );
   }
 
   if (videos.length === 0) {
     return (
-      <div className="h-screen flex flex-col items-center justify-center bg-gray-900 text-white px-4 text-center">
+      <div className="min-h-screen bg-gradient-to-b from-background to-primary/5">
         <Header />
-        <h2 className="text-2xl font-bold mb-4">No videos available yet</h2>
-        <p className="mb-8">Be the first to add a product video!</p>
-        <Button onClick={() => navigate('/sell')}>
-          Sell an item with video
-        </Button>
+        <div className="pt-20 pb-20 px-4 flex flex-col items-center justify-center h-[70vh]">
+          <div className="text-center">
+            <h2 className="text-2xl font-bold mb-2">No videos yet</h2>
+            <p className="text-muted-foreground mb-6">Be the first to share a product video!</p>
+            <Button onClick={() => navigate('/sell')}>
+              Sell Now
+            </Button>
+          </div>
+        </div>
+        <MobileNavigation onChatOpen={() => setIsChatOpen(true)} />
       </div>
     );
   }
 
+  const currentVideo = videos[currentIndex];
+
   return (
-    <div className="h-screen overflow-hidden bg-black">
+    <div className="min-h-screen bg-black">
       <Header />
-      <div className="h-full pt-16 pb-16 snap-y snap-mandatory overflow-y-scroll">
-        {videos.map((video, index) => (
-          <div 
-            key={video.id} 
-            className="h-screen w-full snap-start snap-always relative"
-          >
-            <video
-              ref={el => videoRefs.current[index] = el}
-              src={video.video_url}
-              className="h-full w-full object-contain bg-black"
-              loop
-              playsInline
-              muted
-              onClick={(e) => handleVideoClick(e.target as HTMLVideoElement)}
-            />
-            
-            {/* Video overlay with UI elements */}
-            <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent">
-              <div onClick={() => handleProductClick(video.listing_id)}>
-                <h3 className="text-white font-bold text-lg mb-1 line-clamp-2">{video.title}</h3>
-                <p className="text-white font-bold mb-3">${video.price.toFixed(2)}</p>
-              </div>
-              
-              <div className="flex items-center">
-                <div 
-                  className="flex items-center flex-1"
-                  onClick={() => handleSellerProfile(video.user_id)}
-                >
-                  <Avatar className="h-8 w-8 mr-2 ring-1 ring-white">
-                    <AvatarFallback className="bg-primary/30 text-white">
-                      {video.user_name[0]}
-                    </AvatarFallback>
-                  </Avatar>
-                  <span className="text-white font-medium">{video.user_name}</span>
+      <div className="pt-16 h-screen">
+        <div className="relative h-full max-w-md mx-auto">
+          {/* Video Player */}
+          <div className="h-full w-full">
+            {videos.map((video, index) => (
+              <div 
+                key={video.id} 
+                className={`absolute inset-0 ${index === currentIndex ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+              >
+                <video
+                  ref={el => videoRefs.current[index] = el}
+                  src={supabase.storage.from('product_videos').getPublicUrl(video.video_url).data.publicUrl}
+                  className="h-full w-full object-cover"
+                  loop
+                  playsInline
+                  autoPlay={index === currentIndex}
+                  onEnded={handleVideoEnd}
+                />
+                
+                {/* Video Overlay UI */}
+                <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/60">
+                  {/* Product Info */}
+                  <div className="absolute bottom-20 left-0 right-0 p-4">
+                    <h3 className="text-white font-bold text-lg">{video.listing.title}</h3>
+                    <p className="text-white text-xl font-bold">₹{video.listing.price}</p>
+                    <Button 
+                      variant="default" 
+                      size="sm" 
+                      className="mt-2"
+                      onClick={() => navigate(`/product/${video.listing_id}`)}
+                    >
+                      View Details
+                    </Button>
+                  </div>
                 </div>
                 
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="text-white hover:bg-white/20 rounded-full"
-                  onClick={() => handleShare(video)}
-                >
-                  <Share className="h-5 w-5" />
-                </Button>
+                {/* Right sidebar icons */}
+                <div className="absolute right-2 bottom-40 flex flex-col gap-6">
+                  <motion.button
+                    whileTap={{ scale: 0.9 }}
+                    className="bg-black/30 rounded-full p-2"
+                    onClick={() => handleChatWithSeller(video)}
+                  >
+                    <MessageSquare className="h-7 w-7 text-white" />
+                  </motion.button>
+                  <motion.button
+                    whileTap={{ scale: 0.9 }}
+                    className="bg-black/30 rounded-full p-2"
+                    onClick={() => handleShare(video)}
+                  >
+                    <Share className="h-7 w-7 text-white" />
+                  </motion.button>
+                </div>
+                
+                {/* User Info */}
+                <div className="absolute bottom-4 left-4 right-12 flex items-center gap-3">
+                  <Avatar className="h-10 w-10 border-2 border-white">
+                    <User className="h-6 w-6" />
+                  </Avatar>
+                  <div className="flex-1 overflow-hidden">
+                    <p className="text-white font-medium text-sm truncate">{video.profile?.full_name || 'User'}</p>
+                  </div>
+                  <Button 
+                    variant={isFollowing[video.profile?.id] ? "outline" : "default"}
+                    size="sm"
+                    onClick={() => handleFollowToggle(video.profile?.id)}
+                    className={isFollowing[video.profile?.id] ? "border-white text-white" : ""}
+                  >
+                    {isFollowing[video.profile?.id] ? 'Following' : 'Follow'}
+                  </Button>
+                </div>
               </div>
-            </div>
-            
-            {/* Side action buttons */}
-            <div className="absolute right-4 bottom-24 flex flex-col gap-4">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="bg-black/40 text-white hover:bg-white/30 h-12 w-12 rounded-full"
-                onClick={() => handleChatWithSeller(video.user_id, video.listing_id)}
-              >
-                <MessageCircle className="h-6 w-6" />
-              </Button>
-              
-              <Button
-                variant="ghost"
-                size="icon"
-                className="bg-black/40 text-white hover:bg-white/30 h-12 w-12 rounded-full"
-                onClick={() => handleFollowSeller(video.user_id)}
-              >
-                {followingMap[video.user_id] ? (
-                  <UserCheck className="h-6 w-6" />
-                ) : (
-                  <UserPlus className="h-6 w-6" />
-                )}
-              </Button>
-            </div>
+            ))}
           </div>
-        ))}
+          
+          {/* Navigation buttons */}
+          <button 
+            className="absolute left-0 top-1/2 -translate-y-1/2 bg-black/20 p-2 rounded-r-full"
+            onClick={handlePrevVideo}
+          >
+            <ChevronLeft className="h-6 w-6 text-white" />
+          </button>
+          
+          <button 
+            className="absolute right-0 top-1/2 -translate-y-1/2 bg-black/20 p-2 rounded-l-full"
+            onClick={handleNextVideo}
+          >
+            <ChevronRight className="h-6 w-6 text-white" />
+          </button>
+        </div>
       </div>
+      
+      <MobileNavigation onChatOpen={() => setIsChatOpen(true)} />
+      <ChatWindow 
+        isOpen={isChatOpen} 
+        onClose={() => setIsChatOpen(false)} 
+        productId={productId} 
+      />
     </div>
   );
 };

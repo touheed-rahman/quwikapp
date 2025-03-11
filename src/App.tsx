@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -28,7 +27,6 @@ import SellerProfile from "./pages/SellerProfile";
 import MyOrders from "./pages/MyOrders";
 import QFeed from "./pages/QFeed";
 
-// Create a client outside of the component to avoid recreating it on every render
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -94,6 +92,14 @@ const App = () => (
                 element={
                   <PrivateRoute>
                     <Sell />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/sell/q"
+                element={
+                  <PrivateRoute>
+                    <SellQ />
                   </PrivateRoute>
                 }
               />

@@ -75,7 +75,7 @@ const ProductPage = () => {
 
     const checkVideo = async () => {
       const { data, error } = await supabase
-        .from('product_videos')
+        .from('product_videos' as any)
         .select('id')
         .eq('listing_id', id)
         .maybeSingle();
@@ -127,7 +127,7 @@ const ProductPage = () => {
 
       // Create entry in product_videos table
       const { error: insertError } = await supabase
-        .from('product_videos')
+        .from('product_videos' as any)
         .insert({
           listing_id: id,
           video_url: fileName,
