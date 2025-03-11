@@ -11,9 +11,10 @@ import { ChatFilters } from "./ChatFilters";
 interface ChatWindowProps {
   isOpen: boolean;
   onClose: () => void;
+  productId?: string | null;
 }
 
-const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
+const ChatWindow = ({ isOpen, onClose, productId }: ChatWindowProps) => {
   const [filter, setFilter] = useState<'all' | 'buying' | 'selling'>('all');
   const [searchTerm, setSearchTerm] = useState('');
   const location = useLocation();
@@ -65,6 +66,16 @@ const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
       refreshConversations();
     }
   }, [isOpen, filter, isAuthenticated, userId, refreshConversations]);
+
+  // If productId is provided, navigate to chat with that seller
+  useEffect(() => {
+    if (productId && isAuthenticated && isOpen) {
+      // Navigate to chat with seller or start a new conversation
+      // This would typically involve either finding an existing conversation
+      // or creating a new one with the product's seller
+      navigate(`/chat/${productId}`);
+    }
+  }, [productId, isAuthenticated, isOpen, navigate]);
 
   // Additional refresh when tab becomes visible
   useEffect(() => {

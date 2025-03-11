@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -10,6 +11,7 @@ import ScrollToTop from "./components/utils/ScrollToTop";
 import ErrorBoundary from "./components/utils/ErrorBoundary";
 import Index from "./pages/Index";
 import Sell from "./pages/Sell";
+import SellQ from "./pages/SellQ"; // Added import for SellQ
 import Product from "./pages/Product";
 import Categories from "./pages/Categories";
 import ChatDetail from "./pages/ChatDetail";

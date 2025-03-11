@@ -335,11 +335,14 @@ const QFeed = () => {
       </div>
       
       <MobileNavigation onChatOpen={() => setIsChatOpen(true)} />
-      <ChatWindow 
-        isOpen={isChatOpen} 
-        onClose={() => setIsChatOpen(false)} 
-        productId={productId} 
-      />
+      
+      {isChatOpen && (
+        <ChatWindow 
+          isOpen={isChatOpen} 
+          onClose={() => setIsChatOpen(false)} 
+          productId={productId} 
+        />
+      )}
     </div>
   );
 };

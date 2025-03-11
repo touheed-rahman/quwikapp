@@ -1,110 +1,193 @@
 
-import React, { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Header from '@/components/Header';
-import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/components/ui/use-toast';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { 
-  Video, 
-  Upload, 
-  Camera, 
-  X, 
-  Check, 
-  RefreshCw,
-  ArrowLeft
-} from 'lucide-react';
-import { Card } from '@/components/ui/card';
-import CategorySelector from '@/components/sell/CategorySelector';
-import SubcategorySelector from '@/components/sell/SubcategorySelector';
-import { useLocation } from '@/contexts/LocationContext';
-import PriceInput from '@/components/sell/PriceInput';
-import { motion } from 'framer-motion';
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Video, Upload, Camera } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/components/ui/use-toast';
+import { useIsMobile } from '@/hooks/use-mobile';
+import Header from '@/components/Header';
+import ProfileHeader from '@/components/profile/ProfileHeader';
+import { Progress } from '@/components/ui/progress';
+
+interface Category {
+  id: string;
+  name: string;
+}
+
+interface Subcategory {
+  id: string;
+  name: string;
+  category_id: string;
+}
 
 const SellQ = () => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [price, setPrice] = useState('');
-  const [category, setCategory] = useState<string | null>(null);
-  const [subcategory, setSubcategory] = useState<string | null>(null);
+  const [price, setPrice] = useState<number | ''>('');
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [subcategories, setSubcategories] = useState<Subcategory[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState('');
+  const [selectedSubcategory, setSelectedSubcategory] = useState('');
+  const [location, setLocation] = useState('');
   const [videoFile, setVideoFile] = useState<File | null>(null);
-  const [videoUrl, setVideoUrl] = useState<string | null>(null);
   const [isRecording, setIsRecording] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [showVideoControls, setShowVideoControls] = useState(false);
-  const [isUploading, setIsUploading] = useState(false);
-  const [formComplete, setFormComplete] = useState(false);
-
+  const [recordedVideo, setRecordedVideo] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [isLocationLoading, setIsLocationLoading] = useState(true);
   const videoRef = useRef<HTMLVideoElement>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const streamRef = useRef<MediaStream | null>(null);
-  const chunksRef = useRef<BlobPart[]>([]);
+  const mediaStreamRef = useRef<MediaStream | null>(null);
+  const videoFileInputRef = useRef<HTMLInputElement>(null);
   
-  const { toast } = useToast();
   const navigate = useNavigate();
-  const { selectedLocation } = useLocation();
+  const { toast } = useToast();
+  const isMobile = useIsMobile();
+
+  // Get user's session
+  const [userId, setUserId] = useState<string | null>(null);
 
   useEffect(() => {
-    // Check if basic form is completed
-    const isBasicFormComplete = 
-      title.trim() !== '' &&
-      description.trim() !== '' &&
-      price !== '' &&
-      category !== null &&
-      subcategory !== null &&
-      selectedLocation !== null;
+    const getUserSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        navigate('/profile');
+        return;
+      }
+      setUserId(session.user.id);
+    };
+
+    getUserSession();
+  }, [navigate]);
+
+  // Get categories and subcategories
+  useEffect(() => {
+    const fetchCategories = async () => {
+      const { data: categoriesData, error: categoriesError } = await supabase
+        .from('categories')
+        .select('*')
+        .order('name');
+
+      if (categoriesError) {
+        console.error('Error fetching categories:', categoriesError);
+        return;
+      }
+
+      setCategories(categoriesData || []);
+
+      const { data: subcategoriesData, error: subcategoriesError } = await supabase
+        .from('subcategories')
+        .select('*')
+        .order('name');
+
+      if (subcategoriesError) {
+        console.error('Error fetching subcategories:', subcategoriesError);
+        return;
+      }
+
+      setSubcategories(subcategoriesData || []);
+    };
+
+    fetchCategories();
+  }, []);
+
+  // Get user's location
+  useEffect(() => {
+    const fetchLocation = async () => {
+      setIsLocationLoading(true);
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) return;
+        
+        const { data: userData, error } = await supabase
+          .from('profiles')
+          .select('location')
+          .eq('id', session.user.id)
+          .single();
+        
+        if (error) throw error;
+        
+        if (userData && userData.location) {
+          setLocation(userData.location);
+        }
+      } catch (error) {
+        console.error('Error fetching user location:', error);
+      } finally {
+        setIsLocationLoading(false);
+      }
+    };
     
-    setFormComplete(isBasicFormComplete);
-  }, [title, description, price, category, subcategory, selectedLocation]);
+    fetchLocation();
+  }, []);
+
+  const handleCategoryChange = (value: string) => {
+    setSelectedCategory(value);
+    setSelectedSubcategory('');
+  };
+
+  const getFilteredSubcategories = () => {
+    return subcategories.filter(
+      (subcategory) => subcategory.category_id === selectedCategory
+    );
+  };
 
   const startRecording = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ 
-        video: { facingMode: 'environment' }, // Use back camera by default
-        audio: true 
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: true,
+        audio: true,
       });
       
-      streamRef.current = stream;
+      mediaStreamRef.current = stream;
       
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
         videoRef.current.play();
       }
       
-      // Create media recorder
       const mediaRecorder = new MediaRecorder(stream);
       mediaRecorderRef.current = mediaRecorder;
       
-      // Listen for data
+      const chunks: BlobPart[] = [];
       mediaRecorder.ondataavailable = (e) => {
         if (e.data.size > 0) {
-          chunksRef.current.push(e.data);
+          chunks.push(e.data);
         }
       };
       
-      // When recording stops
       mediaRecorder.onstop = () => {
-        const blob = new Blob(chunksRef.current, { type: 'video/mp4' });
-        const url = URL.createObjectURL(blob);
+        const blob = new Blob(chunks, { type: 'video/mp4' });
+        const videoURL = URL.createObjectURL(blob);
+        setRecordedVideo(videoURL);
         
-        // Create a file from blob
-        const videoFile = new File([blob], `recording_${Date.now()}.mp4`, { type: 'video/mp4' });
-        
+        // Create a File object from the Blob
+        const videoFile = new File([blob], 'recorded-video.mp4', { type: 'video/mp4' });
         setVideoFile(videoFile);
-        setVideoUrl(url);
         
-        // Clean up
-        if (streamRef.current) {
-          streamRef.current.getTracks().forEach(track => track.stop());
+        if (videoRef.current) {
+          videoRef.current.srcObject = null;
+          videoRef.current.src = videoURL;
+          videoRef.current.controls = true;
         }
         
-        chunksRef.current = [];
+        // Stop all tracks in the stream
+        if (mediaStreamRef.current) {
+          mediaStreamRef.current.getTracks().forEach(track => track.stop());
+        }
       };
       
-      // Start recording
       mediaRecorder.start();
       setIsRecording(true);
       
@@ -116,403 +199,369 @@ const SellQ = () => {
       }, 30000);
       
     } catch (error) {
-      console.error('Error accessing camera:', error);
+      console.error('Error starting recording:', error);
       toast({
-        title: "Camera access error",
-        description: "Please allow camera and microphone access",
-        variant: "destructive"
+        title: 'Camera Error',
+        description: 'Could not access camera or microphone',
+        variant: 'destructive',
       });
     }
   };
-  
+
   const stopRecording = () => {
     if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
       mediaRecorderRef.current.stop();
       setIsRecording(false);
     }
   };
-  
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     
     // Check file type
     if (!file.type.startsWith('video/')) {
       toast({
-        title: "Invalid file type",
-        description: "Please upload a video file",
-        variant: "destructive"
+        title: 'Invalid File',
+        description: 'Please upload a video file',
+        variant: 'destructive',
       });
       return;
     }
     
-    // Check file size (30MB max)
-    if (file.size > 30 * 1024 * 1024) {
+    // Check file size (max 100MB)
+    if (file.size > 100 * 1024 * 1024) {
       toast({
-        title: "File too large",
-        description: "Video must be less than 30MB",
-        variant: "destructive"
+        title: 'File Too Large',
+        description: 'Video must be less than 100MB',
+        variant: 'destructive',
       });
       return;
     }
     
     setVideoFile(file);
-    setVideoUrl(URL.createObjectURL(file));
+    setRecordedVideo(URL.createObjectURL(file));
   };
-  
-  const discardVideo = () => {
-    if (videoUrl) {
-      URL.revokeObjectURL(videoUrl);
-    }
-    
-    setVideoFile(null);
-    setVideoUrl(null);
-    
-    // Clean up any active streams
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach(track => track.stop());
-    }
-  };
-  
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!videoFile || !selectedLocation) {
+
+  const handleSubmit = async () => {
+    if (!title || !description || !price || !selectedCategory || !selectedSubcategory || !location || !videoFile) {
       toast({
-        title: "Missing information",
-        description: "Please complete all fields and add a video",
-        variant: "destructive"
+        title: 'Missing Fields',
+        description: 'Please fill all required fields',
+        variant: 'destructive',
       });
       return;
     }
+
+    if (!userId) {
+      toast({
+        title: 'Authentication Error',
+        description: 'Please sign in to continue',
+        variant: 'destructive',
+      });
+      navigate('/profile');
+      return;
+    }
     
-    setIsSubmitting(true);
+    setIsLoading(true);
+    setUploadProgress(0);
     
     try {
-      // 1. Get the current user
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        toast({
-          title: "Authentication required",
-          description: "Please log in to post a video",
-          variant: "destructive"
-        });
-        navigate('/profile');
-        return;
-      }
-      
-      // 2. Create the listing
-      const listingData = {
+      // 1. Create the listing
+      const listingInsertData = {
         title,
         description,
-        price: parseFloat(price),
-        category,
-        subcategory,
-        location: selectedLocation,
-        user_id: user.id,
-        status: 'pending',
-        images: [] // No images for Q videos
+        price: Number(price),
+        category: selectedCategory,
+        subcategory: selectedSubcategory,
+        location,
+        user_id: userId,
+        status: 'active',
+        condition: 'used', // Default condition
+        images: [] // No images for Q video listings
       };
       
       const { data: listingData, error: listingError } = await supabase
         .from('listings')
-        .insert(listingData)
+        .insert(listingInsertData)
         .select()
         .single();
       
       if (listingError) throw listingError;
       
-      // 3. Upload the video
-      setIsUploading(true);
-      const fileName = `${listingData.id}_${Date.now()}.mp4`;
+      // 2. Upload the video
+      const videoFileName = `${userId}_${Date.now()}.mp4`;
+      
+      // Create a simulated upload progress
+      const progressInterval = setInterval(() => {
+        setUploadProgress((prev) => {
+          const newProgress = prev + 5;
+          return newProgress >= 90 ? 90 : newProgress;
+        });
+      }, 300);
+      
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from('product_videos')
-        .upload(fileName, videoFile);
+        .upload(videoFileName, videoFile);
+      
+      clearInterval(progressInterval);
+      setUploadProgress(95);
       
       if (uploadError) throw uploadError;
       
-      // 4. Create product_video entry
-      const { error: productVideoError } = await supabase
-        .from('product_videos' as any)
+      // 3. Create an entry in the product_videos table
+      const { error: videoEntryError } = await supabase
+        .from('product_videos')
         .insert({
           listing_id: listingData.id,
-          video_url: fileName,
-          user_id: user.id
+          video_url: videoFileName,
+          user_id: userId
         });
       
-      if (productVideoError) throw productVideoError;
+      if (videoEntryError) throw videoEntryError;
+      
+      setUploadProgress(100);
       
       toast({
-        title: "Video Ad Posted Successfully!",
-        description: "Your video ad will be visible after review.",
+        title: 'Success!',
+        description: 'Your Q video has been uploaded',
       });
       
-      // Navigate to the Q feed
-      setTimeout(() => navigate('/q'), 1000);
+      // Navigate to the product page or back to home
+      setTimeout(() => {
+        navigate(`/product/${listingData.id}`);
+      }, 1500);
       
-    } catch (error: any) {
-      console.error('Error posting video ad:', error);
+    } catch (error) {
+      console.error('Error creating Q video:', error);
       toast({
-        title: "Error",
-        description: error.message || "Failed to post your video ad. Please try again.",
-        variant: "destructive"
+        title: 'Error',
+        description: 'Failed to upload your video',
+        variant: 'destructive',
       });
     } finally {
-      setIsSubmitting(false);
-      setIsUploading(false);
+      setIsLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-primary/5">
-      <Header />
-      <main className="container mx-auto px-4 pt-20 pb-24">
-        {formComplete && videoUrl ? (
-          <div className="max-w-md mx-auto">
-            <button 
-              onClick={() => setFormComplete(false)}
-              className="flex items-center text-primary mb-4"
-            >
-              <ArrowLeft className="h-4 w-4 mr-1" />
-              Back to form
-            </button>
+    <div className="min-h-screen bg-gray-50">
+      {isMobile ? <ProfileHeader /> : <Header />}
+      
+      <div className="container mx-auto px-4 pt-20 pb-16">
+        <Card className="max-w-2xl mx-auto">
+          <CardHeader>
+            <CardTitle className="text-2xl font-bold">Create Q Video</CardTitle>
+          </CardHeader>
+          
+          <CardContent className="space-y-6">
+            <div className="space-y-2">
+              <Label htmlFor="title">Title</Label>
+              <Input 
+                id="title" 
+                value={title} 
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="Enter a title for your product"
+                maxLength={80}
+              />
+              <p className="text-xs text-gray-500 text-right">{title.length}/80</p>
+            </div>
             
-            <Card className="overflow-hidden">
-              <div className="aspect-[9/16] relative">
-                <video 
-                  ref={videoRef}
-                  src={videoUrl}
-                  className="w-full h-full object-cover"
-                  controls
-                  onMouseEnter={() => setShowVideoControls(true)}
-                  onMouseLeave={() => setShowVideoControls(false)}
-                />
+            <div className="space-y-2">
+              <Label htmlFor="description">Description</Label>
+              <Textarea 
+                id="description" 
+                value={description} 
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="Describe your product"
+                className="min-h-[100px]"
+                maxLength={500}
+              />
+              <p className="text-xs text-gray-500 text-right">{description.length}/500</p>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="price">Price (₹)</Label>
+              <Input 
+                id="price" 
+                type="number" 
+                value={price}
+                onChange={(e) => setPrice(e.target.value === '' ? '' : Number(e.target.value))}
+                placeholder="Enter price"
+                min={0}
+              />
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="category">Category</Label>
+                <Select 
+                  value={selectedCategory} 
+                  onValueChange={handleCategoryChange}
+                >
+                  <SelectTrigger id="category">
+                    <SelectValue placeholder="Select category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {categories.map((category) => (
+                      <SelectItem key={category.id} value={category.id}>
+                        {category.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
               
-              <div className="p-4 space-y-4">
-                <div>
-                  <h3 className="font-bold text-lg">{title}</h3>
-                  <p className="text-lg font-bold">₹{price}</p>
-                  <p className="text-sm text-muted-foreground">{category} &gt; {subcategory}</p>
-                </div>
-                
-                <div className="flex gap-2">
-                  <Button 
-                    variant="outline" 
-                    type="button" 
-                    className="flex-1"
-                    onClick={discardVideo}
+              <div className="space-y-2">
+                <Label htmlFor="subcategory">Subcategory</Label>
+                <Select 
+                  value={selectedSubcategory} 
+                  onValueChange={setSelectedSubcategory}
+                  disabled={!selectedCategory}
+                >
+                  <SelectTrigger id="subcategory">
+                    <SelectValue placeholder="Select subcategory" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {getFilteredSubcategories().map((subcategory) => (
+                      <SelectItem key={subcategory.id} value={subcategory.id}>
+                        {subcategory.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="location">Location</Label>
+              <Input 
+                id="location" 
+                value={location} 
+                onChange={(e) => setLocation(e.target.value)}
+                placeholder="Enter your location"
+                disabled={isLocationLoading}
+              />
+            </div>
+            
+            <div className="space-y-3">
+              <Label>Product Video</Label>
+              
+              {(!recordedVideo && !isRecording) && (
+                <div className="grid grid-cols-2 gap-4">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="h-24 flex flex-col items-center justify-center gap-2"
+                    onClick={startRecording}
                   >
-                    <RefreshCw className="h-4 w-4 mr-2" />
-                    Re-record
+                    <Camera className="h-6 w-6" />
+                    <span>Record Video</span>
                   </Button>
                   
-                  <Button 
-                    type="button" 
-                    className="flex-1"
-                    onClick={handleSubmit}
-                    disabled={isSubmitting}
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="h-24 flex flex-col items-center justify-center gap-2"
+                    onClick={() => videoFileInputRef.current?.click()}
                   >
-                    {isSubmitting ? (
-                      <span className="flex items-center">
-                        <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-                        {isUploading ? 'Uploading...' : 'Posting...'}
-                      </span>
-                    ) : (
-                      <span className="flex items-center">
-                        <Check className="h-4 w-4 mr-2" />
-                        Post Video
-                      </span>
-                    )}
+                    <Upload className="h-6 w-6" />
+                    <span>Upload Video</span>
+                    <input
+                      type="file"
+                      accept="video/*"
+                      className="hidden"
+                      ref={videoFileInputRef}
+                      onChange={handleFileUpload}
+                    />
                   </Button>
                 </div>
-              </div>
-            </Card>
-          </div>
-        ) : formComplete ? (
-          <div className="max-w-md mx-auto">
-            <button 
-              onClick={() => setFormComplete(false)}
-              className="flex items-center text-primary mb-4"
-            >
-              <ArrowLeft className="h-4 w-4 mr-1" />
-              Back to form
-            </button>
-            
-            <Card className="overflow-hidden">
-              <div className="p-4">
-                <h2 className="text-xl font-bold mb-4">Record or Upload Video</h2>
-                
-                {videoUrl ? (
-                  <div className="aspect-[9/16] relative mb-4">
-                    <video 
-                      ref={videoRef}
-                      src={videoUrl}
-                      className="w-full h-full object-cover rounded-md"
-                      controls
-                    />
-                    <button 
-                      className="absolute top-2 right-2 bg-black/50 rounded-full p-1"
-                      onClick={discardVideo}
-                    >
-                      <X className="h-5 w-5 text-white" />
-                    </button>
-                  </div>
-                ) : isRecording ? (
-                  <div className="aspect-[9/16] relative mb-4 bg-black rounded-md overflow-hidden">
-                    <video 
+              )}
+              
+              {isRecording && (
+                <div className="space-y-4">
+                  <div className="aspect-video bg-black rounded-lg overflow-hidden">
+                    <video
                       ref={videoRef}
                       className="w-full h-full object-cover"
-                      autoPlay
                       muted
-                      playsInline
                     />
-                    <div className="absolute bottom-4 left-0 right-0 flex justify-center">
-                      <div className="flex items-center gap-2">
-                        <div className="h-3 w-3 bg-red-500 rounded-full animate-pulse" />
-                        <span className="text-white text-sm font-medium">Recording</span>
-                      </div>
-                    </div>
-                    
-                    <button 
-                      className="absolute bottom-16 left-1/2 -translate-x-1/2 bg-white rounded-full p-4"
+                  </div>
+                  
+                  <div className="flex justify-center">
+                    <Button
+                      variant="destructive"
                       onClick={stopRecording}
+                      className="flex items-center gap-2"
                     >
-                      <Check className="h-6 w-6 text-primary" />
-                    </button>
-                  </div>
-                ) : (
-                  <div className="grid grid-cols-2 gap-4 mb-4">
-                    <Button 
-                      variant="outline" 
-                      className="h-32 flex flex-col gap-2"
-                      onClick={startRecording}
-                    >
-                      <Camera className="h-8 w-8" />
-                      <span>Record Video</span>
-                      <span className="text-xs text-muted-foreground">15-30 sec</span>
+                      <span className="animate-pulse h-3 w-3 rounded-full bg-white" />
+                      Stop Recording
                     </Button>
-                    
-                    <label className="h-32 flex flex-col items-center justify-center gap-2 border rounded-md hover:bg-accent cursor-pointer">
-                      <Upload className="h-8 w-8" />
-                      <span>Upload Video</span>
-                      <span className="text-xs text-muted-foreground">Max 30MB</span>
-                      <input 
-                        type="file" 
-                        accept="video/*"
-                        className="sr-only"
-                        onChange={handleFileChange}
-                      />
-                    </label>
                   </div>
-                )}
-                
-                {videoUrl && (
-                  <Button 
-                    className="w-full"
-                    onClick={handleSubmit}
-                    disabled={isSubmitting}
-                  >
-                    {isSubmitting ? (
-                      <span className="flex items-center">
-                        <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-                        {isUploading ? 'Uploading...' : 'Posting...'}
-                      </span>
-                    ) : (
-                      <span className="flex items-center">
-                        <Check className="h-4 w-4 mr-2" />
-                        Post Video
-                      </span>
-                    )}
-                  </Button>
-                )}
-              </div>
-            </Card>
-          </div>
-        ) : (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="max-w-md mx-auto"
-          >
-            <Card>
-              <div className="p-4 space-y-6">
-                <div className="flex items-center justify-between">
-                  <h2 className="text-xl font-bold">Create Video Ad</h2>
-                  <Video className="h-5 w-5 text-primary" />
                 </div>
-                
+              )}
+              
+              {recordedVideo && !isRecording && (
                 <div className="space-y-4">
-                  <div>
-                    <Label htmlFor="title">Title</Label>
-                    <Input 
-                      id="title"
-                      value={title}
-                      onChange={(e) => setTitle(e.target.value)}
-                      placeholder="What are you selling?"
-                      maxLength={50}
+                  <div className="aspect-video bg-black rounded-lg overflow-hidden">
+                    <video
+                      ref={videoRef}
+                      src={recordedVideo}
+                      className="w-full h-full object-cover"
+                      controls
                     />
-                    <div className="text-xs text-right text-muted-foreground mt-1">
-                      {title.length}/50
-                    </div>
                   </div>
                   
-                  <div>
-                    <Label htmlFor="description">Description</Label>
-                    <Textarea 
-                      id="description"
-                      value={description}
-                      onChange={(e) => setDescription(e.target.value)}
-                      placeholder="Describe your item briefly..."
-                      rows={3}
-                      maxLength={200}
-                    />
-                    <div className="text-xs text-right text-muted-foreground mt-1">
-                      {description.length}/200
-                    </div>
+                  <div className="flex justify-center">
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setRecordedVideo(null);
+                        setVideoFile(null);
+                        if (videoRef.current) {
+                          videoRef.current.src = '';
+                        }
+                      }}
+                    >
+                      Discard Video
+                    </Button>
                   </div>
-                  
-                  <div>
-                    <Label>Price</Label>
-                    <PriceInput value={price} onChange={setPrice} />
-                  </div>
-                  
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label>Category</Label>
-                      <CategorySelector 
-                        value={category} 
-                        onChange={(val) => {
-                          setCategory(val);
-                          setSubcategory(null);
-                        }}
-                      />
-                    </div>
-                    
-                    <div>
-                      <Label>Subcategory</Label>
-                      <SubcategorySelector 
-                        category={category} 
-                        value={subcategory} 
-                        onChange={setSubcategory}
-                        disabled={!category}
-                      />
-                    </div>
-                  </div>
-                  
-                  <Button 
-                    className="w-full" 
-                    onClick={() => setFormComplete(true)}
-                    disabled={!formComplete}
-                  >
-                    Continue to Video
-                  </Button>
                 </div>
+              )}
+            </div>
+          </CardContent>
+          
+          <CardFooter className="flex flex-col space-y-4">
+            {isLoading && (
+              <div className="w-full space-y-2">
+                <Progress value={uploadProgress} className="w-full" />
+                <p className="text-center text-sm text-muted-foreground">
+                  {uploadProgress < 100 ? 'Uploading video...' : 'Processing...'}
+                </p>
               </div>
-            </Card>
-          </motion.div>
-        )}
-      </main>
+            )}
+            
+            <div className="flex w-full space-x-2">
+              <Button
+                variant="outline"
+                className="flex-1"
+                onClick={() => navigate('/')}
+                disabled={isLoading}
+              >
+                Cancel
+              </Button>
+              
+              <Button
+                className="flex-1"
+                onClick={handleSubmit}
+                disabled={isLoading || !videoFile}
+              >
+                {isLoading ? 'Uploading...' : 'Submit'}
+              </Button>
+            </div>
+          </CardFooter>
+        </Card>
+      </div>
     </div>
   );
 };
