@@ -2,6 +2,7 @@
 import { Message } from "@/components/chat/types/chat-detail";
 import { cn } from "@/lib/utils";
 import { useEffect, useRef } from "react";
+import { Image } from "lucide-react";
 
 export interface MessageListProps {
   messages: Message[];
@@ -28,6 +29,30 @@ export const MessageList = ({
     return unreadMessages.some(unread => unread.id === message.id);
   };
 
+  const renderMessageContent = (message: Message) => {
+    // Check if it's an image message
+    if (message.is_image) {
+      const imageUrl = message.content.match(/\[Image\]\((.*?)\)/)?.[1];
+      
+      if (imageUrl) {
+        return (
+          <div className="relative">
+            <a href={imageUrl} target="_blank" rel="noopener noreferrer">
+              <img 
+                src={imageUrl} 
+                alt="Shared image" 
+                className="rounded-md max-w-full max-h-60 object-contain cursor-pointer hover:opacity-90 transition-opacity"
+              />
+            </a>
+          </div>
+        );
+      }
+    }
+    
+    // Regular text message
+    return message.content;
+  };
+
   return (
     <div className="flex-1 space-y-4 p-4 overflow-y-auto">
       {messages.map((message) => {
@@ -51,7 +76,7 @@ export const MessageList = ({
                 unread && "font-bold"
               )}
             >
-              {message.content}
+              {renderMessageContent(message)}
               {unread && (
                 <div className="absolute -left-2 -top-1 h-2 w-2 rounded-full bg-red-500" />
               )}

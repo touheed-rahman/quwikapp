@@ -1,6 +1,6 @@
 
 import { Input } from "@/components/ui/input";
-import { IndianRupee, TrendingUp } from "lucide-react";
+import { IndianRupee } from "lucide-react";
 import { motion } from "framer-motion";
 import { useState } from "react";
 
@@ -45,8 +45,6 @@ const PriceInput = ({ value, onChange }: PriceInputProps) => {
           required
         />
       </div>
-      
-      {/* Removing the pricing idea feature as requested */}
     </motion.div>
   );
 };

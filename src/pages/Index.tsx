@@ -11,9 +11,10 @@ import { useLocation } from "@/contexts/LocationContext";
 import { useListings } from "@/hooks/useListings";
 import RecentListings from "@/components/listings/RecentListings";
 import { supabase } from "@/integrations/supabase/client";
-import { TrendingUp, MapPin, Clock, Tag } from "lucide-react";
+import { TrendingUp, MapPin, Clock } from "lucide-react";
 import ProductCard from "@/components/ProductCard";
 import { motion } from "framer-motion";
+import SeoHead from "@/components/seo/SeoHead";
 
 const ITEMS_PER_PAGE = 20;
 const FEATURED_ITEMS_LIMIT = 6;
@@ -54,6 +55,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background via-background to-primary/5">
+      <SeoHead />
       <WelcomeDialog 
         open={showWelcomePopup} 
         onOpenChange={setShowWelcomePopup} 

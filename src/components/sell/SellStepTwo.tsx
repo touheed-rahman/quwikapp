@@ -45,9 +45,9 @@ const SellStepTwo = memo(({
         <Header />
       </div>
       
-      <div className="container mx-auto px-4 pt-4 pb-24 w-full">
+      <div className="container mx-auto px-4 pt-8 pb-24 w-full">
         <motion.div 
-          className="text-center mb-6"
+          className="text-center mb-8"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.3 }}
@@ -64,7 +64,7 @@ const SellStepTwo = memo(({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.4 }}
-          className="w-full"
+          className="w-full max-w-3xl mx-auto"
         >
           <SellFormDetails
             title={title}

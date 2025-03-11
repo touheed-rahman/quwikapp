@@ -37,5 +37,28 @@ export function useMessageSender(conversationId: string | undefined, sessionUser
     }
   };
 
-  return { newMessage, setNewMessage, handleSend };
+  const handleImageUpload = async (imageUrl: string) => {
+    if (!sessionUserId || !conversationId) return;
+    
+    try {
+      const { error } = await supabase
+        .from('messages')
+        .insert({
+          conversation_id: conversationId,
+          sender_id: sessionUserId,
+          content: `[Image](${imageUrl})`,
+          is_image: true
+        });
+
+      if (error) throw error;
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Error sending image",
+        description: error.message
+      });
+    }
+  };
+
+  return { newMessage, setNewMessage, handleSend, handleImageUpload };
 }

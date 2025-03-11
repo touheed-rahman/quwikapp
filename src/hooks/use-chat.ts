@@ -10,7 +10,7 @@ export function useChat(conversationId: string | undefined) {
   const { sessionUser, loading } = useSessionUser(conversationId);
   const conversationDetails = useConversationDetails(conversationId, sessionUser);
   const { messages, isLoading: messagesLoading } = useMessageList(conversationId, sessionUser?.id);
-  const { newMessage, setNewMessage, handleSend } = useMessageSender(conversationId, sessionUser?.id);
+  const { newMessage, setNewMessage, handleSend, handleImageUpload } = useMessageSender(conversationId, sessionUser?.id);
   const { isDisabled, disabledReason } = useListingStatus(conversationDetails?.listing?.id);
   
   useChatNotifications(conversationId, sessionUser?.id);
@@ -23,6 +23,7 @@ export function useChat(conversationId: string | undefined) {
     newMessage,
     setNewMessage,
     handleSend,
+    handleImageUpload,
     chatDisabled: isDisabled,
     disabledReason
   };

@@ -29,7 +29,8 @@ const ChatDetail = () => {
     setNewMessage,
     handleSend,
     chatDisabled,
-    disabledReason
+    disabledReason,
+    handleImageUpload
   } = useChat(id);
 
   // Check if conversation exists or has been deleted
@@ -103,6 +104,44 @@ const ChatDetail = () => {
     // setTimeout(() => handleSend(), 100);
   };
 
+  const handleUploadImage = async (file: File) => {
+    if (!sessionUser || !id) return;
+    
+    try {
+      // Upload image to storage
+      const filename = `${Date.now()}-${file.name}`;
+      const filePath = `chat_images/${id}/${filename}`;
+      
+      const { error: uploadError } = await supabase.storage
+        .from('chat_images')
+        .upload(filePath, file);
+        
+      if (uploadError) throw uploadError;
+      
+      // Get public URL
+      const { data: urlData } = supabase.storage
+        .from('chat_images')
+        .getPublicUrl(filePath);
+        
+      // Save message with image link
+      if (handleImageUpload) {
+        handleImageUpload(urlData.publicUrl);
+      }
+      
+      toast({
+        title: "Image uploaded",
+        description: "Your image has been sent successfully.",
+      });
+    } catch (error: any) {
+      console.error('Error uploading image:', error);
+      toast({
+        variant: "destructive",
+        title: "Upload failed",
+        description: error.message || "Failed to upload image"
+      });
+    }
+  };
+
   if (!sessionUser) {
     return (
       <motion.div 
@@ -125,7 +164,10 @@ const ChatDetail = () => {
         animate={{ opacity: 1 }}
         transition={{ duration: 0.4 }}
       >
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <div className="text-center flex flex-col items-center">
+          <Loader2 className="h-10 w-10 animate-spin text-primary mb-4" />
+          <p className="text-muted-foreground">Loading conversation...</p>
+        </div>
       </motion.div>
     );
   }
@@ -172,6 +214,7 @@ const ChatDetail = () => {
         handleSend={handleSend}
         disabled={chatDisabled}
         disabledReason={disabledReason}
+        onImageUpload={handleUploadImage}
       />
     </motion.div>
   );

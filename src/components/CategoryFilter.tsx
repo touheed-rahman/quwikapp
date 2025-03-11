@@ -21,6 +21,7 @@ import {
   ChevronUp,
   Smartphone
 } from "lucide-react";
+import { useMobile } from "@/hooks/use-mobile";
 
 const categoryIcons: Record<string, any> = {
   mobile: Smartphone,
@@ -57,11 +58,12 @@ const categoryColors: Record<string, string> = {
 const CategoryFilter = () => {
   const navigate = useNavigate();
   const [showAll, setShowAll] = useState(false);
+  const { isMobile } = useMobile();
 
-  const itemsPerRow = 4;
+  const itemsPerRow = isMobile ? 4 : 6;
   const initialRows = 1;
   
-  // Create rows with 4 items per row
+  // Create rows with items per row
   const rows = [];
   for (let i = 0; i < categories.length; i += itemsPerRow) {
     rows.push(categories.slice(i, i + itemsPerRow));
@@ -113,7 +115,7 @@ const CategoryFilter = () => {
               {visibleRows.map((row, rowIndex) => (
                 <motion.div 
                   key={rowIndex} 
-                  className="grid grid-cols-4 gap-4"
+                  className={`grid grid-cols-${itemsPerRow} gap-4`}
                   variants={{
                     hidden: { opacity: 0, y: 10 },
                     visible: { opacity: 1, y: 0 }
@@ -140,7 +142,7 @@ const CategoryFilter = () => {
                         >
                           <Icon className="h-6 w-6" />
                         </motion.div>
-                        <span className="text-sm font-medium text-center line-clamp-1">{category.name}</span>
+                        <span className={`text-${isMobile ? 'xs' : 'sm'} font-medium text-center line-clamp-1`}>{category.name}</span>
                       </motion.button>
                     );
                   })}
