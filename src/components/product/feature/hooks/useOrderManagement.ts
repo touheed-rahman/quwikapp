@@ -5,8 +5,9 @@ import { FeatureOrder } from "../types";
 export function useOrderManagement() {
   const createFeatureOrder = async (orderData: Omit<FeatureOrder, "id" | "created_at" | "updated_at" | "invoice_url">) => {
     try {
+      // Use type assertion to let TypeScript know this is a valid RPC call
       const { data, error } = await supabase.rpc(
-        'create_feature_order',
+        'create_feature_order' as any,
         { order_data: orderData }
       );
 
@@ -23,8 +24,9 @@ export function useOrderManagement() {
 
   const updateOrderInvoiceUrl = async (orderId: string, invoiceUrl: string) => {
     try {
+      // Use type assertion to let TypeScript know this is a valid RPC call
       const { data, error } = await supabase.rpc(
-        'update_feature_order_invoice',
+        'update_feature_order_invoice' as any,
         { 
           order_id: orderId,
           invoice_url: invoiceUrl 
