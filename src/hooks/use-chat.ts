@@ -25,7 +25,7 @@ export function useChat(conversationId: string | undefined) {
     newMessage,
     setNewMessage,
     handleSend,
-    handleImageUpload, // This will be properly wrapped in ChatDetail.tsx
+    handleImageUpload,
     chatDisabled: isDisabled,
     disabledReason
   };

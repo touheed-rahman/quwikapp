@@ -24,6 +24,7 @@ export interface ConversationDetails {
   created_at: string;
   last_message?: string;
   last_message_at?: string;
+  deleted?: boolean;
   deleted_by?: string | null;
   seller?: {
     id: string;

@@ -22,14 +22,16 @@ const ChatDetail = () => {
     handleSend,
     chatDisabled,
     disabledReason,
-    handleImageUpload
+    handleImageUpload: handleImageUrlUpload
   } = useChat(id);
 
   // Create a wrapper function to handle type conversion
-  const imageUploadWrapper = (file: File) => {
-    const { handleUploadImage } = useImageUpload(id, sessionUser?.id, (url: string) => {
+  const handleImageUpload = (file: File) => {
+    if (!id || !sessionUser) return Promise.resolve();
+    
+    const { handleUploadImage } = useImageUpload(id, sessionUser.id, (url: string) => {
       // This is safe because we're just passing the string URL from the upload
-      handleImageUpload(url);
+      handleImageUrlUpload(url);
     });
     
     return handleUploadImage(file);
@@ -77,7 +79,7 @@ const ChatDetail = () => {
       chatDisabled={chatDisabled}
       disabledReason={disabledReason}
       onBack={handleBack}
-      onImageUpload={imageUploadWrapper}
+      onImageUpload={handleImageUpload}
       isEmptyChat={isEmptyChat}
     />
   );
