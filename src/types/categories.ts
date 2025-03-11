@@ -1,4 +1,3 @@
-
 export type ProductCondition = "new" | "excellent" | "good" | "moderate";
 
 export const categories = [
