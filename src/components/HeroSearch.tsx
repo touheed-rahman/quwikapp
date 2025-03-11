@@ -104,7 +104,7 @@ const HeroSearch = () => {
               <Input
                 type="text"
                 placeholder="What are you looking for?"
-                className="pl-10 pr-4 h-12 text-sm md:text-base w-full border-[#8B5CF6]/20 focus-visible:ring-[#8B5CF6]/20"
+                className="pl-10 pr-4 h-12 text-sm md:text-base w-full border-[#8B5CF6]/20 focus-visible:ring-[#8B5CF6]/20 text-foreground"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onKeyPress={handleKeyPress}
@@ -113,13 +113,13 @@ const HeroSearch = () => {
             </div>
             <Button 
               size="lg" 
-              className="h-12 px-8 text-base bg-[#8B5CF6] hover:bg-[#8B5CF6]/90 disabled:opacity-50"
+              className="h-12 px-8 text-base bg-[#8B5CF6] hover:bg-[#8B5CF6]/90 disabled:opacity-50 text-white"
               onClick={handleSearch}
               disabled={isSearching}
             >
               {isSearching ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin text-white" />
                   Searching...
                 </>
               ) : (

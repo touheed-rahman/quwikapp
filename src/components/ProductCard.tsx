@@ -94,15 +94,15 @@ const ProductCard = ({
   const getConditionColor = (condition?: ProductCondition) => {
     switch (condition) {
       case "new":
-        return "bg-green-500 text-black";
+        return "bg-green-500 text-white";
       case "excellent":
-        return "bg-primary text-black";
+        return "bg-primary text-white";
       case "good":
         return "bg-yellow-500 text-black";
       case "moderate":
-        return "bg-orange-500 text-black";
+        return "bg-orange-500 text-white";
       default:
-        return "bg-gray-500 text-black";
+        return "bg-gray-500 text-white";
     }
   };
 
@@ -127,8 +127,8 @@ const ProductCard = ({
           <Button
             variant="ghost"
             size="icon"
-            className={`absolute top-2 right-2 bg-white/90 h-8 w-8 shadow-sm hover:text-black ${
-              isWishlisted ? "text-red-500" : "text-black"
+            className={`absolute top-2 right-2 bg-white/90 h-8 w-8 shadow-sm hover:text-white hover:bg-primary/90 ${
+              isWishlisted ? "text-red-500 hover:text-white" : "text-foreground"
             } ${isLoading ? "opacity-50" : ""}`}
             onClick={handleWishlist}
             disabled={isLoading}
@@ -140,12 +140,12 @@ const ProductCard = ({
           <p className="text-lg font-bold text-primary">
             ₹{price.toLocaleString()}
           </p>
-          <h3 className="text-sm font-medium line-clamp-1 text-black">
+          <h3 className="text-sm font-medium line-clamp-1 text-foreground">
             {title}
           </h3>
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-1 text-[10px] text-black overflow-hidden max-w-[120px]">
-              <MapPin className="h-3 w-3 flex-shrink-0 text-black" />
+            <div className="flex items-center gap-1 text-[10px] text-foreground overflow-hidden max-w-[120px]">
+              <MapPin className="h-3 w-3 flex-shrink-0 text-foreground" />
               <span className="truncate" title={location}>{formatLocation(location)}</span>
             </div>
             {condition && (

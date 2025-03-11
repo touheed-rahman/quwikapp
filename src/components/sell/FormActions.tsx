@@ -42,8 +42,8 @@ const FormActions = ({ isSubmitting, onBack }: FormActionsProps) => {
               className="w-full bg-primary/80 text-white flex items-center gap-2 shadow-md"
             >
               <div className="flex items-center gap-2">
-                <Loader2 className="h-4 w-4 animate-spin" />
-                <span className="font-medium">Posting Ad...</span>
+                <Loader2 className="h-4 w-4 animate-spin text-white" />
+                <span className="font-medium text-white">Posting Ad...</span>
               </div>
             </Button>
           </motion.div>
@@ -64,8 +64,8 @@ const FormActions = ({ isSubmitting, onBack }: FormActionsProps) => {
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.97 }}
               >
-                <Send className="h-4 w-4" />
-                <span className="font-medium">Post Ad</span>
+                <Send className="h-4 w-4 text-white" />
+                <span className="font-medium text-white">Post Ad</span>
               </motion.div>
             </Button>
           </motion.div>

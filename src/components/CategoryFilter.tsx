@@ -80,7 +80,7 @@ const CategoryFilter = () => {
       <ScrollArea className="w-full rounded-xl border border-primary/10 shadow-md bg-white overflow-hidden">
         <div className="p-4 space-y-4">
           <div className="flex items-center justify-between pb-2">
-            <h3 className="text-lg font-bold text-foreground/90">Categories</h3>
+            <h3 className="text-lg font-bold text-foreground">Categories</h3>
             {rows.length > initialRows && (
               <button
                 onClick={() => setShowAll(!showAll)}
@@ -134,15 +134,15 @@ const CategoryFilter = () => {
                         whileTap={{ scale: 0.95 }}
                       >
                         <motion.div 
-                          className={`p-2.5 md:p-3 rounded-full ${bgColor} shadow-md`}
+                          className={`p-3 md:p-3.5 rounded-full ${bgColor} shadow-md`}
                           whileHover={{ 
                             scale: 1.1,
                             boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)"
                           }}
                         >
-                          <Icon className="h-7 w-7 md:h-7 md:w-7 text-white" />
+                          <Icon className="h-8 w-8 md:h-8 md:w-8 text-white" />
                         </motion.div>
-                        <span className="text-xs md:text-sm font-medium text-center line-clamp-1">
+                        <span className="text-xs md:text-sm font-medium text-center line-clamp-1 text-foreground">
                           {category.name}
                         </span>
                       </motion.button>

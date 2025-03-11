@@ -5,22 +5,22 @@
  
 @layer base {
   :root {
-    --background: 262 83% 98%;
-    --foreground: 222.2 84% 4.9%;
+    --background: 252 33% 98%;
+    --foreground: 240 10% 3.9%;
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 240 10% 3.9%;
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover-foreground: 240 10% 3.9%;
     --primary: 262 83% 58%;
-    --primary-foreground: 210 40% 98%;
+    --primary-foreground: 0 0% 100%;
     --secondary: 262 83% 96%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --secondary-foreground: 240 10% 3.9%;
     --muted: 262 83% 96%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted-foreground: 240 5% 35%;
     --accent: 262 83% 58%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --accent-foreground: 0 0% 100%;
     --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive-foreground: 0 0% 100%;
     --border: 262 83% 96%;
     --input: 262 83% 96%;
     --ring: 262 83% 58%;
@@ -43,15 +43,15 @@
 
   /* Enhanced text and headings */
   h1 {
-    @apply text-foreground/90 font-bold tracking-tight;
+    @apply text-foreground font-bold tracking-tight;
   }
   
   h2, h3 {
-    @apply text-foreground/85 font-semibold tracking-tight;
+    @apply text-foreground font-semibold tracking-tight;
   }
 
   p {
-    @apply text-foreground/75 leading-relaxed;
+    @apply text-foreground/80 leading-relaxed;
   }
 
   /* Enhanced input styling */
@@ -132,13 +132,13 @@
     @apply shadow-sm hover:shadow-md transition-all duration-200 bg-card/95 backdrop-blur-sm
            border border-border/20;
   }
+
+  /* ... keep existing code (scrollbar styling, command menu enhancements, enhanced transitions, etc.) */
+
+  /* Fixed Admin Panel Tabs - white text on primary background */
+  .admin-tabs [data-state="active"] {
+    @apply bg-primary text-white !important;
+  }
+
+  /* ... keep existing code (enhanced list items, enhanced interactive elements, etc.) */
 }
-
-/* ... keep existing code (scrollbar styling, command menu enhancements, enhanced transitions, etc.) */
-
-/* Fixed Admin Panel Tabs - white text on primary background */
-.admin-tabs [data-state="active"] {
-  @apply bg-primary text-white;
-}
-
-/* ... keep existing code (enhanced list items, enhanced interactive elements, etc.) */
