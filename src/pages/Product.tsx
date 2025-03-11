@@ -33,6 +33,7 @@ const ProductPage = () => {
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [isFeatureDialogOpen, setIsFeatureDialogOpen] = useState(false);
   const { toast } = useToast();
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
   const { data: product, isLoading, isError } = useProductDetails(id);
   const { data: relatedProducts = [] } = useRelatedProducts(id, product?.category, product?.subcategory);
@@ -65,11 +66,13 @@ const ProductPage = () => {
     const getSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       setSession(session);
+      setCurrentUserId(session?.user?.id || null);
     };
     getSession();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
+      setCurrentUserId(session?.user?.id || null);
     });
 
     return () => subscription.unsubscribe();
@@ -80,6 +83,8 @@ const ProductPage = () => {
       navigate(`/chat/${currentConversationId}`);
     }
   }, [currentConversationId, navigate]);
+
+  const isCurrentUserSeller = !!currentUserId && currentUserId === product?.user_id;
 
   const handleFeatureSuccess = async () => {
     toast({
@@ -146,6 +151,8 @@ const ProductPage = () => {
             {seller && (
               <SellerInfo
                 seller={seller}
+                currentUserId={currentUserId}
+                isCurrentUserSeller={isCurrentUserSeller}
                 onChatClick={() => handleChatWithSeller(session)}
                 onMakeOffer={() => setIsFeatureDialogOpen(true)}
               />

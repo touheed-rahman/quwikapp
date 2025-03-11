@@ -39,10 +39,10 @@ const ProfileSidebar = ({ profile, handleLogout }: ProfileSidebarProps) => {
           </Button>
         </Link>
         
-        <Link to="/seller-dashboard">
+        <Link to={`/seller/${profile?.id}`}>
           <Button variant="ghost" className="w-full justify-start pl-3 hover:bg-primary/10 hover:text-primary transition-colors" size="sm">
             <Store className="h-4 w-4 mr-2" />
-            Seller Dashboard
+            Seller Profile
           </Button>
         </Link>
         
