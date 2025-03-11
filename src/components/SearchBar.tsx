@@ -1,8 +1,9 @@
+
 import { Search, ChevronDown } from "lucide-react";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 
-export const SearchBar = () => {
+const SearchBar = () => {
   return (
     <div className="relative flex-1 max-w-2xl">
       <div className="flex items-center gap-2">
