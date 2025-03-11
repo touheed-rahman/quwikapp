@@ -4,97 +4,81 @@ import {
   Dialog,
   DialogContent,
   DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
 } from "@/components/ui/dialog";
-import FeatureOptionsStep from "./feature/FeatureOptionsStep";
-import ContactDetailsStep from "./feature/ContactDetailsStep";
-import FeatureSuccess from "./feature/FeatureSuccess";
-import { useFeatureRequest } from "./feature/useFeatureRequest";
+import { useState } from "react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useToast } from "@/components/ui/use-toast";
 
 interface FeatureDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  productTitle: string;
-  productId: string;
-  category: string;
-  subcategory: string;
-  onFeatureSuccess: () => void;
 }
 
 export default function FeatureDialog({
   isOpen,
   onClose,
-  productTitle,
-  productId,
-  onFeatureSuccess,
 }: FeatureDialogProps) {
-  const {
-    isSubmitting,
-    selectedOption,
-    setSelectedOption,
-    step,
-    setStep,
-    paymentComplete,
-    invoiceUrl,
-    userDetails,
-    freeRequestsCount,
-    handleUserDetailsChange,
-    handleNext,
-    handleDetailsNext,
-    handleDownloadInvoice,
-    getFeatureOptions
-  } = useFeatureRequest(productId, productTitle, onFeatureSuccess, onClose);
+  const [email, setEmail] = useState("");
+  const { toast } = useToast();
 
-  const featureOptions = getFeatureOptions();
+  const handleSubmit = () => {
+    // Email validation
+    if (!email || !/^\S+@\S+\.\S+$/.test(email)) {
+      toast({
+        title: "Invalid email",
+        description: "Please enter a valid email address",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Just show a success toast for now
+    toast({
+      title: "Thank you!",
+      description: "We'll notify you when the feature is launched.",
+      variant: "default",
+    });
+    
+    // Clear form and close dialog
+    setEmail("");
+    onClose();
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[500px]">
-        {paymentComplete ? (
-          <FeatureSuccess
-            invoiceUrl={invoiceUrl}
-            onDownloadInvoice={handleDownloadInvoice}
-          />
-        ) : step === 1 ? (
-          <>
-            <FeatureOptionsStep
-              selectedOption={selectedOption}
-              setSelectedOption={setSelectedOption}
-              featureOptions={featureOptions}
-              freeRequestsCount={freeRequestsCount}
+      <DialogContent className="sm:max-w-[400px]">
+        <DialogHeader>
+          <DialogTitle className="text-xl">Feature Coming Soon!</DialogTitle>
+          <DialogDescription>
+            Our featuring service is coming soon. Leave your email and we'll notify you when it launches.
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="space-y-4 py-4">
+          <div className="space-y-2">
+            <Label htmlFor="email">Email</Label>
+            <Input
+              id="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="your@email.com"
+              type="email"
             />
-            
-            <DialogFooter>
-              <Button type="button" variant="outline" onClick={onClose}>
-                Cancel
-              </Button>
-              <Button 
-                onClick={handleNext} 
-                disabled={!selectedOption}
-              >
-                Next
-              </Button>
-            </DialogFooter>
-          </>
-        ) : (
-          <>
-            <ContactDetailsStep
-              userDetails={userDetails}
-              onUserDetailsChange={handleUserDetailsChange}
-            />
-            
-            <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setStep(1)}>
-                Back
-              </Button>
-              <Button 
-                onClick={handleDetailsNext} 
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? 'Processing...' : 'Submit Request'}
-              </Button>
-            </DialogFooter>
-          </>
-        )}
+          </div>
+        </div>
+
+        <DialogFooter>
+          <Button type="button" variant="outline" onClick={onClose}>
+            Cancel
+          </Button>
+          <Button onClick={handleSubmit}>
+            Notify Me
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );

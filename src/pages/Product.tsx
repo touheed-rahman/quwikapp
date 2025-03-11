@@ -86,13 +86,6 @@ const ProductPage = () => {
 
   const isCurrentUserSeller = !!currentUserId && currentUserId === product?.user_id;
 
-  const handleFeatureSuccess = async () => {
-    toast({
-      title: "Listing Featured!",
-      description: "Your listing will now be shown in featured sections",
-    });
-  };
-
   if (isLoading) {
     return <ProductLoader />;
   }
@@ -100,9 +93,6 @@ const ProductPage = () => {
   if (isError || !product) {
     return <ProductNotFound />;
   }
-
-  // Extract just the area name from the location string
-  const displayLocation = product.location?.split(',')[0] || 'Location not specified';
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-primary/5">
@@ -171,11 +161,6 @@ const ProductPage = () => {
       <FeatureDialog
         isOpen={isFeatureDialogOpen}
         onClose={() => setIsFeatureDialogOpen(false)}
-        productTitle={product.title}
-        productId={product.id}
-        category={product.category || ''}
-        subcategory={product.subcategory || ''}
-        onFeatureSuccess={handleFeatureSuccess}
       />
       
       <MobileNavigation onChatOpen={() => setIsChatOpen(true)} />
