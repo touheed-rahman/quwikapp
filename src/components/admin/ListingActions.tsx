@@ -53,13 +53,13 @@ const ListingActions = ({ listingId, onStatusUpdate, onDelete }: ListingActionsP
         </AlertDialogTrigger>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-            <AlertDialogDescription>
+            <AlertDialogTitle className="text-primary">Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription className="text-primary/80">
               This action cannot be undone. This will permanently delete the listing and all associated data.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel className="text-primary">Cancel</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => onDelete(listingId)}
               className="bg-red-600 hover:bg-red-700 text-white font-medium"

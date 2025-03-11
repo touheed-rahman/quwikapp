@@ -25,7 +25,7 @@
     --input: 210 15% 85%;
     --ring: 210 30% 24%;
     --radius: 0.75rem;
-    --icon-color: 210 29% 29%;
+    --icon-color: 210 30% 24%;
   }
 }
 
@@ -34,7 +34,7 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground antialiased;
+    @apply bg-background text-primary antialiased;
   }
 
   /* Content spacing for fixed header */
@@ -44,15 +44,15 @@
 
   /* Enhanced text and headings */
   h1 {
-    @apply text-foreground font-bold tracking-tight;
+    @apply text-primary font-bold tracking-tight;
   }
   
   h2, h3 {
-    @apply text-foreground font-semibold tracking-tight;
+    @apply text-primary font-semibold tracking-tight;
   }
 
   p {
-    @apply text-foreground/90 leading-relaxed;
+    @apply text-primary/90 leading-relaxed;
   }
 
   /* Enhanced input styling */
@@ -73,49 +73,49 @@
   .category-item span, 
   .category-name,
   .category-label {
-    @apply text-foreground font-medium;
+    @apply text-primary font-medium;
   }
 
   /* Category icon labels should be visible */
   .category-label {
-    @apply text-foreground font-medium;
+    @apply text-primary font-medium;
   }
   
   /* Ensure SVG elements have consistent coloring */
   svg:not([class*="text-"]) {
-    @apply text-foreground;
+    @apply text-accent;
   }
 
-  /* Default icon styles - border should be primary color, icons should be black */
+  /* Default icon styles - border should be primary color, icons should be accent color */
   .icon-container {
     @apply border border-primary/30 rounded-md p-1;
   }
   
   .icon-container svg {
-    @apply text-foreground;
+    @apply text-accent;
   }
 
-  /* Section titles with icons should have black icons */
+  /* Section titles with icons should have accent icons */
   .section-title-with-icon {
     @apply flex items-center gap-2;
   }
   
   .section-title-with-icon svg {
-    @apply text-foreground bg-primary/10 p-1.5 rounded-full;
+    @apply text-accent bg-primary/10 p-1.5 rounded-full;
   }
 
   /* Featured and Recent sections title area */
   .section-title-area svg {
-    @apply text-foreground;
+    @apply text-accent;
   }
 
   /* Form fields and labels */
   .form-label {
-    @apply text-foreground font-medium;
+    @apply text-primary font-medium;
   }
 
   .form-input {
-    @apply text-foreground border-primary/30;
+    @apply text-primary border-primary/30;
   }
 
   /* Admin panel tabs */
@@ -124,7 +124,7 @@
   }
   
   .admin-tabs [data-state="inactive"] {
-    @apply text-foreground !important;
+    @apply text-primary !important;
   }
 
   /* Default for buttons, links, and interactive elements */
@@ -143,5 +143,10 @@
   .card {
     @apply shadow-sm hover:shadow-md transition-all duration-200 bg-card/95 backdrop-blur-sm
            border border-border/20;
+  }
+  
+  /* Product icons */
+  .product-icon {
+    @apply text-accent;
   }
 }
