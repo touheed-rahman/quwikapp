@@ -55,7 +55,6 @@ const ProductSpecsCard = ({
           )
         ) : (
           <div className="py-2 text-sm text-muted-foreground">
-            <p>Basic item in {category || 'good'} condition</p>
             {brand && <p className="mt-1">Brand: {brand}</p>}
           </div>
         )}
