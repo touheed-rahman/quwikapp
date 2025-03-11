@@ -4,6 +4,7 @@ import Header from "@/components/Header";
 import SellFormDetails from "./SellFormDetails";
 import { useLocation } from "@/contexts/LocationContext";
 import { motion } from "framer-motion";
+import { Pencil, ListChecks } from "lucide-react";
 
 interface SellStepTwoProps {
   title: string;
@@ -39,17 +40,26 @@ const SellStepTwo = memo(({
   const { selectedLocation } = useLocation();
 
   return (
-    <div className="transition-opacity duration-200">
+    <div className="transition-opacity duration-200 bg-gradient-to-b from-background to-primary/5 min-h-screen">
       <Header />
-      <div className="container max-w-2xl mx-auto px-4 pt-20 pb-24">
-        <motion.h1 
-          className="text-2xl font-bold mb-6 text-foreground flex items-center justify-center"
+      <div className="container max-w-2xl mx-auto px-4 pt-16 pb-24">
+        <motion.div 
+          className="text-center mb-8"
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
         >
-          Item Details
-        </motion.h1>
+          <div className="inline-flex items-center justify-center bg-primary/10 rounded-full p-2 mb-4">
+            <ListChecks className="h-6 w-6 text-primary" />
+          </div>
+          <h1 className="text-2xl font-bold text-foreground">
+            Tell Us About Your Item
+          </h1>
+          <p className="text-muted-foreground mt-2 max-w-md mx-auto">
+            Add details about your item to help buyers find it
+          </p>
+        </motion.div>
+        
         <SellFormDetails
           title={title}
           setTitle={setTitle}

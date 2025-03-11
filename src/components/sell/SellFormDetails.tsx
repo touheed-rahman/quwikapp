@@ -9,6 +9,7 @@ import { useLocation } from "@/contexts/LocationContext";
 import CategorySpecificFields from "./CategorySpecificFields";
 import { Card } from "@/components/ui/card";
 import { motion } from "framer-motion";
+import { Check } from "lucide-react";
 
 interface SellFormDetailsProps {
   title: string;
@@ -76,45 +77,56 @@ const SellFormDetails = ({
       initial="hidden"
       animate="show"
     >
-      <Card className="bg-white rounded-lg shadow-md p-6 space-y-6 border-primary/10">
-        <motion.div variants={item}>
-          <TitleInput value={title} onChange={setTitle} />
-        </motion.div>
+      <Card className="bg-white rounded-lg shadow-md border-primary/10 overflow-hidden">
+        <div className="p-4 bg-gradient-to-r from-primary/10 to-primary/5 border-b border-primary/10">
+          <h3 className="font-medium text-lg flex items-center text-primary/90">
+            <Check className="w-5 h-5 mr-2 text-primary" />
+            Item Details
+          </h3>
+        </div>
         
-        <motion.div variants={item}>
-          <DescriptionInput value={description} onChange={setDescription} />
-        </motion.div>
-        
-        <motion.div variants={item}>
-          <ConditionSelect value={condition} onChange={setCondition} />
-        </motion.div>
-        
-        <motion.div variants={item}>
-          <PriceInput value={price} onChange={setPrice} />
-        </motion.div>
-        
-        {/* Only show category specific fields if we have both category and subcategory */}
-        {category && subcategory && (
-          <motion.div variants={item}>
-            <CategorySpecificFields 
-              category={category} 
-              subcategory={subcategory}
-              updateFormData={updateFormData}
-            />
+        <div className="p-5 space-y-6">
+          <motion.div variants={item} className="transition-all duration-300 hover:translate-y-[-2px]">
+            <TitleInput value={title} onChange={setTitle} />
           </motion.div>
-        )}
-        
-        <motion.div variants={item}>
-          <div>
-            <label className="text-sm font-medium mb-1.5 block">
-              Location *
-            </label>
-            <LocationSelector 
-              value={selectedLocation} 
-              onChange={setSelectedLocation}
-            />
+          
+          <motion.div variants={item} className="transition-all duration-300 hover:translate-y-[-2px]">
+            <DescriptionInput value={description} onChange={setDescription} />
+          </motion.div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <motion.div variants={item} className="transition-all duration-300 hover:translate-y-[-2px]">
+              <ConditionSelect value={condition} onChange={setCondition} />
+            </motion.div>
+            
+            <motion.div variants={item} className="transition-all duration-300 hover:translate-y-[-2px]">
+              <PriceInput value={price} onChange={setPrice} />
+            </motion.div>
           </div>
-        </motion.div>
+          
+          {/* Only show category specific fields if we have both category and subcategory */}
+          {category && subcategory && (
+            <motion.div variants={item} className="transition-all duration-300 hover:translate-y-[-2px]">
+              <CategorySpecificFields 
+                category={category} 
+                subcategory={subcategory}
+                updateFormData={updateFormData}
+              />
+            </motion.div>
+          )}
+          
+          <motion.div variants={item} className="transition-all duration-300 hover:translate-y-[-2px]">
+            <div>
+              <label className="text-sm font-medium mb-1.5 block">
+                Location *
+              </label>
+              <LocationSelector 
+                value={selectedLocation} 
+                onChange={setSelectedLocation}
+              />
+            </div>
+          </motion.div>
+        </div>
       </Card>
       
       <motion.div variants={item}>
