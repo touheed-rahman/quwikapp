@@ -27,6 +27,58 @@ interface ProductSchemaProps {
   ratingValue?: number;
 }
 
+interface ProductSchemaType {
+  "@context": string;
+  "@type": string;
+  name: string;
+  description: string;
+  image: string[];
+  sku: string;
+  mpn: string;
+  brand?: {
+    "@type": string;
+    name: string;
+  };
+  offers: {
+    "@type": string;
+    url: string;
+    priceCurrency: string;
+    price: number;
+    priceValidUntil: string;
+    itemCondition: string;
+    availability: string;
+    seller?: {
+      "@type": string;
+      name: string;
+    };
+  };
+  aggregateRating: {
+    "@type": string;
+    ratingValue: string;
+    reviewCount: string;
+  };
+  review: {
+    "@type": string;
+    reviewRating: {
+      "@type": string;
+      ratingValue: string;
+      bestRating: string;
+    };
+    author: {
+      "@type": string;
+      name: string;
+    };
+  };
+  category?: string;
+  size?: {
+    "@type": string;
+    weight?: string;
+    width?: string;
+    height?: string;
+    depth?: string;
+  };
+}
+
 const ProductSchema = ({
   id,
   title,
@@ -71,7 +123,7 @@ const ProductSchema = ({
   // Create a product SKU if not provided
   const productSku = sku || `QUWIK-${id.substring(0, 8)}`;
 
-  const productSchema = {
+  const productSchema: ProductSchemaType = {
     "@context": "https://schema.org",
     "@type": "Product",
     "name": title,
@@ -118,16 +170,14 @@ const ProductSchema = ({
 
   // Add dimensions and weight if provided
   if (weight || width || height || depth) {
-    const productSize = {
+    productSchema.size = {
       "@type": "QuantitativeValue"
     };
     
-    if (weight) productSize.weight = weight;
-    if (width) productSize.width = width;
-    if (height) productSize.height = height;
-    if (depth) productSize.depth = depth;
-    
-    productSchema.size = productSize;
+    if (weight) productSchema.size.weight = weight;
+    if (width) productSchema.size.width = width;
+    if (height) productSchema.size.height = height;
+    if (depth) productSchema.size.depth = depth;
   }
 
   // Remove undefined values from schema
