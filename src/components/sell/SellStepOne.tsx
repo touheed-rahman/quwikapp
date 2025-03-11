@@ -1,8 +1,8 @@
 
 import { useState, useCallback } from "react";
-import CategorySelector from "./CategorySelector";
-import SubcategorySelector from "./SubcategorySelector";
-import ImageUpload from "./ImageUpload";
+import CategorySelector from "@/components/sell/CategorySelector";
+import SubcategorySelector from "@/components/sell/SubcategorySelector";
+import ImageUpload from "@/components/sell/ImageUpload";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { motion } from "framer-motion";

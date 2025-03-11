@@ -84,13 +84,17 @@ const ImageGallery = ({ images, currentImageIndex, setCurrentImageIndex }: Image
 
   const goToNextImage = () => {
     if (images.length > 1) {
-      setCurrentImageIndex((prevIndex) => (prevIndex + 1) % images.length);
+      // Fixed: Calculate new index directly and pass the number value
+      const newIndex = (currentImageIndex + 1) % images.length;
+      setCurrentImageIndex(newIndex);
     }
   };
 
   const goToPrevImage = () => {
     if (images.length > 1) {
-      setCurrentImageIndex((prevIndex) => (prevIndex - 1 + images.length) % images.length);
+      // Fixed: Calculate new index directly and pass the number value
+      const newIndex = (currentImageIndex - 1 + images.length) % images.length;
+      setCurrentImageIndex(newIndex);
     }
   };
 
