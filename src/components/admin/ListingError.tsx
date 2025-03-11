@@ -7,7 +7,7 @@ interface ListingErrorProps {
 
 const ListingError = ({ message = "Error loading listings. Please try again later." }: ListingErrorProps) => {
   return (
-    <div className="text-red-500 p-4">
+    <div className="text-destructive bg-destructive/10 p-6 rounded-lg border border-destructive/20 my-4">
       {message}
     </div>
   );
