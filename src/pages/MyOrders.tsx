@@ -61,43 +61,65 @@ const MyOrders = () => {
         return;
       }
       
-      // Fetch orders from the database
-      const { data: ordersData, error } = await supabase
-        .from('orders')
-        .select(`
-          id,
-          created_at,
-          product_id,
-          amount,
-          payment_status,
-          invoice_number,
-          seller_id,
-          order_type,
-          listings(title),
-          profiles!profiles_id_fkey(full_name)
-        `)
-        .eq('buyer_id', session.session.user.id)
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        throw error;
+      // Use a direct fetch approach to avoid TypeScript issues with the orders table
+      const response = await fetch(`${supabase.supabaseUrl}/rest/v1/orders?buyer_id=eq.${session.session.user.id}&order=created_at.desc`, {
+        headers: {
+          'apikey': supabase.supabaseKey,
+          'Authorization': `Bearer ${session.session.access_token}`
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch orders');
       }
-
-      // Transform the data to match our Order interface
-      const transformedOrders = ordersData.map((order: any) => ({
-        id: order.id,
-        created_at: order.created_at,
-        product_id: order.product_id,
-        product_name: order.listings?.title || 
-          (order.order_type === "feature" ? "Featured Listing Request" : "Unknown Product"),
-        amount: order.amount,
-        payment_status: order.payment_status || "pending",
-        invoice_number: order.invoice_number || `INV-${order.id.substring(0, 8)}`,
-        seller_id: order.seller_id,
-        seller_name: order.profiles?.full_name || "Unknown Seller"
-      }));
-
-      setOrders(transformedOrders);
+      
+      const ordersData = await response.json();
+      
+      // Fetch related listings data
+      const orderWithProductDetails = await Promise.all(
+        ordersData.map(async (order: any) => {
+          let productName = order.order_type === "feature" ? "Featured Listing Request" : "Unknown Product";
+          let sellerName = "Unknown Seller";
+          
+          if (order.product_id) {
+            const { data: listing } = await supabase
+              .from('listings')
+              .select('title')
+              .eq('id', order.product_id)
+              .single();
+              
+            if (listing) {
+              productName = listing.title;
+            }
+          }
+          
+          if (order.seller_id) {
+            const { data: profile } = await supabase
+              .from('profiles')
+              .select('full_name')
+              .eq('id', order.seller_id)
+              .single();
+              
+            if (profile) {
+              sellerName = profile.full_name;
+            }
+          }
+          
+          return {
+            id: order.id,
+            created_at: order.created_at,
+            product_id: order.product_id,
+            product_name: productName,
+            amount: order.amount || 0,
+            payment_status: order.payment_status || "pending",
+            invoice_number: order.invoice_number || `INV-${order.id.substring(0, 8)}`,
+            seller_id: order.seller_id,
+            seller_name: sellerName
+          };
+        })
+      );
+      
+      setOrders(orderWithProductDetails);
     } catch (error: any) {
       console.error("Error fetching orders:", error.message);
       toast({

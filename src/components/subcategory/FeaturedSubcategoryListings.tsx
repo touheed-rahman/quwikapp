@@ -28,7 +28,7 @@ const FeaturedSubcategoryListings = ({ category, subcategory }: FeaturedSubcateg
   const [randomFeaturedListings, setRandomFeaturedListings] = useState<Listing[]>([]);
   
   // Query for featured products in this subcategory (get all, then randomize)
-  const { data: featuredListings = [] } = useQuery({
+  const { data: featuredListings = [], isLoading } = useQuery({
     queryKey: ['featured-subcategory-listings', category, subcategory],
     queryFn: async () => {
       try {
@@ -79,6 +79,7 @@ const FeaturedSubcategoryListings = ({ category, subcategory }: FeaturedSubcateg
     return "/placeholder.svg";
   };
 
+  if (isLoading) return null;
   if (featuredListings.length === 0) return null;
 
   return (

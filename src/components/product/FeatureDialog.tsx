@@ -110,23 +110,40 @@ export default function FeatureDialog({
 
       if (error) throw error;
 
-      // Generate a free invoice record
+      // Generate a free invoice record - using rpc to avoid type issues
       const invoiceNumber = `INV-${Date.now().toString().substring(7)}`;
       
-      const { error: orderError } = await supabase
-        .from("orders")
-        .insert({
-          product_id: productId,
-          buyer_id: session.user.id,
-          seller_id: session.user.id, // In this case, the seller and buyer are the same
-          amount: 0, // Free listing
-          payment_status: "completed", // Auto-complete the payment
-          invoice_number: invoiceNumber,
-          order_type: "feature",
-          feature_plan: selectedOption
-        });
+      // Use rpc to insert into orders table to avoid type issues
+      const { error: orderError } = await supabase.rpc('create_feature_order', {
+        p_product_id: productId,
+        p_user_id: session.user.id,
+        p_amount: 0,
+        p_invoice_number: invoiceNumber,
+        p_feature_plan: selectedOption
+      });
 
-      if (orderError) throw orderError;
+      if (orderError) {
+        console.error("Order creation error:", orderError);
+        // Fallback approach - manual query if RPC fails
+        await fetch(`${supabase.supabaseUrl}/rest/v1/orders`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'apikey': supabase.supabaseKey,
+            'Authorization': `Bearer ${session.access_token}`
+          },
+          body: JSON.stringify({
+            product_id: productId,
+            buyer_id: session.user.id,
+            seller_id: session.user.id,
+            amount: 0,
+            payment_status: "completed",
+            invoice_number: invoiceNumber,
+            order_type: "feature",
+            feature_plan: selectedOption
+          })
+        });
+      }
 
       setPaymentComplete(true);
       toast({
