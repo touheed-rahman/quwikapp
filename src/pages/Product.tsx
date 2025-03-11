@@ -94,7 +94,7 @@ const ProductPage = () => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-primary/5">
       <Header />
-      <main className="container mx-auto px-2 sm:px-4 pt-16 pb-20 overflow-x-hidden max-w-full">
+      <main className="container mx-auto px-2 sm:px-4 pt-20 pb-20 overflow-x-hidden max-w-full">
         <motion.div 
           className="grid lg:grid-cols-2 gap-4 lg:gap-8"
           initial={{ opacity: 0 }}

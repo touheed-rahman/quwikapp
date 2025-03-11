@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { ChevronLeft, ChevronRight, Share } from "lucide-react";
 import { motion } from "framer-motion";
 import { useToast } from "@/components/ui/use-toast";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface ImageGalleryProps {
   images: string[];
@@ -16,6 +17,7 @@ const ImageGallery = ({ images, currentImageIndex, setCurrentImageIndex }: Image
   const [thumbnails, setThumbnails] = useState<string[]>([]);
   const [mainImage, setMainImage] = useState<string>("");
   const { toast } = useToast();
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     if (images && images.length > 0) {
@@ -58,6 +60,28 @@ const ImageGallery = ({ images, currentImageIndex, setCurrentImageIndex }: Image
     }
   };
 
+  // Swipe handlers for mobile
+  let touchStartX = 0;
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX = e.touches[0].clientX;
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    const touchEndX = e.changedTouches[0].clientX;
+    const diffX = touchEndX - touchStartX;
+    
+    // If swipe distance is significant
+    if (Math.abs(diffX) > 50) {
+      if (diffX > 0) {
+        // Swipe right - go to previous image
+        goToPrevImage();
+      } else {
+        // Swipe left - go to next image
+        goToNextImage();
+      }
+    }
+  };
+
   const goToNextImage = () => {
     if (images.length > 1) {
       setCurrentImageIndex((prevIndex) => (prevIndex + 1) % images.length);
@@ -79,10 +103,14 @@ const ImageGallery = ({ images, currentImageIndex, setCurrentImageIndex }: Image
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 mt-4">
       <div className="relative rounded-lg overflow-hidden bg-white">
         {/* Main image */}
-        <div className="aspect-square w-full relative">
+        <div 
+          className="aspect-square w-full relative"
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
+        >
           <img
             src={mainImage || "/placeholder.svg"}
             alt="Product"
@@ -102,7 +130,7 @@ const ImageGallery = ({ images, currentImageIndex, setCurrentImageIndex }: Image
             <Share className="h-5 w-5" />
           </Button>
 
-          {/* Navigation arrows for desktop - only show when multiple images */}
+          {/* Navigation arrows - always show on desktop, hidden on mobile */}
           {images.length > 1 && (
             <>
               <Button
@@ -131,7 +159,7 @@ const ImageGallery = ({ images, currentImageIndex, setCurrentImageIndex }: Image
               {images.map((_, index) => (
                 <button
                   key={index}
-                  className={`w-2 h-2 rounded-full ${
+                  className={`w-2.5 h-2.5 rounded-full ${
                     currentImageIndex === index ? "bg-primary" : "bg-gray-300"
                   }`}
                   onClick={() => setCurrentImageIndex(index)}
@@ -142,8 +170,8 @@ const ImageGallery = ({ images, currentImageIndex, setCurrentImageIndex }: Image
         </div>
       </div>
 
-      {/* Thumbnails - only show when multiple images */}
-      {images.length > 1 && (
+      {/* Thumbnails - only show when multiple images and on desktop */}
+      {!isMobile && images.length > 1 && (
         <div className="flex overflow-x-auto gap-2 pb-2 hide-scrollbar">
           {thumbnails.map((thumb, index) => (
             <motion.button

@@ -11,7 +11,7 @@ import {
   Gauge, 
   BarChart3,
   Activity,
-  ArrowRight
+  Menu,
 } from "lucide-react";
 import DashboardMetrics from "@/components/admin/DashboardMetrics";
 import ListingManagement from "@/components/admin/ListingManagement";
@@ -20,32 +20,15 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Separator } from "@/components/ui/separator";
-import { motion, AnimatePresence } from "framer-motion";
 import { Card } from "@/components/ui/card";
+import { motion, AnimatePresence } from "framer-motion";
 
 const AdminPanel = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('dashboard');
-  const [sidebarOpen, setSidebarOpen] = useState(true);
-  
-  useEffect(() => {
-    // Handle window resize for mobile responsiveness
-    const handleResize = () => {
-      if (window.innerWidth < 768) {
-        setSidebarOpen(false);
-      } else {
-        setSidebarOpen(true);
-      }
-    };
-    
-    window.addEventListener('resize', handleResize);
-    handleResize(); // Initial check
-    
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   
   // Check if there's a filter passed from dashboard metrics
   useEffect(() => {
@@ -117,16 +100,58 @@ const AdminPanel = () => {
               variant="ghost" 
               size="icon" 
               className="md:hidden"
-              onClick={() => setSidebarOpen(!sidebarOpen)}
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             >
-              <LayoutGrid className="h-5 w-5" />
+              <Menu className="h-5 w-5" />
             </Button>
             <div className="flex items-center gap-2">
               <Shield className="w-6 h-6 text-primary" />
-              <h1 className="text-xl font-bold hidden md:block">Quwik Admin</h1>
+              <h1 className="text-xl font-bold">Quwik Admin</h1>
             </div>
           </div>
+          
+          <div className="hidden md:flex items-center space-x-1 ml-8">
+            <TabsList className="bg-secondary/40 p-1 rounded-lg">
+              <TabsTrigger 
+                value="dashboard" 
+                onClick={() => setActiveTab('dashboard')}
+                className={`${activeTab === 'dashboard' ? 'bg-primary text-white' : ''} px-4`}
+              >
+                <Gauge className="w-4 h-4 mr-2" />
+                Dashboard
+              </TabsTrigger>
+              <TabsTrigger 
+                value="listings" 
+                onClick={() => setActiveTab('listings')}
+                className={`${activeTab === 'listings' ? 'bg-primary text-white' : ''} px-4`}
+              >
+                <LayoutGrid className="w-4 h-4 mr-2" />
+                Listings
+              </TabsTrigger>
+              <TabsTrigger 
+                value="users" 
+                onClick={() => setActiveTab('users')}
+                className={`${activeTab === 'users' ? 'bg-primary text-white' : ''} px-4`}
+              >
+                <Users className="w-4 h-4 mr-2" />
+                Users
+              </TabsTrigger>
+              <TabsTrigger 
+                value="analytics" 
+                onClick={() => setActiveTab('analytics')}
+                className={`${activeTab === 'analytics' ? 'bg-primary text-white' : ''} px-4`}
+              >
+                <BarChart3 className="w-4 h-4 mr-2" />
+                Analytics
+              </TabsTrigger>
+            </TabsList>
+          </div>
+          
           <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1 bg-green-50 text-green-600 px-2 py-1 rounded-full text-xs">
+              <Activity className="h-3 w-3" />
+              <span>Online</span>
+            </div>
             <Button 
               variant="ghost" 
               size="sm" 
@@ -140,139 +165,149 @@ const AdminPanel = () => {
         </div>
       </div>
       
-      <div className="flex pt-16 flex-grow">
-        {/* Sidebar */}
-        <AnimatePresence>
-          {sidebarOpen && (
-            <motion.div 
-              className="w-64 bg-white shadow-md h-[calc(100vh-4rem)] fixed left-0 top-16 z-40 overflow-y-auto"
-              initial={{ x: -280 }}
-              animate={{ x: 0 }}
-              exit={{ x: -280 }}
-              transition={{ duration: 0.3, ease: "easeOut" }}
-            >
-              <div className="p-4">
-                <div className="space-y-1 mt-2">
-                  <Button 
-                    variant={activeTab === 'dashboard' ? "default" : "ghost"} 
-                    className="w-full justify-start text-base font-medium"
-                    onClick={() => setActiveTab('dashboard')}
-                  >
-                    <Gauge className="w-5 h-5 mr-2" />
-                    Dashboard
-                  </Button>
-                  
-                  <Button 
-                    variant={activeTab === 'listings' ? "default" : "ghost"} 
-                    className="w-full justify-start text-base font-medium"
-                    onClick={() => setActiveTab('listings')}
-                  >
-                    <LayoutGrid className="w-5 h-5 mr-2" />
-                    Listings
-                  </Button>
-                  
-                  <Button 
-                    variant={activeTab === 'users' ? "default" : "ghost"} 
-                    className="w-full justify-start text-base font-medium"
-                    onClick={() => setActiveTab('users')}
-                  >
-                    <Users className="w-5 h-5 mr-2" />
-                    Users
-                  </Button>
-                  
-                  <Button 
-                    variant={activeTab === 'analytics' ? "default" : "ghost"} 
-                    className="w-full justify-start text-base font-medium"
-                    onClick={() => setActiveTab('analytics')}
-                  >
-                    <BarChart3 className="w-5 h-5 mr-2" />
-                    Analytics
-                  </Button>
-                  
-                  <Button 
-                    variant={activeTab === 'notifications' ? "default" : "ghost"} 
-                    className="w-full justify-start text-base font-medium"
-                    onClick={() => setActiveTab('notifications')}
-                  >
-                    <Bell className="w-5 h-5 mr-2" />
-                    Notifications
-                  </Button>
-                  
-                  <Button 
-                    variant={activeTab === 'settings' ? "default" : "ghost"} 
-                    className="w-full justify-start text-base font-medium"
-                    onClick={() => setActiveTab('settings')}
-                  >
-                    <Settings className="w-5 h-5 mr-2" />
-                    Settings
-                  </Button>
-                </div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-        
-        {/* Main content */}
-        <motion.div 
-          className={`flex-1 p-4 md:p-6 transition-all duration-300 ${sidebarOpen ? 'md:ml-64' : ''}`}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.3 }}
-        >
-          <Card className="bg-white p-4 md:p-6 rounded-lg shadow-sm mb-6 flex items-center justify-between">
-            <h1 className="text-xl md:text-2xl font-bold">
-              {activeTab === 'dashboard' && 'Dashboard Overview'}
-              {activeTab === 'listings' && 'Manage Listings'}
-              {activeTab === 'users' && 'User Management'}
-              {activeTab === 'analytics' && 'Analytics & Reports'}
-              {activeTab === 'notifications' && 'Notification Center'}
-              {activeTab === 'settings' && 'Admin Settings'}
-            </h1>
-            <div className="flex items-center gap-2 bg-green-50 text-green-600 px-3 py-1.5 rounded-full text-sm">
-              <Activity className="h-4 w-4" />
-              <span className="hidden md:inline">System Online</span>
+      {/* Mobile menu dropdown */}
+      <AnimatePresence>
+        {mobileMenuOpen && (
+          <motion.div 
+            className="fixed top-16 left-0 right-0 bg-white shadow-lg z-40 md:hidden"
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.2 }}
+          >
+            <div className="p-2 space-y-1">
+              <Button 
+                variant={activeTab === 'dashboard' ? "default" : "ghost"} 
+                className="w-full justify-start text-base font-medium"
+                onClick={() => {
+                  setActiveTab('dashboard');
+                  setMobileMenuOpen(false);
+                }}
+              >
+                <Gauge className="w-5 h-5 mr-2" />
+                Dashboard
+              </Button>
+              
+              <Button 
+                variant={activeTab === 'listings' ? "default" : "ghost"} 
+                className="w-full justify-start text-base font-medium"
+                onClick={() => {
+                  setActiveTab('listings');
+                  setMobileMenuOpen(false);
+                }}
+              >
+                <LayoutGrid className="w-5 h-5 mr-2" />
+                Listings
+              </Button>
+              
+              <Button 
+                variant={activeTab === 'users' ? "default" : "ghost"} 
+                className="w-full justify-start text-base font-medium"
+                onClick={() => {
+                  setActiveTab('users');
+                  setMobileMenuOpen(false);
+                }}
+              >
+                <Users className="w-5 h-5 mr-2" />
+                Users
+              </Button>
+              
+              <Button 
+                variant={activeTab === 'analytics' ? "default" : "ghost"} 
+                className="w-full justify-start text-base font-medium"
+                onClick={() => {
+                  setActiveTab('analytics');
+                  setMobileMenuOpen(false);
+                }}
+              >
+                <BarChart3 className="w-5 h-5 mr-2" />
+                Analytics
+              </Button>
+              
+              <Button 
+                variant={activeTab === 'notifications' ? "default" : "ghost"} 
+                className="w-full justify-start text-base font-medium"
+                onClick={() => {
+                  setActiveTab('notifications');
+                  setMobileMenuOpen(false);
+                }}
+              >
+                <Bell className="w-5 h-5 mr-2" />
+                Notifications
+              </Button>
+              
+              <Button 
+                variant={activeTab === 'settings' ? "default" : "ghost"} 
+                className="w-full justify-start text-base font-medium"
+                onClick={() => {
+                  setActiveTab('settings');
+                  setMobileMenuOpen(false);
+                }}
+              >
+                <Settings className="w-5 h-5 mr-2" />
+                Settings
+              </Button>
             </div>
-          </Card>
+          </motion.div>
+        )}
+      </AnimatePresence>
+      
+      {/* Main content */}
+      <motion.div 
+        className="flex-1 p-4 md:p-6 transition-all duration-300 pt-20"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.3 }}
+      >
+        <Card className="bg-white p-4 md:p-6 rounded-lg shadow-sm mb-6 flex items-center justify-between">
+          <h1 className="text-xl md:text-2xl font-bold">
+            {activeTab === 'dashboard' && 'Dashboard Overview'}
+            {activeTab === 'listings' && 'Manage Listings'}
+            {activeTab === 'users' && 'User Management'}
+            {activeTab === 'analytics' && 'Analytics & Reports'}
+            {activeTab === 'notifications' && 'Notification Center'}
+            {activeTab === 'settings' && 'Admin Settings'}
+          </h1>
+        </Card>
 
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={activeTab}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.2 }}
-              className="space-y-6"
-            >
-              {activeTab === 'dashboard' && <DashboardMetrics />}
-              
-              {activeTab === 'listings' && <ListingManagement />}
-              
-              {activeTab === 'users' && <UserManagement />}
-              
-              {activeTab === 'analytics' && (
-                <div className="bg-white p-6 rounded-lg shadow">
-                  <h2 className="text-xl font-semibold mb-4">Analytics Dashboard</h2>
-                  <p className="text-muted-foreground">Detailed analytics coming soon...</p>
-                </div>
-              )}
-              
-              {activeTab === 'notifications' && (
-                <div className="bg-white p-6 rounded-lg shadow">
-                  <h2 className="text-xl font-semibold mb-4">System Notifications</h2>
-                  <p className="text-muted-foreground">Notification management coming soon...</p>
-                </div>
-              )}
-              
-              {activeTab === 'settings' && (
-                <div className="bg-white p-6 rounded-lg shadow">
-                  <h2 className="text-xl font-semibold mb-4">Admin Settings</h2>
-                  <p className="text-muted-foreground">Settings panel coming soon...</p>
-                </div>
-              )}
-            </motion.div>
-          </AnimatePresence>
-        </motion.div>
-      </div>
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={activeTab}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.2 }}
+            className="space-y-6"
+          >
+            {activeTab === 'dashboard' && <DashboardMetrics />}
+            
+            {activeTab === 'listings' && <ListingManagement />}
+            
+            {activeTab === 'users' && <UserManagement />}
+            
+            {activeTab === 'analytics' && (
+              <div className="bg-white p-6 rounded-lg shadow">
+                <h2 className="text-xl font-semibold mb-4">Analytics Dashboard</h2>
+                <p className="text-muted-foreground">Detailed analytics coming soon...</p>
+              </div>
+            )}
+            
+            {activeTab === 'notifications' && (
+              <div className="bg-white p-6 rounded-lg shadow">
+                <h2 className="text-xl font-semibold mb-4">System Notifications</h2>
+                <p className="text-muted-foreground">Notification management coming soon...</p>
+              </div>
+            )}
+            
+            {activeTab === 'settings' && (
+              <div className="bg-white p-6 rounded-lg shadow">
+                <h2 className="text-xl font-semibold mb-4">Admin Settings</h2>
+                <p className="text-muted-foreground">Settings panel coming soon...</p>
+              </div>
+            )}
+          </motion.div>
+        </AnimatePresence>
+      </motion.div>
     </div>
   );
 };
