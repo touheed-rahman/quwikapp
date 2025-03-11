@@ -66,11 +66,17 @@ const ConversationList = ({
 
   const handleDeleteConfirmed = async () => {
     if (selectedConversation) {
+      // Remove the deleted conversation from the local state immediately
+      setLocalConversations(prev => prev.filter(conv => conv.id !== selectedConversation.id));
+      
+      // Then perform the actual delete operation
       const success = await onDelete(selectedConversation.id);
-      if (success) {
-        // Remove the deleted conversation from the local state
-        setLocalConversations(prev => prev.filter(conv => conv.id !== selectedConversation.id));
+      
+      if (!success) {
+        // If the delete fails, restore the conversation in the local state
+        setLocalConversations(prev => [...prev, selectedConversation]);
       }
+      
       setDeleteDialogOpen(false);
       setSelectedConversation(null);
     }

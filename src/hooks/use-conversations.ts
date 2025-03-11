@@ -87,7 +87,6 @@ export function useConversations(
             filter: `buyer_id=eq.${userId}`,
           },
           (payload) => {
-            // If the conversation was deleted, remove it from state
             if (payload.new && (payload.new as any).deleted) {
               setConversations(prev => prev.filter(conv => conv.id !== (payload.new as any).id));
             } else {
@@ -104,7 +103,6 @@ export function useConversations(
             filter: `seller_id=eq.${userId}`,
           },
           (payload) => {
-            // If the conversation was deleted, remove it from state
             if (payload.new && (payload.new as any).deleted) {
               setConversations(prev => prev.filter(conv => conv.id !== (payload.new as any).id));
             } else {
