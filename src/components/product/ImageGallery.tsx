@@ -19,13 +19,23 @@ const ImageGallery = ({ images, currentImageIndex, setCurrentImageIndex }: Image
 
   useEffect(() => {
     if (images && images.length > 0) {
-      const mainUrl = supabase.storage.from('listings').getPublicUrl(images[currentImageIndex]).data.publicUrl;
-      setMainImage(mainUrl);
+      try {
+        const mainUrl = supabase.storage.from('listings').getPublicUrl(images[currentImageIndex]).data.publicUrl;
+        setMainImage(mainUrl);
 
-      const thumbUrls = images.map(img => 
-        supabase.storage.from('listings').getPublicUrl(img).data.publicUrl
-      );
-      setThumbnails(thumbUrls);
+        const thumbUrls = images.map(img => {
+          try {
+            return supabase.storage.from('listings').getPublicUrl(img).data.publicUrl;
+          } catch (error) {
+            console.error('Error getting public URL:', error);
+            return "/placeholder.svg";
+          }
+        });
+        setThumbnails(thumbUrls);
+      } catch (error) {
+        console.error('Error processing images:', error);
+        setMainImage("/placeholder.svg");
+      }
     }
   }, [images, currentImageIndex]);
 
@@ -60,7 +70,6 @@ const ImageGallery = ({ images, currentImageIndex, setCurrentImageIndex }: Image
 
   const goToNextImage = () => {
     if (images.length > 1) {
-      // Fixed: Don't use a function here, just calculate the next index
       const nextIndex = (currentImageIndex + 1) % images.length;
       setCurrentImageIndex(nextIndex);
     }
@@ -68,7 +77,6 @@ const ImageGallery = ({ images, currentImageIndex, setCurrentImageIndex }: Image
 
   const goToPrevImage = () => {
     if (images.length > 1) {
-      // Fixed: Don't use a function here, just calculate the previous index
       const prevIndex = (currentImageIndex - 1 + images.length) % images.length;
       setCurrentImageIndex(prevIndex);
     }
@@ -106,14 +114,14 @@ const ImageGallery = ({ images, currentImageIndex, setCurrentImageIndex }: Image
             <Share className="h-5 w-5" />
           </Button>
 
-          {/* Navigation arrows for desktop - only show when multiple images */}
+          {/* Navigation arrows - show on both mobile and desktop */}
           {images.length > 1 && (
             <>
               <Button
                 onClick={goToPrevImage}
                 size="icon"
                 variant="secondary"
-                className="absolute top-1/2 left-2 z-10 -translate-y-1/2 bg-white/80 backdrop-blur-sm rounded-full shadow-md hidden md:flex hover:text-white"
+                className="absolute top-1/2 left-2 z-10 -translate-y-1/2 bg-white/80 backdrop-blur-sm rounded-full shadow-md flex items-center justify-center hover:bg-white"
               >
                 <ChevronLeft className="h-5 w-5" />
               </Button>
@@ -122,7 +130,7 @@ const ImageGallery = ({ images, currentImageIndex, setCurrentImageIndex }: Image
                 onClick={goToNextImage}
                 size="icon"
                 variant="secondary"
-                className="absolute top-1/2 right-2 z-10 -translate-y-1/2 bg-white/80 backdrop-blur-sm rounded-full shadow-md hidden md:flex hover:text-white"
+                className="absolute top-1/2 right-2 z-10 -translate-y-1/2 bg-white/80 backdrop-blur-sm rounded-full shadow-md flex items-center justify-center hover:bg-white"
               >
                 <ChevronRight className="h-5 w-5" />
               </Button>
@@ -148,7 +156,7 @@ const ImageGallery = ({ images, currentImageIndex, setCurrentImageIndex }: Image
 
       {/* Thumbnails - only show on desktop when multiple images */}
       {images.length > 1 && (
-        <div className="hidden md:flex overflow-x-auto gap-2 pb-2 hide-scrollbar">
+        <div className="hidden md:flex overflow-x-auto gap-2 pb-2 no-scrollbar justify-center">
           {thumbnails.map((thumb, index) => (
             <motion.button
               key={index}
@@ -163,7 +171,7 @@ const ImageGallery = ({ images, currentImageIndex, setCurrentImageIndex }: Image
             >
               <div className="w-20 h-20">
                 <img
-                  src={thumb}
+                  src={thumb || "/placeholder.svg"}
                   alt={`Thumbnail ${index + 1}`}
                   className="w-full h-full object-cover"
                   onError={(e) => {

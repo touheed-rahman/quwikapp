@@ -60,14 +60,28 @@
            focus-visible:ring-offset-2 transition-all duration-200 shadow-sm;
   }
 
+  /* Fix hover text colors - primary rule */
+  button, 
+  a, 
+  [role="button"] {
+    @apply transition-colors duration-200;
+  }
+  
+  /* Text becomes white on hover only when the element has a primary background */
+  .bg-primary:hover,
+  .hover\:bg-primary:hover,
+  button[class*="bg-primary"]:hover, 
+  a[class*="bg-primary"]:hover,
+  [role="button"][class*="bg-primary"]:hover,
+  button:hover:not([class*="hover\:bg-white"], [class*="hover\:bg-background"], [class*="hover\:bg-card"], [class*="hover\:bg-muted"]),
+  .active\:bg-primary.active,
+  button.active[class*="active\:bg-primary"] {
+    @apply text-white;
+  }
+
   /* Enhanced button hover effects */
   button {
     @apply hover:shadow-md active:scale-[0.98] transition-all duration-200;
-  }
-
-  /* Add hover text effect for all interactive elements */
-  button:hover, a:hover, [role="button"]:hover {
-    @apply text-white; /* Text becomes white on hover */
   }
 
   /* Card enhancements */
@@ -156,12 +170,6 @@
          transition-colors duration-200;
 }
 
-/* Improved button states */
-button, 
-.button {
-  @apply hover:text-white transition-colors duration-200;
-}
-
 /* Consistent page spacing */
 .page-content {
   @apply pt-24 pb-16;
@@ -170,4 +178,9 @@ button,
 /* Fixed height for thumbnails to prevent layout shifts */
 .product-thumbnail {
   @apply w-20 h-20 object-cover;
+}
+
+/* Reduced form spacing */
+.sell-form-reduced-spacing {
+  @apply space-y-4;
 }

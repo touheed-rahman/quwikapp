@@ -9,11 +9,9 @@ interface TitleInputProps {
 }
 
 const TitleInput = ({ value, onChange }: TitleInputProps) => {
-  const maxLength = 100;
-  
   return (
     <motion.div 
-      className="space-y-2.5"
+      className="space-y-2"
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
@@ -28,7 +26,7 @@ const TitleInput = ({ value, onChange }: TitleInputProps) => {
           onChange={(e) => onChange(e.target.value)}
           placeholder="Mention the key features of your item (e.g. brand, model, age, type)"
           className="border-primary/20 focus-visible:ring-primary/30 shadow-sm transition-all duration-200"
-          maxLength={maxLength}
+          maxLength={100}
           required 
         />
       </div>

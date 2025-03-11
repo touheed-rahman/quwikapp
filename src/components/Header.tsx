@@ -82,7 +82,7 @@ const Header = () => {
   };
 
   return (
-    <header className="fixed top-0 left-0 right-0 bg-white border-b z-50">
+    <header className="fixed top-0 left-0 right-0 bg-white border-b border-gray-200 z-50 shadow-sm">
       <div className="container mx-auto px-4 h-16 flex items-center gap-4">
         <Link to="/" className="shrink-0">
           <h1 className="text-2xl font-semibold bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent">
@@ -96,7 +96,7 @@ const Header = () => {
               <Button 
                 variant="ghost" 
                 size="icon" 
-                className="relative hidden md:flex flex-col items-center justify-center h-16 w-16 gap-0.5 hover:text-white"
+                className="relative hidden md:flex flex-col items-center justify-center h-16 w-16 gap-0.5 hover:bg-primary hover:text-white"
                 onClick={handleNotificationClick}
               >
                 <Bell className="h-5 w-5" />
@@ -114,7 +114,7 @@ const Header = () => {
                   variant="ghost" 
                   size="icon"
                   onClick={() => setIsChatOpen(true)}
-                  className="flex flex-col items-center justify-center h-16 w-16 gap-0.5 hover:text-white"
+                  className="flex flex-col items-center justify-center h-16 w-16 gap-0.5 hover:bg-primary hover:text-white"
                 >
                   <MessageSquare className="h-5 w-5" />
                   <span className="text-[10px]">Chats</span>
@@ -128,13 +128,13 @@ const Header = () => {
                 )}
               </div>
               <Link to="/my-ads" className="hidden md:block">
-                <Button variant="ghost" size="icon" className="flex flex-col items-center justify-center h-16 w-16 gap-0.5 hover:text-white">
+                <Button variant="ghost" size="icon" className="flex flex-col items-center justify-center h-16 w-16 gap-0.5 hover:bg-primary hover:text-white">
                   <ListOrdered className="h-5 w-5" />
                   <span className="text-[10px]">My Ads</span>
                 </Button>
               </Link>
               <Link to="/profile">
-                <Button variant="ghost" size="icon" className="flex flex-col items-center justify-center h-16 w-16 gap-0.5 hover:text-white">
+                <Button variant="ghost" size="icon" className="flex flex-col items-center justify-center h-16 w-16 gap-0.5 hover:bg-primary hover:text-white">
                   <User className="h-5 w-5" />
                   <span className="text-[10px]">Profile</span>
                 </Button>
@@ -143,13 +143,13 @@ const Header = () => {
                 variant="ghost" 
                 size="icon"
                 onClick={() => setIsFeedbackOpen(true)}
-                className="flex flex-col items-center justify-center h-16 w-16 gap-0.5 hover:text-white"
+                className="flex flex-col items-center justify-center h-16 w-16 gap-0.5 hover:bg-primary hover:text-white"
               >
                 <HelpCircle className="h-5 w-5" />
                 <span className="text-[10px]">Help</span>
               </Button>
               <Link to="/sell" className="hidden md:block shrink-0">
-                <Button className="hover:bg-primary hover:text-white whitespace-nowrap">Sell Now</Button>
+                <Button className="bg-primary hover:bg-primary/90 text-white">Sell Now</Button>
               </Link>
             </>
           ) : (
@@ -158,13 +158,13 @@ const Header = () => {
                 variant="ghost" 
                 size="icon"
                 onClick={() => setIsFeedbackOpen(true)}
-                className="flex flex-col items-center justify-center h-16 w-16 gap-0.5 hover:text-white"
+                className="flex flex-col items-center justify-center h-16 w-16 gap-0.5 hover:bg-primary hover:text-white"
               >
                 <HelpCircle className="h-5 w-5" />
                 <span className="text-[10px]">Help</span>
               </Button>
               <Link to="/profile">
-                <Button className="hover:text-white">Sign In</Button>
+                <Button className="bg-primary hover:bg-primary/90 text-white">Sign In</Button>
               </Link>
             </>
           )}

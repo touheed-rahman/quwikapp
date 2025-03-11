@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from "react";
-import { Heart, MapPin, Star } from "lucide-react";
+import { Heart, MapPin } from "lucide-react";
 import { Button } from "./ui/button";
 import { Card } from "./ui/card";
 import { Badge } from "./ui/badge";
@@ -94,60 +94,53 @@ const ProductCard = ({
   const getConditionColor = (condition?: ProductCondition) => {
     switch (condition) {
       case "new":
-        return "bg-green-500 text-white ring-green-200";
+        return "bg-green-500 text-white";
       case "excellent":
-        return "bg-primary text-white ring-primary/20";
+        return "bg-primary text-white";
       case "good":
-        return "bg-yellow-500 text-white ring-yellow-200";
+        return "bg-yellow-500 text-white";
       case "moderate":
-        return "bg-orange-500 text-white ring-orange-200";
+        return "bg-orange-500 text-white";
       default:
-        return "bg-gray-500 text-white ring-gray-200";
+        return "bg-gray-500 text-white";
     }
   };
 
-  const capitalizeFirstLetter = (str: string) => {
-    return str.charAt(0).toUpperCase() + str.slice(1);
-  };
-
   const formatLocation = (location: string) => {
-    // Extract just the first part of the location (usually the city/area name)
     const firstPart = location?.split('|')[0]?.split(',')[0]?.trim();
-    // Return a shortened version or placeholder if not available
     return firstPart || 'Location not specified';
   };
 
   return (
-    <Link to={`/product/${id}`} className="block transform hover:-translate-y-1 transition-all duration-300">
-      <Card className="group overflow-hidden border-[1.5px] border-neutral-200 hover:border-primary/50 hover:shadow-lg transition-all duration-200">
-        <div className="relative aspect-[4/3] overflow-hidden">
+    <Link to={`/product/${id}`} className="block">
+      <Card className="group overflow-hidden border border-neutral-200 hover:border-primary/50 hover:shadow-md transition-all duration-200">
+        <div className="relative aspect-[4/3] overflow-hidden bg-gray-100">
           <img
-            src={image}
+            src={image || "/placeholder.svg"}
             alt={title}
-            className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300"
+            className="object-cover w-full h-full"
+            loading="lazy"
+            onError={(e) => {
+              (e.target as HTMLImageElement).src = "/placeholder.svg";
+            }}
           />
           <Button
             variant="ghost"
             size="icon"
-            className={`absolute top-2 right-2 bg-white/90 backdrop-blur-sm hover:bg-white h-8 w-8 shadow-lg ring-1 ring-black/5 ${
+            className={`absolute top-2 right-2 bg-white/90 h-8 w-8 shadow-sm ${
               isWishlisted ? "text-red-500" : ""
-            } ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
+            } ${isLoading ? "opacity-50" : ""}`}
             onClick={handleWishlist}
             disabled={isLoading}
           >
             <Heart className="h-4 w-4" fill={isWishlisted ? "currentColor" : "none"} />
           </Button>
-          {featured && (
-            <Badge variant="default" className="absolute top-2 left-2 bg-yellow-500 text-white font-medium ring-2 ring-yellow-200">
-              <Star className="h-3 w-3 mr-1" /> Featured
-            </Badge>
-          )}
         </div>
-        <div className="p-3 space-y-2">
+        <div className="p-3 space-y-1">
           <p className="text-lg font-bold text-primary">
             ₹{price.toLocaleString()}
           </p>
-          <h3 className="text-sm font-medium line-clamp-1 text-foreground/90 group-hover:text-primary transition-colors">
+          <h3 className="text-sm font-medium line-clamp-1 text-foreground/90">
             {title}
           </h3>
           <div className="flex items-center justify-between">
@@ -155,15 +148,13 @@ const ProductCard = ({
               <MapPin className="h-3 w-3 flex-shrink-0" />
               <span className="truncate" title={location}>{formatLocation(location)}</span>
             </div>
-            <div className="flex gap-1">
-              {condition && (
-                <Badge 
-                  className={`text-[10px] px-2 py-0.5 rounded-full ring-2 ${getConditionColor(condition)}`}
-                >
-                  {capitalizeFirstLetter(condition)}
-                </Badge>
-              )}
-            </div>
+            {condition && (
+              <Badge 
+                className={`text-[10px] px-1.5 py-0.5 rounded-sm ${getConditionColor(condition)}`}
+              >
+                {condition.charAt(0).toUpperCase() + condition.slice(1)}
+              </Badge>
+            )}
           </div>
         </div>
       </Card>
