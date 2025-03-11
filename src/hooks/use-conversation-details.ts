@@ -24,7 +24,7 @@ export function useConversationDetails(
       try {
         setIsLoading(true);
         
-        // Get the conversation and check if it was deleted by this user
+        // Get the conversation details with better error handling
         const { data, error } = await supabase
           .from('conversations')
           .select(`
@@ -36,56 +36,63 @@ export function useConversationDetails(
           .eq('id', conversationId)
           .maybeSingle();
 
-        if (error) throw error;
-
-        if (!data) {
-          const listingId = localStorage.getItem('intended_conversation');
-          if (listingId) {
-            const { data: listing, error: listingError } = await supabase
-              .from('listings')
-              .select('*, profiles:user_id(*)')
-              .eq('id', listingId)
-              .single();
-
-            if (listingError) throw listingError;
-
-            const { data: newConversation, error: createError } = await supabase
-              .from('conversations')
-              .insert({
-                listing_id: listingId,
-                buyer_id: sessionUser.id,
-                seller_id: listing.user_id
-              })
-              .select(`
-                *,
-                seller:profiles!conversations_seller_id_fkey(id, full_name),
-                buyer:profiles!conversations_buyer_id_fkey(id, full_name),
-                listing:listings(id, title, price, status, deleted_at)
-              `)
-              .single();
-
-            if (createError) throw createError;
-
-            setConversationDetails(newConversation);
-            localStorage.removeItem('intended_conversation');
-            setIsLoading(false);
-            return;
-          }
-
-          toast({
-            variant: "destructive",
-            title: "Conversation not found",
-            description: "This conversation does not exist or you don't have access to it."
-          });
-          navigate('/');
+        if (error) {
+          console.error('Error fetching conversation:', error);
+          setIsLoading(false);
           return;
         }
 
-        // Check if this user deleted the conversation
-        if (data.deleted_by === sessionUser.id) {
+        if (!data) {
+          console.log('Conversation not found, checking for intended conversation');
+          const listingId = localStorage.getItem('intended_conversation');
+          
+          if (listingId) {
+            try {
+              const { data: listing, error: listingError } = await supabase
+                .from('listings')
+                .select('*, profiles:user_id(*)')
+                .eq('id', listingId)
+                .single();
+
+              if (listingError) {
+                console.error('Error fetching listing:', listingError);
+                throw listingError;
+              }
+
+              // Create a new conversation
+              const { data: newConversation, error: createError } = await supabase
+                .from('conversations')
+                .insert({
+                  listing_id: listingId,
+                  buyer_id: sessionUser.id,
+                  seller_id: listing.user_id
+                })
+                .select(`
+                  *,
+                  seller:profiles!conversations_seller_id_fkey(id, full_name),
+                  buyer:profiles!conversations_buyer_id_fkey(id, full_name),
+                  listing:listings(id, title, price, status, deleted_at)
+                `)
+                .single();
+
+              if (createError) {
+                console.error('Error creating conversation:', createError);
+                throw createError;
+              }
+
+              setConversationDetails(newConversation);
+              localStorage.removeItem('intended_conversation');
+              setIsLoading(false);
+              return;
+            } catch (innerError) {
+              console.error('Error in conversation creation:', innerError);
+            }
+          }
+
+          // Only navigate away if we truly couldn't find or create the conversation
           toast({
-            title: "Conversation deleted",
-            description: "This conversation has been deleted."
+            title: "Conversation not found",
+            description: "This conversation doesn't exist anymore or you don't have access to it."
           });
           navigate('/');
           return;
@@ -94,7 +101,6 @@ export function useConversationDetails(
         // Check if the user is part of the conversation
         if (data.buyer_id !== sessionUser.id && data.seller_id !== sessionUser.id) {
           toast({
-            variant: "destructive",
             title: "Access denied",
             description: "You don't have access to this conversation."
           });
@@ -106,9 +112,8 @@ export function useConversationDetails(
       } catch (error: any) {
         console.error('Error fetching conversation details:', error);
         toast({
-          variant: "destructive",
-          title: "Error",
-          description: "Failed to load conversation details"
+          title: "Error loading conversation",
+          description: "Please try again later."
         });
         navigate('/');
       } finally {
@@ -133,10 +138,6 @@ export function useConversationDetails(
           const newData = payload.new as any;
           // If this user deleted the conversation, redirect
           if (newData && newData.deleted_by === sessionUser.id) {
-            toast({
-              title: "Conversation deleted",
-              description: "This conversation has been deleted."
-            });
             navigate('/');
           }
         }

@@ -8,10 +8,13 @@ export function useImageMessage(conversationId: string | undefined, userId: stri
   const sendImageMessage = async (imageUrl: string) => {
     try {
       if (!conversationId || !userId || !imageUrl) {
+        console.log('Missing data for image message:', { conversationId, userId, hasImageUrl: !!imageUrl });
         return false;
       }
 
-      // Insert the image message without trying to determine the recipient
+      console.log('Sending image in conversation:', conversationId);
+
+      // Insert the image message
       const { error: msgError } = await supabase
         .from('messages')
         .insert({
@@ -24,9 +27,8 @@ export function useImageMessage(conversationId: string | undefined, userId: stri
       if (msgError) {
         console.error('Error sending image message:', msgError);
         toast({
-          variant: "destructive",
-          title: "Failed to send image",
-          description: "There was an error sending your image. Please try again."
+          title: "Image not sent",
+          description: "Please try again."
         });
         return false;
       }
@@ -41,16 +43,16 @@ export function useImageMessage(conversationId: string | undefined, userId: stri
         .eq('id', conversationId);
 
       if (updateError) {
-        console.error('Error updating conversation:', updateError);
+        console.error('Error updating conversation after image:', updateError);
+        // Don't show toast here, image was sent successfully
       }
 
       return true;
     } catch (error) {
       console.error('Error in sendImageMessage:', error);
       toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to send image"
+        title: "Image failed",
+        description: "There was a problem sending your image."
       });
       return false;
     }

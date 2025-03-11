@@ -8,10 +8,13 @@ export function useTextMessage(conversationId: string | undefined, userId: strin
   const sendTextMessage = async (content: string, isOffer: boolean = false) => {
     try {
       if (!conversationId || !userId || !content.trim()) {
+        console.log('Missing data for message:', { conversationId, userId, contentLength: content?.length });
         return false;
       }
 
-      // Insert the message without trying to determine the recipient
+      console.log('Sending message in conversation:', conversationId);
+
+      // Insert the message
       const { error: msgError } = await supabase
         .from('messages')
         .insert({
@@ -24,9 +27,8 @@ export function useTextMessage(conversationId: string | undefined, userId: strin
       if (msgError) {
         console.error('Error sending message:', msgError);
         toast({
-          variant: "destructive",
-          title: "Failed to send message",
-          description: "There was an error sending your message. Please try again."
+          title: "Message not sent",
+          description: "Please try again."
         });
         return false;
       }
@@ -42,15 +44,15 @@ export function useTextMessage(conversationId: string | undefined, userId: strin
 
       if (updateError) {
         console.error('Error updating conversation:', updateError);
+        // Don't show toast here, message was sent successfully
       }
 
       return true;
     } catch (error) {
       console.error('Error in sendTextMessage:', error);
       toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to send message"
+        title: "Message failed",
+        description: "There was a problem sending your message."
       });
       return false;
     }
