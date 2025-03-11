@@ -1,4 +1,3 @@
-
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Home, Plus, ListOrdered, Heart, Video } from "lucide-react";
 import { useState } from "react";
@@ -9,7 +8,11 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 
-const MobileNavigation = () => {
+interface MobileNavigationProps {
+  onChatOpen?: () => void;
+}
+
+const MobileNavigation = ({ onChatOpen }: MobileNavigationProps) => {
   const [showSellOptions, setShowSellOptions] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();

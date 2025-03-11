@@ -8,7 +8,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { SearchBar } from "@/components/SearchBar";
+import SearchBar from "@/components/SearchBar";
 import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useState, Suspense } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -93,7 +93,7 @@ const Header = () => {
           <Button
             variant="ghost"
             className="rounded-full hover:bg-gray-100 p-2"
-            onClick={onChatOpen} // Ensure this is properly defined in your component
+            onClick={onChatOpen}
           >
             <MessageSquare className="h-5 w-5" />
           </Button>
