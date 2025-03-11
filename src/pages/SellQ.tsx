@@ -13,34 +13,24 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Video, Upload, Camera } from 'lucide-react';
+import { Camera, Upload } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
 import { useIsMobile } from '@/hooks/use-mobile';
 import Header from '@/components/Header';
 import ProfileHeader from '@/components/profile/ProfileHeader';
 import { Progress } from '@/components/ui/progress';
-
-interface Category {
-  id: string;
-  name: string;
-}
-
-interface Subcategory {
-  id: string;
-  name: string;
-  category_id: string;
-}
+import CategorySelector from '@/components/sell/CategorySelector';
+import SubcategorySelector from '@/components/sell/SubcategorySelector';
 
 const SellQ = () => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [price, setPrice] = useState<number | ''>('');
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [subcategories, setSubcategories] = useState<Subcategory[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState('');
-  const [selectedSubcategory, setSelectedSubcategory] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [selectedSubcategory, setSelectedSubcategory] = useState<string | null>(null);
   const [location, setLocation] = useState('');
+  const [step, setStep] = useState(1); // 1 for form, 2 for video capture
   const [videoFile, setVideoFile] = useState<File | null>(null);
   const [isRecording, setIsRecording] = useState(false);
   const [recordedVideo, setRecordedVideo] = useState<string | null>(null);
@@ -72,37 +62,6 @@ const SellQ = () => {
     getUserSession();
   }, [navigate]);
 
-  // Get categories and subcategories
-  useEffect(() => {
-    const fetchCategories = async () => {
-      const { data: categoriesData, error: categoriesError } = await supabase
-        .from('categories')
-        .select('*')
-        .order('name');
-
-      if (categoriesError) {
-        console.error('Error fetching categories:', categoriesError);
-        return;
-      }
-
-      setCategories(categoriesData || []);
-
-      const { data: subcategoriesData, error: subcategoriesError } = await supabase
-        .from('subcategories')
-        .select('*')
-        .order('name');
-
-      if (subcategoriesError) {
-        console.error('Error fetching subcategories:', subcategoriesError);
-        return;
-      }
-
-      setSubcategories(subcategoriesData || []);
-    };
-
-    fetchCategories();
-  }, []);
-
   // Get user's location
   useEffect(() => {
     const fetchLocation = async () => {
@@ -131,17 +90,6 @@ const SellQ = () => {
     
     fetchLocation();
   }, []);
-
-  const handleCategoryChange = (value: string) => {
-    setSelectedCategory(value);
-    setSelectedSubcategory('');
-  };
-
-  const getFilteredSubcategories = () => {
-    return subcategories.filter(
-      (subcategory) => subcategory.category_id === selectedCategory
-    );
-  };
 
   const startRecording = async () => {
     try {
@@ -344,129 +292,147 @@ const SellQ = () => {
     }
   };
 
+  const validateForm = () => {
+    if (!title || !description || !price || !selectedCategory || !selectedSubcategory || !location) {
+      toast({
+        title: 'Missing Fields',
+        description: 'Please fill all required fields',
+        variant: 'destructive',
+      });
+      return false;
+    }
+    return true;
+  };
+
+  const handleContinue = () => {
+    if (validateForm()) {
+      setStep(2);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       {isMobile ? <ProfileHeader /> : <Header />}
       
       <div className="container mx-auto px-4 pt-20 pb-16">
-        <Card className="max-w-2xl mx-auto">
-          <CardHeader>
-            <CardTitle className="text-2xl font-bold">Create Q Video</CardTitle>
-          </CardHeader>
-          
-          <CardContent className="space-y-6">
-            <div className="space-y-2">
-              <Label htmlFor="title">Title</Label>
-              <Input 
-                id="title" 
-                value={title} 
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder="Enter a title for your product"
-                maxLength={80}
-              />
-              <p className="text-xs text-gray-500 text-right">{title.length}/80</p>
-            </div>
+        {step === 1 ? (
+          <Card className="max-w-2xl mx-auto">
+            <CardHeader>
+              <CardTitle className="text-2xl font-bold">Create Q Video - Details</CardTitle>
+            </CardHeader>
             
-            <div className="space-y-2">
-              <Label htmlFor="description">Description</Label>
-              <Textarea 
-                id="description" 
-                value={description} 
-                onChange={(e) => setDescription(e.target.value)}
-                placeholder="Describe your product"
-                className="min-h-[100px]"
-                maxLength={500}
-              />
-              <p className="text-xs text-gray-500 text-right">{description.length}/500</p>
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="price">Price (₹)</Label>
-              <Input 
-                id="price" 
-                type="number" 
-                value={price}
-                onChange={(e) => setPrice(e.target.value === '' ? '' : Number(e.target.value))}
-                placeholder="Enter price"
-                min={0}
-              />
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <CardContent className="space-y-6">
               <div className="space-y-2">
-                <Label htmlFor="category">Category</Label>
-                <Select 
+                <Label htmlFor="title">Title</Label>
+                <Input 
+                  id="title" 
+                  value={title} 
+                  onChange={(e) => setTitle(e.target.value)}
+                  placeholder="Enter a title for your product"
+                  maxLength={80}
+                />
+                <p className="text-xs text-gray-500 text-right">{title.length}/80</p>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="description">Description</Label>
+                <Textarea 
+                  id="description" 
+                  value={description} 
+                  onChange={(e) => setDescription(e.target.value)}
+                  placeholder="Describe your product"
+                  className="min-h-[100px]"
+                  maxLength={500}
+                />
+                <p className="text-xs text-gray-500 text-right">{description.length}/500</p>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="price">Price (₹)</Label>
+                <Input 
+                  id="price" 
+                  type="number" 
+                  value={price}
+                  onChange={(e) => setPrice(e.target.value === '' ? '' : Number(e.target.value))}
+                  placeholder="Enter price"
+                  min={0}
+                />
+              </div>
+              
+              <div className="space-y-4">
+                <CategorySelector 
                   value={selectedCategory} 
-                  onValueChange={handleCategoryChange}
-                >
-                  <SelectTrigger id="category">
-                    <SelectValue placeholder="Select category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {categories.map((category) => (
-                      <SelectItem key={category.id} value={category.id}>
-                        {category.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                  onChange={setSelectedCategory}
+                />
+                
+                <SubcategorySelector 
+                  category={selectedCategory} 
+                  value={selectedSubcategory} 
+                  onChange={setSelectedSubcategory}
+                  disabled={!selectedCategory}
+                />
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="subcategory">Subcategory</Label>
-                <Select 
-                  value={selectedSubcategory} 
-                  onValueChange={setSelectedSubcategory}
-                  disabled={!selectedCategory}
-                >
-                  <SelectTrigger id="subcategory">
-                    <SelectValue placeholder="Select subcategory" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {getFilteredSubcategories().map((subcategory) => (
-                      <SelectItem key={subcategory.id} value={subcategory.id}>
-                        {subcategory.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Label htmlFor="location">Location</Label>
+                <Input 
+                  id="location" 
+                  value={location} 
+                  onChange={(e) => setLocation(e.target.value)}
+                  placeholder="Enter your location"
+                  disabled={isLocationLoading}
+                />
               </div>
-            </div>
+            </CardContent>
             
-            <div className="space-y-2">
-              <Label htmlFor="location">Location</Label>
-              <Input 
-                id="location" 
-                value={location} 
-                onChange={(e) => setLocation(e.target.value)}
-                placeholder="Enter your location"
-                disabled={isLocationLoading}
-              />
-            </div>
+            <CardFooter>
+              <div className="flex w-full space-x-2">
+                <Button
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => navigate('/')}
+                >
+                  Cancel
+                </Button>
+                
+                <Button
+                  className="flex-1"
+                  onClick={handleContinue}
+                >
+                  Continue to Video
+                </Button>
+              </div>
+            </CardFooter>
+          </Card>
+        ) : (
+          <Card className="max-w-2xl mx-auto">
+            <CardHeader>
+              <CardTitle className="text-2xl font-bold">Create Q Video - Record or Upload</CardTitle>
+            </CardHeader>
             
-            <div className="space-y-3">
-              <Label>Product Video</Label>
-              
+            <CardContent className="space-y-6">
               {(!recordedVideo && !isRecording) && (
                 <div className="grid grid-cols-2 gap-4">
                   <Button
                     type="button"
                     variant="outline"
-                    className="h-24 flex flex-col items-center justify-center gap-2"
+                    className="h-32 flex flex-col items-center justify-center gap-2"
                     onClick={startRecording}
                   >
-                    <Camera className="h-6 w-6" />
-                    <span>Record Video</span>
+                    <Camera className="h-8 w-8 text-primary" />
+                    <span className="text-lg font-medium">Record Video</span>
+                    <span className="text-xs text-muted-foreground">15-30 seconds</span>
                   </Button>
                   
                   <Button
                     type="button"
                     variant="outline"
-                    className="h-24 flex flex-col items-center justify-center gap-2"
+                    className="h-32 flex flex-col items-center justify-center gap-2"
                     onClick={() => videoFileInputRef.current?.click()}
                   >
-                    <Upload className="h-6 w-6" />
-                    <span>Upload Video</span>
+                    <Upload className="h-8 w-8 text-primary" />
+                    <span className="text-lg font-medium">Upload Video</span>
+                    <span className="text-xs text-muted-foreground">From your device</span>
                     <input
                       type="file"
                       accept="video/*"
@@ -522,45 +488,46 @@ const SellQ = () => {
                           videoRef.current.src = '';
                         }
                       }}
+                      className="mr-2"
                     >
                       Discard Video
                     </Button>
                   </div>
                 </div>
               )}
-            </div>
-          </CardContent>
-          
-          <CardFooter className="flex flex-col space-y-4">
-            {isLoading && (
-              <div className="w-full space-y-2">
-                <Progress value={uploadProgress} className="w-full" />
-                <p className="text-center text-sm text-muted-foreground">
-                  {uploadProgress < 100 ? 'Uploading video...' : 'Processing...'}
-                </p>
-              </div>
-            )}
+            </CardContent>
             
-            <div className="flex w-full space-x-2">
-              <Button
-                variant="outline"
-                className="flex-1"
-                onClick={() => navigate('/')}
-                disabled={isLoading}
-              >
-                Cancel
-              </Button>
+            <CardFooter className="flex flex-col space-y-4">
+              {isLoading && (
+                <div className="w-full space-y-2">
+                  <Progress value={uploadProgress} className="w-full" />
+                  <p className="text-center text-sm text-muted-foreground">
+                    {uploadProgress < 100 ? 'Uploading video...' : 'Processing...'}
+                  </p>
+                </div>
+              )}
               
-              <Button
-                className="flex-1"
-                onClick={handleSubmit}
-                disabled={isLoading || !videoFile}
-              >
-                {isLoading ? 'Uploading...' : 'Submit'}
-              </Button>
-            </div>
-          </CardFooter>
-        </Card>
+              <div className="flex w-full space-x-2">
+                <Button
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => setStep(1)}
+                  disabled={isLoading}
+                >
+                  Back
+                </Button>
+                
+                <Button
+                  className="flex-1"
+                  onClick={handleSubmit}
+                  disabled={isLoading || !videoFile}
+                >
+                  {isLoading ? 'Uploading...' : 'Submit'}
+                </Button>
+              </div>
+            </CardFooter>
+          </Card>
+        )}
       </div>
     </div>
   );
