@@ -16,8 +16,9 @@ export interface UserDetails {
   address: string;
 }
 
-export interface OrderData {
-  product_id: string;
+export interface FeatureOrder {
+  id?: string;
+  listing_id: string;
   buyer_id: string;
   seller_id: string;
   amount: number;
@@ -28,6 +29,9 @@ export interface OrderData {
   contact_name: string;
   contact_phone: string;
   contact_address: string;
+  invoice_url?: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface InvoiceData {

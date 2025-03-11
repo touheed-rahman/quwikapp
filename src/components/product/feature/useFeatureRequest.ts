@@ -1,9 +1,8 @@
-
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { generateInvoicePDF } from "@/utils/pdfUtils";
 import { useToast } from "@/components/ui/use-toast";
-import { UserDetails, FeatureOption } from "./types";
+import { UserDetails, FeatureOption, FeatureOrder } from "./types";
 
 export function useFeatureRequest(
   productId: string,
@@ -31,9 +30,8 @@ export function useFeatureRequest(
     }));
   };
 
-  const generateInvoice = async (order: any, selectedFeatureOption: FeatureOption) => {
+  const generateInvoice = async (order: FeatureOrder, selectedFeatureOption: FeatureOption) => {
     try {
-      // Generate invoice PDF
       const invoiceData = {
         invoiceNumber: order.invoice_number,
         date: new Date().toLocaleDateString(),
@@ -55,7 +53,6 @@ export function useFeatureRequest(
 
       const pdfBlob = await generateInvoicePDF(invoiceData);
       
-      // Upload to Supabase storage
       const fileName = `invoice_${order.invoice_number}.pdf`;
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from('invoices')
@@ -69,7 +66,6 @@ export function useFeatureRequest(
         return null;
       }
 
-      // Get public URL
       const { data: { publicUrl } } = supabase.storage
         .from('invoices')
         .getPublicUrl(`public/${fileName}`);
@@ -86,11 +82,9 @@ export function useFeatureRequest(
     
     setIsSubmitting(true);
     try {
-      // Get the current user's session
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) throw new Error("No session found");
 
-      // First, update the product's featured_requested status
       const { error: updateError } = await supabase
         .from('listings')
         .update({ featured_requested: true })
@@ -100,12 +94,10 @@ export function useFeatureRequest(
         throw new Error('Failed to update listing feature status');
       }
 
-      // Generate invoice number
       const invoiceNumber = `INV-${Date.now().toString().substring(7)}`;
       
-      // Create order data with correct listing_id field
-      const orderData = {
-        listing_id: productId, // Changed from product_id to listing_id
+      const orderData: FeatureOrder = {
+        listing_id: productId,
         buyer_id: session.user.id,
         seller_id: session.user.id,
         amount: 0,
@@ -117,12 +109,9 @@ export function useFeatureRequest(
         contact_phone: userDetails.phone,
         contact_address: userDetails.address
       };
-      
+
       const { data: orderResult, error: orderError } = await supabase
-        .from('feature_orders') // Changed table name to feature_orders
-        .insert(orderData)
-        .select()
-        .single();
+        .rpc('create_feature_order', orderData);
 
       if (orderError) {
         throw new Error('Failed to create order: ' + orderError.message);
@@ -130,15 +119,14 @@ export function useFeatureRequest(
 
       const selectedFeatureOption = featureOptions.find(o => o.id === selectedOption) as FeatureOption;
       
-      // Generate and upload invoice
       const invoiceUrl = await generateInvoice(orderData, selectedFeatureOption);
       
       if (invoiceUrl && orderResult) {
-        // Update order with invoice URL
         const { error: invoiceError } = await supabase
-          .from('feature_orders')
-          .update({ invoice_url: invoiceUrl })
-          .eq('id', orderResult.id);
+          .rpc('update_feature_order_invoice', { 
+            order_id: orderResult.id,
+            invoice_url: invoiceUrl 
+          });
           
         if (invoiceError) {
           console.error('Failed to update invoice URL:', invoiceError);
@@ -189,7 +177,6 @@ export function useFeatureRequest(
   };
 
   const handleDetailsNext = (featureOptions: FeatureOption[]) => {
-    // Validate details
     if (!userDetails.name || !userDetails.phone || !userDetails.address) {
       toast({
         title: "Missing information",
@@ -199,7 +186,6 @@ export function useFeatureRequest(
       return;
     }
     
-    // Submit feature request
     handleSubmitFeatureRequest(featureOptions);
   };
 
