@@ -50,27 +50,31 @@ const HeroSearch = () => {
     try {
       const trimmedQuery = searchQuery.trim();
       
-      // Fetch listings with a simpler approach to avoid complex type instantiation
+      // Fetch listings with all required fields for filtering
       let { data: matches, error } = await supabase
         .from('listings')
-        .select('id, title, category, subcategory')
+        .select('id, title, category, subcategory, is_shop_item, location')
         .eq('status', 'approved')
         .ilike('title', `%${trimmedQuery}%`);
       
-      // Apply shop filter if needed  
+      if (error) throw error;
+      
+      let filteredMatches = matches || [];
+      
+      // Apply shop filter if needed
       if (activeTab === "shop") {
-        matches = matches?.filter(item => item.is_shop_item === true) || [];
+        filteredMatches = filteredMatches.filter(item => item.is_shop_item === true);
+      } else {
+        filteredMatches = filteredMatches.filter(item => !item.is_shop_item);
       }
       
       // Apply location filter if needed
-      if (selectedLocation && matches) {
-        matches = matches.filter(item => item.location === selectedLocation);
+      if (selectedLocation) {
+        filteredMatches = filteredMatches.filter(item => item.location === selectedLocation);
       }
       
-      if (error) throw error;
-
-      if (matches && matches.length > 0) {
-        navigate(`/category/${matches[0].category}/${matches[0].subcategory}?q=${encodeURIComponent(trimmedQuery)}&mode=${activeTab}`);
+      if (filteredMatches.length > 0) {
+        navigate(`/category/${filteredMatches[0].category}/${filteredMatches[0].subcategory}?q=${encodeURIComponent(trimmedQuery)}&mode=${activeTab}`);
       } else {
         toast({
           title: "No results found",
