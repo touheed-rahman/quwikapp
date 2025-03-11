@@ -29,6 +29,10 @@ const Index = () => {
     selectedLocation
   });
 
+  console.log("Current listings:", listings);
+  console.log("Selected location:", selectedLocation);
+  console.log("City name:", selectedLocation ? selectedLocation.split('|')[0] : null);
+
   const featuredListings = listings
     .filter(listing => listing.featured)
     .slice(0, FEATURED_ITEMS_LIMIT);

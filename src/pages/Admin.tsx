@@ -100,55 +100,15 @@ const AdminPanel = () => {
             </div>
             
             <div className="flex items-center">
-              <TabsList className="bg-muted/60">
-                <TabsTrigger 
-                  value="dashboard" 
-                  onClick={() => setActiveTab('dashboard')}
-                  className={activeTab === 'dashboard' ? 'bg-white' : ''}
-                >
-                  <Gauge className="w-4 h-4 mr-2" />
-                  <span className="hidden sm:inline">Dashboard</span>
-                </TabsTrigger>
-                
-                <TabsTrigger 
-                  value="listings" 
-                  onClick={() => setActiveTab('listings')}
-                  className={activeTab === 'listings' ? 'bg-white' : ''}
-                >
-                  <LayoutGrid className="w-4 h-4 mr-2" />
-                  <span className="hidden sm:inline">Listings</span>
-                </TabsTrigger>
-                
-                <TabsTrigger 
-                  value="users" 
-                  onClick={() => setActiveTab('users')}
-                  className={activeTab === 'users' ? 'bg-white' : ''}
-                >
-                  <Users className="w-4 h-4 mr-2" />
-                  <span className="hidden sm:inline">Users</span>
-                </TabsTrigger>
-                
-                <TabsTrigger 
-                  value="analytics" 
-                  onClick={() => setActiveTab('analytics')}
-                  className={activeTab === 'analytics' ? 'bg-white' : ''}
-                >
-                  <BarChart3 className="w-4 h-4 mr-2" />
-                  <span className="hidden sm:inline">Analytics</span>
-                </TabsTrigger>
-              </TabsList>
-              
-              <div className="ml-4 flex items-center gap-2">
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  onClick={handleLogout}
-                  className="text-foreground hover:text-foreground gap-2"
-                >
-                  <LogOut className="w-4 h-4" />
-                  <span className="hidden md:inline">Logout</span>
-                </Button>
-              </div>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={handleLogout}
+                className="text-foreground hover:text-foreground gap-2"
+              >
+                <LogOut className="w-4 h-4" />
+                <span className="hidden md:inline">Logout</span>
+              </Button>
             </div>
           </div>
         </div>
@@ -168,8 +128,6 @@ const AdminPanel = () => {
               {activeTab === 'listings' && 'Manage Listings'}
               {activeTab === 'users' && 'User Management'}
               {activeTab === 'analytics' && 'Analytics & Reports'}
-              {activeTab === 'notifications' && 'Notification Center'}
-              {activeTab === 'settings' && 'Admin Settings'}
             </h1>
             <div className="flex items-center gap-2 bg-green-50 text-green-600 px-3 py-1.5 rounded-full text-sm">
               <Activity className="h-4 w-4" />
@@ -177,43 +135,71 @@ const AdminPanel = () => {
             </div>
           </Card>
 
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={activeTab}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.2 }}
-              className="space-y-6"
-            >
-              {activeTab === 'dashboard' && <DashboardMetrics />}
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full mb-6">
+            <TabsList className="w-full bg-muted/60 mb-6">
+              <TabsTrigger 
+                value="dashboard" 
+                className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:text-black"
+              >
+                <Gauge className="w-4 h-4" />
+                <span className="hidden sm:inline">Dashboard</span>
+              </TabsTrigger>
               
-              {activeTab === 'listings' && <ListingManagement />}
+              <TabsTrigger 
+                value="listings" 
+                className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:text-black"
+              >
+                <LayoutGrid className="w-4 h-4" />
+                <span className="hidden sm:inline">Listings</span>
+              </TabsTrigger>
               
-              {activeTab === 'users' && <UserManagement />}
+              <TabsTrigger 
+                value="users" 
+                className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:text-black"
+              >
+                <Users className="w-4 h-4" />
+                <span className="hidden sm:inline">Users</span>
+              </TabsTrigger>
               
-              {activeTab === 'analytics' && (
-                <div className="bg-white p-6 rounded-lg shadow">
-                  <h2 className="text-xl font-semibold mb-4">Analytics Dashboard</h2>
-                  <p className="text-muted-foreground">Detailed analytics coming soon...</p>
-                </div>
-              )}
-              
-              {activeTab === 'notifications' && (
-                <div className="bg-white p-6 rounded-lg shadow">
-                  <h2 className="text-xl font-semibold mb-4">System Notifications</h2>
-                  <p className="text-muted-foreground">Notification management coming soon...</p>
-                </div>
-              )}
-              
-              {activeTab === 'settings' && (
-                <div className="bg-white p-6 rounded-lg shadow">
-                  <h2 className="text-xl font-semibold mb-4">Admin Settings</h2>
-                  <p className="text-muted-foreground">Settings panel coming soon...</p>
-                </div>
-              )}
-            </motion.div>
-          </AnimatePresence>
+              <TabsTrigger 
+                value="analytics" 
+                className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:text-black"
+              >
+                <BarChart3 className="w-4 h-4" />
+                <span className="hidden sm:inline">Analytics</span>
+              </TabsTrigger>
+            </TabsList>
+
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activeTab}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.2 }}
+                className="space-y-6"
+              >
+                <TabsContent value="dashboard">
+                  <DashboardMetrics />
+                </TabsContent>
+                
+                <TabsContent value="listings">
+                  <ListingManagement />
+                </TabsContent>
+                
+                <TabsContent value="users">
+                  <UserManagement />
+                </TabsContent>
+                
+                <TabsContent value="analytics">
+                  <div className="bg-white p-6 rounded-lg shadow">
+                    <h2 className="text-xl font-semibold mb-4">Analytics Dashboard</h2>
+                    <p className="text-muted-foreground">Detailed analytics coming soon...</p>
+                  </div>
+                </TabsContent>
+              </motion.div>
+            </AnimatePresence>
+          </Tabs>
         </motion.div>
       </div>
     </div>

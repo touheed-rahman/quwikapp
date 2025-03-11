@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useLocation } from "react-router-dom";
@@ -209,11 +208,11 @@ const ListingManagement = () => {
   );
 
   const tabItems = [
-    { id: 'all', label: 'All Listings', icon: <ListChecks className="h-4 w-4 mr-1" /> },
-    { id: 'pending', label: 'Pending', icon: <Clock className="h-4 w-4 mr-1" /> },
-    { id: 'approved', label: 'Approved', icon: <CheckCircle className="h-4 w-4 mr-1" /> },
-    { id: 'rejected', label: 'Rejected', icon: <XCircle className="h-4 w-4 mr-1" /> },
-    { id: 'featured', label: 'Featured', icon: <Star className="h-4 w-4 mr-1" /> },
+    { id: 'all', label: 'All Listings', icon: <ListChecks className="h-4 w-4 mr-1 text-black" /> },
+    { id: 'pending', label: 'Pending', icon: <Clock className="h-4 w-4 mr-1 text-black" /> },
+    { id: 'approved', label: 'Approved', icon: <CheckCircle className="h-4 w-4 mr-1 text-black" /> },
+    { id: 'rejected', label: 'Rejected', icon: <XCircle className="h-4 w-4 mr-1 text-black" /> },
+    { id: 'featured', label: 'Featured', icon: <Star className="h-4 w-4 mr-1 text-black" /> },
   ];
 
   if (error) {
@@ -242,7 +241,7 @@ const ListingManagement = () => {
               <TabsTrigger 
                 key={tab.id} 
                 value={tab.id}
-                className="flex items-center data-[state=active]:bg-primary data-[state=active]:text-white hover:text-white"
+                className="flex items-center data-[state=active]:bg-primary data-[state=active]:text-black"
               >
                 {tab.icon}
                 {tab.label}
@@ -270,9 +269,9 @@ const ListingManagement = () => {
               ) : (
                 <ListingTable 
                   listings={filteredListings || []}
-                  onStatusUpdate={handleStatusUpdate}
-                  onFeaturedToggle={handleFeaturedToggle}
-                  onDelete={handleDelete}
+                  onStatusUpdate={(id, status) => handleStatusUpdate(id, status)}
+                  onFeaturedToggle={(id, featured) => handleFeaturedToggle(id, featured)}
+                  onDelete={(id) => handleDelete(id)}
                 />
               )}
             </TabsContent>

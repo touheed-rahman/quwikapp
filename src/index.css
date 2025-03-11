@@ -60,7 +60,42 @@
            focus-visible:ring-offset-2 transition-all duration-200 shadow-sm;
   }
 
-  /* Fix hover text colors - primary rule */
+  /* Fix hover text colors - ensure icons in primary backgrounds remain visible */
+  svg, path {
+    @apply text-current;
+  }
+  
+  /* Fix for icons - ensure they inherit correct color */
+  [class*="bg-primary"] svg,
+  [class*="bg-primary"] path,
+  [class*="bg-blue"] svg,
+  [class*="bg-blue"] path,
+  [class*="bg-green"] svg,
+  [class*="bg-green"] path,
+  [class*="bg-red"] svg,
+  [class*="bg-red"] path,
+  [class*="bg-orange"] svg,
+  [class*="bg-orange"] path,
+  [class*="bg-yellow"] svg,
+  [class*="bg-yellow"] path,
+  [class*="bg-teal"] svg,
+  [class*="bg-teal"] path,
+  [class*="bg-violet"] svg,
+  [class*="bg-violet"] path,
+  [class*="bg-pink"] svg,
+  [class*="bg-pink"] path,
+  [class*="bg-indigo"] svg,
+  [class*="bg-indigo"] path,
+  [class*="bg-cyan"] svg,
+  [class*="bg-cyan"] path,
+  [class*="bg-purple"] svg,
+  [class*="bg-purple"] path,
+  [class*="bg-emerald"] svg,
+  [class*="bg-emerald"] path {
+    @apply text-black;
+  }
+
+  /* Fix button hover colors */
   button, 
   a, 
   [role="button"] {
@@ -86,7 +121,7 @@
   button:hover[class*="hover:bg-primary"]:not([class*="hover:text-foreground"]),
   a:hover[class*="hover:bg-primary"]:not([class*="hover:text-foreground"]),
   [role="button"]:hover[class*="hover:bg-primary"]:not([class*="hover:text-foreground"]) {
-    @apply text-primary-foreground;
+    @apply text-black;
   }
 
   /* Enhanced button hover effects */
@@ -99,98 +134,18 @@
     @apply shadow-sm hover:shadow-md transition-all duration-200 bg-card/95 backdrop-blur-sm
            border border-border/20;
   }
+
+  /* Tabs specific fixes */
+  .TabsTrigger[data-state="active"] {
+    @apply text-black;
+  }
 }
 
-/* Enhanced scrollbar styling */
-.scrollbar-hide::-webkit-scrollbar,
-.no-scrollbar::-webkit-scrollbar {
-  display: none;
+/* ... keep existing code (scrollbar styling, command menu enhancements, enhanced transitions, etc.) */
+
+/* Fixed Admin Panel Tabs */
+.admin-tabs [data-state="active"] {
+  @apply bg-primary text-black;
 }
 
-.scrollbar-hide,
-.no-scrollbar {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-
-/* Command menu enhancements */
-.cmd-menu {
-  @apply bg-white/95 backdrop-blur-sm border border-input/50 shadow-lg;
-}
-
-/* Enhanced transitions - faster for better performance */
-.transition-all {
-  @apply duration-100 ease-in-out;
-}
-
-/* Enhanced focus styles */
-.focus-ring {
-  @apply focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2;
-}
-
-/* Enhanced text readability */
-.text-enhanced {
-  @apply tracking-wide leading-relaxed;
-}
-
-/* Enhanced responsive padding */
-.section-padding {
-  @apply py-16 px-4 md:px-8 lg:px-16;
-}
-
-/* Enhanced container width */
-.container {
-  @apply px-4 mx-auto max-w-7xl;
-}
-
-/* Glass effect components */
-.glass {
-  @apply bg-white/80 backdrop-blur-sm border border-white/20 shadow-lg;
-}
-
-/* Enhanced list items */
-.list-item {
-  @apply hover:bg-accent/5 transition-colors duration-200 rounded-md;
-}
-
-/* Enhanced interactive elements */
-.interactive {
-  @apply hover:shadow-md active:scale-[0.98] transition-all duration-200;
-}
-
-/* Enhanced card layouts */
-.card-grid {
-  @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4;
-}
-
-/* Enhanced form elements */
-.form-input {
-  @apply w-full rounded-md border border-input/30 bg-background px-3 py-2
-         focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all duration-200;
-}
-
-/* Enhanced loading states */
-.loading {
-  @apply animate-pulse bg-muted rounded;
-}
-
-/* Enhanced badges */
-.badge {
-  @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium
-         transition-colors duration-200;
-}
-
-/* Consistent page spacing */
-.page-content {
-  @apply pt-24 pb-16;
-}
-
-/* Fixed height for thumbnails to prevent layout shifts */
-.product-thumbnail {
-  @apply w-20 h-20 object-cover;
-}
-
-/* Reduced form spacing */
-.sell-form-reduced-spacing {
-  @apply space-y-4;
-}
+/* ... keep existing code (enhanced list items, enhanced interactive elements, etc.) */

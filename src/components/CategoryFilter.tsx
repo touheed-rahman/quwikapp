@@ -42,7 +42,6 @@ const categoryIcons: Record<string, any> = {
 const categoryColors: Record<string, string> = {
   mobile: "bg-[#8B5CF6]", // Vivid purple color
   vehicles: "bg-blue-500",
-  electronics: "bg-purple-500",
   furniture: "bg-orange-500",
   property: "bg-green-500",
   jobs: "bg-indigo-500",
@@ -53,6 +52,7 @@ const categoryColors: Record<string, string> = {
   gaming: "bg-violet-500",
   books: "bg-cyan-500",
   services: "bg-emerald-500",
+  electronics: "bg-purple-500",
 };
 
 const CategoryFilter = () => {
@@ -134,13 +134,13 @@ const CategoryFilter = () => {
                         whileTap={{ scale: 0.95 }}
                       >
                         <motion.div 
-                          className={`p-2 md:p-3 rounded-full ${bgColor} text-white shadow-md`}
+                          className={`p-2 md:p-3 rounded-full ${bgColor} shadow-md`}
                           whileHover={{ 
                             scale: 1.1,
                             boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)"
                           }}
                         >
-                          <Icon className="h-5 w-5 md:h-6 md:w-6" />
+                          <Icon className="h-5 w-5 md:h-6 md:w-6 text-black" />
                         </motion.div>
                         <span className="text-xs md:text-sm font-medium text-center line-clamp-1">{category.name}</span>
                       </motion.button>
