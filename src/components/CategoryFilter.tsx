@@ -88,11 +88,11 @@ const CategoryFilter = () => {
               >
                 {showAll ? (
                   <>
-                    Show Less <ChevronUp className="h-4 w-4" />
+                    Show Less <ChevronUp className="h-4 w-4 text-primary filter-icon" />
                   </>
                 ) : (
                   <>
-                    Show All <ChevronDown className="h-4 w-4" />
+                    Show All <ChevronDown className="h-4 w-4 text-primary filter-icon" />
                   </>
                 )}
               </button>

@@ -25,6 +25,7 @@
     --input: 214 32% 91%;
     --ring: 221 83% 53%;
     --radius: 0.75rem;
+    --icon-color: 221 83% 53%; /* New global icon color variable */
   }
 }
 
@@ -136,5 +137,19 @@
   /* Fixed Admin Panel Tabs - white text on primary background */
   .admin-tabs [data-state="active"] {
     @apply bg-primary text-white !important;
+  }
+
+  /* Global icon styling for consistency */
+  svg:not([class*="text-"]) {
+    @apply text-primary;
+  }
+
+  /* Specific icon overrides for locations where we want consistent treatment */
+  .location-icon svg,
+  .product-icon svg,
+  .navigation-icon svg,
+  .search-icon svg,
+  .filter-icon svg {
+    @apply text-primary;
   }
 }

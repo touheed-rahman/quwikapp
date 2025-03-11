@@ -103,7 +103,7 @@ const LocationSelector = ({ value, onChange }: { value: string | null, onChange:
           className="w-full justify-between text-muted-foreground hover:text-foreground ring-offset-background"
         >
           <div className="flex items-center gap-2 truncate">
-            <MapPin className="h-4 w-4 shrink-0 text-primary" />
+            <MapPin className="h-4 w-4 shrink-0 text-primary location-icon" />
             <span className="truncate">{value ? getLocationName(value) : "Select location"}</span>
           </div>
         </Button>
@@ -116,7 +116,7 @@ const LocationSelector = ({ value, onChange }: { value: string | null, onChange:
           <CommandList className="max-h-[300px] overflow-y-auto">
             {loading ? (
               <CommandEmpty>
-                <Loader2 className="h-4 w-4 animate-spin mx-auto" />
+                <Loader2 className="h-4 w-4 animate-spin mx-auto text-primary" />
                 <p className="text-sm text-muted-foreground text-center mt-2">
                   Loading...
                 </p>
@@ -133,7 +133,7 @@ const LocationSelector = ({ value, onChange }: { value: string | null, onChange:
                       loadStates();
                     }}
                   >
-                    <ArrowLeft className="mr-2 h-4 w-4" />
+                    <ArrowLeft className="mr-2 h-4 w-4 text-primary" />
                     Back to States
                   </Button>
                 </div>
@@ -158,7 +158,7 @@ const LocationSelector = ({ value, onChange }: { value: string | null, onChange:
                     onClick={() => handleStateSelect(state)}
                   >
                     <span>{state.name}</span>
-                    <ChevronRight className="h-4 w-4" />
+                    <ChevronRight className="h-4 w-4 text-primary" />
                   </div>
                 ))}
               </div>

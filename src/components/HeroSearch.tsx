@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Search, Loader2 } from "lucide-react";
@@ -108,7 +109,7 @@ const HeroSearch = () => {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onKeyPress={handleKeyPress}
               />
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-primary" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-primary search-icon" />
             </div>
             <Button 
               size="lg" 
@@ -118,7 +119,7 @@ const HeroSearch = () => {
             >
               {isSearching ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin text-white" />
                   Searching...
                 </>
               ) : (

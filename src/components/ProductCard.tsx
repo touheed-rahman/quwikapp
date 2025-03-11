@@ -128,7 +128,7 @@ const ProductCard = ({
             variant="ghost"
             size="icon"
             className={`absolute top-2 right-2 bg-white/90 h-8 w-8 shadow-sm hover:text-white hover:bg-primary/90 ${
-              isWishlisted ? "text-red-500 hover:text-white" : "text-foreground"
+              isWishlisted ? "text-red-500 hover:text-white" : "text-primary"
             } ${isLoading ? "opacity-50" : ""}`}
             onClick={handleWishlist}
             disabled={isLoading}
@@ -145,7 +145,7 @@ const ProductCard = ({
           </h3>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-1 text-[10px] text-foreground overflow-hidden max-w-[120px]">
-              <MapPin className="h-3 w-3 flex-shrink-0 text-foreground" />
+              <MapPin className="h-3 w-3 flex-shrink-0 text-primary" />
               <span className="truncate" title={location}>{formatLocation(location)}</span>
             </div>
             {condition && (
