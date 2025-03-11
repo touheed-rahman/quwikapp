@@ -1,20 +1,10 @@
 
 import { useState, useEffect } from "react";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { 
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import VehicleBasicInfoTab from "./vehicle-tabs/VehicleBasicInfoTab";
 import VehicleFeaturesTab from "./vehicle-tabs/VehicleFeaturesTab";
 import VehicleSafetyTab from "./vehicle-tabs/VehicleSafetyTab";
 import VehicleAdditionalTab from "./vehicle-tabs/VehicleAdditionalTab";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useToast } from "@/components/ui/use-toast";
 
 interface VehicleFieldsProps {
   updateFormData: (fields: Record<string, any>) => void;
@@ -22,8 +12,8 @@ interface VehicleFieldsProps {
 }
 
 const VehicleFields = ({ updateFormData, subcategory = "" }: VehicleFieldsProps) => {
-  const { toast } = useToast();
-  const [kmDriven, setKmDriven] = useState("1"); // Initialize with "1" as a minimum valid value
+  // Initialize with empty string to make it optional
+  const [kmDriven, setKmDriven] = useState("");
   const [yearManufactured, setYearManufactured] = useState("");
   const [fuelType, setFuelType] = useState("");
   const [transmission, setTransmission] = useState("");
@@ -69,20 +59,20 @@ const VehicleFields = ({ updateFormData, subcategory = "" }: VehicleFieldsProps)
 
   // Update parent component when values change
   useEffect(() => {
-    // Always ensure kmDriven is a number and valid (minimum 1)
-    let kmDrivenNumber = 1; // Default to 1 as minimum valid value
+    // Initialize with empty fields for form data
+    const formFields: Record<string, any> = {};
     
-    if (kmDriven && kmDriven.trim() !== "") {
+    // Only add km_driven if it has a value
+    if (kmDriven !== "") {
       const parsed = parseInt(kmDriven, 10);
-      if (!isNaN(parsed) && parsed > 0) {
-        kmDrivenNumber = parsed;
+      if (!isNaN(parsed)) {
+        formFields.km_driven = parsed;
+      } else {
+        formFields.km_driven = null;
       }
+    } else {
+      formFields.km_driven = null;
     }
-    
-    const formFields: Record<string, any> = {
-      // CRITICAL: Always set km_driven as a number, minimum 1
-      km_driven: kmDrivenNumber,
-    };
     
     formFields.specs = {
       // Basic information

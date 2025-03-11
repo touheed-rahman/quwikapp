@@ -83,35 +83,6 @@ export const useListingForm = () => {
       return false;
     }
 
-    // Category-specific validations
-    if (formData.category === 'vehicles') {
-      // Look for km_driven first in the specs if available (coming from updated input fields)
-      // then fallback to root level km_driven
-      
-      // First check for valid values at the root level
-      let kmDriven = 0;
-      
-      if (typeof formData.km_driven === 'number' && !isNaN(formData.km_driven) && formData.km_driven > 0) {
-        kmDriven = formData.km_driven;
-      } else if (typeof formData.km_driven === 'string' && formData.km_driven.trim() !== '') {
-        kmDriven = parseInt(formData.km_driven, 10);
-      }
-      
-      // Log what we found for debugging
-      console.log("km_driven for validation:", kmDriven);
-      
-      // Must be greater than 0
-      if (kmDriven <= 0 || isNaN(kmDriven)) {
-        toast({
-          title: "Missing Kilometers Driven",
-          description: "Please enter a valid number for kilometers driven",
-          variant: "destructive"
-        });
-        console.error("km_driven validation failed:", formData.km_driven);
-        return false;
-      }
-    }
-
     return true;
   };
 
@@ -152,17 +123,12 @@ export const useListingForm = () => {
 
       const uploadedImagePaths = await Promise.all(imageUploadPromises);
 
-      // Ensure km_driven is a number for vehicle listings
+      // Handle km_driven for vehicle listings
       let kmDriven = null;
-      if (formData.category === 'vehicles') {
-        if (typeof formData.km_driven === 'number' && !isNaN(formData.km_driven) && formData.km_driven > 0) {
-          kmDriven = formData.km_driven;
-        } else if (formData.km_driven !== undefined && formData.km_driven !== null) {
-          // Convert to number and ensure it's valid
+      if (formData.category === 'vehicles' && formData.km_driven !== undefined) {
+        // Convert to number if it's a valid number string
+        if (formData.km_driven !== '' && !isNaN(Number(formData.km_driven))) {
           kmDriven = Number(formData.km_driven);
-          if (isNaN(kmDriven) || kmDriven <= 0) kmDriven = 1; // Default to 1 if invalid
-        } else {
-          kmDriven = 1; // Default to 1 if not provided
         }
       }
 

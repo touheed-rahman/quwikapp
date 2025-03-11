@@ -20,12 +20,7 @@ const ProductSpecsCard = ({
   category,
   condition 
 }: ProductSpecsCardProps) => {
-  // Check if we have specifications to show - more inclusive check for different product types
-  const hasSpecs = (specs && Object.keys(specs).length > 0) || 
-                   brand !== null || 
-                   (category === 'vehicles' && km_driven !== null && km_driven !== undefined);
-
-  // Always show the card, even with minimal info for consistency across all listings
+  // Always show the card for all product types, even with minimal details
   return (
     <Card className="p-3 md:p-4 max-w-full">
       <div className="space-y-2 md:space-y-4">
