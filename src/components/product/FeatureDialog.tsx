@@ -12,6 +12,8 @@ import {
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { CheckCircle, Home, Tag, ShoppingBag } from "lucide-react";
 
 interface FeatureDialogProps {
@@ -29,7 +31,14 @@ interface FeatureOption {
   title: string;
   description: string;
   price: number;
+  originalPrice: number;
   icon: React.ReactNode;
+}
+
+interface UserDetails {
+  name: string;
+  phone: string;
+  address: string;
 }
 
 export default function FeatureDialog({
@@ -45,9 +54,14 @@ export default function FeatureDialog({
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [step, setStep] = useState(1);
   const [paymentComplete, setPaymentComplete] = useState(false);
+  const [userDetails, setUserDetails] = useState<UserDetails>({
+    name: "",
+    phone: "",
+    address: ""
+  });
   const { toast } = useToast();
 
-  // Now all feature options are free (0 rupees)
+  // Feature options with both paid and free options
   const getFeaturePricing = (): FeatureOption[] => {
     return [
       {
@@ -55,6 +69,7 @@ export default function FeatureDialog({
         title: "Homepage Feature",
         description: "Your listing will be featured on our homepage",
         price: 0,
+        originalPrice: 499,
         icon: <Home className="h-5 w-5 text-secondary" />
       },
       {
@@ -62,6 +77,7 @@ export default function FeatureDialog({
         title: "Category Feature",
         description: "Your listing will be featured in its category page",
         price: 0,
+        originalPrice: 299,
         icon: <Tag className="h-5 w-5 text-primary" />
       },
       {
@@ -69,6 +85,7 @@ export default function FeatureDialog({
         title: "Premium Feature",
         description: "Your listing will be featured everywhere!",
         price: 0,
+        originalPrice: 799,
         icon: <ShoppingBag className="h-5 w-5 text-accent" />
       }
     ];
@@ -85,8 +102,30 @@ export default function FeatureDialog({
       });
       return;
     }
-    // Since we're skipping payment, we can directly submit the feature request
+    setStep(2);
+  };
+
+  const handleDetailsNext = () => {
+    // Validate details
+    if (!userDetails.name || !userDetails.phone || !userDetails.address) {
+      toast({
+        title: "Missing information",
+        description: "Please fill in all required fields",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    // Submit feature request
     handleSubmitFeatureRequest();
+  };
+
+  const handleUserDetailsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setUserDetails(prev => ({
+      ...prev,
+      [name]: value
+    }));
   };
 
   const handleSubmitFeatureRequest = async () => {
@@ -104,45 +143,43 @@ export default function FeatureDialog({
         .update({
           featured_requested: true,
           feature_plan: selectedOption,
-          feature_requested_at: new Date().toISOString()
+          feature_requested_at: new Date().toISOString(),
+          feature_contact_name: userDetails.name,
+          feature_contact_phone: userDetails.phone,
+          feature_contact_address: userDetails.address
         })
         .eq("id", productId);
 
       if (error) throw error;
 
-      // Generate a free invoice record - using rpc to avoid type issues
+      // Generate a free invoice record
       const invoiceNumber = `INV-${Date.now().toString().substring(7)}`;
       
-      // Use rpc to insert into orders table to avoid type issues
-      const { error: orderError } = await supabase.rpc('create_feature_order', {
-        p_product_id: productId,
-        p_user_id: session.user.id,
-        p_amount: 0,
-        p_invoice_number: invoiceNumber,
-        p_feature_plan: selectedOption
+      // Use REST API directly to avoid TypeScript errors with orders table
+      const response = await fetch(`${process.env.SUPABASE_URL || 'https://cgrtrdwvkkhraizqukwt.supabase.co'}/rest/v1/orders`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': process.env.SUPABASE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNncnRyZHd2a2tocmFpenF1a3d0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzgwNjE2NTIsImV4cCI6MjA1MzYzNzY1Mn0.mnC-NB_broDr4nOHggi0ngeDC1CxZsda6X-wyEMD2tE',
+          'Authorization': `Bearer ${session.access_token}`
+        },
+        body: JSON.stringify({
+          product_id: productId,
+          buyer_id: session.user.id,
+          seller_id: session.user.id,
+          amount: 0,
+          payment_status: "completed",
+          invoice_number: invoiceNumber,
+          order_type: "feature",
+          feature_plan: selectedOption,
+          contact_name: userDetails.name,
+          contact_phone: userDetails.phone,
+          contact_address: userDetails.address
+        })
       });
 
-      if (orderError) {
-        console.error("Order creation error:", orderError);
-        // Fallback approach - manual query if RPC fails
-        await fetch(`${supabase.supabaseUrl}/rest/v1/orders`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'apikey': supabase.supabaseKey,
-            'Authorization': `Bearer ${session.access_token}`
-          },
-          body: JSON.stringify({
-            product_id: productId,
-            buyer_id: session.user.id,
-            seller_id: session.user.id,
-            amount: 0,
-            payment_status: "completed",
-            invoice_number: invoiceNumber,
-            order_type: "feature",
-            feature_plan: selectedOption
-          })
-        });
+      if (!response.ok) {
+        throw new Error('Failed to create order');
       }
 
       setPaymentComplete(true);
@@ -159,6 +196,7 @@ export default function FeatureDialog({
         setStep(1);
         setSelectedOption(null);
         setPaymentComplete(false);
+        setUserDetails({ name: "", phone: "", address: "" });
       }, 2000);
       
     } catch (error: any) {
@@ -186,12 +224,12 @@ export default function FeatureDialog({
               Your free featured listing will be active soon after admin review.
             </p>
           </div>
-        ) : (
+        ) : step === 1 ? (
           <>
             <DialogHeader>
               <DialogTitle className="text-xl">Feature Your Listing</DialogTitle>
               <DialogDescription>
-                Make your listing stand out by featuring it on our platform (currently free!)
+                Make your listing stand out by featuring it on our platform
               </DialogDescription>
             </DialogHeader>
             
@@ -214,7 +252,10 @@ export default function FeatureDialog({
                       <h3 className="font-medium">{option.title}</h3>
                       <p className="text-sm text-muted-foreground">{option.description}</p>
                     </div>
-                    <div className="text-lg font-bold text-green-600">Free!</div>
+                    <div className="text-right">
+                      <div className="text-lg font-bold text-green-600">Free!</div>
+                      <div className="text-sm text-muted-foreground line-through">₹{option.originalPrice}</div>
+                    </div>
                   </div>
                 </Card>
               ))}
@@ -226,7 +267,63 @@ export default function FeatureDialog({
               </Button>
               <Button 
                 onClick={handleNext} 
-                disabled={!selectedOption || isSubmitting}
+                disabled={!selectedOption}
+              >
+                Next
+              </Button>
+            </DialogFooter>
+          </>
+        ) : (
+          <>
+            <DialogHeader>
+              <DialogTitle className="text-xl">Contact Details</DialogTitle>
+              <DialogDescription>
+                Please provide your contact information for this featured listing
+              </DialogDescription>
+            </DialogHeader>
+            
+            <div className="space-y-4 my-4">
+              <div className="space-y-2">
+                <Label htmlFor="name">Full Name</Label>
+                <Input 
+                  id="name" 
+                  name="name" 
+                  placeholder="Your full name" 
+                  value={userDetails.name}
+                  onChange={handleUserDetailsChange}
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="phone">Phone Number</Label>
+                <Input 
+                  id="phone" 
+                  name="phone" 
+                  placeholder="Your phone number" 
+                  value={userDetails.phone}
+                  onChange={handleUserDetailsChange}
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="address">Address</Label>
+                <Input 
+                  id="address" 
+                  name="address" 
+                  placeholder="Your address" 
+                  value={userDetails.address}
+                  onChange={handleUserDetailsChange}
+                />
+              </div>
+            </div>
+            
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setStep(1)}>
+                Back
+              </Button>
+              <Button 
+                onClick={handleDetailsNext} 
+                disabled={isSubmitting}
               >
                 {isSubmitting ? 'Processing...' : 'Submit Request'}
               </Button>
