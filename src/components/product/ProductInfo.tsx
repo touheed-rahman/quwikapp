@@ -1,5 +1,5 @@
 
-import { Heart, Share2, MapPin, Calendar, Clock, Copy, Eye } from "lucide-react";
+import { Heart, Share2, MapPin, Calendar, Copy, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
@@ -112,12 +112,16 @@ const ProductInfo = ({
           <Button 
             variant="outline" 
             size="icon" 
-            className="h-8 w-8 md:h-10 md:w-10 rounded-full"
+            className="h-8 w-8 md:h-10 md:w-10 rounded-full hover:bg-primary/10 hover:text-primary transition-colors"
             onClick={handleShare}
           >
             <Share2 className={`h-4 w-4 md:h-5 md:w-5 ${copying ? 'text-primary' : ''}`} />
           </Button>
-          <Button variant="outline" size="icon" className="h-8 w-8 md:h-10 md:w-10 rounded-full">
+          <Button 
+            variant="outline" 
+            size="icon" 
+            className="h-8 w-8 md:h-10 md:w-10 rounded-full hover:bg-primary/10 hover:text-primary transition-colors"
+          >
             <Heart className="h-4 w-4 md:h-5 md:w-5" />
           </Button>
         </div>
@@ -132,12 +136,6 @@ const ProductInfo = ({
           <Calendar className="h-3 w-3 md:h-4 md:w-4" />
           <span>{new Date(createdAt).toLocaleDateString()}</span>
         </div>
-        {category === 'vehicles' && km_driven !== null && (
-          <div className="flex items-center gap-1">
-            <Clock className="h-3 w-3 md:h-4 md:w-4" />
-            <span>{km_driven.toLocaleString()} km driven</span>
-          </div>
-        )}
         <div className="flex items-center gap-1">
           <Eye className="h-3 w-3 md:h-4 md:w-4" />
           <span>{viewCount} views</span>
@@ -148,11 +146,6 @@ const ProductInfo = ({
         <Badge className="bg-primary/10 text-primary hover:bg-primary/20">
           {condition}
         </Badge>
-        {km_driven !== null && km_driven > 0 && (
-          <Badge variant="outline">
-            {km_driven.toLocaleString()} km
-          </Badge>
-        )}
         {brand && (
           <Badge variant="outline" className="bg-gray-100">
             {brand}
@@ -170,7 +163,7 @@ const ProductInfo = ({
       />
 
       {/* Product Description Card */}
-      <Card className="p-3 md:p-4 max-w-full">
+      <Card className="p-3 md:p-4 max-w-full hover:shadow-md transition-shadow">
         <div className="space-y-2 md:space-y-4">
           <h2 className="font-semibold text-sm md:text-base">Description</h2>
           <p className="text-black whitespace-pre-wrap text-xs md:text-sm break-words max-w-full overflow-x-hidden">{description}</p>

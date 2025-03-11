@@ -48,11 +48,11 @@ const ListingItem = ({ listing, onMarkAsSold, showSoldButton, onListingDeleted }
 
   const CardContent = () => (
     <div className="flex gap-4 p-3">
-      <div className="w-24 h-20 flex-shrink-0">
+      <div className="w-24 h-20 flex-shrink-0 rounded overflow-hidden">
         <img
           src={getFirstImageUrl(listing.images)}
           alt={listing.title}
-          className="w-full h-full object-cover rounded"
+          className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
         />
       </div>
       
@@ -72,11 +72,6 @@ const ListingItem = ({ listing, onMarkAsSold, showSoldButton, onListingDeleted }
               <Badge variant="secondary" className="text-xs">
                 {listing.condition}
               </Badge>
-              {listing.category === 'vehicles' && listing.km_driven !== null && (
-                <Badge variant="outline" className="text-xs">
-                  {listing.km_driven.toLocaleString()} km
-                </Badge>
-              )}
               {listing.status === 'rejected' && (
                 <Badge variant="destructive" className="text-xs">
                   Rejected
@@ -110,7 +105,7 @@ const ListingItem = ({ listing, onMarkAsSold, showSoldButton, onListingDeleted }
                   e.stopPropagation();
                   onMarkAsSold(listing.id);
                 }}
-                className="h-7 text-xs"
+                className="h-7 text-xs hover:bg-primary hover:text-white transition-colors"
               >
                 <CheckSquare className="w-3.5 h-3.5 mr-1" />
                 Mark as Sold
@@ -124,14 +119,14 @@ const ListingItem = ({ listing, onMarkAsSold, showSoldButton, onListingDeleted }
 
   return (
     <Card className={cn(
-      "relative overflow-hidden group",
+      "relative overflow-hidden group hover:shadow-md transition-shadow",
       isSold && "opacity-75 pointer-events-none"
     )}>
       <div className="absolute top-2 right-2 z-10">
         {!isSold && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+              <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-primary/10">
                 <MoreVertical className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>

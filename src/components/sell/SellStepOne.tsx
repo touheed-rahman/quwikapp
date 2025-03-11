@@ -2,10 +2,11 @@
 import { useState } from "react";
 import { Button } from "../ui/button";
 import { categories } from "@/types/categories";
-import { Upload, X } from "lucide-react";
+import { Upload, X, Camera, Image, CheckCircle2 } from "lucide-react";
 import { useToast } from "../ui/use-toast";
 import { cn } from "@/lib/utils";
 import Header from "../Header";
+import { motion } from "framer-motion";
 
 interface SellStepOneProps {
   onNext: (data: { category: string; subcategory: string; images: File[] }) => void;
@@ -66,12 +67,35 @@ const SellStepOne = ({ onNext }: SellStepOneProps) => {
     });
   };
 
+  const container = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.05
+      }
+    }
+  };
+
+  const item = {
+    hidden: { opacity: 0, y: 20 },
+    show: { opacity: 1, y: 0 }
+  };
+
   return (
     <div className="min-h-screen bg-background pb-24">
       <Header />
       <div className="container mx-auto px-4 pt-20">
-        <div className="max-w-3xl mx-auto space-y-6">
-          <div className="bg-white rounded-lg shadow-sm border p-4 md:p-6 space-y-6">
+        <motion.div 
+          className="max-w-3xl mx-auto space-y-6"
+          variants={container}
+          initial="hidden"
+          animate="show"
+        >
+          <motion.div 
+            className="bg-white rounded-lg shadow-md border border-primary/10 p-4 md:p-6 space-y-6"
+            variants={item}
+          >
             <div className="space-y-4">
               <h2 className="text-2xl font-semibold text-foreground">Post Your Ad</h2>
               <p className="text-muted-foreground">Choose a category that best fits your item</p>
@@ -84,7 +108,7 @@ const SellStepOne = ({ onNext }: SellStepOneProps) => {
                     className={cn(
                       "h-auto py-3 flex-col gap-2 relative transition-all text-sm break-words",
                       selectedCategory === category.id 
-                        ? "bg-primary text-white shadow-md" 
+                        ? "bg-primary text-white shadow-md scale-105" 
                         : "hover:border-primary hover:bg-primary/5"
                     )}
                     onClick={() => {
@@ -95,13 +119,28 @@ const SellStepOne = ({ onNext }: SellStepOneProps) => {
                     <span className="font-medium text-center px-2 line-clamp-2">
                       {category.name}
                     </span>
+                    {selectedCategory === category.id && (
+                      <motion.div 
+                        className="absolute -top-1 -right-1"
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        transition={{ type: "spring", stiffness: 500, damping: 15 }}
+                      >
+                        <CheckCircle2 className="h-4 w-4 text-white bg-green-500 rounded-full" />
+                      </motion.div>
+                    )}
                   </Button>
                 ))}
               </div>
             </div>
 
             {selectedCategory && (
-              <div className="space-y-4 animate-fade-up">
+              <motion.div 
+                className="space-y-4"
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                transition={{ duration: 0.3 }}
+              >
                 <h3 className="text-lg font-semibold text-foreground">Select Subcategory</h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   {categories
@@ -119,23 +158,32 @@ const SellStepOne = ({ onNext }: SellStepOneProps) => {
                         onClick={() => setSelectedSubcategory(sub.id)}
                       >
                         <span className="line-clamp-1">{sub.name}</span>
+                        {selectedSubcategory === sub.id && (
+                          <CheckCircle2 className="h-4 w-4 ml-auto" />
+                        )}
                       </Button>
                     ))}
                 </div>
-              </div>
+              </motion.div>
             )}
-          </div>
+          </motion.div>
 
-          <div className="bg-white rounded-lg shadow-sm border p-4 md:p-6 space-y-4">
+          <motion.div 
+            className="bg-white rounded-lg shadow-md border border-primary/10 p-4 md:p-6 space-y-4"
+            variants={item}
+          >
             <div className="space-y-2">
-              <h3 className="text-lg font-semibold text-foreground">Upload Images</h3>
+              <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
+                <Camera className="h-5 w-5 text-primary" />
+                Upload Images
+              </h3>
               <p className="text-sm text-muted-foreground">Add up to 12 photos. First photo will be the cover image.</p>
             </div>
             
-            <div className="grid grid-cols-4 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               <div className="col-span-1">
-                <div className="aspect-square border-2 border-dashed rounded-lg relative overflow-hidden hover:border-primary/50 transition-colors">
-                  <label className="w-full h-full flex flex-col items-center justify-center cursor-pointer hover:bg-primary/5 transition-colors">
+                <div className="aspect-square border-2 border-dashed rounded-lg relative overflow-hidden hover:border-primary hover:bg-primary/5 transition-colors">
+                  <label className="w-full h-full flex flex-col items-center justify-center cursor-pointer">
                     <input
                       type="file"
                       className="hidden"
@@ -143,8 +191,8 @@ const SellStepOne = ({ onNext }: SellStepOneProps) => {
                       multiple
                       onChange={handleImageUpload}
                     />
-                    <Upload className="h-6 w-6 text-primary" />
-                    <span className="text-xs text-muted-foreground mt-1 text-center px-2">
+                    <Image className="h-8 w-8 text-primary mb-2" />
+                    <span className="text-xs text-primary font-medium text-center px-2">
                       Add Photos
                     </span>
                   </label>
@@ -152,7 +200,13 @@ const SellStepOne = ({ onNext }: SellStepOneProps) => {
               </div>
               
               {previewUrls.map((preview, index) => (
-                <div key={index} className="col-span-1">
+                <motion.div 
+                  key={index} 
+                  className="col-span-1"
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.2 }}
+                >
                   <div className="aspect-square border-2 border-solid border-primary/20 rounded-lg relative overflow-hidden group">
                     <img
                       src={preview}
@@ -166,20 +220,27 @@ const SellStepOne = ({ onNext }: SellStepOneProps) => {
                     >
                       <X className="h-4 w-4 text-white" />
                     </button>
+                    {index === 0 && (
+                      <div className="absolute bottom-0 w-full bg-primary/70 text-white text-[10px] font-medium py-1 text-center">
+                        Cover Image
+                      </div>
+                    )}
                   </div>
-                </div>
+                </motion.div>
               ))}
             </div>
-          </div>
+          </motion.div>
 
-          <Button 
-            onClick={handleNext} 
-            className="w-full md:w-auto md:min-w-[200px] md:mx-auto block bg-primary hover:bg-primary/90 text-white"
-            size="lg"
-          >
-            Next
-          </Button>
-        </div>
+          <motion.div variants={item}>
+            <Button 
+              onClick={handleNext} 
+              className="w-full md:w-auto md:min-w-[200px] md:mx-auto block bg-primary hover:bg-primary/90 text-white shadow-md hover:shadow-lg transition-all"
+              size="lg"
+            >
+              Next
+            </Button>
+          </motion.div>
+        </motion.div>
       </div>
     </div>
   );

@@ -3,6 +3,7 @@ import { memo } from "react";
 import Header from "@/components/Header";
 import SellFormDetails from "./SellFormDetails";
 import { useLocation } from "@/contexts/LocationContext";
+import { motion } from "framer-motion";
 
 interface SellStepTwoProps {
   title: string;
@@ -41,9 +42,14 @@ const SellStepTwo = memo(({
     <div className="transition-opacity duration-200">
       <Header />
       <div className="container max-w-2xl mx-auto px-4 pt-20 pb-24">
-        <h1 className="text-2xl font-bold mb-6 text-foreground">
-          ITEM DETAILS
-        </h1>
+        <motion.h1 
+          className="text-2xl font-bold mb-6 text-foreground flex items-center justify-center"
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+        >
+          Item Details
+        </motion.h1>
         <SellFormDetails
           title={title}
           setTitle={setTitle}

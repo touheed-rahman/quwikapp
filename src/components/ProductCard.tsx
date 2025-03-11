@@ -118,7 +118,7 @@ const ProductCard = ({
   };
 
   return (
-    <Link to={`/product/${id}`}>
+    <Link to={`/product/${id}`} className="block transform hover:-translate-y-1 transition-all duration-300">
       <Card className="group overflow-hidden border-[1.5px] border-neutral-200 hover:border-primary/50 hover:shadow-lg transition-all duration-200">
         <div className="relative aspect-[4/3] overflow-hidden">
           <img
@@ -161,13 +161,6 @@ const ProductCard = ({
                   className={`text-[10px] px-2 py-0.5 rounded-full ring-2 ${getConditionColor(condition)}`}
                 >
                   {capitalizeFirstLetter(condition)}
-                </Badge>
-              )}
-              {category === 'vehicles' && km_driven !== null && km_driven > 0 && (
-                <Badge 
-                  className="text-[10px] px-2 py-0.5 rounded-full ring-2 bg-gray-100 text-gray-800 ring-gray-200"
-                >
-                  {km_driven.toLocaleString()} km
                 </Badge>
               )}
             </div>
