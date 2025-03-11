@@ -25,6 +25,10 @@ interface SeoHeadProps {
   contentType?: string;
   geoRegion?: string;
   geoPlaceName?: string;
+  primaryKeywords?: string[];
+  secondaryKeywords?: string[];
+  longTailKeywords?: string[];
+  keywordDensity?: number;
 }
 
 const SeoHead = ({
@@ -52,6 +56,13 @@ const SeoHead = ({
     "local shopping",
     "best deals"
   ],
+  primaryKeywords = ["marketplace", "classifieds", "buy and sell", "local shopping"],
+  secondaryKeywords = ["used items", "second hand goods", "preloved items"],
+  longTailKeywords = [
+    "best place to buy used electronics near me",
+    "how to sell second hand furniture online",
+    "affordable pre-owned vehicles in my area"
+  ],
   image = "/og-image.png",
   url = typeof window !== 'undefined' ? window.location.href : '',
   type = "website",
@@ -68,10 +79,15 @@ const SeoHead = ({
   twitterCard = "summary_large_image",
   contentType = "text/html; charset=utf-8",
   geoRegion = "IN",
-  geoPlaceName = "India"
+  geoPlaceName = "India",
+  keywordDensity = 2
 }: SeoHeadProps) => {
   const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
   const fullImageUrl = image.startsWith('http') ? image : `${baseUrl}${image}`;
+
+  // Combine all keywords for meta tags
+  const allKeywords = [...primaryKeywords, ...keywords, ...secondaryKeywords, ...longTailKeywords];
+  const uniqueKeywords = [...new Set(allKeywords)];
 
   // Default Organization Schema
   const organizationSchema = {
@@ -89,7 +105,8 @@ const SeoHead = ({
       "@type": "ContactPoint",
       "contactType": "Customer Support",
       "email": "support@quwik.com"
-    }
+    },
+    "keywords": uniqueKeywords.join(", ")
   };
 
   // Default Website Schema
@@ -99,6 +116,7 @@ const SeoHead = ({
     "name": "Quwik",
     "url": baseUrl,
     "description": description,
+    "keywords": uniqueKeywords.join(", "),
     "potentialAction": {
       "@type": "SearchAction",
       "target": {
@@ -136,10 +154,20 @@ const SeoHead = ({
       <html lang={language} />
       <title>{title}</title>
       <meta name="description" content={description} />
-      <meta name="keywords" content={keywords.join(', ')} />
+      <meta name="keywords" content={uniqueKeywords.join(', ')} />
       <meta name="author" content={author} />
       <meta http-equiv="Content-Type" content={contentType} />
       <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+      
+      {/* Primary Keywords as Extra Meta Tags for Emphasis */}
+      {primaryKeywords.map((keyword, index) => (
+        <meta key={`primary-${index}`} name={`keywords:${index+1}`} content={keyword} />
+      ))}
+
+      {/* Long-tail Keywords for Voice Search and Question Queries */}
+      {longTailKeywords.map((keyword, index) => (
+        <meta key={`longtail-${index}`} name={`keyword-phrase:${index+1}`} content={keyword} />
+      ))}
       
       {/* Canonical URL */}
       <link rel="canonical" href={canonical} />
@@ -170,6 +198,8 @@ const SeoHead = ({
       {/* Geo Meta Tags */}
       <meta name="geo.region" content={geoRegion} />
       <meta name="geo.placename" content={geoPlaceName} />
+      <meta name="geo.position" content="28.6139;77.2090" />
+      <meta name="ICBM" content="28.6139, 77.2090" />
 
       {/* Additional SEO Meta Tags */}
       <meta name="robots" content={noindex ? "noindex, nofollow" : "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"} />

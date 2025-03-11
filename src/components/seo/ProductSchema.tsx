@@ -25,6 +25,9 @@ interface ProductSchemaProps {
   depth?: string;
   reviewCount?: number;
   ratingValue?: number;
+  color?: string;
+  material?: string;
+  keywords?: string[];
 }
 
 interface ProductSchemaType {
@@ -77,6 +80,9 @@ interface ProductSchemaType {
     height?: string;
     depth?: string;
   };
+  color?: string;
+  material?: string;
+  keywords?: string;
 }
 
 const ProductSchema = ({
@@ -98,7 +104,10 @@ const ProductSchema = ({
   height,
   depth,
   reviewCount = 1,
-  ratingValue = 4.5
+  ratingValue = 4.5,
+  color,
+  material,
+  keywords = []
 }: ProductSchemaProps) => {
   const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
   const productUrl = `${baseUrl}/product/${id}`;
@@ -122,6 +131,19 @@ const ProductSchema = ({
 
   // Create a product SKU if not provided
   const productSku = sku || `QUWIK-${id.substring(0, 8)}`;
+
+  // Generate keywords if not provided
+  const generatedKeywords = keywords.length > 0 ? keywords : [
+    title,
+    brand || '',
+    `${condition} ${category || ''}`,
+    `buy ${category || ''} online`,
+    `${condition} ${brand || ''} ${category || ''}`,
+    `cheap ${category || ''}`,
+    `used ${category || ''}`,
+    `${category || ''} for sale`,
+    `best ${category || ''} deals`
+  ].filter(k => k.trim() !== '');
 
   const productSchema: ProductSchemaType = {
     "@context": "https://schema.org",
@@ -165,8 +187,19 @@ const ProductSchema = ({
         "name": "Quwik Customer"
       }
     },
-    "category": category
+    "category": category,
+    "keywords": generatedKeywords.join(', ')
   };
+
+  // Add color if provided
+  if (color) {
+    productSchema.color = color;
+  }
+
+  // Add material if provided
+  if (material) {
+    productSchema.material = material;
+  }
 
   // Add dimensions and weight if provided
   if (weight || width || height || depth) {

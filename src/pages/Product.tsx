@@ -21,6 +21,7 @@ import SeoHead from "@/components/seo/SeoHead";
 import ProductSchema from "@/components/seo/ProductSchema";
 import BreadcrumbSchema from "@/components/seo/BreadcrumbSchema";
 import { categories } from "@/types/categories";
+import { getProductKeywords, getSeoTitle, getSeoDescription } from "@/utils/KeywordsService";
 
 interface Seller {
   id: string;
@@ -140,22 +141,43 @@ const ProductPage = () => {
     return category ? category.name : product.category;
   };
 
+  const productKeywords = getProductKeywords(
+    product.title,
+    product.category,
+    product.brand,
+    product.condition
+  );
+  
+  const seoTitle = getSeoTitle(
+    product.title,
+    product.category,
+    product.condition,
+    product.location?.split('|')[0]
+  );
+  
+  const seoDescription = getSeoDescription(
+    product.description || '',
+    product.title,
+    product.category,
+    product.price,
+    product.condition
+  );
+
+  const longTailKeywords = [
+    `best ${product.condition} ${product.category || 'items'} near me`,
+    `affordable ${product.brand || ''} ${product.category || 'products'} for sale`,
+    `${product.condition} ${product.category || 'items'} in ${product.location?.split('|')[0] || 'my area'}`,
+    `buy ${product.brand || 'quality'} products online marketplace`,
+    `second hand ${product.category || 'items'} with warranty`
+  ];
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-primary/5">
       <SeoHead
-        title={`${product.title} | ${product.price.toLocaleString()} ₹ | Quwik`}
-        description={product.description?.substring(0, 160) || `${product.title} for sale at ${product.price.toLocaleString()} ₹. ${product.condition} condition.`}
-        keywords={[
-          product.title,
-          product.category || '',
-          product.subcategory || '',
-          product.brand || '',
-          product.condition,
-          'buy online',
-          'sell online',
-          'local marketplace',
-          'used goods'
-        ]}
+        title={seoTitle}
+        description={seoDescription}
+        keywords={productKeywords}
+        longTailKeywords={longTailKeywords}
         image={getFullImageUrls()[0]}
         type="product"
         publishedAt={product.created_at}
@@ -178,6 +200,9 @@ const ProductPage = () => {
           id: seller.id,
           name: seller.full_name || 'Quwik Seller'
         } : undefined}
+        keywords={productKeywords}
+        color={product.specs?.color}
+        material={product.specs?.material}
       />
       
       <BreadcrumbSchema items={generateBreadcrumbs()} />
