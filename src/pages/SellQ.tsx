@@ -11,9 +11,20 @@ import { Progress } from '@/components/ui/progress';
 import { useLocation } from "@/contexts/LocationContext";
 import SellStepOne from "@/components/sell/SellStepOne";
 import SellStepTwo from "@/components/sell/SellStepTwo";
-import { Upload, Camera } from 'lucide-react';
+import { Upload, Camera, X, Sparkles, TextIcon, Check, RefreshCw } from 'lucide-react';
 import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Slider } from '@/components/ui/slider';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+
+const FILTERS = [
+  { name: 'Normal', class: '' },
+  { name: 'Vintage', class: 'sepia brightness-90' },
+  { name: 'Bright', class: 'brightness-125 contrast-110' },
+  { name: 'Cool', class: 'hue-rotate-30 brightness-110' },
+  { name: 'Warm', class: 'brightness-110 sepia-10' },
+  { name: 'Dramatic', class: 'contrast-125 brightness-90' }
+];
 
 const SellQ = () => {
   const [step, setStep] = useState(1);
@@ -28,6 +39,11 @@ const SellQ = () => {
   const [videoFile, setVideoFile] = useState<File | null>(null);
   const [isRecording, setIsRecording] = useState(false);
   const [recordedVideo, setRecordedVideo] = useState<string | null>(null);
+  const [captionText, setCaptionText] = useState("");
+  const [showCaptionInput, setShowCaptionInput] = useState(false);
+  const [selectedFilter, setSelectedFilter] = useState(0);
+  const [zoom, setZoom] = useState([1]);
+  const [isFullScreen, setIsFullScreen] = useState(false);
   
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -37,6 +53,8 @@ const SellQ = () => {
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const mediaStreamRef = useRef<MediaStream | null>(null);
   const videoFileInputRef = useRef<HTMLInputElement>(null);
+  const captionInputRef = useRef<HTMLInputElement>(null);
+  const videoContainerRef = useRef<HTMLDivElement>(null);
 
   // Get user's session
   const [userId, setUserId] = useState<string | null>(null);
@@ -53,6 +71,13 @@ const SellQ = () => {
 
     getUserSession();
   }, [navigate]);
+
+  useEffect(() => {
+    // Apply zoom to video element
+    if (videoRef.current && isRecording) {
+      videoRef.current.style.transform = `scale(${zoom[0]})`;
+    }
+  }, [zoom, isRecording]);
 
   const handleStepOneComplete = useCallback((data: any) => {
     setFormData((prevData: any) => ({ ...prevData, ...data }));
@@ -82,12 +107,43 @@ const SellQ = () => {
     setShowVideoUI(true);
   }, [title, description, price, condition, selectedLocation, formData, toast]);
 
+  const toggleFullScreen = () => {
+    if (!isFullScreen) {
+      if (videoContainerRef.current?.requestFullscreen) {
+        videoContainerRef.current.requestFullscreen();
+        setIsFullScreen(true);
+      }
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+        setIsFullScreen(false);
+      }
+    }
+  };
+
+  useEffect(() => {
+    const handleFullScreenChange = () => {
+      setIsFullScreen(!!document.fullscreenElement);
+    };
+
+    document.addEventListener('fullscreenchange', handleFullScreenChange);
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullScreenChange);
+    };
+  }, []);
+
   const startRecording = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: true,
-        audio: true,
-      });
+      const constraints = {
+        video: {
+          width: { ideal: 1920 },
+          height: { ideal: 1080 },
+          facingMode: "user"
+        },
+        audio: true
+      };
+      
+      const stream = await navigator.mediaDevices.getUserMedia(constraints);
       
       mediaStreamRef.current = stream;
       
@@ -96,7 +152,9 @@ const SellQ = () => {
         videoRef.current.play();
       }
       
-      const mediaRecorder = new MediaRecorder(stream);
+      const mediaRecorder = new MediaRecorder(stream, {
+        mimeType: 'video/webm;codecs=vp9'
+      });
       mediaRecorderRef.current = mediaRecorder;
       
       const chunks: BlobPart[] = [];
@@ -217,7 +275,8 @@ const SellQ = () => {
         user_id: userId,
         status: 'active',
         condition: condition,
-        images: [] // No images for Q video listings
+        images: [], // No images for Q video listings
+        caption: captionText || null // Store the caption text if any
       };
       
       const { data: listingData, error: listingError } = await supabase
@@ -254,7 +313,9 @@ const SellQ = () => {
         .insert({
           listing_id: listingData.id,
           video_url: videoFileName,
-          user_id: userId
+          user_id: userId,
+          caption: captionText || null,
+          filter_applied: FILTERS[selectedFilter].name !== 'Normal' ? FILTERS[selectedFilter].name : null
         });
       
       if (videoEntryError) throw videoEntryError;
@@ -288,18 +349,18 @@ const SellQ = () => {
       <div className="min-h-screen bg-gray-50">
         {isMobile ? <ProfileHeader /> : <Header />}
         
-        <div className="container mx-auto px-4 pt-20 pb-16">
-          <Card className="max-w-2xl mx-auto">
-            <CardHeader>
-              <CardTitle className="text-2xl font-bold">Create Q Video</CardTitle>
-            </CardHeader>
-            
-            <CardContent className="space-y-6">
-              <div className="space-y-3">
-                <h3 className="font-medium">Title: {title}</h3>
-                <p className="text-sm text-muted-foreground">Price: ₹{price}</p>
-                
-                {(!recordedVideo && !isRecording) && (
+        <div ref={videoContainerRef} className={`relative ${isFullScreen ? 'fixed inset-0 z-50 bg-black' : 'container mx-auto px-4 pt-20 pb-16'}`}>
+          {(!recordedVideo && !isRecording) && (
+            <Card className="max-w-2xl mx-auto">
+              <CardHeader>
+                <CardTitle className="text-2xl font-bold">Create Q Video</CardTitle>
+              </CardHeader>
+              
+              <CardContent className="space-y-6">
+                <div className="space-y-3">
+                  <h3 className="font-medium">Title: {title}</h3>
+                  <p className="text-sm text-muted-foreground">Price: ₹{price}</p>
+                  
                   <div className="grid grid-cols-2 gap-4">
                     <Button
                       type="button"
@@ -328,91 +389,198 @@ const SellQ = () => {
                       />
                     </Button>
                   </div>
-                )}
-                
-                {isRecording && (
-                  <div className="space-y-4">
-                    <div className="aspect-video bg-black rounded-lg overflow-hidden">
-                      <video
-                        ref={videoRef}
-                        className="w-full h-full object-cover"
-                        muted
-                      />
-                    </div>
-                    
-                    <div className="flex justify-center">
-                      <Button
-                        variant="destructive"
-                        onClick={stopRecording}
-                        className="flex items-center gap-2"
-                      >
-                        <span className="animate-pulse h-3 w-3 rounded-full bg-white" />
-                        Stop Recording
-                      </Button>
-                    </div>
-                  </div>
-                )}
-                
-                {recordedVideo && !isRecording && (
-                  <div className="space-y-4">
-                    <div className="aspect-video bg-black rounded-lg overflow-hidden">
-                      <video
-                        ref={videoRef}
-                        src={recordedVideo}
-                        className="w-full h-full object-cover"
-                        controls
-                      />
-                    </div>
-                    
-                    <div className="flex justify-center">
-                      <Button
-                        variant="outline"
-                        onClick={() => {
-                          setRecordedVideo(null);
-                          setVideoFile(null);
-                          if (videoRef.current) {
-                            videoRef.current.src = '';
-                          }
-                        }}
-                      >
-                        Discard Video
-                      </Button>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </CardContent>
-            
-            <div className="p-6 border-t">
-              {isSubmitting && (
-                <div className="w-full space-y-2 mb-4">
-                  <Progress value={uploadProgress} className="w-full" />
-                  <p className="text-center text-sm text-muted-foreground">
-                    {uploadProgress < 100 ? 'Uploading video...' : 'Processing...'}
-                  </p>
                 </div>
-              )}
-              
-              <div className="flex w-full space-x-2">
-                <Button
-                  variant="outline"
-                  className="flex-1"
-                  onClick={() => setShowVideoUI(false)}
-                  disabled={isSubmitting}
-                >
-                  Back
-                </Button>
+              </CardContent>
+            </Card>
+          )}
+          
+          {isRecording && (
+            <div className="space-y-4">
+              <div className={`${isFullScreen ? 'w-full h-screen' : 'aspect-video'} bg-black rounded-lg relative overflow-hidden`}>
+                <video
+                  ref={videoRef}
+                  className={`w-full h-full object-cover ${FILTERS[selectedFilter].class}`}
+                  muted
+                />
                 
-                <Button
-                  className="flex-1"
-                  onClick={handleSubmitVideo}
-                  disabled={isSubmitting || !videoFile}
-                >
-                  {isSubmitting ? 'Uploading...' : 'Submit'}
-                </Button>
+                {showCaptionInput && (
+                  <div className="absolute bottom-20 left-0 right-0 flex justify-center px-4">
+                    <input
+                      ref={captionInputRef}
+                      type="text"
+                      value={captionText}
+                      onChange={(e) => setCaptionText(e.target.value)}
+                      placeholder="Add a caption..."
+                      className="bg-black/60 text-white placeholder:text-gray-300 px-4 py-2 rounded-full w-full max-w-md border border-white/20 focus:outline-none focus:ring-2 focus:ring-primary"
+                    />
+                  </div>
+                )}
+                
+                {captionText && !showCaptionInput && (
+                  <div className="absolute bottom-20 left-0 right-0 flex justify-center">
+                    <div className="bg-black/60 text-white px-4 py-2 rounded-full max-w-md text-center">
+                      {captionText}
+                    </div>
+                  </div>
+                )}
+                
+                <div className="absolute top-4 right-4 space-x-2 flex">
+                  <Button variant="outline" size="icon" className="bg-black/60 text-white border-white/20 hover:bg-black/80" onClick={toggleFullScreen}>
+                    {isFullScreen ? <X className="h-5 w-5" /> : <Sparkles className="h-5 w-5" />}
+                  </Button>
+                </div>
+                
+                <div className="absolute bottom-4 left-0 right-0">
+                  <div className="flex justify-center space-x-3 mb-4">
+                    <Button variant="outline" size="icon" className="bg-black/60 text-white border-white/20 hover:bg-black/80" onClick={() => setShowCaptionInput(!showCaptionInput)}>
+                      <TextIcon className="h-5 w-5" />
+                    </Button>
+                    {FILTERS.map((filter, index) => (
+                      <Button
+                        key={filter.name}
+                        variant={selectedFilter === index ? "default" : "outline"}
+                        size="sm"
+                        className={selectedFilter === index ? "bg-primary" : "bg-black/60 text-white border-white/20 hover:bg-black/80"}
+                        onClick={() => setSelectedFilter(index)}
+                      >
+                        {filter.name}
+                      </Button>
+                    ))}
+                  </div>
+                  
+                  <div className="px-4 mb-4">
+                    <div className="text-white text-xs mb-1 text-center">Zoom</div>
+                    <Slider
+                      value={zoom}
+                      min={1}
+                      max={2}
+                      step={0.1}
+                      onValueChange={setZoom}
+                      className="w-full max-w-xs mx-auto"
+                    />
+                  </div>
+                  
+                  <div className="flex justify-center">
+                    <Button
+                      variant="destructive"
+                      onClick={stopRecording}
+                      className="flex items-center gap-2"
+                    >
+                      <span className="animate-pulse h-3 w-3 rounded-full bg-white" />
+                      Stop Recording
+                    </Button>
+                  </div>
+                </div>
               </div>
             </div>
-          </Card>
+          )}
+          
+          {recordedVideo && !isRecording && (
+            <div className="space-y-4">
+              <Card className="max-w-2xl mx-auto">
+                <CardHeader>
+                  <CardTitle className="text-xl font-bold">Preview Your Q Video</CardTitle>
+                </CardHeader>
+                
+                <CardContent className="space-y-6">
+                  <div className="aspect-video bg-black rounded-lg overflow-hidden">
+                    <video
+                      ref={videoRef}
+                      src={recordedVideo}
+                      className={`w-full h-full object-cover ${FILTERS[selectedFilter].class}`}
+                      controls
+                    />
+                  </div>
+                  
+                  <div className="space-y-4">
+                    <Tabs defaultValue="filter" className="w-full">
+                      <TabsList className="grid w-full grid-cols-2">
+                        <TabsTrigger value="filter">Filters</TabsTrigger>
+                        <TabsTrigger value="caption">Caption</TabsTrigger>
+                      </TabsList>
+                      
+                      <TabsContent value="filter" className="space-y-4 pt-4">
+                        <div className="grid grid-cols-3 gap-2">
+                          {FILTERS.map((filter, index) => (
+                            <Button
+                              key={filter.name}
+                              variant={selectedFilter === index ? "default" : "outline"}
+                              className="w-full"
+                              onClick={() => setSelectedFilter(index)}
+                            >
+                              {filter.name}
+                              {selectedFilter === index && <Check className="ml-2 h-4 w-4" />}
+                            </Button>
+                          ))}
+                        </div>
+                      </TabsContent>
+                      
+                      <TabsContent value="caption" className="space-y-4 pt-4">
+                        <div className="space-y-2">
+                          <label className="text-sm font-medium">Add Caption</label>
+                          <input
+                            type="text"
+                            value={captionText}
+                            onChange={(e) => setCaptionText(e.target.value)}
+                            placeholder="Write something about your item..."
+                            className="w-full px-4 py-2 border rounded-md"
+                          />
+                        </div>
+                      </TabsContent>
+                    </Tabs>
+                  </div>
+                  
+                  <div className="flex justify-between">
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setRecordedVideo(null);
+                        setVideoFile(null);
+                        if (videoRef.current) {
+                          videoRef.current.src = '';
+                        }
+                        setCaptionText("");
+                        setSelectedFilter(0);
+                      }}
+                      className="flex items-center gap-2"
+                    >
+                      <RefreshCw className="h-4 w-4" />
+                      Discard & Re-record
+                    </Button>
+                    
+                    <Button
+                      onClick={handleSubmitVideo}
+                      disabled={isSubmitting}
+                      className="flex items-center gap-2"
+                    >
+                      {isSubmitting ? 'Uploading...' : 'Submit Q Video'}
+                    </Button>
+                  </div>
+                  
+                  {isSubmitting && (
+                    <div className="w-full space-y-2 mt-4">
+                      <Progress value={uploadProgress} className="w-full" />
+                      <p className="text-center text-sm text-muted-foreground">
+                        {uploadProgress < 100 ? 'Uploading video...' : 'Processing...'}
+                      </p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          )}
+          
+          {!isRecording && !recordedVideo && !isFullScreen && (
+            <div className="flex justify-center mt-4">
+              <Button
+                variant="outline"
+                onClick={() => setShowVideoUI(false)}
+                disabled={isSubmitting}
+              >
+                Back to Details
+              </Button>
+            </div>
+          )}
         </div>
       </div>
     );
@@ -434,7 +602,7 @@ const SellQ = () => {
             transition={{ duration: 0.2 }}
             className="w-full pt-24"
           >
-            <SellStepOne onNext={handleStepOneComplete} />
+            <SellStepOne onNext={handleStepOneComplete} isQVideo={true} />
           </motion.div>
         ) : (
           <motion.div
@@ -459,6 +627,7 @@ const SellQ = () => {
               onSubmit={handleCreateQ}
               category={formData.category}
               subcategory={formData.subcategory}
+              isQVideo={true}
             />
           </motion.div>
         )}

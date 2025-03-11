@@ -10,9 +10,10 @@ import { ChevronRight, FileImage } from "lucide-react";
 
 interface SellStepOneProps {
   onNext: (data: any) => void;
+  isQVideo?: boolean;
 }
 
-const SellStepOne = ({ onNext }: SellStepOneProps) => {
+const SellStepOne = ({ onNext, isQVideo = false }: SellStepOneProps) => {
   const [category, setCategory] = useState<string | null>(null);
   const [subcategory, setSubcategory] = useState<string | null>(null);
   const [images, setImages] = useState<File[]>([]);
@@ -29,7 +30,8 @@ const SellStepOne = ({ onNext }: SellStepOneProps) => {
       return;
     }
 
-    if (images.length === 0) {
+    // For Q videos, we don't require images
+    if (!isQVideo && images.length === 0) {
       setError("Please upload at least one image");
       return;
     }
@@ -38,9 +40,9 @@ const SellStepOne = ({ onNext }: SellStepOneProps) => {
     onNext({
       category,
       subcategory,
-      images,
+      images: isQVideo ? [] : images,
     });
-  }, [category, subcategory, images, onNext]);
+  }, [category, subcategory, images, onNext, isQVideo]);
 
   return (
     <div className="container mx-auto px-4 py-2 w-full">
@@ -52,7 +54,9 @@ const SellStepOne = ({ onNext }: SellStepOneProps) => {
       >
         <div className="bg-primary/10 rounded-full px-5 py-3 inline-flex items-center">
           <FileImage className="w-5 h-5 mr-2 text-primary" />
-          <span className="font-medium text-primary">Step 1: Category & Images</span>
+          <span className="font-medium text-primary">
+            Step 1: {isQVideo ? "Q Video" : "Category & Images"}
+          </span>
         </div>
       </motion.div>
       
@@ -84,14 +88,17 @@ const SellStepOne = ({ onNext }: SellStepOneProps) => {
           </div>
         </Card>
 
-        <Card className="bg-white rounded-lg shadow-md border-primary/10 overflow-hidden">
-          <div className="p-4 bg-gradient-to-r from-primary/10 to-primary/5 border-b border-primary/10">
-            <h3 className="font-medium text-lg text-primary/90">Add Images (up to 12)</h3>
-          </div>
-          <div className="p-5">
-            <ImageUpload images={images} setImages={setImages} maxImages={12} />
-          </div>
-        </Card>
+        {/* Only show image upload for regular sell listings, not for Q videos */}
+        {!isQVideo && (
+          <Card className="bg-white rounded-lg shadow-md border-primary/10 overflow-hidden">
+            <div className="p-4 bg-gradient-to-r from-primary/10 to-primary/5 border-b border-primary/10">
+              <h3 className="font-medium text-lg text-primary/90">Add Images (up to 12)</h3>
+            </div>
+            <div className="p-5">
+              <ImageUpload images={images} setImages={setImages} maxImages={12} />
+            </div>
+          </Card>
+        )}
         
         {error && (
           <div className="text-destructive text-sm font-medium px-4 py-2 bg-destructive/10 rounded-md">
@@ -104,7 +111,7 @@ const SellStepOne = ({ onNext }: SellStepOneProps) => {
             onClick={handleContinue}
             className="px-8"
             size="lg"
-            disabled={!category || !subcategory || images.length === 0}
+            disabled={!category || !subcategory || (!isQVideo && images.length === 0)}
           >
             Continue
             <ChevronRight className="ml-2 h-4 w-4" />
