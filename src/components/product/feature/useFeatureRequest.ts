@@ -1,8 +1,10 @@
+
 import { useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { generateInvoicePDF } from "@/utils/pdfUtils";
 import { useToast } from "@/components/ui/use-toast";
-import { UserDetails, FeatureOption, FeatureOrder } from "./types";
+import { FeatureOption, UserDetails } from "./types";
+import { useInvoiceGeneration } from "./hooks/useInvoiceGeneration";
+import { useOrderManagement } from "./hooks/useOrderManagement";
+import { supabase } from "@/integrations/supabase/client";
 
 export function useFeatureRequest(
   productId: string,
@@ -20,7 +22,10 @@ export function useFeatureRequest(
     phone: "",
     address: ""
   });
+  
   const { toast } = useToast();
+  const { generateInvoice } = useInvoiceGeneration();
+  const { createFeatureOrder, updateOrderInvoiceUrl, updateListingFeatureStatus } = useOrderManagement();
 
   const handleUserDetailsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -28,53 +33,6 @@ export function useFeatureRequest(
       ...prev,
       [name]: value
     }));
-  };
-
-  const generateInvoice = async (order: FeatureOrder, selectedFeatureOption: FeatureOption) => {
-    try {
-      const invoiceData = {
-        invoiceNumber: order.invoice_number,
-        date: new Date().toLocaleDateString(),
-        customerName: userDetails.name,
-        customerAddress: userDetails.address,
-        customerPhone: userDetails.phone,
-        items: [
-          {
-            description: `Feature Plan: ${selectedOption} for listing "${productTitle}"`,
-            amount: 0,
-            originalPrice: selectedFeatureOption.originalPrice
-          }
-        ],
-        total: 0,
-        companyName: "Quwik",
-        companyAddress: "Bangalore, India",
-        discount: selectedFeatureOption.originalPrice
-      };
-
-      const pdfBlob = await generateInvoicePDF(invoiceData);
-      
-      const fileName = `invoice_${order.invoice_number}.pdf`;
-      const { data: uploadData, error: uploadError } = await supabase.storage
-        .from('invoices')
-        .upload(`public/${fileName}`, pdfBlob, {
-          contentType: 'application/pdf',
-          upsert: true
-        });
-
-      if (uploadError) {
-        console.error("Error uploading invoice:", uploadError);
-        return null;
-      }
-
-      const { data: { publicUrl } } = supabase.storage
-        .from('invoices')
-        .getPublicUrl(`public/${fileName}`);
-
-      return publicUrl;
-    } catch (error) {
-      console.error("Error generating invoice:", error);
-      return null;
-    }
   };
 
   const handleSubmitFeatureRequest = async (featureOptions: FeatureOption[]) => {
@@ -85,18 +43,12 @@ export function useFeatureRequest(
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) throw new Error("No session found");
 
-      const { error: updateError } = await supabase
-        .from('listings')
-        .update({ featured_requested: true })
-        .eq('id', productId);
-
-      if (updateError) {
-        throw new Error('Failed to update listing feature status');
-      }
+      await updateListingFeatureStatus(productId);
 
       const invoiceNumber = `INV-${Date.now().toString().substring(7)}`;
+      const selectedFeatureOption = featureOptions.find(o => o.id === selectedOption) as FeatureOption;
       
-      const orderData: FeatureOrder = {
+      const orderData = {
         listing_id: productId,
         buyer_id: session.user.id,
         seller_id: session.user.id,
@@ -110,29 +62,19 @@ export function useFeatureRequest(
         contact_address: userDetails.address
       };
 
-      const { data: orderResult, error: orderError } = await supabase
-        .rpc('create_feature_order', orderData);
-
-      if (orderError) {
-        throw new Error('Failed to create order: ' + orderError.message);
-      }
-
-      const selectedFeatureOption = featureOptions.find(o => o.id === selectedOption) as FeatureOption;
+      const orderResult = await createFeatureOrder(orderData);
       
-      const invoiceUrl = await generateInvoice(orderData, selectedFeatureOption);
-      
-      if (invoiceUrl && orderResult) {
-        const { error: invoiceError } = await supabase
-          .rpc('update_feature_order_invoice', { 
-            order_id: orderResult.id,
-            invoice_url: invoiceUrl 
-          });
-          
-        if (invoiceError) {
-          console.error('Failed to update invoice URL:', invoiceError);
-        }
+      if (orderResult) {
+        const invoiceUrl = await generateInvoice(
+          { ...orderData, id: orderResult.id },
+          selectedFeatureOption,
+          userDetails
+        );
         
-        setInvoiceUrl(invoiceUrl);
+        if (invoiceUrl) {
+          await updateOrderInvoiceUrl(orderResult.id, invoiceUrl);
+          setInvoiceUrl(invoiceUrl);
+        }
       }
 
       setPaymentComplete(true);
