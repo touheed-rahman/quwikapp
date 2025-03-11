@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { FeaturePricing } from "./types";
 
 export default function FeaturePricingCard() {
   const [category, setCategory] = useState("default");
@@ -66,8 +67,8 @@ export default function FeaturePricingCard() {
           .update({
             price: parseFloat(price),
             original_price: parseFloat(originalPrice),
-            updated_at: new Date()
-          })
+            updated_at: new Date().toISOString()
+          } as FeaturePricing)
           .eq('id', existingPricing.id);
 
         if (updateError) throw updateError;
@@ -81,7 +82,7 @@ export default function FeaturePricingCard() {
             feature_type: featureType,
             price: parseFloat(price),
             original_price: parseFloat(originalPrice)
-          });
+          } as FeaturePricing);
 
         if (insertError) throw insertError;
       }
@@ -113,20 +114,36 @@ export default function FeaturePricingCard() {
   const loadCurrentPricing = async () => {
     setIsLoading(true);
     try {
-      const { data, error } = await supabase.rpc(
-        'get_feature_price',
-        {
-          category_name: category,
-          subcategory_name: subcategory || null,
-          feature_type_name: featureType
-        }
-      );
+      // Use a straightforward query instead of RPC
+      const { data, error } = await supabase
+        .from('feature_pricing')
+        .select('price, original_price')
+        .eq('category', category)
+        .eq('subcategory', subcategory || null)
+        .eq('feature_type', featureType)
+        .maybeSingle();
 
       if (error) throw error;
       
       if (data) {
         setPrice(data.price?.toString() || "");
         setOriginalPrice(data.original_price?.toString() || "");
+      } else {
+        // If no specific pricing found, try to get default pricing
+        const { data: defaultData, error: defaultError } = await supabase
+          .from('feature_pricing')
+          .select('price, original_price')
+          .eq('category', 'default')
+          .eq('subcategory', null)
+          .eq('feature_type', featureType)
+          .maybeSingle();
+          
+        if (defaultError) throw defaultError;
+        
+        if (defaultData) {
+          setPrice(defaultData.price?.toString() || "");
+          setOriginalPrice(defaultData.original_price?.toString() || "");
+        }
       }
     } catch (error: any) {
       console.error("Error loading pricing:", error);

@@ -9,8 +9,6 @@ import FeatureOptionsStep from "./feature/FeatureOptionsStep";
 import ContactDetailsStep from "./feature/ContactDetailsStep";
 import FeatureSuccess from "./feature/FeatureSuccess";
 import { useFeatureRequest } from "./feature/useFeatureRequest";
-import { Home, ShoppingBag, Tag } from "lucide-react";
-import { FeatureOption } from "./feature/types";
 import { useEffect } from "react";
 
 interface FeatureDialogProps {
@@ -49,7 +47,8 @@ export default function FeatureDialog({
     handleNext,
     handleDetailsNext,
     handleDownloadInvoice,
-    loadUserFeaturesStatus
+    loadUserFeaturesStatus,
+    getFeatureOptions
   } = useFeatureRequest(productId, productTitle, onFeatureSuccess, onClose);
 
   // Load user features status when dialog opens
@@ -58,38 +57,6 @@ export default function FeatureDialog({
       loadUserFeaturesStatus();
     }
   }, [isOpen]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  // Feature options with both paid and free options
-  const getFeaturePricing = (): FeatureOption[] => {
-    return [
-      {
-        id: "homepage",
-        title: "Homepage Feature",
-        description: "Your listing will be featured on our homepage",
-        price: hasFreeFeatures ? 0 : (featurePricing?.homepage?.price || 499),
-        originalPrice: featurePricing?.homepage?.original_price || 499,
-        icon: <Home className="h-5 w-5 text-secondary" />
-      },
-      {
-        id: "productPage",
-        title: "Category Feature",
-        description: "Your listing will be featured in its category page",
-        price: hasFreeFeatures ? 0 : (featurePricing?.productPage?.price || 299),
-        originalPrice: featurePricing?.productPage?.original_price || 299,
-        icon: <Tag className="h-5 w-5 text-primary" />
-      },
-      {
-        id: "both",
-        title: "Premium Feature",
-        description: "Your listing will be featured everywhere!",
-        price: hasFreeFeatures ? 0 : (featurePricing?.both?.price || 799),
-        originalPrice: featurePricing?.both?.original_price || 799,
-        icon: <ShoppingBag className="h-5 w-5 text-accent" />
-      }
-    ];
-  };
-
-  const featureOptions = getFeaturePricing();
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -134,7 +101,7 @@ export default function FeatureDialog({
                 Back
               </Button>
               <Button 
-                onClick={() => handleDetailsNext(featureOptions)} 
+                onClick={() => handleDetailsNext(getFeatureOptions())} 
                 disabled={isSubmitting}
               >
                 {isSubmitting ? 'Processing...' : hasFreeFeatures ? 'Submit Request' : 'Submit & Pay'}

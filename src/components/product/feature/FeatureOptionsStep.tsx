@@ -72,12 +72,12 @@ export default function FeatureOptionsStep({
           <div className="flex items-center justify-between">
             <span className="text-sm font-medium">Free Features Available</span>
             <Badge variant={hasFreeFeatures ? "default" : "outline"} className="ml-2">
-              {3 - freeRequestsCount} of 3 remaining
+              {freeRequestsCount} of 3 used
             </Badge>
           </div>
           <p className="text-xs text-muted-foreground mt-1">
             {hasFreeFeatures 
-              ? `You have ${3 - freeRequestsCount} free feature requests available. Use them to promote your listings without cost!` 
+              ? `You have used ${freeRequestsCount} of your 3 free feature requests. ${3 - freeRequestsCount} remaining.` 
               : "You've used all your free feature requests. You can still feature your listings at the prices shown below."}
           </p>
         </div>

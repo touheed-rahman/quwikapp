@@ -1,10 +1,10 @@
-
 import { useState } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { FeatureOption, UserDetails } from "./types";
 import { useInvoiceGeneration } from "./hooks/useInvoiceGeneration";
 import { useOrderManagement } from "./hooks/useOrderManagement";
 import { supabase } from "@/integrations/supabase/client";
+import { Home, ShoppingBag, Tag } from "lucide-react";
 
 export function useFeatureRequest(
   productId: string,
@@ -43,6 +43,35 @@ export function useFeatureRequest(
       ...prev,
       [name]: value
     }));
+  };
+
+  const getFeatureOptions = (): FeatureOption[] => {
+    return [
+      {
+        id: "homepage",
+        title: "Homepage Feature",
+        description: "Your listing will be featured on our homepage",
+        price: hasFreeFeatures ? 0 : (featurePricing?.homepage?.price || 499),
+        originalPrice: featurePricing?.homepage?.original_price || 499,
+        icon: <Home className="h-5 w-5 text-secondary" />
+      },
+      {
+        id: "productPage",
+        title: "Category Feature",
+        description: "Your listing will be featured in its category page",
+        price: hasFreeFeatures ? 0 : (featurePricing?.productPage?.price || 299),
+        originalPrice: featurePricing?.productPage?.original_price || 299,
+        icon: <Tag className="h-5 w-5 text-primary" />
+      },
+      {
+        id: "both",
+        title: "Premium Feature",
+        description: "Your listing will be featured everywhere!",
+        price: hasFreeFeatures ? 0 : (featurePricing?.both?.price || 799),
+        originalPrice: featurePricing?.both?.original_price || 799,
+        icon: <ShoppingBag className="h-5 w-5 text-accent" />
+      }
+    ];
   };
 
   const loadUserFeaturesStatus = async () => {
@@ -217,6 +246,7 @@ export function useFeatureRequest(
     handleNext,
     handleDetailsNext,
     handleDownloadInvoice,
-    loadUserFeaturesStatus
+    loadUserFeaturesStatus,
+    getFeatureOptions
   };
 }

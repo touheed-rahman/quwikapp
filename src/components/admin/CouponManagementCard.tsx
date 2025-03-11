@@ -11,6 +11,7 @@ import { format } from "date-fns";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
+import { FeatureCoupon } from "./types";
 
 export default function CouponManagementCard() {
   const [code, setCode] = useState("");
@@ -82,7 +83,7 @@ export default function CouponManagementCard() {
           valid_until: validUntil?.toISOString(),
           usage_limit: usageLimit ? parseInt(usageLimit) : null,
           usage_count: 0
-        });
+        } as FeatureCoupon);
 
       if (createError) throw createError;
 
