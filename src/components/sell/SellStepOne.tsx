@@ -50,7 +50,7 @@ const SellStepOne = ({ onNext }: SellStepOneProps) => {
         transition={{ duration: 0.3 }}
         className="mb-8 flex items-center justify-center"
       >
-        <div className="bg-primary/10 rounded-full px-4 py-2 inline-flex items-center">
+        <div className="bg-primary/10 rounded-full px-5 py-3 inline-flex items-center">
           <FileImage className="w-5 h-5 mr-2 text-primary" />
           <span className="font-medium text-primary">Step 1: Category & Images</span>
         </div>
@@ -86,10 +86,10 @@ const SellStepOne = ({ onNext }: SellStepOneProps) => {
 
         <Card className="bg-white rounded-lg shadow-md border-primary/10 overflow-hidden">
           <div className="p-4 bg-gradient-to-r from-primary/10 to-primary/5 border-b border-primary/10">
-            <h3 className="font-medium text-lg text-primary/90">Add Images</h3>
+            <h3 className="font-medium text-lg text-primary/90">Add Images (up to 12)</h3>
           </div>
           <div className="p-5">
-            <ImageUpload images={images} setImages={setImages} />
+            <ImageUpload images={images} setImages={setImages} maxImages={12} />
           </div>
         </Card>
         

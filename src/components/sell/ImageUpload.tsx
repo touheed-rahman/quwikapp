@@ -11,7 +11,7 @@ interface ImageUploadProps {
   maxImages?: number;
 }
 
-const ImageUpload = ({ images, setImages, maxImages = 5 }: ImageUploadProps) => {
+const ImageUpload = ({ images, setImages, maxImages = 12 }: ImageUploadProps) => {
   const { toast } = useToast();
   const [previews, setPreviews] = useState<string[]>([]);
   const [dragActive, setDragActive] = useState(false);
@@ -143,7 +143,7 @@ const ImageUpload = ({ images, setImages, maxImages = 5 }: ImageUploadProps) => 
         </label>
       </div>
 
-      {/* Preview images */}
+      {/* Preview images - display in a grid */}
       {previews.length > 0 && (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mt-4">
           <AnimatePresence>
@@ -186,6 +186,13 @@ const ImageUpload = ({ images, setImages, maxImages = 5 }: ImageUploadProps) => 
         <div className="text-center p-6 bg-gray-50 rounded-lg border border-gray-200">
           <Image className="w-10 h-10 mx-auto text-gray-400 mb-2" />
           <p className="text-sm text-muted-foreground">No images uploaded yet</p>
+        </div>
+      )}
+
+      {/* Image counter */}
+      {images.length > 0 && (
+        <div className="text-xs text-right text-muted-foreground">
+          {images.length} of {maxImages} images
         </div>
       )}
     </div>

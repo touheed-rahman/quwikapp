@@ -111,40 +111,39 @@ const AdminPanel = () => {
           </div>
           
           <div className="hidden md:flex items-center space-x-1 ml-8">
-            <TabsList className="bg-secondary/40 p-1 rounded-lg">
-              <TabsTrigger 
-                value="dashboard" 
-                onClick={() => setActiveTab('dashboard')}
-                className={`${activeTab === 'dashboard' ? 'bg-primary text-white' : ''} px-4`}
-              >
-                <Gauge className="w-4 h-4 mr-2" />
-                Dashboard
-              </TabsTrigger>
-              <TabsTrigger 
-                value="listings" 
-                onClick={() => setActiveTab('listings')}
-                className={`${activeTab === 'listings' ? 'bg-primary text-white' : ''} px-4`}
-              >
-                <LayoutGrid className="w-4 h-4 mr-2" />
-                Listings
-              </TabsTrigger>
-              <TabsTrigger 
-                value="users" 
-                onClick={() => setActiveTab('users')}
-                className={`${activeTab === 'users' ? 'bg-primary text-white' : ''} px-4`}
-              >
-                <Users className="w-4 h-4 mr-2" />
-                Users
-              </TabsTrigger>
-              <TabsTrigger 
-                value="analytics" 
-                onClick={() => setActiveTab('analytics')}
-                className={`${activeTab === 'analytics' ? 'bg-primary text-white' : ''} px-4`}
-              >
-                <BarChart3 className="w-4 h-4 mr-2" />
-                Analytics
-              </TabsTrigger>
-            </TabsList>
+            {/* Wrapping TabsList with Tabs component to fix the error */}
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+              <TabsList className="bg-secondary/40 p-1 rounded-lg">
+                <TabsTrigger 
+                  value="dashboard" 
+                  className={`${activeTab === 'dashboard' ? 'bg-primary text-white' : ''} px-4`}
+                >
+                  <Gauge className="w-4 h-4 mr-2" />
+                  Dashboard
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="listings" 
+                  className={`${activeTab === 'listings' ? 'bg-primary text-white' : ''} px-4`}
+                >
+                  <LayoutGrid className="w-4 h-4 mr-2" />
+                  Listings
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="users" 
+                  className={`${activeTab === 'users' ? 'bg-primary text-white' : ''} px-4`}
+                >
+                  <Users className="w-4 h-4 mr-2" />
+                  Users
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="analytics" 
+                  className={`${activeTab === 'analytics' ? 'bg-primary text-white' : ''} px-4`}
+                >
+                  <BarChart3 className="w-4 h-4 mr-2" />
+                  Analytics
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
           </div>
           
           <div className="flex items-center gap-2">
@@ -279,32 +278,41 @@ const AdminPanel = () => {
             transition={{ duration: 0.2 }}
             className="space-y-6"
           >
-            {activeTab === 'dashboard' && <DashboardMetrics />}
-            
-            {activeTab === 'listings' && <ListingManagement />}
-            
-            {activeTab === 'users' && <UserManagement />}
-            
-            {activeTab === 'analytics' && (
-              <div className="bg-white p-6 rounded-lg shadow">
-                <h2 className="text-xl font-semibold mb-4">Analytics Dashboard</h2>
-                <p className="text-muted-foreground">Detailed analytics coming soon...</p>
-              </div>
-            )}
-            
-            {activeTab === 'notifications' && (
-              <div className="bg-white p-6 rounded-lg shadow">
-                <h2 className="text-xl font-semibold mb-4">System Notifications</h2>
-                <p className="text-muted-foreground">Notification management coming soon...</p>
-              </div>
-            )}
-            
-            {activeTab === 'settings' && (
-              <div className="bg-white p-6 rounded-lg shadow">
-                <h2 className="text-xl font-semibold mb-4">Admin Settings</h2>
-                <p className="text-muted-foreground">Settings panel coming soon...</p>
-              </div>
-            )}
+            {/* These TabsContent components should be within a Tabs component */}
+            <Tabs value={activeTab} className="w-full">
+              <TabsContent value="dashboard">
+                <DashboardMetrics />
+              </TabsContent>
+              
+              <TabsContent value="listings">
+                <ListingManagement />
+              </TabsContent>
+              
+              <TabsContent value="users">
+                <UserManagement />
+              </TabsContent>
+              
+              <TabsContent value="analytics">
+                <div className="bg-white p-6 rounded-lg shadow">
+                  <h2 className="text-xl font-semibold mb-4">Analytics Dashboard</h2>
+                  <p className="text-muted-foreground">Detailed analytics coming soon...</p>
+                </div>
+              </TabsContent>
+              
+              <TabsContent value="notifications">
+                <div className="bg-white p-6 rounded-lg shadow">
+                  <h2 className="text-xl font-semibold mb-4">System Notifications</h2>
+                  <p className="text-muted-foreground">Notification management coming soon...</p>
+                </div>
+              </TabsContent>
+              
+              <TabsContent value="settings">
+                <div className="bg-white p-6 rounded-lg shadow">
+                  <h2 className="text-xl font-semibold mb-4">Admin Settings</h2>
+                  <p className="text-muted-foreground">Settings panel coming soon...</p>
+                </div>
+              </TabsContent>
+            </Tabs>
           </motion.div>
         </AnimatePresence>
       </motion.div>

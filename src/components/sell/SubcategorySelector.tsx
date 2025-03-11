@@ -13,7 +13,7 @@ interface SubcategorySelectorProps {
 // Define subcategories mapping
 const subcategories: Record<string, string[]> = {
   vehicles: [
-    "Cars", "Motorcycles", "Trucks", "Bicycles", "Auto Parts", "Boats", "Other Vehicles"
+    "Cars", "Motorcycles", "Trucks", "Bicycles", "Auto Parts", "Boats", "Other Vehicles", "Scooters"
   ],
   mobiles: [
     "Smartphones", "Feature Phones", "Tablets", "Accessories", "Mobile Parts"
@@ -37,14 +37,27 @@ const subcategories: Record<string, string[]> = {
 
 const SubcategorySelector = ({ category, value, onChange, disabled = false }: SubcategorySelectorProps) => {
   const options = category ? subcategories[category] || [] : [];
+  const [localValue, setLocalValue] = useState<string>('');
 
   useEffect(() => {
     // Reset value when category changes
-    if (category && options.length > 0 && (!value || !options.includes(value))) {
-      onChange(options[0]);
+    if (category && options.length > 0) {
+      if (!value || !options.includes(value)) {
+        onChange(options[0]);
+        setLocalValue(options[0]);
+      } else {
+        setLocalValue(value);
+      }
+    } else {
+      setLocalValue('');
     }
   }, [category, options, value, onChange]);
   
+  const handleValueChange = (newValue: string) => {
+    onChange(newValue);
+    setLocalValue(newValue);
+  };
+
   return (
     <div className="space-y-3">
       <Label htmlFor="subcategory" className="text-sm font-medium">
@@ -52,8 +65,8 @@ const SubcategorySelector = ({ category, value, onChange, disabled = false }: Su
       </Label>
       <Select
         disabled={disabled || options.length === 0}
-        value={value || ""}
-        onValueChange={onChange}
+        value={localValue}
+        onValueChange={handleValueChange}
       >
         <SelectTrigger id="subcategory" className="w-full px-4 py-6 focus:ring-primary focus:border-primary">
           <SelectValue placeholder="Select a subcategory" />

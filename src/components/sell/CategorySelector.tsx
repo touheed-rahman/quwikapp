@@ -44,10 +44,10 @@ const CategorySelector = ({ value, onChange }: CategorySelectorProps) => {
               <Button
                 type="button"
                 variant={isSelected ? "default" : "outline"}
-                className={`w-full h-full min-h-[70px] flex flex-col gap-2 items-center justify-center p-3 ${isSelected ? "bg-primary text-white" : "bg-background border-primary/20 hover:border-primary hover:bg-primary/5"}`}
+                className={`w-full h-full min-h-[80px] flex flex-col gap-2 items-center justify-center p-3 ${isSelected ? "bg-primary text-white" : "bg-background border-primary/20 hover:border-primary hover:bg-primary/5"}`}
                 onClick={() => onChange(category.id)}
               >
-                <IconComponent className={`h-7 w-7 ${isSelected ? "text-white" : "text-primary/80"}`} />
+                <IconComponent className={`h-8 w-8 sm:h-7 sm:w-7 ${isSelected ? "text-white" : "text-primary/80"}`} />
                 <span className="text-xs font-medium">{category.label}</span>
               </Button>
             </motion.div>
