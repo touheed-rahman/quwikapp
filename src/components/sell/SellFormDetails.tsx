@@ -24,6 +24,7 @@ interface SellFormDetailsProps {
   onSubmit: (e: React.FormEvent) => void;
   category?: string;
   subcategory?: string;
+  isQVideo?: boolean;
 }
 
 const SellFormDetails = ({
@@ -40,6 +41,7 @@ const SellFormDetails = ({
   onSubmit,
   category,
   subcategory,
+  isQVideo = false,
 }: SellFormDetailsProps) => {
   const { selectedLocation, setSelectedLocation } = useLocation();
 
@@ -104,7 +106,7 @@ const SellFormDetails = ({
       </Card>
       
       <div>
-        <FormActions isSubmitting={isSubmitting} onBack={onBack} />
+        <FormActions isSubmitting={isSubmitting} onBack={onBack} isQVideo={isQVideo} />
       </div>
     </motion.form>
   );

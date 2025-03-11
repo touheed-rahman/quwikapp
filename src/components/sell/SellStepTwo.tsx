@@ -20,6 +20,7 @@ interface SellStepTwoProps {
   onSubmit: (e: React.FormEvent) => void;
   category?: string;
   subcategory?: string;
+  isQVideo?: boolean;
 }
 
 const SellStepTwo = memo(({
@@ -35,7 +36,8 @@ const SellStepTwo = memo(({
   onBack,
   onSubmit,
   category,
-  subcategory
+  subcategory,
+  isQVideo = false
 }: SellStepTwoProps) => {
   const { selectedLocation } = useLocation();
 
@@ -73,6 +75,7 @@ const SellStepTwo = memo(({
             onSubmit={onSubmit}
             category={category}
             subcategory={subcategory}
+            isQVideo={isQVideo}
           />
         </motion.div>
       </div>

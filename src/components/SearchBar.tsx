@@ -29,4 +29,6 @@ const SearchBar = () => {
   );
 };
 
+// Add both default and named exports for compatibility
+export { SearchBar };
 export default SearchBar;

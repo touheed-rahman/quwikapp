@@ -1,60 +1,42 @@
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { 
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Video, Upload, Camera } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
 import { useIsMobile } from '@/hooks/use-mobile';
 import Header from '@/components/Header';
 import ProfileHeader from '@/components/profile/ProfileHeader';
 import { Progress } from '@/components/ui/progress';
-
-interface Category {
-  id: string;
-  name: string;
-}
-
-interface Subcategory {
-  id: string;
-  name: string;
-  category_id: string;
-}
+import { useLocation } from "@/contexts/LocationContext";
+import SellStepOne from "@/components/sell/SellStepOne";
+import SellStepTwo from "@/components/sell/SellStepTwo";
+import { Upload, Camera } from 'lucide-react';
+import { motion, AnimatePresence } from "framer-motion";
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 const SellQ = () => {
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [price, setPrice] = useState<number | ''>('');
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [subcategories, setSubcategories] = useState<Subcategory[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState('');
-  const [selectedSubcategory, setSelectedSubcategory] = useState('');
-  const [location, setLocation] = useState('');
+  const [step, setStep] = useState(1);
+  const [formData, setFormData] = useState<any>({});
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [price, setPrice] = useState("");
+  const [condition, setCondition] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [showVideoUI, setShowVideoUI] = useState(false);
   const [videoFile, setVideoFile] = useState<File | null>(null);
   const [isRecording, setIsRecording] = useState(false);
   const [recordedVideo, setRecordedVideo] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
-  const [isLocationLoading, setIsLocationLoading] = useState(true);
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const mediaStreamRef = useRef<MediaStream | null>(null);
-  const videoFileInputRef = useRef<HTMLInputElement>(null);
   
   const navigate = useNavigate();
   const { toast } = useToast();
   const isMobile = useIsMobile();
+  const { selectedLocation } = useLocation();
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const mediaStreamRef = useRef<MediaStream | null>(null);
+  const videoFileInputRef = useRef<HTMLInputElement>(null);
 
   // Get user's session
   const [userId, setUserId] = useState<string | null>(null);
@@ -72,76 +54,33 @@ const SellQ = () => {
     getUserSession();
   }, [navigate]);
 
-  // Get categories and subcategories
-  useEffect(() => {
-    const fetchCategories = async () => {
-      const { data: categoriesData, error: categoriesError } = await supabase
-        .from('categories')
-        .select('*')
-        .order('name');
-
-      if (categoriesError) {
-        console.error('Error fetching categories:', categoriesError);
-        return;
-      }
-
-      setCategories(categoriesData || []);
-
-      const { data: subcategoriesData, error: subcategoriesError } = await supabase
-        .from('subcategories')
-        .select('*')
-        .order('name');
-
-      if (subcategoriesError) {
-        console.error('Error fetching subcategories:', subcategoriesError);
-        return;
-      }
-
-      setSubcategories(subcategoriesData || []);
-    };
-
-    fetchCategories();
+  const handleStepOneComplete = useCallback((data: any) => {
+    setFormData((prevData: any) => ({ ...prevData, ...data }));
+    window.scrollTo(0, 0);
+    requestAnimationFrame(() => {
+      setStep(2);
+    });
   }, []);
 
-  // Get user's location
-  useEffect(() => {
-    const fetchLocation = async () => {
-      setIsLocationLoading(true);
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session) return;
-        
-        const { data: userData, error } = await supabase
-          .from('profiles')
-          .select('location')
-          .eq('id', session.user.id)
-          .single();
-        
-        if (error) throw error;
-        
-        if (userData && userData.location) {
-          setLocation(userData.location);
-        }
-      } catch (error) {
-        console.error('Error fetching user location:', error);
-      } finally {
-        setIsLocationLoading(false);
-      }
-    };
-    
-    fetchLocation();
+  const handleBack = useCallback(() => {
+    window.scrollTo(0, 0);
+    requestAnimationFrame(() => {
+      setStep(1);
+    });
   }, []);
 
-  const handleCategoryChange = (value: string) => {
-    setSelectedCategory(value);
-    setSelectedSubcategory('');
-  };
-
-  const getFilteredSubcategories = () => {
-    return subcategories.filter(
-      (subcategory) => subcategory.category_id === selectedCategory
-    );
-  };
+  const handleCreateQ = useCallback((e: React.FormEvent) => {
+    e.preventDefault();
+    if (!title || !description || !price || !condition || !selectedLocation || !formData.category || !formData.subcategory) {
+      toast({
+        title: "Missing Fields",
+        description: "Please fill all required fields",
+        variant: "destructive",
+      });
+      return;
+    }
+    setShowVideoUI(true);
+  }, [title, description, price, condition, selectedLocation, formData, toast]);
 
   const startRecording = async () => {
     try {
@@ -243,11 +182,11 @@ const SellQ = () => {
     setRecordedVideo(URL.createObjectURL(file));
   };
 
-  const handleSubmit = async () => {
-    if (!title || !description || !price || !selectedCategory || !selectedSubcategory || !location || !videoFile) {
+  const handleSubmitVideo = async () => {
+    if (!videoFile) {
       toast({
-        title: 'Missing Fields',
-        description: 'Please fill all required fields',
+        title: 'Missing Video',
+        description: 'Please record or upload a video',
         variant: 'destructive',
       });
       return;
@@ -263,7 +202,7 @@ const SellQ = () => {
       return;
     }
     
-    setIsLoading(true);
+    setIsSubmitting(true);
     setUploadProgress(0);
     
     try {
@@ -272,12 +211,12 @@ const SellQ = () => {
         title,
         description,
         price: Number(price),
-        category: selectedCategory,
-        subcategory: selectedSubcategory,
-        location,
+        category: formData.category,
+        subcategory: formData.subcategory,
+        location: selectedLocation,
         user_id: userId,
         status: 'active',
-        condition: 'used', // Default condition
+        condition: condition,
         images: [] // No images for Q video listings
       };
       
@@ -340,228 +279,190 @@ const SellQ = () => {
         variant: 'destructive',
       });
     } finally {
-      setIsLoading(false);
+      setIsSubmitting(false);
     }
   };
 
-  return (
-    <div className="min-h-screen bg-gray-50">
-      {isMobile ? <ProfileHeader /> : <Header />}
-      
-      <div className="container mx-auto px-4 pt-20 pb-16">
-        <Card className="max-w-2xl mx-auto">
-          <CardHeader>
-            <CardTitle className="text-2xl font-bold">Create Q Video</CardTitle>
-          </CardHeader>
-          
-          <CardContent className="space-y-6">
-            <div className="space-y-2">
-              <Label htmlFor="title">Title</Label>
-              <Input 
-                id="title" 
-                value={title} 
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder="Enter a title for your product"
-                maxLength={80}
-              />
-              <p className="text-xs text-gray-500 text-right">{title.length}/80</p>
-            </div>
+  if (showVideoUI) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        {isMobile ? <ProfileHeader /> : <Header />}
+        
+        <div className="container mx-auto px-4 pt-20 pb-16">
+          <Card className="max-w-2xl mx-auto">
+            <CardHeader>
+              <CardTitle className="text-2xl font-bold">Create Q Video</CardTitle>
+            </CardHeader>
             
-            <div className="space-y-2">
-              <Label htmlFor="description">Description</Label>
-              <Textarea 
-                id="description" 
-                value={description} 
-                onChange={(e) => setDescription(e.target.value)}
-                placeholder="Describe your product"
-                className="min-h-[100px]"
-                maxLength={500}
-              />
-              <p className="text-xs text-gray-500 text-right">{description.length}/500</p>
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="price">Price (₹)</Label>
-              <Input 
-                id="price" 
-                type="number" 
-                value={price}
-                onChange={(e) => setPrice(e.target.value === '' ? '' : Number(e.target.value))}
-                placeholder="Enter price"
-                min={0}
-              />
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="category">Category</Label>
-                <Select 
-                  value={selectedCategory} 
-                  onValueChange={handleCategoryChange}
-                >
-                  <SelectTrigger id="category">
-                    <SelectValue placeholder="Select category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {categories.map((category) => (
-                      <SelectItem key={category.id} value={category.id}>
-                        {category.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="subcategory">Subcategory</Label>
-                <Select 
-                  value={selectedSubcategory} 
-                  onValueChange={setSelectedSubcategory}
-                  disabled={!selectedCategory}
-                >
-                  <SelectTrigger id="subcategory">
-                    <SelectValue placeholder="Select subcategory" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {getFilteredSubcategories().map((subcategory) => (
-                      <SelectItem key={subcategory.id} value={subcategory.id}>
-                        {subcategory.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="location">Location</Label>
-              <Input 
-                id="location" 
-                value={location} 
-                onChange={(e) => setLocation(e.target.value)}
-                placeholder="Enter your location"
-                disabled={isLocationLoading}
-              />
-            </div>
-            
-            <div className="space-y-3">
-              <Label>Product Video</Label>
-              
-              {(!recordedVideo && !isRecording) && (
-                <div className="grid grid-cols-2 gap-4">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="h-24 flex flex-col items-center justify-center gap-2"
-                    onClick={startRecording}
-                  >
-                    <Camera className="h-6 w-6" />
-                    <span>Record Video</span>
-                  </Button>
-                  
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="h-24 flex flex-col items-center justify-center gap-2"
-                    onClick={() => videoFileInputRef.current?.click()}
-                  >
-                    <Upload className="h-6 w-6" />
-                    <span>Upload Video</span>
-                    <input
-                      type="file"
-                      accept="video/*"
-                      className="hidden"
-                      ref={videoFileInputRef}
-                      onChange={handleFileUpload}
-                    />
-                  </Button>
-                </div>
-              )}
-              
-              {isRecording && (
-                <div className="space-y-4">
-                  <div className="aspect-video bg-black rounded-lg overflow-hidden">
-                    <video
-                      ref={videoRef}
-                      className="w-full h-full object-cover"
-                      muted
-                    />
-                  </div>
-                  
-                  <div className="flex justify-center">
+            <CardContent className="space-y-6">
+              <div className="space-y-3">
+                <h3 className="font-medium">Title: {title}</h3>
+                <p className="text-sm text-muted-foreground">Price: ₹{price}</p>
+                
+                {(!recordedVideo && !isRecording) && (
+                  <div className="grid grid-cols-2 gap-4">
                     <Button
-                      variant="destructive"
-                      onClick={stopRecording}
-                      className="flex items-center gap-2"
-                    >
-                      <span className="animate-pulse h-3 w-3 rounded-full bg-white" />
-                      Stop Recording
-                    </Button>
-                  </div>
-                </div>
-              )}
-              
-              {recordedVideo && !isRecording && (
-                <div className="space-y-4">
-                  <div className="aspect-video bg-black rounded-lg overflow-hidden">
-                    <video
-                      ref={videoRef}
-                      src={recordedVideo}
-                      className="w-full h-full object-cover"
-                      controls
-                    />
-                  </div>
-                  
-                  <div className="flex justify-center">
-                    <Button
+                      type="button"
                       variant="outline"
-                      onClick={() => {
-                        setRecordedVideo(null);
-                        setVideoFile(null);
-                        if (videoRef.current) {
-                          videoRef.current.src = '';
-                        }
-                      }}
+                      className="h-24 flex flex-col items-center justify-center gap-2"
+                      onClick={startRecording}
                     >
-                      Discard Video
+                      <Camera className="h-6 w-6" />
+                      <span>Record Video</span>
+                    </Button>
+                    
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="h-24 flex flex-col items-center justify-center gap-2"
+                      onClick={() => videoFileInputRef.current?.click()}
+                    >
+                      <Upload className="h-6 w-6" />
+                      <span>Upload Video</span>
+                      <input
+                        type="file"
+                        accept="video/*"
+                        className="hidden"
+                        ref={videoFileInputRef}
+                        onChange={handleFileUpload}
+                      />
                     </Button>
                   </div>
+                )}
+                
+                {isRecording && (
+                  <div className="space-y-4">
+                    <div className="aspect-video bg-black rounded-lg overflow-hidden">
+                      <video
+                        ref={videoRef}
+                        className="w-full h-full object-cover"
+                        muted
+                      />
+                    </div>
+                    
+                    <div className="flex justify-center">
+                      <Button
+                        variant="destructive"
+                        onClick={stopRecording}
+                        className="flex items-center gap-2"
+                      >
+                        <span className="animate-pulse h-3 w-3 rounded-full bg-white" />
+                        Stop Recording
+                      </Button>
+                    </div>
+                  </div>
+                )}
+                
+                {recordedVideo && !isRecording && (
+                  <div className="space-y-4">
+                    <div className="aspect-video bg-black rounded-lg overflow-hidden">
+                      <video
+                        ref={videoRef}
+                        src={recordedVideo}
+                        className="w-full h-full object-cover"
+                        controls
+                      />
+                    </div>
+                    
+                    <div className="flex justify-center">
+                      <Button
+                        variant="outline"
+                        onClick={() => {
+                          setRecordedVideo(null);
+                          setVideoFile(null);
+                          if (videoRef.current) {
+                            videoRef.current.src = '';
+                          }
+                        }}
+                      >
+                        Discard Video
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+            
+            <div className="p-6 border-t">
+              {isSubmitting && (
+                <div className="w-full space-y-2 mb-4">
+                  <Progress value={uploadProgress} className="w-full" />
+                  <p className="text-center text-sm text-muted-foreground">
+                    {uploadProgress < 100 ? 'Uploading video...' : 'Processing...'}
+                  </p>
                 </div>
               )}
-            </div>
-          </CardContent>
-          
-          <CardFooter className="flex flex-col space-y-4">
-            {isLoading && (
-              <div className="w-full space-y-2">
-                <Progress value={uploadProgress} className="w-full" />
-                <p className="text-center text-sm text-muted-foreground">
-                  {uploadProgress < 100 ? 'Uploading video...' : 'Processing...'}
-                </p>
-              </div>
-            )}
-            
-            <div className="flex w-full space-x-2">
-              <Button
-                variant="outline"
-                className="flex-1"
-                onClick={() => navigate('/')}
-                disabled={isLoading}
-              >
-                Cancel
-              </Button>
               
-              <Button
-                className="flex-1"
-                onClick={handleSubmit}
-                disabled={isLoading || !videoFile}
-              >
-                {isLoading ? 'Uploading...' : 'Submit'}
-              </Button>
+              <div className="flex w-full space-x-2">
+                <Button
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => setShowVideoUI(false)}
+                  disabled={isSubmitting}
+                >
+                  Back
+                </Button>
+                
+                <Button
+                  className="flex-1"
+                  onClick={handleSubmitVideo}
+                  disabled={isSubmitting || !videoFile}
+                >
+                  {isSubmitting ? 'Uploading...' : 'Submit'}
+                </Button>
+              </div>
             </div>
-          </CardFooter>
-        </Card>
+          </Card>
+        </div>
       </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-background to-primary/5">
+      <div className="sticky top-0 z-10 bg-background/95 border-b border-primary/10 shadow-sm">
+        <Header />
+      </div>
+      
+      <AnimatePresence mode="wait">
+        {step === 1 ? (
+          <motion.div
+            key="step1"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="w-full pt-24"
+          >
+            <SellStepOne onNext={handleStepOneComplete} />
+          </motion.div>
+        ) : (
+          <motion.div
+            key="step2"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="w-full pt-24"
+          >
+            <SellStepTwo
+              title={title}
+              setTitle={setTitle}
+              description={description}
+              setDescription={setDescription}
+              price={price}
+              setPrice={setPrice}
+              condition={condition}
+              setCondition={setCondition}
+              isSubmitting={isSubmitting}
+              onBack={handleBack}
+              onSubmit={handleCreateQ}
+              category={formData.category}
+              subcategory={formData.subcategory}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

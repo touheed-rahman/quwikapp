@@ -1,6 +1,6 @@
 
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import { Home, Plus, ListOrdered, Heart, Video } from "lucide-react";
+import { Home, Plus, ListOrdered, Heart } from "lucide-react";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { 
@@ -37,7 +37,7 @@ const MobileNavigation = ({ onChatOpen }: MobileNavigationProps) => {
         </Link>
         
         <Link to="/q" className="flex flex-col items-center gap-1">
-          <Video className={`h-6 w-6 ${location.pathname === '/q' ? 'text-primary' : 'text-muted-foreground'}`} />
+          <div className={`font-bold text-xl ${location.pathname === '/q' ? 'text-primary' : 'text-muted-foreground'}`}>Q</div>
           <span className="text-xs">Q</span>
         </Link>
         
@@ -85,7 +85,7 @@ const MobileNavigation = ({ onChatOpen }: MobileNavigationProps) => {
               variant="outline"
             >
               <div className="bg-secondary/10 p-2 rounded-full">
-                <Video className="h-6 w-6 text-secondary" />
+                <div className="font-bold text-xl text-secondary">Q</div>
               </div>
               <div className="text-left">
                 <h3 className="font-medium">Q Video</h3>

@@ -1,14 +1,15 @@
 
 import { Button } from "@/components/ui/button";
-import { Loader2, ArrowLeft, Send } from "lucide-react";
+import { Loader2, ArrowLeft, Send, Video } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface FormActionsProps {
   isSubmitting: boolean;
   onBack: () => void;
+  isQVideo?: boolean;
 }
 
-const FormActions = ({ isSubmitting, onBack }: FormActionsProps) => {
+const FormActions = ({ isSubmitting, onBack, isQVideo = false }: FormActionsProps) => {
   return (
     <motion.div 
       className="flex flex-col sm:flex-row gap-3 mt-8 w-full"
@@ -43,7 +44,7 @@ const FormActions = ({ isSubmitting, onBack }: FormActionsProps) => {
             >
               <div className="flex items-center gap-2">
                 <Loader2 className="h-4 w-4 animate-spin" />
-                <span className="font-medium">Posting Ad...</span>
+                <span className="font-medium">{isQVideo ? 'Creating Q...' : 'Posting Ad...'}</span>
               </div>
             </Button>
           </motion.div>
@@ -64,8 +65,17 @@ const FormActions = ({ isSubmitting, onBack }: FormActionsProps) => {
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.97 }}
               >
-                <Send className="h-4 w-4" />
-                <span className="font-medium">Post Ad</span>
+                {isQVideo ? (
+                  <>
+                    <div className="font-bold">Q</div>
+                    <span className="font-medium">Create Q</span>
+                  </>
+                ) : (
+                  <>
+                    <Send className="h-4 w-4" />
+                    <span className="font-medium">Post Ad</span>
+                  </>
+                )}
               </motion.div>
             </Button>
           </motion.div>
