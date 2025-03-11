@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -11,7 +10,7 @@ import { Progress } from '@/components/ui/progress';
 import { useLocation } from "@/contexts/LocationContext";
 import SellStepOne from "@/components/sell/SellStepOne";
 import SellStepTwo from "@/components/sell/SellStepTwo";
-import { Upload, Camera, X, Sparkles, TextIcon, Check, RefreshCw } from 'lucide-react';
+import { Upload, Camera, X, Sparkles, TextIcon, Check, RefreshCw, Send, Music, Filter, FlipHorizontal, Maximize2 } from 'lucide-react';
 import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Slider } from '@/components/ui/slider';
@@ -136,9 +135,10 @@ const SellQ = () => {
     try {
       const constraints = {
         video: {
-          width: { ideal: 1920 },
-          height: { ideal: 1080 },
-          facingMode: "user"
+          width: { ideal: window.innerHeight },
+          height: { ideal: window.innerWidth },
+          facingMode: "user",
+          aspectRatio: { ideal: 9/16 }
         },
         audio: true
       };
@@ -149,7 +149,8 @@ const SellQ = () => {
       
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
-        videoRef.current.play();
+        videoRef.current.style.transform = 'scaleX(-1)'; // Mirror effect for selfie view
+        await videoRef.current.play();
       }
       
       const mediaRecorder = new MediaRecorder(stream, {
@@ -346,10 +347,10 @@ const SellQ = () => {
 
   if (showVideoUI) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-black">
         {isMobile ? <ProfileHeader /> : <Header />}
         
-        <div ref={videoContainerRef} className={`relative ${isFullScreen ? 'fixed inset-0 z-50 bg-black' : 'container mx-auto px-4 pt-20 pb-16'}`}>
+        <div ref={videoContainerRef} className="relative h-screen w-full bg-black overflow-hidden">
           {(!recordedVideo && !isRecording) && (
             <Card className="max-w-2xl mx-auto">
               <CardHeader>
@@ -395,83 +396,92 @@ const SellQ = () => {
           )}
           
           {isRecording && (
-            <div className="space-y-4">
-              <div className={`${isFullScreen ? 'w-full h-screen' : 'aspect-video'} bg-black rounded-lg relative overflow-hidden`}>
-                <video
-                  ref={videoRef}
-                  className={`w-full h-full object-cover ${FILTERS[selectedFilter].class}`}
-                  muted
-                />
+            <div className="h-full relative">
+              <video
+                ref={videoRef}
+                className={`w-full h-full object-cover ${FILTERS[selectedFilter].class}`}
+                muted
+                playsInline
+              />
+              
+              {/* TikTok-style right sidebar controls */}
+              <div className="absolute right-4 bottom-20 flex flex-col items-center space-y-6">
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="text-white hover:bg-white/20 rounded-full w-12 h-12"
+                  onClick={() => setShowCaptionInput(!showCaptionInput)}
+                >
+                  <TextIcon className="h-6 w-6" />
+                </Button>
                 
-                {showCaptionInput && (
-                  <div className="absolute bottom-20 left-0 right-0 flex justify-center px-4">
-                    <input
-                      ref={captionInputRef}
-                      type="text"
-                      value={captionText}
-                      onChange={(e) => setCaptionText(e.target.value)}
-                      placeholder="Add a caption..."
-                      className="bg-black/60 text-white placeholder:text-gray-300 px-4 py-2 rounded-full w-full max-w-md border border-white/20 focus:outline-none focus:ring-2 focus:ring-primary"
-                    />
-                  </div>
-                )}
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="text-white hover:bg-white/20 rounded-full w-12 h-12"
+                  onClick={() => {/* Add effect handler */}}
+                >
+                  <Sparkles className="h-6 w-6" />
+                </Button>
                 
-                {captionText && !showCaptionInput && (
-                  <div className="absolute bottom-20 left-0 right-0 flex justify-center">
-                    <div className="bg-black/60 text-white px-4 py-2 rounded-full max-w-md text-center">
-                      {captionText}
-                    </div>
-                  </div>
-                )}
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="text-white hover:bg-white/20 rounded-full w-12 h-12"
+                  onClick={() => {/* Add music handler */}}
+                >
+                  <Music className="h-6 w-6" />
+                </Button>
                 
-                <div className="absolute top-4 right-4 space-x-2 flex">
-                  <Button variant="outline" size="icon" className="bg-black/60 text-white border-white/20 hover:bg-black/80" onClick={toggleFullScreen}>
-                    {isFullScreen ? <X className="h-5 w-5" /> : <Sparkles className="h-5 w-5" />}
-                  </Button>
-                </div>
-                
-                <div className="absolute bottom-4 left-0 right-0">
-                  <div className="flex justify-center space-x-3 mb-4">
-                    <Button variant="outline" size="icon" className="bg-black/60 text-white border-white/20 hover:bg-black/80" onClick={() => setShowCaptionInput(!showCaptionInput)}>
-                      <TextIcon className="h-5 w-5" />
-                    </Button>
-                    {FILTERS.map((filter, index) => (
-                      <Button
-                        key={filter.name}
-                        variant={selectedFilter === index ? "default" : "outline"}
-                        size="sm"
-                        className={selectedFilter === index ? "bg-primary" : "bg-black/60 text-white border-white/20 hover:bg-black/80"}
-                        onClick={() => setSelectedFilter(index)}
-                      >
-                        {filter.name}
-                      </Button>
-                    ))}
-                  </div>
-                  
-                  <div className="px-4 mb-4">
-                    <div className="text-white text-xs mb-1 text-center">Zoom</div>
-                    <Slider
-                      value={zoom}
-                      min={1}
-                      max={2}
-                      step={0.1}
-                      onValueChange={setZoom}
-                      className="w-full max-w-xs mx-auto"
-                    />
-                  </div>
-                  
-                  <div className="flex justify-center">
-                    <Button
-                      variant="destructive"
-                      onClick={stopRecording}
-                      className="flex items-center gap-2"
-                    >
-                      <span className="animate-pulse h-3 w-3 rounded-full bg-white" />
-                      Stop Recording
-                    </Button>
-                  </div>
-                </div>
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="text-white hover:bg-white/20 rounded-full w-12 h-12"
+                  onClick={() => setZoom([zoom[0] === 1 ? 1.5 : 1])}
+                >
+                  <Maximize2 className="h-6 w-6" />
+                </Button>
               </div>
+
+              {/* Bottom controls */}
+              <div className="absolute bottom-6 left-0 right-0 flex justify-center items-center space-x-8">
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="text-white hover:bg-white/20 rounded-full w-12 h-12"
+                  onClick={() => {/* Switch camera handler */}}
+                >
+                  <FlipHorizontal className="h-6 w-6" />
+                </Button>
+                
+                <Button
+                  variant="destructive"
+                  size="lg"
+                  onClick={stopRecording}
+                  className="rounded-full w-16 h-16 flex items-center justify-center"
+                >
+                  <div className="animate-pulse h-4 w-4 rounded-full bg-white" />
+                </Button>
+                
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="text-white hover:bg-white/20 rounded-full w-12 h-12"
+                  onClick={() => setSelectedFilter((prev) => (prev + 1) % FILTERS.length)}
+                >
+                  <Filter className="h-6 w-6" />
+                </Button>
+              </div>
+              
+              {/* Close button */}
+              <Button
+                variant="ghost"
+                size="icon"
+                className="absolute top-4 left-4 text-white hover:bg-white/20 rounded-full"
+                onClick={() => setShowVideoUI(false)}
+              >
+                <X className="h-6 w-6" />
+              </Button>
             </div>
           )}
           
