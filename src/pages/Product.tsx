@@ -1,13 +1,8 @@
+
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import Header from "@/components/Header";
-import ChatWindow from "@/components/chat/ChatWindow";
 import { supabase } from "@/integrations/supabase/client";
-import ImageGallery from "@/components/product/ImageGallery";
-import ProductInfo from "@/components/product/ProductInfo";
-import SellerInfo from "@/components/product/SellerInfo";
-import RelatedProducts from "@/components/product/RelatedProducts";
 import FeatureDialog from "@/components/product/FeatureDialog";
 import ProductLoader from "@/components/product/ProductLoader";
 import ProductNotFound from "@/components/product/ProductNotFound";
@@ -15,13 +10,9 @@ import { useProductDetails } from "@/hooks/useProductDetails";
 import { useRelatedProducts } from "@/hooks/useRelatedProducts";
 import { useProductActions } from "@/hooks/useProductActions";
 import { useToast } from "@/components/ui/use-toast";
-import MobileNavigation from "@/components/navigation/MobileNavigation";
-import { motion } from "framer-motion";
-import SeoHead from "@/components/seo/SeoHead";
-import ProductSchema from "@/components/seo/ProductSchema";
-import BreadcrumbSchema from "@/components/seo/BreadcrumbSchema";
-import { categories } from "@/types/categories";
-import { getProductKeywords, getSeoTitle, getSeoDescription } from "@/utils/KeywordsService";
+import ProductLayout from "@/components/product/ProductLayout";
+import ProductSeo from "@/components/product/ProductSeo";
+import ProductContent from "@/components/product/ProductContent";
 
 interface Seller {
   id: string;
@@ -32,9 +23,7 @@ interface Seller {
 const ProductPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [session, setSession] = useState<any>(null);
-  const [isChatOpen, setIsChatOpen] = useState(false);
   const [isFeatureDialogOpen, setIsFeatureDialogOpen] = useState(false);
   const { toast } = useToast();
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
@@ -97,186 +86,25 @@ const ProductPage = () => {
     return <ProductNotFound />;
   }
 
-  const generateBreadcrumbs = () => {
-    const breadcrumbs = [
-      { name: "Home", url: "/" }
-    ];
-
-    if (product.category) {
-      breadcrumbs.push({
-        name: product.category,
-        url: `/category/${product.category}`
-      });
-
-      if (product.subcategory) {
-        breadcrumbs.push({
-          name: product.subcategory,
-          url: `/category/${product.category}/${product.subcategory}`
-        });
-      }
-    }
-
-    breadcrumbs.push({
-      name: product.title,
-      url: `/product/${product.id}`
-    });
-
-    return breadcrumbs;
-  };
-
-  const getFullImageUrls = () => {
-    if (!product.images || product.images.length === 0) {
-      return ["/placeholder.svg"];
-    }
-    
-    return product.images.map(img => 
-      supabase.storage.from('listings').getPublicUrl(img).data.publicUrl
-    );
-  };
-
-  const getCategoryName = () => {
-    if (!product.category) return null;
-    
-    const category = categories.find(c => c.id === product.category);
-    return category ? category.name : product.category;
-  };
-
-  const productKeywords = getProductKeywords(
-    product.title,
-    product.category,
-    product.brand,
-    product.condition
-  );
-  
-  const seoTitle = getSeoTitle(
-    product.title,
-    product.category,
-    product.condition,
-    product.location?.split('|')[0]
-  );
-  
-  const seoDescription = getSeoDescription(
-    product.description || '',
-    product.title,
-    product.category,
-    product.price,
-    product.condition
-  );
-
-  const longTailKeywords = [
-    `best ${product.condition} ${product.category || 'items'} near me`,
-    `affordable ${product.brand || ''} ${product.category || 'products'} for sale`,
-    `${product.condition} ${product.category || 'items'} in ${product.location?.split('|')[0] || 'my area'}`,
-    `buy ${product.brand || 'quality'} products online marketplace`,
-    `second hand ${product.category || 'items'} with warranty`
-  ];
-
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-primary/5">
-      <SeoHead
-        title={seoTitle}
-        description={seoDescription}
-        keywords={productKeywords}
-        longTailKeywords={longTailKeywords}
-        image={getFullImageUrls()[0]}
-        type="product"
-        publishedAt={product.created_at}
-        modifiedAt={product.updated_at}
-        canonical={`${window.location.origin}/product/${product.id}`}
-        openGraphType="product"
+    <ProductLayout>
+      <ProductSeo product={product} seller={seller} />
+      
+      <ProductContent 
+        product={product}
+        seller={seller}
+        relatedProducts={relatedProducts}
+        isCurrentUserSeller={isCurrentUserSeller}
+        currentUserId={currentUserId}
+        onChatClick={() => handleChatWithSeller(session)}
+        onMakeOffer={() => setIsFeatureDialogOpen(true)}
       />
       
-      <ProductSchema
-        id={product.id}
-        title={product.title}
-        description={product.description || ''}
-        price={product.price}
-        condition={product.condition}
-        images={getFullImageUrls()}
-        category={getCategoryName()}
-        brand={product.brand}
-        createdAt={product.created_at}
-        seller={seller ? {
-          id: seller.id,
-          name: seller.full_name || 'Quwik Seller'
-        } : undefined}
-        keywords={productKeywords}
-        color={product.specs?.color}
-        material={product.specs?.material}
-      />
-      
-      <BreadcrumbSchema items={generateBreadcrumbs()} />
-      
-      <Header />
-      <main className="container mx-auto px-2 sm:px-4 pt-20 pb-20 overflow-x-hidden max-w-full">
-        <motion.div 
-          className="grid lg:grid-cols-2 gap-4 lg:gap-8"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.4 }}
-        >
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5 }}
-          >
-            <ImageGallery
-              images={product.images}
-              currentImageIndex={currentImageIndex}
-              setCurrentImageIndex={setCurrentImageIndex}
-            />
-          </motion.div>
-
-          <motion.div 
-            className="space-y-4 lg:space-y-6"
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5 }}
-          >
-            <ProductInfo
-              title={product.title}
-              price={product.price}
-              location={product.location}
-              createdAt={product.created_at}
-              condition={product.condition}
-              description={product.description}
-              category={product.category}
-              adNumber={product.adNumber}
-              id={product.id}
-              viewCount={product.view_count}
-              brand={product.brand}
-              specs={product.specs}
-            />
-
-            {seller && (
-              <SellerInfo
-                seller={seller}
-                currentUserId={currentUserId}
-                isCurrentUserSeller={isCurrentUserSeller}
-                onChatClick={() => handleChatWithSeller(session)}
-                onMakeOffer={() => setIsFeatureDialogOpen(true)}
-              />
-            )}
-          </motion.div>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3, duration: 0.5 }}
-        >
-          <RelatedProducts products={relatedProducts} />
-        </motion.div>
-      </main>
-
       <FeatureDialog
         isOpen={isFeatureDialogOpen}
         onClose={() => setIsFeatureDialogOpen(false)}
       />
-      
-      <MobileNavigation onChatOpen={() => setIsChatOpen(true)} />
-      <ChatWindow isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} />
-    </div>
+    </ProductLayout>
   );
 };
 
