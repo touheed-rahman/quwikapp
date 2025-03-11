@@ -3,6 +3,7 @@ import { useState } from "react";
 import { categories } from "@/types/categories";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { useNavigate } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   Car,
   Laptop,
@@ -38,7 +39,7 @@ const categoryIcons: Record<string, any> = {
 };
 
 const categoryColors: Record<string, string> = {
-  mobile: "bg-[#8B5CF6]", // Changed to a vivid purple color
+  mobile: "bg-[#8B5CF6]", // Vivid purple color
   vehicles: "bg-blue-500",
   electronics: "bg-purple-500",
   furniture: "bg-orange-500",
@@ -57,10 +58,11 @@ const CategoryFilter = () => {
   const navigate = useNavigate();
   const [showAll, setShowAll] = useState(false);
 
-  const rows = [];
-  const itemsPerRow = 3;
-  const initialRows = 2;
+  const itemsPerRow = 4;
+  const initialRows = 1;
   
+  // Create rows with 4 items per row
+  const rows = [];
   for (let i = 0; i < categories.length; i += itemsPerRow) {
     rows.push(categories.slice(i, i + itemsPerRow));
   }
@@ -68,51 +70,88 @@ const CategoryFilter = () => {
   const visibleRows = showAll ? rows : rows.slice(0, initialRows);
 
   return (
-    <ScrollArea className="w-full rounded-lg border-2 border-gray-200 shadow-md">
-      <div className="p-4 space-y-4">
-        <div className="space-y-4 transition-all duration-300">
-          {visibleRows.map((row, rowIndex) => (
-            <div key={rowIndex} className="grid grid-cols-3 gap-4">
-              {row.map((category) => {
-                const Icon = categoryIcons[category.id] || Car;
-                const bgColor = categoryColors[category.id] || "bg-gray-500";
-                
-                return (
-                  <button
-                    key={category.id}
-                    onClick={() => navigate(`/category/${category.id}`)}
-                    className="flex flex-col items-center justify-center gap-2 rounded-lg p-3 hover:bg-accent transition-all"
-                  >
-                    <div className={`p-3 rounded-full ${bgColor} text-white shadow-lg ring-4 ring-white`}>
-                      <Icon className="h-6 w-6" />
-                    </div>
-                    <span className="text-sm font-medium text-center">{category.name}</span>
-                  </button>
-                );
-              })}
-            </div>
-          ))}
-        </div>
-        {rows.length > initialRows && (
-          <button
-            onClick={() => setShowAll(!showAll)}
-            className="w-full flex items-center justify-center gap-2 text-sm font-medium text-primary hover:text-primary/80 transition-colors p-2 
-                      outline-none focus:outline-none active:bg-transparent border-none hover:border-none focus:border-none"
-          >
-            {showAll ? (
-              <>
-                Show Less <ChevronUp className="h-4 w-4" />
-              </>
-            ) : (
-              <>
-                Show More <ChevronDown className="h-4 w-4" />
-              </>
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4 }}
+    >
+      <ScrollArea className="w-full rounded-xl border border-primary/10 shadow-md bg-white overflow-hidden">
+        <div className="p-4 space-y-4">
+          <div className="flex items-center justify-between pb-2">
+            <h3 className="text-lg font-bold text-foreground/90">Categories</h3>
+            {rows.length > initialRows && (
+              <button
+                onClick={() => setShowAll(!showAll)}
+                className="text-sm font-medium text-primary hover:text-primary/80 transition-colors flex items-center gap-1"
+              >
+                {showAll ? (
+                  <>
+                    Show Less <ChevronUp className="h-4 w-4" />
+                  </>
+                ) : (
+                  <>
+                    Show All <ChevronDown className="h-4 w-4" />
+                  </>
+                )}
+              </button>
             )}
-          </button>
-        )}
-      </div>
-      <ScrollBar orientation="horizontal" />
-    </ScrollArea>
+          </div>
+          
+          <AnimatePresence initial={false}>
+            <motion.div 
+              className="space-y-6 transition-all"
+              initial="hidden"
+              animate="visible"
+              variants={{
+                hidden: { opacity: 0 },
+                visible: { 
+                  opacity: 1,
+                  transition: { staggerChildren: 0.05 }
+                }
+              }}
+            >
+              {visibleRows.map((row, rowIndex) => (
+                <motion.div 
+                  key={rowIndex} 
+                  className="grid grid-cols-4 gap-4"
+                  variants={{
+                    hidden: { opacity: 0, y: 10 },
+                    visible: { opacity: 1, y: 0 }
+                  }}
+                >
+                  {row.map((category) => {
+                    const Icon = categoryIcons[category.id] || Car;
+                    const bgColor = categoryColors[category.id] || "bg-gray-500";
+                    
+                    return (
+                      <motion.button
+                        key={category.id}
+                        onClick={() => navigate(`/category/${category.id}`)}
+                        className="flex flex-col items-center justify-center gap-2 rounded-lg p-3 hover:bg-primary/5 transition-all"
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                      >
+                        <motion.div 
+                          className={`p-3 rounded-full ${bgColor} text-white shadow-md`}
+                          whileHover={{ 
+                            scale: 1.1,
+                            boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)"
+                          }}
+                        >
+                          <Icon className="h-6 w-6" />
+                        </motion.div>
+                        <span className="text-sm font-medium text-center line-clamp-1">{category.name}</span>
+                      </motion.button>
+                    );
+                  })}
+                </motion.div>
+              ))}
+            </motion.div>
+          </AnimatePresence>
+        </div>
+        <ScrollBar orientation="horizontal" />
+      </ScrollArea>
+    </motion.div>
   );
 };
 

@@ -1,7 +1,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Loader2, ArrowLeft, Send } from "lucide-react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface FormActionsProps {
   isSubmitting: boolean;
@@ -19,38 +19,58 @@ const FormActions = ({ isSubmitting, onBack }: FormActionsProps) => {
       <Button
         type="button"
         variant="outline"
-        className="flex-1 gap-2 border-primary/20 hover:bg-primary/5 transition-all"
+        className="flex-1 gap-2 border-primary/20 hover:bg-primary/5 transition-all text-foreground"
         onClick={onBack}
         disabled={isSubmitting}
       >
         <ArrowLeft className="h-4 w-4" />
         Back
       </Button>
-      <Button 
-        type="submit" 
-        className="flex-1 gap-2 bg-primary hover:bg-primary/90 text-white shadow-md hover:shadow-lg transition-all"
-        disabled={isSubmitting}
-      >
+      
+      <AnimatePresence mode="wait">
         {isSubmitting ? (
-          <motion.div 
-            className="flex items-center gap-2"
+          <motion.div
+            key="submitting"
+            className="flex-1"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
           >
-            <Loader2 className="h-4 w-4 animate-spin" />
-            Posting Ad...
+            <Button 
+              type="button"
+              disabled
+              className="w-full bg-primary/80 text-white flex items-center gap-2 shadow-md"
+            >
+              <div className="flex items-center gap-2">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                <span className="font-medium">Posting Ad...</span>
+              </div>
+            </Button>
           </motion.div>
         ) : (
-          <motion.div 
-            className="flex items-center gap-2"
-            whileHover={{ scale: 1.05 }}
-            transition={{ type: "spring", stiffness: 400, damping: 10 }}
+          <motion.div
+            key="submit"
+            className="flex-1"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
           >
-            <Send className="h-4 w-4" />
-            Post Ad
+            <Button 
+              type="submit" 
+              className="w-full bg-primary hover:bg-primary/90 text-white shadow-md hover:shadow-lg transition-all"
+            >
+              <motion.div 
+                className="flex items-center gap-2"
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
+              >
+                <Send className="h-4 w-4" />
+                <span className="font-medium">Post Ad</span>
+              </motion.div>
+            </Button>
           </motion.div>
         )}
-      </Button>
+      </AnimatePresence>
     </motion.div>
   );
 };

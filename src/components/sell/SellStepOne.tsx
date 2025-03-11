@@ -83,12 +83,12 @@ const SellStepOne = ({ onNext }: SellStepOneProps) => {
   };
 
   return (
-    <div className="min-h-screen bg-background pb-24">
-      <div className="sticky top-0 z-10 bg-background/80 backdrop-blur-md border-b border-primary/10 shadow-sm">
+    <div className="min-h-screen bg-background">
+      <div className="sticky top-0 z-10 bg-background/95 border-b border-primary/10 shadow-sm">
         <Header />
       </div>
       
-      <div className="container mx-auto px-4 pt-6">
+      <div className="container mx-auto px-4 pt-4 pb-20">
         <motion.div 
           className="max-w-3xl mx-auto space-y-6"
           variants={container}
@@ -96,20 +96,20 @@ const SellStepOne = ({ onNext }: SellStepOneProps) => {
           animate="show"
         >
           <motion.div 
-            className="bg-white rounded-lg shadow-md border border-primary/10 p-4 md:p-6 space-y-6"
+            className="bg-white rounded-xl shadow-md p-4 md:p-6 space-y-5"
             variants={item}
           >
-            <div className="space-y-4">
-              <h2 className="text-2xl font-semibold text-foreground">Post Your Ad</h2>
+            <div className="space-y-3">
+              <h2 className="text-2xl font-bold text-foreground">Post Your Ad</h2>
               <p className="text-muted-foreground">Choose a category that best fits your item</p>
               
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mt-4">
                 {categories.map((category) => (
                   <Button
                     key={category.id}
                     variant={selectedCategory === category.id ? "default" : "outline"}
                     className={cn(
-                      "h-auto py-3 flex-col gap-2 relative transition-all text-sm break-words",
+                      "h-auto py-3 px-2 flex-col gap-2 relative transition-all text-sm break-words",
                       selectedCategory === category.id 
                         ? "bg-primary text-white shadow-md scale-105" 
                         : "hover:border-primary hover:bg-primary/5"
@@ -139,13 +139,13 @@ const SellStepOne = ({ onNext }: SellStepOneProps) => {
 
             {selectedCategory && (
               <motion.div 
-                className="space-y-4"
+                className="space-y-3"
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: "auto" }}
                 transition={{ duration: 0.3 }}
               >
                 <h3 className="text-lg font-semibold text-foreground">Select Subcategory</h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                   {categories
                     .find((c) => c.id === selectedCategory)
                     ?.subcategories.map((sub) => (
@@ -172,7 +172,7 @@ const SellStepOne = ({ onNext }: SellStepOneProps) => {
           </motion.div>
 
           <motion.div 
-            className="bg-white rounded-lg shadow-md border border-primary/10 p-4 md:p-6 space-y-4"
+            className="bg-white rounded-xl shadow-md p-4 md:p-6 space-y-4"
             variants={item}
           >
             <div className="space-y-2">
@@ -235,7 +235,13 @@ const SellStepOne = ({ onNext }: SellStepOneProps) => {
               className="w-full md:w-auto md:min-w-[200px] md:mx-auto block bg-primary hover:bg-primary/90 text-white shadow-md hover:shadow-lg transition-all"
               size="lg"
             >
-              Next
+              <motion.span 
+                className="flex items-center gap-2"
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
+              >
+                Continue
+              </motion.span>
             </Button>
           </motion.div>
         </motion.div>

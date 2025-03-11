@@ -12,10 +12,11 @@ const DescriptionInput = ({ value, onChange }: DescriptionInputProps) => {
   const maxLength = 2000;
   const isAlmostFull = value.length > maxLength * 0.9;
   const isFull = value.length === maxLength;
+  const percentage = Math.round((value.length / maxLength) * 100);
   
   return (
     <motion.div 
-      className="space-y-2"
+      className="space-y-2.5"
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3, delay: 0.1 }}
@@ -24,25 +25,60 @@ const DescriptionInput = ({ value, onChange }: DescriptionInputProps) => {
         <FileText className="h-4 w-4 mr-1.5 text-primary" />
         Description *
       </label>
-      <Textarea 
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder="Include condition, features and reason for selling"
-        className="min-h-[150px] resize-none border-primary/20 focus-visible:ring-primary/30 shadow-sm transition-all duration-200"
-        maxLength={maxLength}
-        required
-      />
-      <div className="flex justify-between items-center">
-        <p className="text-xs text-muted-foreground">
-          Be detailed and honest about your item
-        </p>
-        <span className={`text-xs font-medium ${
-          isFull ? "text-red-500" : 
-          isAlmostFull ? "text-amber-500" : 
-          "text-muted-foreground"
-        }`}>
-          {value.length}/{maxLength}
-        </span>
+      <div className="relative">
+        <Textarea 
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder="Include condition, features and reason for selling"
+          className="min-h-[150px] resize-none border-primary/20 focus-visible:ring-primary/30 shadow-sm transition-all duration-200"
+          maxLength={maxLength}
+          required
+        />
+        <div className="absolute right-3 top-3 flex items-center justify-center">
+          <motion.div
+            className={`text-xs font-semibold rounded-full h-6 w-6 flex items-center justify-center
+              ${isFull ? "bg-red-100 text-red-500" : 
+                isAlmostFull ? "bg-amber-100 text-amber-500" : 
+                value.length > 0 ? "bg-primary/10 text-primary" : "bg-gray-100 text-gray-400"}`}
+            animate={{
+              scale: value.length ? [1, 1.1, 1] : 1,
+            }}
+            transition={{ duration: 0.3 }}
+          >
+            {percentage}%
+          </motion.div>
+        </div>
+      </div>
+      
+      <div className="space-y-3">
+        <div className="flex justify-between items-center">
+          <p className="text-xs text-muted-foreground">
+            Be detailed and honest about your item
+          </p>
+          <span className={`text-xs font-medium ${
+            isFull ? "text-red-500" : 
+            isAlmostFull ? "text-amber-500" : 
+            "text-muted-foreground"
+          }`}>
+            {value.length}/{maxLength}
+          </span>
+        </div>
+        
+        {value.length > 0 && (
+          <motion.div 
+            className="bg-primary/5 rounded-md p-2.5 text-xs"
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            transition={{ duration: 0.3 }}
+          >
+            <p className="font-medium text-primary">Writing tips:</p>
+            <ul className="mt-1 space-y-1 list-disc list-inside text-foreground/80">
+              <li>Include brand, model, and age</li>
+              <li>Mention any defects or repairs needed</li>
+              <li>Describe why you're selling the item</li>
+            </ul>
+          </motion.div>
+        )}
       </div>
     </motion.div>
   );

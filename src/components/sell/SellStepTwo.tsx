@@ -4,7 +4,7 @@ import Header from "@/components/Header";
 import SellFormDetails from "./SellFormDetails";
 import { useLocation } from "@/contexts/LocationContext";
 import { motion } from "framer-motion";
-import { Pencil, ListChecks } from "lucide-react";
+import { ListChecks } from "lucide-react";
 
 interface SellStepTwoProps {
   title: string;
@@ -39,20 +39,29 @@ const SellStepTwo = memo(({
 }: SellStepTwoProps) => {
   const { selectedLocation } = useLocation();
 
+  const fadeIn = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { 
+      opacity: 1, 
+      y: 0,
+      transition: { duration: 0.3 }
+    }
+  };
+
   return (
     <div className="transition-opacity duration-200 bg-gradient-to-b from-background to-primary/5 min-h-screen">
-      <div className="sticky top-0 z-10 bg-background/80 backdrop-blur-md border-b border-primary/10 shadow-sm">
+      <div className="sticky top-0 z-10 bg-background/95 border-b border-primary/10 shadow-sm">
         <Header />
       </div>
       
-      <div className="container max-w-2xl mx-auto px-4 pt-6 pb-24">
+      <div className="container max-w-2xl mx-auto px-4 pt-4 pb-24">
         <motion.div 
-          className="text-center mb-8"
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3 }}
+          className="text-center mb-6"
+          initial="hidden"
+          animate="visible"
+          variants={fadeIn}
         >
-          <div className="inline-flex items-center justify-center bg-primary/10 rounded-full p-2 mb-4">
+          <div className="inline-flex items-center justify-center bg-primary/10 rounded-full p-2 mb-3">
             <ListChecks className="h-6 w-6 text-primary" />
           </div>
           <h1 className="text-2xl font-bold text-foreground">
@@ -63,21 +72,27 @@ const SellStepTwo = memo(({
           </p>
         </motion.div>
         
-        <SellFormDetails
-          title={title}
-          setTitle={setTitle}
-          description={description}
-          setDescription={setDescription}
-          price={price}
-          setPrice={setPrice}
-          condition={condition}
-          setCondition={setCondition}
-          isSubmitting={isSubmitting}
-          onBack={onBack}
-          onSubmit={onSubmit}
-          category={category}
-          subcategory={subcategory}
-        />
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.2 }}
+        >
+          <SellFormDetails
+            title={title}
+            setTitle={setTitle}
+            description={description}
+            setDescription={setDescription}
+            price={price}
+            setPrice={setPrice}
+            condition={condition}
+            setCondition={setCondition}
+            isSubmitting={isSubmitting}
+            onBack={onBack}
+            onSubmit={onSubmit}
+            category={category}
+            subcategory={subcategory}
+          />
+        </motion.div>
       </div>
     </div>
   );
