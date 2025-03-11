@@ -11,29 +11,12 @@ export function useTextMessage(conversationId: string | undefined, userId: strin
         return false;
       }
 
-      // Get conversation details to determine the recipient
-      const { data: conversation, error: convError } = await supabase
-        .from('conversations')
-        .select('buyer_id, seller_id')
-        .eq('id', conversationId)
-        .single();
-
-      if (convError) {
-        console.error('Error fetching conversation:', convError);
-        return false;
-      }
-
-      const receiverId = conversation.buyer_id === userId 
-        ? conversation.seller_id 
-        : conversation.buyer_id;
-
-      // Insert the message
+      // Insert the message without trying to determine the recipient
       const { error: msgError } = await supabase
         .from('messages')
         .insert({
           conversation_id: conversationId,
           sender_id: userId,
-          receiver_id: receiverId,
           content: content,
           is_offer: isOffer
         });
@@ -59,17 +42,6 @@ export function useTextMessage(conversationId: string | undefined, userId: strin
 
       if (updateError) {
         console.error('Error updating conversation:', updateError);
-      }
-
-      // Increment unread count for the recipient using rpc
-      const { error: notifError } = await supabase
-        .rpc('increment_unread_count', {
-          p_conversation_id: conversationId,
-          p_user_id: receiverId
-        } as any); // Type assertion to fix the TypeScript error
-
-      if (notifError) {
-        console.error('Error updating notification count:', notifError);
       }
 
       return true;
