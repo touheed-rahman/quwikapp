@@ -140,7 +140,6 @@ const ProductPage = () => {
               condition={product.condition}
               description={product.description}
               category={product.category}
-              km_driven={product.km_driven}
               adNumber={product.adNumber}
               id={product.id}
               viewCount={product.view_count}

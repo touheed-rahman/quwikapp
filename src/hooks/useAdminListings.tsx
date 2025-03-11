@@ -214,6 +214,7 @@ export function useAdminListings(filter: string = 'all') {
     setSearchTerm,
     handleStatusUpdate,
     handleFeaturedToggle,
-    handleDelete
+    handleDelete,
+    refetch
   };
 }

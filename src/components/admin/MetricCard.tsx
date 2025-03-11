@@ -1,5 +1,5 @@
 
-import { ArrowUpRight, TrendingUp } from "lucide-react";
+import { ArrowUpRight, TrendingUp, ExternalLink } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { motion } from "framer-motion";
 import { LucideIcon } from "lucide-react";
@@ -34,9 +34,10 @@ const MetricCard = ({
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.05, duration: 0.3 }}
       whileHover={{ y: -5, transition: { duration: 0.2 } }}
+      whileTap={{ scale: 0.98 }}
     >
       <Card 
-        className={`p-6 ${bgColor} border-none cursor-pointer transition-all duration-200 ${hoverBgColor} hover:shadow-lg relative overflow-hidden`}
+        className={`p-6 ${bgColor} border border-${color.replace('text-', '')}/10 cursor-pointer transition-all duration-300 ${hoverBgColor} hover:shadow-lg relative overflow-hidden group`}
         onClick={onClick}
       >
         {/* Background pattern */}
@@ -60,13 +61,13 @@ const MetricCard = ({
           </div>
           
           <div className="flex flex-col items-end gap-3">
-            <div className={`h-12 w-12 rounded-lg ${color} ${bgColor.replace('50', '200')} flex items-center justify-center`}>
+            <div className={`h-12 w-12 rounded-lg ${color} ${bgColor.replace('50', '200')} flex items-center justify-center shadow-sm transition-transform transform group-hover:scale-110`}>
               <Icon className={`h-6 w-6 ${color}`} />
             </div>
             
-            <div className={`text-xs font-medium flex items-center gap-1 ${color}`}>
+            <div className={`text-xs font-medium flex items-center gap-1 ${color} transition-all duration-300 group-hover:gap-2`}>
               <span>View Details</span>
-              <ArrowUpRight className="h-3 w-3" />
+              <ExternalLink className="h-3 w-3 transition-transform group-hover:translate-x-1" />
             </div>
           </div>
         </div>
