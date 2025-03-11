@@ -26,6 +26,7 @@ import React from 'react';
 import CategorySubcategories from "./pages/CategorySubcategories";
 import SellerProfile from "./pages/SellerProfile";
 import MyOrders from "./pages/MyOrders";
+import SitemapRoute from "./components/seo/SitemapRoute";
 
 // Create a client outside of the component to avoid recreating it on every render
 const queryClient = new QueryClient({
@@ -139,6 +140,8 @@ const App = () => (
                   </PrivateRoute>
                 }
               />
+              {/* SEO sitemap route */}
+              <Route path="/sitemap.xml" element={<SitemapRoute />} />
             </Routes>
           </ErrorBoundary>
         </BrowserRouter>

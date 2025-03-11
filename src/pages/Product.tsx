@@ -18,6 +18,8 @@ import { useProductActions } from "@/hooks/useProductActions";
 import { useToast } from "@/components/ui/use-toast";
 import MobileNavigation from "@/components/navigation/MobileNavigation";
 import { motion } from "framer-motion";
+import SeoHead from "@/components/seo/SeoHead";
+import ProductSchema from "@/components/seo/ProductSchema";
 
 interface Seller {
   id: string;
@@ -94,8 +96,55 @@ const ProductPage = () => {
     return <ProductNotFound />;
   }
 
+  // Get full image URLs for schema
+  const getFullImageUrls = () => {
+    if (!product.images || product.images.length === 0) {
+      return ["/placeholder.svg"];
+    }
+    
+    return product.images.map(img => 
+      supabase.storage.from('listings').getPublicUrl(img).data.publicUrl
+    );
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-primary/5">
+      <SeoHead
+        title={`${product.title} | ${product.price.toLocaleString()} ₹ | Quwik`}
+        description={product.description?.substring(0, 160) || `${product.title} for sale at ${product.price.toLocaleString()} ₹. ${product.condition} condition.`}
+        keywords={[
+          product.title,
+          product.category || '',
+          product.subcategory || '',
+          product.brand || '',
+          product.condition,
+          'buy online',
+          'sell online',
+          'local marketplace',
+          'used goods'
+        ]}
+        image={getFullImageUrls()[0]}
+        type="product"
+        publishedAt={product.created_at}
+        modifiedAt={product.updated_at}
+      />
+      
+      <ProductSchema
+        id={product.id}
+        title={product.title}
+        description={product.description || ''}
+        price={product.price}
+        condition={product.condition}
+        images={getFullImageUrls()}
+        category={product.category}
+        brand={product.brand}
+        createdAt={product.created_at}
+        seller={seller ? {
+          id: seller.id,
+          name: seller.full_name || 'Quwik Seller'
+        } : undefined}
+      />
+      
       <Header />
       <main className="container mx-auto px-2 sm:px-4 pt-20 pb-20 overflow-x-hidden max-w-full">
         <motion.div 

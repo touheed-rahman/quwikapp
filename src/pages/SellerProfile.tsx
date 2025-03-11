@@ -29,6 +29,7 @@ const SellerProfile = () => {
       <SeoHead
         title={`${profile.full_name}'s Profile | Quwik Marketplace`}
         description={`Check out ${profile.full_name}'s listings and profile on Quwik. Member since ${new Date(profile.created_at).getFullYear()}`}
+        noindex={true} // Add noindex directive for seller profiles
       />
       
       <Header />

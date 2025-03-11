@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Shield, Loader2 } from "lucide-react";
@@ -5,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import SeoHead from "@/components/seo/SeoHead";
 
 const AdminLogin = () => {
   const [email, setEmail] = useState("");
@@ -65,6 +67,12 @@ const AdminLogin = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <SeoHead
+        title="Admin Login | Quwik"
+        description="Admin login page for Quwik marketplace"
+        noindex={true}
+      />
+      
       <div className="max-w-md w-full space-y-8 p-8 bg-white rounded-lg shadow-lg">
         <div className="flex flex-col items-center">
           <Shield className="w-12 h-12 text-primary" />
