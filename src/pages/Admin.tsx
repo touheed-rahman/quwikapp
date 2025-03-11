@@ -1,34 +1,26 @@
 
 import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { 
-  Shield, 
-  LogOut, 
-  Users, 
-  LayoutGrid, 
-  Bell, 
-  Settings, 
-  Gauge, 
-  BarChart3,
-  Activity,
-  Menu,
-} from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/components/ui/use-toast";
+import { Tabs, TabsContent } from "@/components/ui/tabs";
+import { motion, AnimatePresence } from "framer-motion";
+
+// Import refactored components
+import AdminHeader from "@/components/admin/AdminHeader";
+import AdminNavTabs from "@/components/admin/AdminNavTabs";
+import AdminMobileMenu from "@/components/admin/AdminMobileMenu";
+import AdminContentHeader from "@/components/admin/AdminContentHeader";
+import AdminAnalytics from "@/components/admin/AdminAnalytics";
 import DashboardMetrics from "@/components/admin/DashboardMetrics";
 import ListingManagement from "@/components/admin/ListingManagement";
 import UserManagement from "@/components/admin/UserManagement";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/components/ui/use-toast";
-import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card } from "@/components/ui/card";
-import { motion, AnimatePresence } from "framer-motion";
 
 const AdminPanel = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('dashboard');
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   
   // Check if there's a filter passed from dashboard metrics
   useEffect(() => {
@@ -94,138 +86,12 @@ const AdminPanel = () => {
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       {/* Top navbar */}
-      <div className="bg-white shadow-sm border-b h-16 fixed top-0 left-0 right-0 z-50 flex items-center px-4">
-        <div className="flex items-center justify-between w-full">
-          <div className="flex items-center gap-2">
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              className="md:hidden"
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            >
-              <Menu className="h-5 w-5" />
-            </Button>
-            <div className="flex items-center gap-2">
-              <Shield className="w-6 h-6 text-primary" />
-              <h1 className="text-xl font-bold">Quwik Admin</h1>
-            </div>
-          </div>
-          
-          <div className="hidden md:flex items-center space-x-1 ml-8">
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className="bg-secondary/40 p-1 rounded-lg">
-                <TabsTrigger 
-                  value="dashboard" 
-                  className={`${activeTab === 'dashboard' ? 'bg-primary text-white' : ''} px-4`}
-                >
-                  <Gauge className="w-4 h-4 mr-2" />
-                  Dashboard
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="listings" 
-                  className={`${activeTab === 'listings' ? 'bg-primary text-white' : ''} px-4`}
-                >
-                  <LayoutGrid className="w-4 h-4 mr-2" />
-                  Listings
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="users" 
-                  className={`${activeTab === 'users' ? 'bg-primary text-white' : ''} px-4`}
-                >
-                  <Users className="w-4 h-4 mr-2" />
-                  Users
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="analytics" 
-                  className={`${activeTab === 'analytics' ? 'bg-primary text-white' : ''} px-4`}
-                >
-                  <BarChart3 className="w-4 h-4 mr-2" />
-                  Analytics
-                </TabsTrigger>
-              </TabsList>
-            </Tabs>
-          </div>
-          
-          <div className="flex items-center gap-2">
-            <div className="flex items-center gap-1 bg-green-50 text-green-600 px-2 py-1 rounded-full text-xs">
-              <Activity className="h-3 w-3" />
-              <span>Online</span>
-            </div>
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={handleLogout}
-              className="gap-2"
-            >
-              <LogOut className="w-4 h-4" />
-              <span className="hidden md:inline">Logout</span>
-            </Button>
-          </div>
-        </div>
-      </div>
+      <AdminHeader handleLogout={handleLogout} />
       
-      {/* Mobile menu dropdown */}
-      <AnimatePresence>
-        {mobileMenuOpen && (
-          <motion.div 
-            className="fixed top-16 left-0 right-0 bg-white shadow-lg z-40 md:hidden"
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.2 }}
-          >
-            <div className="p-2 space-y-1">
-              <Button 
-                variant={activeTab === 'dashboard' ? "default" : "ghost"} 
-                className="w-full justify-start text-base font-medium"
-                onClick={() => {
-                  setActiveTab('dashboard');
-                  setMobileMenuOpen(false);
-                }}
-              >
-                <Gauge className="w-5 h-5 mr-2" />
-                Dashboard
-              </Button>
-              
-              <Button 
-                variant={activeTab === 'listings' ? "default" : "ghost"} 
-                className="w-full justify-start text-base font-medium"
-                onClick={() => {
-                  setActiveTab('listings');
-                  setMobileMenuOpen(false);
-                }}
-              >
-                <LayoutGrid className="w-5 h-5 mr-2" />
-                Listings
-              </Button>
-              
-              <Button 
-                variant={activeTab === 'users' ? "default" : "ghost"} 
-                className="w-full justify-start text-base font-medium"
-                onClick={() => {
-                  setActiveTab('users');
-                  setMobileMenuOpen(false);
-                }}
-              >
-                <Users className="w-5 h-5 mr-2" />
-                Users
-              </Button>
-              
-              <Button 
-                variant={activeTab === 'analytics' ? "default" : "ghost"} 
-                className="w-full justify-start text-base font-medium"
-                onClick={() => {
-                  setActiveTab('analytics');
-                  setMobileMenuOpen(false);
-                }}
-              >
-                <BarChart3 className="w-5 h-5 mr-2" />
-                Analytics
-              </Button>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <div className="flex items-center absolute left-4 top-0 h-16 md:relative md:left-0 md:top-0">
+        <AdminMobileMenu activeTab={activeTab} setActiveTab={setActiveTab} />
+        <AdminNavTabs activeTab={activeTab} setActiveTab={setActiveTab} />
+      </div>
       
       {/* Main content */}
       <motion.div 
@@ -234,14 +100,7 @@ const AdminPanel = () => {
         animate={{ opacity: 1 }}
         transition={{ duration: 0.3 }}
       >
-        <Card className="bg-white p-4 md:p-6 rounded-lg shadow-sm mb-6 flex items-center justify-between">
-          <h1 className="text-xl md:text-2xl font-bold">
-            {activeTab === 'dashboard' && 'Dashboard Overview'}
-            {activeTab === 'listings' && 'Manage Listings'}
-            {activeTab === 'users' && 'User Management'}
-            {activeTab === 'analytics' && 'Analytics & Reports'}
-          </h1>
-        </Card>
+        <AdminContentHeader activeTab={activeTab} />
 
         <AnimatePresence mode="wait">
           <motion.div
@@ -266,10 +125,7 @@ const AdminPanel = () => {
               </TabsContent>
               
               <TabsContent value="analytics">
-                <div className="bg-white p-6 rounded-lg shadow">
-                  <h2 className="text-xl font-semibold mb-4">Analytics Dashboard</h2>
-                  <p className="text-muted-foreground">Detailed analytics coming soon...</p>
-                </div>
+                <AdminAnalytics />
               </TabsContent>
             </Tabs>
           </motion.div>
