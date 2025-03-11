@@ -29,7 +29,9 @@ const VehicleFields = ({ updateFormData }: VehicleFieldsProps) => {
   useEffect(() => {
     const formFields: Record<string, any> = {};
     
+    // Directly assign km_driven at the top level, not inside specs
     formFields.km_driven = kmDriven ? parseInt(kmDriven) : 0;
+    
     formFields.specs = {
       year: yearManufactured ? parseInt(yearManufactured) : null,
       fuel_type: fuelType || null,

@@ -189,42 +189,22 @@ export default function FeatureDialog({
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) throw new Error("No session found");
 
-      // Set the request flag directly without payment
+      // First, try to update just the basic fields without the contact fields
       const { error } = await supabase
         .from("listings")
         .update({
           featured_requested: true,
           feature_plan: selectedOption,
-          feature_requested_at: new Date().toISOString(),
-          feature_contact_name: userDetails.name,
-          feature_contact_phone: userDetails.phone,
-          feature_contact_address: userDetails.address
+          feature_requested_at: new Date().toISOString()
         })
         .eq("id", productId);
 
-      if (error) {
-        // Check if it's a column not found error
-        if (error.message.includes('column "feature_contact_address" does not exist')) {
-          // Try without the problematic fields
-          const { error: retryError } = await supabase
-            .from("listings")
-            .update({
-              featured_requested: true,
-              feature_plan: selectedOption,
-              feature_requested_at: new Date().toISOString()
-            })
-            .eq("id", productId);
-            
-          if (retryError) throw retryError;
-        } else {
-          throw error;
-        }
-      }
+      if (error) throw error;
 
       // Generate a free invoice record
       const invoiceNumber = `INV-${Date.now().toString().substring(7)}`;
       
-      // Use direct fetch with the REST API to bypass TypeScript issues
+      // Use direct fetch with the REST API to create the order
       const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://cgrtrdwvkkhraizqukwt.supabase.co';
       const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNncnRyZHd2a2tocmFpenF1a3d0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzgwNjE2NTIsImV4cCI6MjA1MzYzNzY1Mn0.mnC-NB_broDr4nOHggi0ngeDC1CxZsda6X-wyEMD2tE';
       

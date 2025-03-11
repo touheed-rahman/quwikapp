@@ -69,7 +69,7 @@ export const generateInvoicePDF = async (data: InvoiceData): Promise<Blob> => {
   // Add totals
   doc.setFontSize(10);
   if (data.discount) {
-    doc.text(`Subtotal: ₹${data.discount}`, 150, finalY + 15, { align: 'right' });
+    doc.text(`Subtotal: ₹${data.total + data.discount}`, 150, finalY + 15, { align: 'right' });
     doc.text(`Discount: ₹${data.discount}`, 150, finalY + 22, { align: 'right' });
   }
   

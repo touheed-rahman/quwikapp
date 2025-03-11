@@ -130,6 +130,8 @@ export const useListingForm = () => {
 
       const uploadedImagePaths = await Promise.all(imageUploadPromises);
 
+      console.log("Form data before submission:", formData);
+
       // Prepare the listing data with all the fields
       const listingData = {
         title,
@@ -143,10 +145,12 @@ export const useListingForm = () => {
         user_id: user.id,
         status: 'pending',
         // Include specs and other category-specific fields
-        km_driven: formData.km_driven || null,
+        km_driven: formData.km_driven !== undefined ? formData.km_driven : null,
         brand: formData.brand || null,
         specs: formData.specs || null
       };
+
+      console.log("Listing data to be submitted:", listingData);
 
       const { error } = await supabase.from('listings').insert(listingData);
 

@@ -12,3 +12,7 @@ CREATE POLICY "Public Access" ON storage.objects
 CREATE POLICY "Authenticated users can upload invoices" ON storage.objects
   FOR INSERT
   WITH CHECK (bucket_id = 'invoices' AND auth.role() = 'authenticated');
+
+CREATE POLICY "Authenticated users can update their invoices" ON storage.objects
+  FOR UPDATE
+  USING (bucket_id = 'invoices' AND auth.role() = 'authenticated');

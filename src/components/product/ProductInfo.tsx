@@ -151,6 +151,11 @@ const ProductInfo = ({
             {brand}
           </Badge>
         )}
+        {km_driven !== null && km_driven !== undefined && (
+          <Badge variant="outline" className="bg-gray-100">
+            {km_driven.toLocaleString()} km
+          </Badge>
+        )}
       </div>
 
       {/* Product Specifications Card */}

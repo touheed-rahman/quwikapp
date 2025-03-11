@@ -163,6 +163,13 @@ const ProductCard = ({
                   {capitalizeFirstLetter(condition)}
                 </Badge>
               )}
+              {category === 'vehicles' && km_driven !== null && km_driven !== undefined && (
+                <Badge 
+                  className="text-[10px] px-2 py-0.5 rounded-full ring-2 bg-gray-500 text-white ring-gray-200"
+                >
+                  {km_driven.toLocaleString()} km
+                </Badge>
+              )}
             </div>
           </div>
         </div>
