@@ -1,7 +1,8 @@
 
 import { Card } from "@/components/ui/card";
 import { motion } from "framer-motion";
-import { ArrowUpDown, Filter, UserCheck, Package, ShoppingCart, Users } from "lucide-react";
+import { ArrowUpDown, Filter, UserCheck, Package, ShoppingCart, Users, Star, ArrowLeft } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface AdminContentHeaderProps {
   activeTab: string;
@@ -43,6 +44,18 @@ const AdminContentHeader = ({ activeTab }: AdminContentHeaderProps) => {
           </div>
           
           <div className="flex items-center space-x-2">
+            {activeTab !== 'dashboard' && (
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="mr-2 bg-primary/5 text-primary hover:bg-primary/10"
+                onClick={() => window.location.href = '/admin'}
+              >
+                <ArrowLeft className="h-4 w-4 mr-1" />
+                Back to Dashboard
+              </Button>
+            )}
+            
             <div className="bg-primary/10 text-primary text-sm font-medium px-3 py-1 rounded-full flex items-center">
               <Filter className="h-3.5 w-3.5 mr-1" />
               <span>Filters</span>

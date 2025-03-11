@@ -43,6 +43,8 @@ export function useAdminListings(filter: string = 'all') {
         query = query.eq('status', 'rejected');
       } else if (filter === 'featured') {
         query = query.eq('featured', true);
+      } else if (filter === 'feature-requests') {
+        query = query.eq('featured_requested', true);
       }
 
       const { data: listingsData, error } = await query;
@@ -88,7 +90,10 @@ export function useAdminListings(filter: string = 'all') {
     console.log('Updating featured status:', { listingId, featured });
     const { error } = await supabase
       .from('listings')
-      .update({ featured })
+      .update({ 
+        featured,
+        featured_requested: false // Clear the request flag when approved
+      })
       .eq('id', listingId);
 
     if (error) {

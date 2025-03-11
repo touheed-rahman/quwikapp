@@ -1,7 +1,7 @@
 
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { Shield, Users, ListChecks, Clock, Star, XCircle } from "lucide-react";
+import { Shield, Users, ListChecks, Clock, Star, XCircle, BellRing } from "lucide-react";
 import MetricCard from "./MetricCard";
 import { useAdminMetrics } from "@/hooks/useAdminMetrics";
 
@@ -49,6 +49,15 @@ const DashboardMetrics = () => {
       bgColor: "bg-purple-50",
       hoverBgColor: "hover:bg-purple-100",
       onClick: () => navigate('/admin', { state: { filter: 'featured' } })
+    },
+    {
+      title: "Featured Requests",
+      value: metrics?.featuredRequests || 0,
+      icon: BellRing,
+      color: "text-pink-600",
+      bgColor: "bg-pink-50",
+      hoverBgColor: "hover:bg-pink-100",
+      onClick: () => navigate('/admin', { state: { filter: 'feature-requests' } })
     },
     {
       title: "Rejected Listings",

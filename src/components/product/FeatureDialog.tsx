@@ -52,6 +52,7 @@ export default function FeatureDialog({
     cvv: "",
   });
   const [step, setStep] = useState(1);
+  const [paymentComplete, setPaymentComplete] = useState(false);
   const { toast } = useToast();
 
   const getFeaturePricing = (): FeatureOption[] => {
@@ -129,27 +130,34 @@ export default function FeatureDialog({
       // Simulating payment processing
       await new Promise(resolve => setTimeout(resolve, 1000));
 
-      // Update the listing as featured
+      // Set the request flag instead of directly featuring the listing
       const { error } = await supabase
         .from("listings")
         .update({
-          featured: true,
-          featured_requested: false,
+          featured_requested: true,
+          feature_plan: selectedOption,
+          feature_requested_at: new Date().toISOString()
         })
         .eq("id", productId);
 
       if (error) throw error;
 
+      setPaymentComplete(true);
       toast({
-        title: "Success!",
-        description: "Your listing has been featured successfully",
+        title: "Payment Successful!",
+        description: "Your listing has been submitted for featuring. An admin will review and approve it soon.",
         variant: "default",
       });
       
-      onFeatureSuccess();
-      onClose();
-      setStep(1);
-      setSelectedOption(null);
+      // Wait a moment to show success state before closing
+      setTimeout(() => {
+        onFeatureSuccess();
+        onClose();
+        setStep(1);
+        setSelectedOption(null);
+        setPaymentComplete(false);
+      }, 2000);
+      
     } catch (error: any) {
       toast({
         title: "Error",
@@ -169,7 +177,17 @@ export default function FeatureDialog({
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[500px]">
-        {step === 1 ? (
+        {paymentComplete ? (
+          <div className="flex flex-col items-center justify-center py-6">
+            <div className="bg-green-100 p-3 rounded-full mb-4">
+              <CheckCircle className="h-12 w-12 text-green-600" />
+            </div>
+            <h2 className="text-xl font-bold mb-2">Payment Successful!</h2>
+            <p className="text-center text-muted-foreground mb-6">
+              Your listing will be featured soon after admin review.
+            </p>
+          </div>
+        ) : step === 1 ? (
           <>
             <DialogHeader>
               <DialogTitle className="text-xl">Feature Your Listing</DialogTitle>

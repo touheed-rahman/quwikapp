@@ -10,6 +10,7 @@ export interface DashboardMetrics {
   totalUsers: number;
   featuredListings: number;
   rejectedListings: number;
+  featuredRequests: number;
 }
 
 export function useAdminMetrics() {
@@ -30,17 +31,30 @@ export function useAdminMetrics() {
           approvedListings: 0,
           totalUsers: 0,
           featuredListings: 0,
-          rejectedListings: 0
+          rejectedListings: 0,
+          featuredRequests: 0
         };
       }
 
-      return data || {
-        totalListings: 0,
-        pendingListings: 0,
-        approvedListings: 0,
-        totalUsers: 0,
-        featuredListings: 0,
-        rejectedListings: 0
+      // Fetch featuredRequests separately
+      const { data: featuredRequestsData, error: featuredError } = await supabase
+        .from('listings')
+        .select('count')
+        .eq('featured_requested', true)
+        .single();
+
+      const featuredRequests = featuredError ? 0 : (featuredRequestsData?.count || 0);
+
+      return {
+        ...(data || {
+          totalListings: 0,
+          pendingListings: 0,
+          approvedListings: 0,
+          totalUsers: 0,
+          featuredListings: 0,
+          rejectedListings: 0
+        }),
+        featuredRequests
       };
     },
     staleTime: 1000, // Data considered fresh for 1 second
