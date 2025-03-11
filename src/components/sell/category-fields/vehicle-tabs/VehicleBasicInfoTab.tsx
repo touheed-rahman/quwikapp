@@ -106,9 +106,9 @@ const VehicleBasicInfoTab = ({
           placeholder="Enter kilometers driven"
           value={kmDriven}
           onChange={(e) => setKmDriven(e.target.value)}
-          min="0"
+          min="1"
           required
-          className={!kmDriven ? "border-red-300 focus:ring-red-500" : ""}
+          className={!kmDriven || kmDriven === "0" ? "border-red-300 focus:ring-red-500" : ""}
         />,
         "Total distance the vehicle has been driven in kilometers. This field is required.",
         true

@@ -23,7 +23,7 @@ interface VehicleFieldsProps {
 
 const VehicleFields = ({ updateFormData, subcategory = "" }: VehicleFieldsProps) => {
   const { toast } = useToast();
-  const [kmDriven, setKmDriven] = useState("");
+  const [kmDriven, setKmDriven] = useState("0"); // Initialize with "0" instead of empty string
   const [yearManufactured, setYearManufactured] = useState("");
   const [fuelType, setFuelType] = useState("");
   const [transmission, setTransmission] = useState("");
@@ -79,18 +79,8 @@ const VehicleFields = ({ updateFormData, subcategory = "" }: VehicleFieldsProps)
       }
     }
     
-    // Alert user if they try to submit without km_driven
-    if (kmDriven.trim() === "") {
-      // Don't show a toast on every render, only when debugging
-      // toast({
-      //   title: "Missing Kilometers Driven",
-      //   description: "Please enter the kilometers driven",
-      //   variant: "destructive"
-      // });
-    }
-    
     const formFields: Record<string, any> = {
-      // CRITICAL: Always set km_driven as a number, default to 0 if empty
+      // CRITICAL: Always set km_driven as a number
       km_driven: kmDrivenNumber,
     };
     

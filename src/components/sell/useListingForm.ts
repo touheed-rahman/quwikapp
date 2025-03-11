@@ -85,11 +85,14 @@ export const useListingForm = () => {
 
     // Category-specific validations
     if (formData.category === 'vehicles') {
-      // Check if km_driven exists and is a valid number
-      if (formData.km_driven === undefined || 
-          formData.km_driven === null ||
-          (typeof formData.km_driven === 'string' && formData.km_driven.trim() === '') ||
-          isNaN(Number(formData.km_driven))) {
+      // Get the km_driven value, ensuring it's a number
+      const kmDriven = typeof formData.km_driven === 'number' ? formData.km_driven : 0;
+      
+      // Log the value for debugging - this should be a number
+      console.log("km_driven for validation:", kmDriven);
+      
+      // Check if km_driven is undefined or not a valid number
+      if (kmDriven === 0 || isNaN(kmDriven)) {
         toast({
           title: "Missing Kilometers Driven",
           description: "Please enter the kilometers driven for your vehicle",
@@ -143,7 +146,9 @@ export const useListingForm = () => {
       // Ensure km_driven is a number for vehicle listings
       let kmDriven = null;
       if (formData.category === 'vehicles') {
-        if (formData.km_driven !== undefined && formData.km_driven !== null) {
+        if (typeof formData.km_driven === 'number') {
+          kmDriven = formData.km_driven;
+        } else if (formData.km_driven !== undefined && formData.km_driven !== null) {
           // Convert to number and ensure it's valid
           kmDriven = Number(formData.km_driven);
           if (isNaN(kmDriven)) kmDriven = 0;
