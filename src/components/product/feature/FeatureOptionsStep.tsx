@@ -4,6 +4,7 @@ import { FeatureOption } from "./types";
 import FeatureOptionCard from "./FeatureOptionCard";
 import { Home, ShoppingBag, Tag } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Badge } from "@/components/ui/badge";
 
 interface FeatureOptionsStepProps {
   selectedOption: string | null;
@@ -63,16 +64,24 @@ export default function FeatureOptionsStep({
         <DialogTitle className="text-xl">Feature Your Listing</DialogTitle>
         <DialogDescription>
           Make your listing stand out by featuring it on our platform
-          {freeRequestsCount !== null && (
-            <div className="mt-2 text-sm">
-              You have used {freeRequestsCount}/3 free feature requests
-              {!hasFreeFeatures && (
-                <span className="font-medium text-primary"> - Pricing shown below</span>
-              )}
-            </div>
-          )}
         </DialogDescription>
       </DialogHeader>
+      
+      {freeRequestsCount !== null && (
+        <div className="my-4 p-3 border rounded-lg bg-muted/50">
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-medium">Free Features Available</span>
+            <Badge variant={hasFreeFeatures ? "default" : "outline"} className="ml-2">
+              {3 - freeRequestsCount} of 3 remaining
+            </Badge>
+          </div>
+          <p className="text-xs text-muted-foreground mt-1">
+            {hasFreeFeatures 
+              ? `You have ${3 - freeRequestsCount} free feature requests available. Use them to promote your listings without cost!` 
+              : "You've used all your free feature requests. You can still feature your listings at the prices shown below."}
+          </p>
+        </div>
+      )}
       
       <div className="space-y-4 my-4">
         {isLoadingPricing ? (

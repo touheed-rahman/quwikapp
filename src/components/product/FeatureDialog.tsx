@@ -28,6 +28,8 @@ export default function FeatureDialog({
   onClose,
   productTitle,
   productId,
+  category,
+  subcategory,
   onFeatureSuccess,
 }: FeatureDialogProps) {
   const {
