@@ -50,23 +50,30 @@ const HeroSearch = () => {
     try {
       const trimmedQuery = searchQuery.trim();
       
-      // Try exact title match
-      let query = supabase
+      // Fix for the type error - explicitly type the query and avoid excessive chaining
+      let baseQuery = supabase
         .from('listings')
-        .select('id, title, category, subcategory')
-        .eq('status', 'approved')
-        .ilike('title', `%${trimmedQuery}%`);
-
+        .select('id, title, category, subcategory');
+      
+      // Apply status filter
+      baseQuery = baseQuery.eq('status', 'approved');
+      
+      // Apply title search filter
+      baseQuery = baseQuery.ilike('title', `%${trimmedQuery}%`);
+      
+      // Apply shop filter if needed
       if (activeTab === "shop") {
-        // Add shop-specific filters if needed
-        query = query.eq('is_shop_item', true);
+        baseQuery = baseQuery.eq('is_shop_item', true);
       }
-
+      
+      // Apply location filter if needed
       if (selectedLocation) {
-        query = query.eq('location', selectedLocation);
+        baseQuery = baseQuery.eq('location', selectedLocation);
       }
-
-      const { data: matches } = await query;
+      
+      const { data: matches, error } = await baseQuery;
+      
+      if (error) throw error;
 
       if (matches && matches.length > 0) {
         navigate(`/category/${matches[0].category}/${matches[0].subcategory}?q=${encodeURIComponent(trimmedQuery)}&mode=${activeTab}`);

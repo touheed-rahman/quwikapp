@@ -55,7 +55,11 @@ const ProductSpecsCard = ({
           )
         ) : (
           <div className="py-2 text-sm text-muted-foreground">
-            {brand && <p className="mt-1">Brand: {brand}</p>}
+            {brand ? (
+              <p className="mt-1">Brand: {brand}</p>
+            ) : (
+              <p>No additional details available</p>
+            )}
           </div>
         )}
       </div>
