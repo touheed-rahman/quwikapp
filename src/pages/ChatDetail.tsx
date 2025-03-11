@@ -1,4 +1,3 @@
-
 import { useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Loader2 } from "lucide-react";
@@ -33,7 +32,6 @@ const ChatDetail = () => {
     handleImageUpload
   } = useChat(id);
 
-  // Check if conversation exists or has been deleted
   useEffect(() => {
     if (!id || !sessionUser) return;
     
@@ -66,7 +64,6 @@ const ChatDetail = () => {
     
     checkConversation();
     
-    // Listen for changes to conversation
     const channel = supabase
       .channel(`conversation-status-${id}`)
       .on(
@@ -108,7 +105,6 @@ const ChatDetail = () => {
     if (!sessionUser || !id) return;
     
     try {
-      // Upload image to storage
       const filename = `${Date.now()}-${file.name}`;
       const filePath = `chat_images/${id}/${filename}`;
       
@@ -118,12 +114,10 @@ const ChatDetail = () => {
         
       if (uploadError) throw uploadError;
       
-      // Get public URL
       const { data: urlData } = supabase.storage
         .from('chat_images')
         .getPublicUrl(filePath);
         
-      // Save message with image link
       if (handleImageUpload) {
         handleImageUpload(urlData.publicUrl);
       }
@@ -172,7 +166,6 @@ const ChatDetail = () => {
     );
   }
 
-  // Determine if the other user is online
   const otherUserId = conversationDetails 
     ? (sessionUser.id === conversationDetails.buyer_id 
       ? conversationDetails.seller_id 
@@ -194,15 +187,14 @@ const ChatDetail = () => {
         conversationDetails={conversationDetails} 
         onBack={handleBack}
         isOnline={isOtherUserOnline}
+        sessionUserId={sessionUser.id}
       />
       <div className="flex-1 overflow-y-auto">
         <MessageList messages={messages} sessionUserId={sessionUser.id} />
         
-        {/* Show tip box for buyers when chat is empty */}
         {isEmptyChat && isBuyer && <ChatTipBox />}
       </div>
       
-      {/* Quick message suggestions for both buyers and sellers */}
       <QuickMessageSuggestions 
         onSendQuickMessage={handleQuickMessage} 
         isBuyer={isBuyer}
