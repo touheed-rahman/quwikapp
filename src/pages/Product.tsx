@@ -1,7 +1,7 @@
-
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
+import { useEffect } from "react";
 import Header from "@/components/Header";
 import ChatWindow from "@/components/chat/ChatWindow";
 import { supabase } from "@/integrations/supabase/client";
@@ -18,7 +18,6 @@ import { useProductActions } from "@/hooks/useProductActions";
 import { useToast } from "@/components/ui/use-toast";
 import MobileNavigation from "@/components/navigation/MobileNavigation";
 import { motion } from "framer-motion";
-import { useEffect } from "react";
 
 interface Seller {
   id: string;
@@ -46,15 +45,12 @@ const ProductPage = () => {
     handleMakeOffer
   } = useProductActions(slug, product?.user_id);
 
-  // Update URL to use slug if needed
   useEffect(() => {
     if (product && product.slug && slug !== product.slug) {
-      // If we're on the product page with a UUID but have a nice slug available, update the URL
       navigate(`/product/${product.slug}`, { replace: true });
     }
   }, [product, slug, navigate]);
 
-  // Fetch seller data
   const { data: seller } = useQuery({
     queryKey: ['seller', product?.user_id],
     queryFn: async () => {
@@ -103,7 +99,6 @@ const ProductPage = () => {
     return <ProductNotFound />;
   }
 
-  // Update the document title to include the product title and ad number
   document.title = `${product.title} | ${product.adNumber} | Quwik`;
 
   return (
