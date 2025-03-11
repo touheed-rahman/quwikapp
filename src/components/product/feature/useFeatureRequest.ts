@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { generateInvoicePDF } from "@/utils/pdfUtils";
 import { useToast } from "@/components/ui/use-toast";
 import { UserDetails, FeatureOption } from "./types";
+import { useLocation } from "@/contexts/LocationContext";
 
 export function useFeatureRequest(
   productId: string,
@@ -16,10 +17,12 @@ export function useFeatureRequest(
   const [step, setStep] = useState(1);
   const [paymentComplete, setPaymentComplete] = useState(false);
   const [invoiceUrl, setInvoiceUrl] = useState<string | null>(null);
+  const { selectedLocation, setSelectedLocation } = useLocation();
   const [userDetails, setUserDetails] = useState<UserDetails>({
     name: "",
     phone: "",
-    address: ""
+    address: "",
+    location: selectedLocation
   });
   const { toast } = useToast();
 
@@ -29,6 +32,16 @@ export function useFeatureRequest(
       ...prev,
       [name]: value
     }));
+  };
+
+  const handleLocationChange = async (location: string | null) => {
+    if (setSelectedLocation) {
+      await setSelectedLocation(location);
+      setUserDetails(prev => ({
+        ...prev,
+        location
+      }));
+    }
   };
 
   const generateInvoice = async (order: any, selectedFeatureOption: FeatureOption) => {
@@ -109,7 +122,8 @@ export function useFeatureRequest(
       });
 
       if (!rpcResponse.ok) {
-        throw new Error('Failed to submit feature request');
+        const errorData = await rpcResponse.json();
+        throw new Error(`Failed to submit feature request: ${errorData.message || rpcResponse.statusText}`);
       }
 
       // Generate a free invoice record
@@ -127,7 +141,8 @@ export function useFeatureRequest(
         feature_type: selectedOption,
         contact_name: userDetails.name,
         contact_phone: userDetails.phone,
-        contact_address: userDetails.address
+        contact_address: userDetails.address,
+        contact_location: userDetails.location
       };
       
       // Create order using REST API
@@ -184,7 +199,7 @@ export function useFeatureRequest(
         setStep(1);
         setSelectedOption(null);
         setPaymentComplete(false);
-        setUserDetails({ name: "", phone: "", address: "" });
+        setUserDetails({ name: "", phone: "", address: "", location: selectedLocation });
         setInvoiceUrl(null);
       }, 5000);
       
@@ -243,6 +258,7 @@ export function useFeatureRequest(
     invoiceUrl,
     userDetails,
     handleUserDetailsChange,
+    handleLocationChange,
     handleNext,
     handleDetailsNext,
     handleDownloadInvoice

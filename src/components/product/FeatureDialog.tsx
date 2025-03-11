@@ -39,6 +39,7 @@ export default function FeatureDialog({
     invoiceUrl,
     userDetails,
     handleUserDetailsChange,
+    handleLocationChange,
     handleNext,
     handleDetailsNext,
     handleDownloadInvoice
@@ -108,6 +109,7 @@ export default function FeatureDialog({
             <ContactDetailsStep
               userDetails={userDetails}
               onUserDetailsChange={handleUserDetailsChange}
+              onLocationChange={handleLocationChange}
             />
             
             <DialogFooter>
