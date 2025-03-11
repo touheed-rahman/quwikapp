@@ -10,9 +10,6 @@ interface DescriptionInputProps {
 
 const DescriptionInput = ({ value, onChange }: DescriptionInputProps) => {
   const maxLength = 2000;
-  const isAlmostFull = value.length > maxLength * 0.9;
-  const isFull = value.length === maxLength;
-  const percentage = Math.round((value.length / maxLength) * 100);
   
   return (
     <motion.div 
@@ -34,35 +31,12 @@ const DescriptionInput = ({ value, onChange }: DescriptionInputProps) => {
           maxLength={maxLength}
           required
         />
-        <div className="absolute right-3 top-3 flex items-center justify-center">
-          <motion.div
-            className={`text-xs font-semibold rounded-full h-6 w-6 flex items-center justify-center
-              ${isFull ? "bg-red-100 text-red-500" : 
-                isAlmostFull ? "bg-amber-100 text-amber-500" : 
-                value.length > 0 ? "bg-primary/10 text-primary" : "bg-gray-100 text-gray-400"}`}
-            animate={{
-              scale: value.length ? [1, 1.1, 1] : 1,
-            }}
-            transition={{ duration: 0.3 }}
-          >
-            {percentage}%
-          </motion.div>
-        </div>
       </div>
       
       <div className="space-y-3">
-        <div className="flex justify-between items-center">
-          <p className="text-xs text-muted-foreground">
-            Be detailed and honest about your item
-          </p>
-          <span className={`text-xs font-medium ${
-            isFull ? "text-red-500" : 
-            isAlmostFull ? "text-amber-500" : 
-            "text-muted-foreground"
-          }`}>
-            {value.length}/{maxLength}
-          </span>
-        </div>
+        <p className="text-xs text-muted-foreground">
+          Be detailed and honest about your item
+        </p>
         
         {value.length > 0 && (
           <motion.div 

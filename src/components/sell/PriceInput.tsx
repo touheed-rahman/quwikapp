@@ -24,21 +24,11 @@ const PriceInput = ({ value, onChange }: PriceInputProps) => {
         Price *
       </label>
       <div className="relative">
-        <motion.span 
-          className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" 
-          animate={{ 
-            scale: isFocused ? 1.2 : 1,
-            color: isFocused ? "#9b87f5" : "#64748b"
-          }}
-          transition={{ duration: 0.2 }}
-        >
-          ₹
-        </motion.span>
         <Input 
           type="number"
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          className="pl-8 border-primary/20 focus-visible:ring-primary/30 shadow-sm transition-all duration-200" 
+          className="border-primary/20 focus-visible:ring-primary/30 shadow-sm transition-all duration-200" 
           placeholder="Enter price"
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}

@@ -41,20 +41,6 @@ const SellStepTwo = memo(({
   return (
     <div className="transition-opacity duration-200 bg-gradient-to-b from-background to-primary/5 min-h-screen">
       <div className="container mx-auto px-4 py-8 w-full">
-        <motion.div 
-          className="text-center mb-8"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.3 }}
-        >
-          <h1 className="text-2xl font-bold text-foreground">
-            Tell Us About Your Item
-          </h1>
-          <p className="text-muted-foreground mt-2">
-            Add details about your item to help buyers find it
-          </p>
-        </motion.div>
-        
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}

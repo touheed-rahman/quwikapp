@@ -147,7 +147,7 @@ const ProductCard = ({
           <p className="text-lg font-bold text-primary">
             ₹{price.toLocaleString()}
           </p>
-          <h3 className="text-sm font-medium line-clamp-2 text-foreground/90 group-hover:text-primary transition-colors">
+          <h3 className="text-sm font-medium line-clamp-1 text-foreground/90 group-hover:text-primary transition-colors">
             {title}
           </h3>
           <div className="flex items-center justify-between">
