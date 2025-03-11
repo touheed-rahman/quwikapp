@@ -9,7 +9,7 @@ import ImageGallery from "@/components/product/ImageGallery";
 import ProductInfo from "@/components/product/ProductInfo";
 import SellerInfo from "@/components/product/SellerInfo";
 import RelatedProducts from "@/components/product/RelatedProducts";
-import MakeOfferDialog from "@/components/product/MakeOfferDialog";
+import FeatureDialog from "@/components/product/FeatureDialog";
 import ProductLoader from "@/components/product/ProductLoader";
 import ProductNotFound from "@/components/product/ProductNotFound";
 import { useProductDetails } from "@/hooks/useProductDetails";
@@ -31,6 +31,7 @@ const ProductPage = () => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [session, setSession] = useState<any>(null);
   const [isChatOpen, setIsChatOpen] = useState(false);
+  const [isFeatureDialogOpen, setIsFeatureDialogOpen] = useState(false);
   const { toast } = useToast();
 
   const { data: product, isLoading, isError } = useProductDetails(id);
@@ -79,6 +80,13 @@ const ProductPage = () => {
       navigate(`/chat/${currentConversationId}`);
     }
   }, [currentConversationId, navigate]);
+
+  const handleFeatureSuccess = async () => {
+    toast({
+      title: "Listing Featured!",
+      description: "Your listing will now be shown in featured sections",
+    });
+  };
 
   if (isLoading) {
     return <ProductLoader />;
@@ -139,7 +147,7 @@ const ProductPage = () => {
               <SellerInfo
                 seller={seller}
                 onChatClick={() => handleChatWithSeller(session)}
-                onMakeOffer={() => handleMakeOffer(session)}
+                onMakeOffer={() => setIsFeatureDialogOpen(true)}
               />
             )}
           </motion.div>
@@ -154,15 +162,14 @@ const ProductPage = () => {
         </motion.div>
       </main>
 
-      <MakeOfferDialog
-        isOpen={isOfferDialogOpen}
-        onClose={() => setIsOfferDialogOpen(false)}
+      <FeatureDialog
+        isOpen={isFeatureDialogOpen}
+        onClose={() => setIsFeatureDialogOpen(false)}
         productTitle={product.title}
-        productPrice={product.price}
-        conversationId={currentConversationId}
-        onOfferSuccess={() => {
-          navigate(`/chat/${currentConversationId}`);
-        }}
+        productId={product.id}
+        category={product.category || ''}
+        subcategory={product.subcategory || ''}
+        onFeatureSuccess={handleFeatureSuccess}
       />
       
       <MobileNavigation onChatOpen={() => setIsChatOpen(true)} />

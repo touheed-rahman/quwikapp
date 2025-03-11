@@ -111,7 +111,7 @@ const ImageUpload = ({ images, setImages, maxImages = 12 }: ImageUploadProps) =>
       {/* Drop zone */}
       <div 
         className={`border-2 border-dashed rounded-xl p-6 text-center flex flex-col items-center justify-center gap-3 transition-colors cursor-pointer ${
-          dragActive ? "border-secondary bg-secondary/5" : "border-gray-300 hover:border-secondary/50"
+          dragActive ? "border-secondary bg-secondary/5" : "border-primary/30 hover:border-primary/50"
         }`}
         onDragEnter={handleDrag}
         onDragLeave={handleDrag}
@@ -120,7 +120,7 @@ const ImageUpload = ({ images, setImages, maxImages = 12 }: ImageUploadProps) =>
         onClick={triggerFileInput}
       >
         <UploadCloud 
-          className={`w-10 h-10 ${dragActive ? "text-secondary" : "text-gray-400"}`} 
+          className={`w-10 h-10 ${dragActive ? "text-secondary" : "text-primary/60"}`} 
         />
         <div>
           <p className="font-medium text-sm">
@@ -157,7 +157,7 @@ const ImageUpload = ({ images, setImages, maxImages = 12 }: ImageUploadProps) =>
                 <img
                   src={preview}
                   alt={`Preview ${index + 1}`}
-                  className="w-full h-full object-cover rounded-lg border border-gray-200"
+                  className="w-full h-full object-cover rounded-lg border border-primary/10"
                 />
                 <Button
                   type="button"
@@ -172,7 +172,7 @@ const ImageUpload = ({ images, setImages, maxImages = 12 }: ImageUploadProps) =>
                   <X className="w-3.5 h-3.5" />
                 </Button>
                 {index === 0 && (
-                  <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-white text-[10px] font-medium p-1 text-center rounded-b-lg">
+                  <div className="absolute bottom-0 left-0 right-0 bg-primary/70 text-white text-[10px] font-medium p-1 text-center rounded-b-lg">
                     Cover Image
                   </div>
                 )}

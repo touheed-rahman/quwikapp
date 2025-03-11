@@ -1,7 +1,7 @@
 
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { MessageCircle, Tag } from "lucide-react";
+import { MessageCircle, Star } from "lucide-react";
 import { Link } from "react-router-dom";
 
 interface SellerInfoProps {
@@ -49,11 +49,11 @@ const SellerInfo = ({ seller, onChatClick, onMakeOffer }: SellerInfoProps) => {
         </Button>
         <Button 
           variant="outline" 
-          className="flex-1 h-12 hover:bg-primary hover:text-white transition-colors"
+          className="flex-1 h-12 hover:bg-accent hover:text-white transition-colors border-accent/30 text-accent"
           onClick={onMakeOffer}
         >
-          <Tag className="h-5 w-5 mr-2" />
-          Make Offer
+          <Star className="h-5 w-5 mr-2" />
+          Feature Now
         </Button>
       </div>
     </Card>
