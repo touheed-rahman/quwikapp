@@ -22,4 +22,5 @@ export interface Conversation {
   seller: Profile;
   buyer: Profile;
   deleted?: boolean;
+  deleted_by?: string | null;
 }
