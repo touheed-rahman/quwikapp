@@ -83,7 +83,7 @@ export const useListingForm = () => {
       return false;
     }
 
-    // Category-specific validations
+    // Category-specific validations only for vehicles
     if (formData.category === 'vehicles' && (formData.km_driven === undefined || formData.km_driven === null)) {
       toast({
         title: "Missing Kilometers Driven",

@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -189,7 +188,7 @@ export default function FeatureDialog({
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) throw new Error("No session found");
 
-      // First, try to update just the basic fields without the contact fields
+      // First, update the listing with feature information
       const { error } = await supabase
         .from("listings")
         .update({
@@ -208,6 +207,7 @@ export default function FeatureDialog({
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://cgrtrdwvkkhraizqukwt.supabase.co';
       const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNncnRyZHd2a2tocmFpenF1a3d0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzgwNjE2NTIsImV4cCI6MjA1MzYzNzY1Mn0.mnC-NB_broDr4nOHggi0ngeDC1CxZsda6X-wyEMD2tE';
       
+      // Create order data without the problematic fields
       const orderData = {
         product_id: productId,
         buyer_id: session.user.id,

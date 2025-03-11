@@ -6,7 +6,6 @@ import PriceInput from "./PriceInput";
 import FormActions from "./FormActions";
 import LocationSelector from "@/components/LocationSelector";
 import { useLocation } from "@/contexts/LocationContext";
-import CategorySpecificFields from "./CategorySpecificFields";
 import { Card } from "@/components/ui/card";
 import { motion } from "framer-motion";
 import { Check } from "lucide-react";
@@ -88,16 +87,7 @@ const SellFormDetails = ({
             </div>
           </div>
           
-          {/* Only show category specific fields if we have both category and subcategory */}
-          {category && subcategory && (
-            <div className="transition-all duration-300">
-              <CategorySpecificFields 
-                category={category} 
-                subcategory={subcategory}
-                updateFormData={updateFormData}
-              />
-            </div>
-          )}
+          {/* Category specific fields removed temporarily */}
           
           <div className="transition-all duration-300">
             <div>
