@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import ListingSearchBar from "./ListingSearchBar";
 import ListingTable from "./ListingTable";
+import ListingTabs from "./ListingTabs";
 import { type Listing } from "./types";
 import { Loader2 } from "lucide-react";
 
@@ -215,6 +216,8 @@ const ListingManagement = () => {
 
   return (
     <div className="space-y-4">
+      <ListingTabs currentFilter={filter} />
+      
       <div className="flex items-center gap-4">
         <ListingSearchBar 
           searchTerm={searchTerm}

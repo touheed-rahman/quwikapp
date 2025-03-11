@@ -134,13 +134,13 @@ const CategoryFilter = () => {
                         whileTap={{ scale: 0.95 }}
                       >
                         <motion.div 
-                          className={`p-2.5 md:p-3 rounded-full ${bgColor} text-white shadow-md`}
+                          className={`p-3 md:p-3.5 rounded-full ${bgColor} text-white shadow-md`}
                           whileHover={{ 
                             scale: 1.1,
                             boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)"
                           }}
                         >
-                          <Icon className="h-6 w-6 md:h-6 md:w-6" />
+                          <Icon className="h-7 w-7 md:h-7 md:w-7" />
                         </motion.div>
                         <span className="text-xs md:text-sm font-medium text-center line-clamp-1">{category.name}</span>
                       </motion.button>

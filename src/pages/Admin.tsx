@@ -93,6 +93,7 @@ const AdminPanel = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
+      {/* Top navbar */}
       <div className="bg-white shadow-sm border-b h-16 fixed top-0 left-0 right-0 z-50 flex items-center px-4">
         <div className="flex items-center justify-between w-full">
           <div className="flex items-center gap-2">
@@ -111,7 +112,6 @@ const AdminPanel = () => {
           </div>
           
           <div className="hidden md:flex items-center space-x-1 ml-8">
-            {/* Wrapping TabsList with Tabs component to fix the error */}
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
               <TabsList className="bg-secondary/40 p-1 rounded-lg">
                 <TabsTrigger 
@@ -222,30 +222,6 @@ const AdminPanel = () => {
                 <BarChart3 className="w-5 h-5 mr-2" />
                 Analytics
               </Button>
-              
-              <Button 
-                variant={activeTab === 'notifications' ? "default" : "ghost"} 
-                className="w-full justify-start text-base font-medium"
-                onClick={() => {
-                  setActiveTab('notifications');
-                  setMobileMenuOpen(false);
-                }}
-              >
-                <Bell className="w-5 h-5 mr-2" />
-                Notifications
-              </Button>
-              
-              <Button 
-                variant={activeTab === 'settings' ? "default" : "ghost"} 
-                className="w-full justify-start text-base font-medium"
-                onClick={() => {
-                  setActiveTab('settings');
-                  setMobileMenuOpen(false);
-                }}
-              >
-                <Settings className="w-5 h-5 mr-2" />
-                Settings
-              </Button>
             </div>
           </motion.div>
         )}
@@ -264,8 +240,6 @@ const AdminPanel = () => {
             {activeTab === 'listings' && 'Manage Listings'}
             {activeTab === 'users' && 'User Management'}
             {activeTab === 'analytics' && 'Analytics & Reports'}
-            {activeTab === 'notifications' && 'Notification Center'}
-            {activeTab === 'settings' && 'Admin Settings'}
           </h1>
         </Card>
 
@@ -278,7 +252,6 @@ const AdminPanel = () => {
             transition={{ duration: 0.2 }}
             className="space-y-6"
           >
-            {/* These TabsContent components should be within a Tabs component */}
             <Tabs value={activeTab} className="w-full">
               <TabsContent value="dashboard">
                 <DashboardMetrics />
@@ -296,20 +269,6 @@ const AdminPanel = () => {
                 <div className="bg-white p-6 rounded-lg shadow">
                   <h2 className="text-xl font-semibold mb-4">Analytics Dashboard</h2>
                   <p className="text-muted-foreground">Detailed analytics coming soon...</p>
-                </div>
-              </TabsContent>
-              
-              <TabsContent value="notifications">
-                <div className="bg-white p-6 rounded-lg shadow">
-                  <h2 className="text-xl font-semibold mb-4">System Notifications</h2>
-                  <p className="text-muted-foreground">Notification management coming soon...</p>
-                </div>
-              </TabsContent>
-              
-              <TabsContent value="settings">
-                <div className="bg-white p-6 rounded-lg shadow">
-                  <h2 className="text-xl font-semibold mb-4">Admin Settings</h2>
-                  <p className="text-muted-foreground">Settings panel coming soon...</p>
                 </div>
               </TabsContent>
             </Tabs>
