@@ -1,7 +1,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 import { Conversation } from '@/components/chat/types/conversation';
 
@@ -13,6 +13,7 @@ export function useConversations(
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [unreadCounts, setUnreadCounts] = useState<Record<string, number>>({});
+  const [isDeleting, setIsDeleting] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -88,8 +89,10 @@ export function useConversations(
           },
           (payload) => {
             if (payload.new && (payload.new as any).deleted) {
+              // Immediately remove deleted conversation from state
               setConversations(prev => prev.filter(conv => conv.id !== (payload.new as any).id));
             } else {
+              // Refresh conversations for other updates
               fetchConversations();
             }
           }
@@ -104,8 +107,10 @@ export function useConversations(
           },
           (payload) => {
             if (payload.new && (payload.new as any).deleted) {
+              // Immediately remove deleted conversation from state
               setConversations(prev => prev.filter(conv => conv.id !== (payload.new as any).id));
             } else {
+              // Refresh conversations for other updates
               fetchConversations();
             }
           }
@@ -138,6 +143,10 @@ export function useConversations(
 
   const handleDelete = async (conversationId: string) => {
     try {
+      if (isDeleting) return false;
+      
+      setIsDeleting(true);
+      
       // Mark the conversation as deleted
       const { error: updateError } = await supabase
         .from('conversations')
@@ -170,6 +179,8 @@ export function useConversations(
         description: "There was an error deleting the conversation.",
       });
       return false;
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -178,6 +189,7 @@ export function useConversations(
     isLoading,
     unreadCounts,
     handleDelete,
-    fetchConversations
+    fetchConversations,
+    isDeleting
   };
 }

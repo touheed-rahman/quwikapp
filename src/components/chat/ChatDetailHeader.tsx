@@ -3,7 +3,7 @@ import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { ConversationDetails } from "./types/chat-detail";
 import { useState } from "react";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import HeaderUserInfo from "./HeaderUserInfo";
@@ -28,6 +28,7 @@ const ChatDetailHeader = ({
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isBlockDialogOpen, setIsBlockDialogOpen] = useState(false);
   const [isReportDialogOpen, setIsReportDialogOpen] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -40,7 +41,9 @@ const ChatDetailHeader = ({
 
   const handleDeleteChat = async () => {
     try {
-      if (!conversationDetails.id) return;
+      if (!conversationDetails.id || isProcessing) return;
+      
+      setIsProcessing(true);
       
       // Mark the conversation as deleted
       const { error } = await supabase
@@ -65,13 +68,16 @@ const ChatDetailHeader = ({
         description: "Failed to delete chat. Please try again."
       });
     } finally {
+      setIsProcessing(false);
       setIsDeleteDialogOpen(false);
     }
   };
 
   const handleBlockUser = async () => {
     try {
-      if (!otherUser?.id || !sessionUserId) return;
+      if (!otherUser?.id || !sessionUserId || isProcessing) return;
+      
+      setIsProcessing(true);
       
       // Create a system message indicating user was blocked
       const { error } = await supabase
@@ -101,13 +107,16 @@ const ChatDetailHeader = ({
         description: "Failed to block user. Please try again."
       });
     } finally {
+      setIsProcessing(false);
       setIsBlockDialogOpen(false);
     }
   };
 
   const handleReportSpam = async () => {
     try {
-      if (!otherUser?.id || !sessionUserId || !conversationDetails.id) return;
+      if (!otherUser?.id || !sessionUserId || !conversationDetails.id || isProcessing) return;
+      
+      setIsProcessing(true);
       
       // Create a system message indicating conversation was reported
       const { error } = await supabase
@@ -134,6 +143,7 @@ const ChatDetailHeader = ({
         description: "Failed to submit report. Please try again."
       });
     } finally {
+      setIsProcessing(false);
       setIsReportDialogOpen(false);
     }
   };
@@ -156,6 +166,7 @@ const ChatDetailHeader = ({
         onDeleteClick={() => setIsDeleteDialogOpen(true)}
         onBlockClick={() => setIsBlockDialogOpen(true)}
         onReportClick={() => setIsReportDialogOpen(true)}
+        isProcessing={isProcessing}
       />
 
       <DeleteChatDialog 

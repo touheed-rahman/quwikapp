@@ -2,7 +2,7 @@
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ConversationItem } from "./ConversationItem";
 import { Button } from "@/components/ui/button";
-import { AlertTriangle, MoreVertical, Trash2 } from "lucide-react";
+import { MoreVertical } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import type { Conversation } from "./types/conversation";
 import {
@@ -11,16 +11,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 import { useState, useEffect } from "react";
 import DeleteChatDialog from "./dialogs/DeleteChatDialog";
 
@@ -44,6 +34,7 @@ const ConversationList = ({
   const navigate = useNavigate();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [localConversations, setLocalConversations] = useState<Conversation[]>([]);
   
   // Initialize local state with filtered conversations
@@ -66,15 +57,26 @@ const ConversationList = ({
   };
 
   const handleDeleteConfirmed = async () => {
-    if (selectedConversation) {
-      // Remove the deleted conversation from the local state immediately
-      setLocalConversations(prev => prev.filter(conv => conv.id !== selectedConversation.id));
-      
-      // Then perform the actual delete operation
-      await onDelete(selectedConversation.id);
-      
-      setDeleteDialogOpen(false);
-      setSelectedConversation(null);
+    if (selectedConversation && !isDeleting) {
+      try {
+        setIsDeleting(true);
+        
+        // Remove the deleted conversation from the local state immediately
+        setLocalConversations(prev => prev.filter(conv => conv.id !== selectedConversation.id));
+        
+        // Then perform the actual delete operation
+        await onDelete(selectedConversation.id);
+      } catch (error) {
+        console.error("Error deleting conversation:", error);
+        // If deletion fails, restore the conversation in local state
+        if (selectedConversation) {
+          setLocalConversations(prev => [...prev, selectedConversation]);
+        }
+      } finally {
+        setIsDeleting(false);
+        setDeleteDialogOpen(false);
+        setSelectedConversation(null);
+      }
     }
   };
 
@@ -108,9 +110,10 @@ const ConversationList = ({
                   <DropdownMenuItem 
                     className="text-destructive focus:text-destructive"
                     onClick={(e) => confirmDelete(conversation, e)}
+                    disabled={isDeleting}
                   >
-                    <Trash2 className="mr-2 h-4 w-4" />
-                    Delete Chat
+                    {isDeleting && selectedConversation?.id === conversation.id ? 
+                      "Deleting..." : "Delete Chat"}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>

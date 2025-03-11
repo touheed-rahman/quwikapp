@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import type { ConversationDetails } from '@/components/chat/types/chat-detail';
 
 export function useConversationDetails(
@@ -12,12 +12,18 @@ export function useConversationDetails(
   const navigate = useNavigate();
   const { toast } = useToast();
   const [conversationDetails, setConversationDetails] = useState<ConversationDetails | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    if (!conversationId || !sessionUser) return;
+    if (!conversationId || !sessionUser) {
+      setIsLoading(false);
+      return;
+    }
 
     const fetchConversationDetails = async () => {
       try {
+        setIsLoading(true);
+        
         const { data, error } = await supabase
           .from('conversations')
           .select(`
@@ -63,6 +69,7 @@ export function useConversationDetails(
 
             setConversationDetails(newConversation);
             localStorage.removeItem('intended_conversation');
+            setIsLoading(false);
             return;
           }
 
@@ -87,11 +94,15 @@ export function useConversationDetails(
 
         setConversationDetails(data);
       } catch (error: any) {
+        console.error('Error fetching conversation details:', error);
         toast({
           variant: "destructive",
           title: "Error",
           description: "Failed to load conversation details"
         });
+        navigate('/');
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -109,12 +120,20 @@ export function useConversationDetails(
           filter: `id=eq.${conversationId}`
         },
         (payload) => {
-          if (payload.new && (payload.new as any).deleted) {
+          const newData = payload.new as any;
+          
+          if (newData && newData.deleted) {
             toast({
               title: "Conversation deleted",
               description: "This conversation has been deleted."
             });
             navigate('/');
+          } else if (newData) {
+            // Update the conversation details with the new data
+            setConversationDetails(prev => {
+              if (!prev) return null;
+              return { ...prev, ...newData };
+            });
           }
         }
       )
@@ -125,5 +144,5 @@ export function useConversationDetails(
     };
   }, [conversationId, sessionUser, toast, navigate]);
 
-  return conversationDetails;
+  return { conversationDetails, isLoading };
 }
