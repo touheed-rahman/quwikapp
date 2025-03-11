@@ -6,6 +6,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { useSellerProfile } from "@/hooks/useSellerProfile";
 import SellerProfileHeader from "@/components/seller/SellerProfileHeader";
 import SellerListings from "@/components/seller/SellerListings";
+import BreadcrumbSchema from "@/components/seo/BreadcrumbSchema";
 
 const SellerProfile = () => {
   const { id } = useParams();
@@ -24,6 +25,13 @@ const SellerProfile = () => {
     </div>
   );
 
+  // Create breadcrumb for this seller profile
+  const breadcrumbItems = [
+    { name: "Home", url: "/" },
+    { name: "Sellers", url: "/sellers" },
+    { name: profile.full_name, url: `/seller/${id}` }
+  ];
+
   return (
     <div className="min-h-screen bg-gray-50">
       <SeoHead
@@ -31,6 +39,8 @@ const SellerProfile = () => {
         description={`Check out ${profile.full_name}'s listings and profile on Quwik. Member since ${new Date(profile.created_at).getFullYear()}`}
         noindex={true} // Add noindex directive for seller profiles
       />
+      
+      <BreadcrumbSchema items={breadcrumbItems} />
       
       <Header />
       

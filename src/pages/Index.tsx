@@ -16,6 +16,7 @@ import { motion } from "framer-motion";
 import SeoHead from "@/components/seo/SeoHead";
 import LocalBusinessSchema from "@/components/seo/LocalBusinessSchema";
 import { Listing } from "@/hooks/useListings";
+import FAQSchema from "@/components/seo/FAQSchema";
 
 const ITEMS_PER_PAGE = 20;
 const FEATURED_ITEMS_LIMIT = 4;
@@ -31,15 +32,12 @@ const Index = () => {
     selectedLocation
   });
 
-  // Get random featured listings
   useEffect(() => {
     if (listings.length > 0) {
       const featuredItems = listings.filter(listing => listing.featured);
       
-      // Always shuffle the featured listings array
       const shuffled = [...featuredItems].sort(() => 0.5 - Math.random());
       
-      // Take only the first 4 items regardless of how many featured items we have
       setRandomFeaturedListings(shuffled.slice(0, FEATURED_ITEMS_LIMIT));
     } else {
       setRandomFeaturedListings([]);
@@ -66,6 +64,29 @@ const Index = () => {
     show: { opacity: 1, y: 0, transition: { duration: 0.4 } }
   };
 
+  const faqData = [
+    {
+      question: "How do I buy an item on Quwik?",
+      answer: "Browse through our listings, find an item you like, and click on it to view details. You can contact the seller directly via our chat system to arrange pickup and payment."
+    },
+    {
+      question: "How do I sell my items on Quwik?",
+      answer: "Click the 'Sell' button, create an account if you don't have one, then fill out the listing form with details about your item, add photos, set a price, and publish."
+    },
+    {
+      question: "Is Quwik free to use?",
+      answer: "Yes, basic buying and selling on Quwik is completely free. Premium features like promoting listings are available for a small fee."
+    },
+    {
+      question: "How does payment work?",
+      answer: "Quwik primarily facilitates direct transactions between buyers and sellers. Most transactions are handled in person with cash, but we also support electronic payments for convenience."
+    },
+    {
+      question: "Is it safe to buy and sell on Quwik?",
+      answer: "We implement various safety features to protect our users, including user verification, secure messaging, and community ratings. We also provide safety tips for meeting and conducting transactions."
+    }
+  ];
+
   const homepageStructuredData = {
     "@context": "https://schema.org",
     "@type": "WebPage",
@@ -88,7 +109,6 @@ const Index = () => {
     }
   };
 
-  // Get the user's location to show in local business schema
   const getLocationDetails = () => {
     if (!selectedLocation) return null;
     
@@ -106,6 +126,7 @@ const Index = () => {
     <div className="min-h-screen bg-gradient-to-b from-background via-background to-primary/5">
       <SeoHead
         structuredData={homepageStructuredData}
+        canonical={window.location.origin}
       />
       
       {locationDetails && (
@@ -117,6 +138,8 @@ const Index = () => {
           }}
         />
       )}
+      
+      <FAQSchema faqs={faqData} />
       
       <WelcomeDialog 
         open={showWelcomePopup} 

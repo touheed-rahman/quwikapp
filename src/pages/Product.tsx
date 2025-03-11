@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -20,6 +19,8 @@ import MobileNavigation from "@/components/navigation/MobileNavigation";
 import { motion } from "framer-motion";
 import SeoHead from "@/components/seo/SeoHead";
 import ProductSchema from "@/components/seo/ProductSchema";
+import BreadcrumbSchema from "@/components/seo/BreadcrumbSchema";
+import { categories } from "@/types/categories";
 
 interface Seller {
   id: string;
@@ -47,7 +48,6 @@ const ProductPage = () => {
     handleMakeOffer
   } = useProductActions(id, product?.user_id);
 
-  // Fetch seller data
   const { data: seller } = useQuery({
     queryKey: ['seller', product?.user_id],
     queryFn: async () => {
@@ -96,7 +96,33 @@ const ProductPage = () => {
     return <ProductNotFound />;
   }
 
-  // Get full image URLs for schema
+  const generateBreadcrumbs = () => {
+    const breadcrumbs = [
+      { name: "Home", url: "/" }
+    ];
+
+    if (product.category) {
+      breadcrumbs.push({
+        name: product.category,
+        url: `/category/${product.category}`
+      });
+
+      if (product.subcategory) {
+        breadcrumbs.push({
+          name: product.subcategory,
+          url: `/category/${product.category}/${product.subcategory}`
+        });
+      }
+    }
+
+    breadcrumbs.push({
+      name: product.title,
+      url: `/product/${product.id}`
+    });
+
+    return breadcrumbs;
+  };
+
   const getFullImageUrls = () => {
     if (!product.images || product.images.length === 0) {
       return ["/placeholder.svg"];
@@ -105,6 +131,13 @@ const ProductPage = () => {
     return product.images.map(img => 
       supabase.storage.from('listings').getPublicUrl(img).data.publicUrl
     );
+  };
+
+  const getCategoryName = () => {
+    if (!product.category) return null;
+    
+    const category = categories.find(c => c.id === product.category);
+    return category ? category.name : product.category;
   };
 
   return (
@@ -127,6 +160,8 @@ const ProductPage = () => {
         type="product"
         publishedAt={product.created_at}
         modifiedAt={product.updated_at}
+        canonical={`${window.location.origin}/product/${product.id}`}
+        openGraphType="product"
       />
       
       <ProductSchema
@@ -136,7 +171,7 @@ const ProductPage = () => {
         price={product.price}
         condition={product.condition}
         images={getFullImageUrls()}
-        category={product.category}
+        category={getCategoryName()}
         brand={product.brand}
         createdAt={product.created_at}
         seller={seller ? {
@@ -144,6 +179,8 @@ const ProductPage = () => {
           name: seller.full_name || 'Quwik Seller'
         } : undefined}
       />
+      
+      <BreadcrumbSchema items={generateBreadcrumbs()} />
       
       <Header />
       <main className="container mx-auto px-2 sm:px-4 pt-20 pb-20 overflow-x-hidden max-w-full">

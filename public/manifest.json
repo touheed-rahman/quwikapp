@@ -2,6 +2,11 @@
 {
   "name": "Quwik Marketplace",
   "short_name": "Quwik",
+  "description": "Buy and sell items locally with Quwik marketplace - the safest and most convenient local marketplace",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#ffffff",
   "icons": [
     {
       "src": "/favicon.ico",
@@ -11,17 +16,41 @@
     {
       "src": "/logo192.png",
       "type": "image/png",
-      "sizes": "192x192"
+      "sizes": "192x192",
+      "purpose": "any maskable"
     },
     {
       "src": "/logo512.png",
       "type": "image/png",
-      "sizes": "512x512"
+      "sizes": "512x512",
+      "purpose": "any maskable"
     }
   ],
-  "start_url": ".",
-  "display": "standalone",
-  "theme_color": "#ffffff",
-  "background_color": "#ffffff",
-  "description": "Buy and sell items locally with Quwik marketplace"
+  "orientation": "portrait",
+  "categories": ["shopping", "marketplace", "classifieds", "ecommerce"],
+  "prefer_related_applications": false,
+  "screenshots": [
+    {
+      "src": "/screenshots/screen1.jpg",
+      "sizes": "1280x720",
+      "type": "image/jpeg"
+    },
+    {
+      "src": "/screenshots/screen2.jpg",
+      "sizes": "1280x720",
+      "type": "image/jpeg"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Sell Item",
+      "url": "/sell",
+      "description": "List a new item for sale"
+    },
+    {
+      "name": "Categories",
+      "url": "/categories",
+      "description": "Browse categories"
+    }
+  ]
 }

@@ -1,5 +1,8 @@
 
+# Quwik Robots.txt - Optimized for search engines
 User-agent: *
+
+# Disallow admin and private pages
 Disallow: /admin/
 Disallow: /admin/login
 Disallow: /seller/
@@ -17,5 +20,12 @@ Allow: /product/
 Allow: /fresh-recommendations
 Allow: /categories
 
-# Sitemap location (you should create this)
+# Crawl delay recommendation (optional)
+Crawl-delay: 5
+
+# Block specific bots (if needed)
+User-agent: AhrefsBot
+Crawl-delay: 10
+
+# Sitemap location
 Sitemap: https://quwik.com/sitemap.xml

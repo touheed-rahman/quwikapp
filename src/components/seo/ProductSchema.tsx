@@ -18,6 +18,13 @@ interface ProductSchemaProps {
   };
   currency?: string;
   availability?: "InStock" | "OutOfStock" | "PreOrder";
+  sku?: string;
+  weight?: string;
+  width?: string;
+  height?: string;
+  depth?: string;
+  reviewCount?: number;
+  ratingValue?: number;
 }
 
 const ProductSchema = ({
@@ -32,7 +39,14 @@ const ProductSchema = ({
   createdAt,
   seller,
   currency = "INR",
-  availability = "InStock"
+  availability = "InStock",
+  sku,
+  weight,
+  width,
+  height,
+  depth,
+  reviewCount = 1,
+  ratingValue = 4.5
 }: ProductSchemaProps) => {
   const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
   const productUrl = `${baseUrl}/product/${id}`;
@@ -54,14 +68,17 @@ const ProductSchema = ({
     itemCondition = "https://schema.org/UsedCondition";
   }
 
+  // Create a product SKU if not provided
+  const productSku = sku || `QUWIK-${id.substring(0, 8)}`;
+
   const productSchema = {
     "@context": "https://schema.org",
     "@type": "Product",
     "name": title,
     "description": description,
     "image": imageUrls,
-    "sku": `QUWIK-${id.substring(0, 8)}`,
-    "mpn": `QUWIK-${id.substring(0, 8)}`,
+    "sku": productSku,
+    "mpn": productSku,
     "brand": brand ? {
       "@type": "Brand",
       "name": brand
@@ -71,6 +88,7 @@ const ProductSchema = ({
       "url": productUrl,
       "priceCurrency": currency,
       "price": price,
+      "priceValidUntil": new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString().split('T')[0],
       "itemCondition": itemCondition,
       "availability": `https://schema.org/${availability}`,
       "seller": seller ? {
@@ -80,22 +98,37 @@ const ProductSchema = ({
     },
     "aggregateRating": {
       "@type": "AggregateRating",
-      "ratingValue": "4.5",
-      "reviewCount": "1"
+      "ratingValue": ratingValue.toString(),
+      "reviewCount": reviewCount.toString()
     },
     "review": {
       "@type": "Review",
       "reviewRating": {
         "@type": "Rating",
-        "ratingValue": "4.5",
+        "ratingValue": ratingValue.toString(),
         "bestRating": "5"
       },
       "author": {
         "@type": "Person",
         "name": "Quwik Customer"
       }
-    }
+    },
+    "category": category
   };
+
+  // Add dimensions and weight if provided
+  if (weight || width || height || depth) {
+    const productSize = {
+      "@type": "QuantitativeValue"
+    };
+    
+    if (weight) productSize.weight = weight;
+    if (width) productSize.width = width;
+    if (height) productSize.height = height;
+    if (depth) productSize.depth = depth;
+    
+    productSchema.size = productSize;
+  }
 
   // Remove undefined values from schema
   const cleanSchema = JSON.parse(JSON.stringify(productSchema));
