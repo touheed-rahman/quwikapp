@@ -21,16 +21,16 @@ const ProductSpecsCard = ({
   category,
   condition 
 }: ProductSpecsCardProps) => {
-  // Determine if we have any specs to show - modified to better check specs
+  // Check if we have any specs information to display
   const specsHasValues = specs && Object.entries(specs).some(([_, value]) => 
     value !== null && value !== undefined && value !== ''
   );
   
-  const hasSpecs = brand || specsHasValues || km_driven !== null;
+  const hasAnyDetails = brand || specsHasValues || km_driven !== null;
 
-  // Simplified check to display appropriate component
+  // Determine which component to display for specs
   const shouldDisplayVehicleSpecs = category === 'vehicles';
-  const shouldDisplayGeneralSpecs = !shouldDisplayVehicleSpecs && (specsHasValues || brand);
+  const shouldDisplayGeneralSpecs = !shouldDisplayVehicleSpecs && hasAnyDetails;
 
   return (
     <Card className="p-3 md:p-4 max-w-full overflow-hidden border border-primary/10 hover:border-primary/20 transition-all duration-200">
@@ -59,11 +59,7 @@ const ProductSpecsCard = ({
           />
         ) : (
           <div className="py-2 text-sm text-muted-foreground">
-            {brand ? (
-              <p className="mt-1">Brand: {brand}</p>
-            ) : (
-              <p>No additional details available</p>
-            )}
+            <p>No additional details available</p>
           </div>
         )}
       </div>

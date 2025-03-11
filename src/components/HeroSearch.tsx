@@ -50,41 +50,26 @@ const HeroSearch = () => {
     try {
       const trimmedQuery = searchQuery.trim();
       
-      // Simplified query approach to avoid the TS2589 error
-      const query = {
-        from: 'listings',
-        select: 'id, title, category, subcategory',
-        filters: [
-          { column: 'status', operator: 'eq', value: 'approved' },
-          { column: 'title', operator: 'ilike', value: `%${trimmedQuery}%` }
-        ]
-      };
+      // Build a query for listings table
+      let query = supabase.from('listings')
+        .select('id, title, category, subcategory')
+        .eq('status', 'approved');
       
-      // Add shop-specific filter if needed
+      // Add title search
+      query = query.ilike('title', `%${trimmedQuery}%`);
+      
+      // Add shop filter if needed
       if (activeTab === "shop") {
-        query.filters.push({ column: 'is_shop_item', operator: 'eq', value: true });
+        query = query.eq('is_shop_item', true);
       }
       
       // Add location filter if needed
       if (selectedLocation) {
-        query.filters.push({ column: 'location', operator: 'eq', value: selectedLocation });
+        query = query.eq('location', selectedLocation);
       }
       
-      // Build and execute the query
-      let supabaseQuery = supabase
-        .from(query.from)
-        .select(query.select);
-      
-      // Apply all filters
-      for (const filter of query.filters) {
-        if (filter.operator === 'eq') {
-          supabaseQuery = supabaseQuery.eq(filter.column, filter.value);
-        } else if (filter.operator === 'ilike') {
-          supabaseQuery = supabaseQuery.ilike(filter.column, filter.value);
-        }
-      }
-      
-      const { data: matches, error } = await supabaseQuery;
+      // Execute the query
+      const { data: matches, error } = await query;
       
       if (error) throw error;
 
@@ -118,7 +103,7 @@ const HeroSearch = () => {
   return (
     <div className="w-full mx-auto">
       <div className="w-full max-w-4xl mx-auto px-4 py-6 md:py-8">
-        {/* Move tabs above the card */}
+        {/* Tabs placed above the card */}
         <Tabs 
           defaultValue="classified" 
           value={activeTab} 
