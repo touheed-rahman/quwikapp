@@ -22,6 +22,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useState, useEffect } from "react";
+import DeleteChatDialog from "./dialogs/DeleteChatDialog";
 
 interface ConversationListProps {
   conversations: Conversation[];
@@ -70,12 +71,7 @@ const ConversationList = ({
       setLocalConversations(prev => prev.filter(conv => conv.id !== selectedConversation.id));
       
       // Then perform the actual delete operation
-      const success = await onDelete(selectedConversation.id);
-      
-      if (!success) {
-        // If the delete fails, restore the conversation in the local state
-        setLocalConversations(prev => [...prev, selectedConversation]);
-      }
+      await onDelete(selectedConversation.id);
       
       setDeleteDialogOpen(false);
       setSelectedConversation(null);
@@ -123,28 +119,11 @@ const ConversationList = ({
         ))}
       </ScrollArea>
 
-      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle className="flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5 text-destructive" />
-              Delete Chat
-            </AlertDialogTitle>
-            <AlertDialogDescription>
-              This will permanently delete this conversation and all messages. This action cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction 
-              onClick={handleDeleteConfirmed}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <DeleteChatDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={handleDeleteConfirmed}
+      />
     </>
   );
 };

@@ -1,5 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
 
 export const getFirstImageUrl = (images: string[]) => {
   if (images && images.length > 0) {
@@ -24,8 +25,20 @@ export const handleDelete = async (
       .eq('id', listingId);
 
     if (error) throw error;
+    
+    toast({
+      title: "Listing deleted",
+      description: "Your listing has been successfully deleted."
+    });
+    
     onSuccess();
   } catch (error) {
+    console.error('Error deleting listing:', error);
+    toast({
+      title: "Error",
+      description: "Failed to delete listing. Please try again.",
+      variant: "destructive"
+    });
     onError(error);
   }
 };

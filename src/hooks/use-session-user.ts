@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import type { User } from '@supabase/supabase-js';
+import { toast } from '@/hooks/use-toast';
 
 export function useSessionUser(conversationId: string | undefined) {
   const navigate = useNavigate();
@@ -68,15 +69,24 @@ export function useSessionUser(conversationId: string | undefined) {
         
         if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
           setSessionUser(session.user);
+          
+          // Show success toast on successful login
+          if (event === 'SIGNED_IN') {
+            toast({
+              title: "Successfully signed in",
+              description: "Welcome to Quwik!"
+            });
+          }
+          
           // Check if there's an intended conversation to redirect to
           const intendedConversation = localStorage.getItem('intended_conversation');
           if (intendedConversation) {
             localStorage.removeItem('intended_conversation');
-            window.location.href = `${window.location.origin}/chat/${intendedConversation}`;
+            navigate(`/chat/${intendedConversation}`);
           } else {
             // Only redirect to home if we're on the profile page
             if (window.location.pathname === '/profile') {
-              window.location.href = window.location.origin;
+              navigate('/');
             }
           }
         }

@@ -62,7 +62,7 @@ const AuthForm = () => {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
+          redirectTo: `${window.location.origin}/profile`,
           queryParams: {
             access_type: 'offline',
             prompt: 'consent',
@@ -99,6 +99,7 @@ const AuthForm = () => {
             data: {
               full_name: fullName,
             },
+            emailRedirectTo: `${window.location.origin}/`
           },
         });
 
@@ -145,7 +146,7 @@ const AuthForm = () => {
   return (
     <div className="w-full max-w-md mx-auto space-y-6">
       <div className="text-center space-y-2">
-        <h1 className="text-2xl font-bold">{isSignUp ? "Create an Account" : "Welcome Back"}</h1>
+        <h1 className="text-2xl font-bold">{isSignUp ? "Create a Quwik Account" : "Welcome Back to Quwik"}</h1>
         <p className="text-muted-foreground">
           {isSignUp
             ? "Sign up to start selling and buying items"
