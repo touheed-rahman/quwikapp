@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import Header from "@/components/Header";
 import CategoryFilter from "@/components/CategoryFilter";
@@ -14,7 +15,6 @@ import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
 import ProductCard from "@/components/ProductCard";
-import ShopProductCard from "@/components/shop/ShopProductCard";
 
 const ITEMS_PER_PAGE = 20;
 const FEATURED_ITEMS_LIMIT = 6;
@@ -24,7 +24,6 @@ const Index = () => {
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [showWelcomePopup, setShowWelcomePopup] = useState(true);
   const { selectedLocation } = useLocation();
-  const [activeTab, setActiveTab] = useState("classified");
   
   const { data: listings = [], isLoading, error } = useListings({
     selectedLocation
@@ -33,17 +32,6 @@ const Index = () => {
   const featuredListings = listings
     .filter(listing => listing.featured)
     .slice(0, FEATURED_ITEMS_LIMIT);
-    
-  const shopCategories = ['electronics', 'fashion']; // Categories considered as shop items
-  
-  // Filter listings based on the active tab
-  const filteredFeaturedListings = featuredListings.filter(listing => {
-    if (activeTab === "shop") {
-      return shopCategories.includes(listing.category);
-    } else {
-      return !shopCategories.includes(listing.category);
-    }
-  });
 
   const getFirstImageUrl = (images: string[]) => {
     if (images && images.length > 0) {
@@ -68,7 +56,7 @@ const Index = () => {
           
           <CategoryFilter />
           
-          {filteredFeaturedListings.length > 0 && (
+          {featuredListings.length > 0 && (
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <h2 className="text-2xl font-bold">Featured Listings</h2>
@@ -81,35 +69,18 @@ const Index = () => {
                 </Link>
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-4">
-                {filteredFeaturedListings.map((listing) => (
-                  activeTab === "shop" && shopCategories.includes(listing.category) ? (
-                    <ShopProductCard
-                      key={listing.id}
-                      id={listing.id}
-                      title={listing.title}
-                      price={listing.price}
-                      location={listing.location || "Location not specified"}
-                      image={getFirstImageUrl(listing.images)}
-                      date={new Date(listing.created_at).toLocaleDateString()}
-                      condition={listing.condition}
-                      featured={listing.featured}
-                      category={listing.category}
-                    />
-                  ) : (
-                    <ProductCard
-                      key={listing.id}
-                      id={listing.id}
-                      title={listing.title}
-                      price={listing.price}
-                      location={listing.location || "Location not specified"}
-                      image={getFirstImageUrl(listing.images)}
-                      date={new Date(listing.created_at).toLocaleDateString()}
-                      condition={listing.condition}
-                      featured={listing.featured}
-                      category={listing.category}
-                      km_driven={listing.km_driven}
-                    />
-                  )
+                {featuredListings.map((listing) => (
+                  <ProductCard
+                    key={listing.id}
+                    id={listing.id}
+                    title={listing.title}
+                    price={listing.price}
+                    location={listing.location || "Location not specified"}
+                    image={getFirstImageUrl(listing.images)}
+                    date={new Date(listing.created_at).toLocaleDateString()}
+                    condition={listing.condition}
+                    featured={listing.featured}
+                  />
                 ))}
               </div>
             </div>
@@ -118,20 +89,13 @@ const Index = () => {
           <div className="space-y-4">
             <h2 className="text-2xl font-bold">Recent Listings</h2>
             <RecentListings 
-              listings={listings.filter(listing => 
-                !listing.featured && 
-                (activeTab === "shop" 
-                  ? shopCategories.includes(listing.category) 
-                  : !shopCategories.includes(listing.category))
-              )}
+              listings={listings.filter(listing => !listing.featured)}
               isLoading={isLoading}
               error={error as Error}
               showAllProducts={showAllProducts}
               setShowAllProducts={setShowAllProducts}
               getFirstImageUrl={getFirstImageUrl}
               itemsPerPage={ITEMS_PER_PAGE}
-              activeTab={activeTab}
-              shopCategories={shopCategories}
             />
           </div>
         </div>

@@ -83,14 +83,21 @@ export const useListingForm = () => {
       return false;
     }
 
+    // Category-specific validations
+    if (formData.category === 'vehicles' && (!formData.km_driven && formData.km_driven !== 0)) {
+      toast({
+        title: "Missing Kilometers Driven",
+        description: "Please enter the kilometers driven",
+        variant: "destructive"
+      });
+      return false;
+    }
+
     return true;
   };
 
   const handleSubmit = async (e: React.FormEvent, selectedLocation: string | null) => {
     e.preventDefault();
-    
-    // Log the form data for debugging
-    console.log("Form data before submission:", formData);
     
     if (!validateForm(selectedLocation)) {
       return;
@@ -123,15 +130,6 @@ export const useListingForm = () => {
 
       const uploadedImagePaths = await Promise.all(imageUploadPromises);
 
-      // Handle km_driven for vehicle listings
-      let kmDriven = null;
-      if (formData.category === 'vehicles' && formData.km_driven !== undefined) {
-        // Convert to number if it's a valid number string
-        if (formData.km_driven !== '' && !isNaN(Number(formData.km_driven))) {
-          kmDriven = Number(formData.km_driven);
-        }
-      }
-
       // Prepare the listing data with all the fields
       const listingData = {
         title,
@@ -145,12 +143,10 @@ export const useListingForm = () => {
         user_id: user.id,
         status: 'pending',
         // Include specs and other category-specific fields
-        km_driven: kmDriven,
+        km_driven: formData.km_driven || null,
         brand: formData.brand || null,
         specs: formData.specs || null
       };
-
-      console.log('Submitting listing data:', listingData);
 
       const { error } = await supabase.from('listings').insert(listingData);
 

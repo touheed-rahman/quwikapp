@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -24,7 +25,6 @@ import RecentSubcategoryListings from "./pages/RecentSubcategoryListings";
 import React from 'react';
 import CategorySubcategories from "./pages/CategorySubcategories";
 import SellerProfile from "./pages/SellerProfile";
-import SellerDashboard from "./pages/SellerDashboard";
 
 // Create a client outside of the component to avoid recreating it on every render
 const queryClient = new QueryClient({
@@ -91,14 +91,6 @@ const App = () => (
                 element={
                   <PrivateRoute>
                     <Sell />
-                  </PrivateRoute>
-                }
-              />
-              <Route
-                path="/seller-dashboard"
-                element={
-                  <PrivateRoute>
-                    <SellerDashboard />
                   </PrivateRoute>
                 }
               />

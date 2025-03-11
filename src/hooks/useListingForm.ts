@@ -5,7 +5,9 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 
 export const useListingForm = () => {
-  const [formData, setFormData] = useState<any>({});
+  const [formData, setFormData] = useState<any>({
+    specs: {}
+  });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -14,7 +16,7 @@ export const useListingForm = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  // Make formData accessible globally for the form fields
+  // Make formData accessible globally for the km_driven field
   if (typeof window !== 'undefined') {
     window.formDataRef = formData;
   }
@@ -83,19 +85,34 @@ export const useListingForm = () => {
       return false;
     }
 
-    // Improved validation for vehicles: km_driven should always be a number
-    if (formData.category === 'vehicles') {
-      // Check if km_driven is defined and is a number (should be 0 or greater)
-      if (formData.km_driven === undefined || 
-          formData.km_driven === null || 
-          isNaN(Number(formData.km_driven))) {
-        toast({
-          title: "Missing Kilometers Driven",
-          description: "Please enter the kilometers driven",
-          variant: "destructive"
-        });
-        return false;
-      }
+    // Validate km_driven for vehicles
+    if (formData.category === 'vehicles' && (!formData.km_driven && formData.km_driven !== 0)) {
+      toast({
+        title: "Missing Kilometers Driven",
+        description: "Please enter the kilometers driven",
+        variant: "destructive"
+      });
+      return false;
+    }
+    
+    // Validate brand for vehicles and electronics
+    if ((formData.category === 'vehicles' || formData.category === 'electronics') && !formData.brand) {
+      toast({
+        title: "Missing Brand",
+        description: "Please enter the brand name",
+        variant: "destructive"
+      });
+      return false;
+    }
+    
+    // Validate year for vehicles
+    if (formData.category === 'vehicles' && (!formData.specs?.year)) {
+      toast({
+        title: "Missing Year",
+        description: "Please select the year of manufacture",
+        variant: "destructive"
+      });
+      return false;
     }
 
     return true;
@@ -134,8 +151,7 @@ export const useListingForm = () => {
       });
 
       const uploadedImagePaths = await Promise.all(imageUploadPromises);
-
-      // Prepare the listing data with all the fields
+      
       const listingData = {
         title,
         description,
@@ -147,13 +163,10 @@ export const useListingForm = () => {
         images: uploadedImagePaths,
         user_id: user.id,
         status: 'pending',
-        // Include specs and other category-specific fields
-        km_driven: formData.km_driven !== undefined ? Number(formData.km_driven) : null,
+        km_driven: formData.category === 'vehicles' ? formData.km_driven : null,
         brand: formData.brand || null,
-        specs: formData.specs || null
+        specs: formData.specs || {}
       };
-
-      console.log('Submitting listing data:', listingData);
 
       const { error } = await supabase.from('listings').insert(listingData);
 

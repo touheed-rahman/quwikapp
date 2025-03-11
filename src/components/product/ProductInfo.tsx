@@ -1,5 +1,5 @@
 
-import { Heart, Share2, MapPin, Calendar, Copy, Eye } from "lucide-react";
+import { Heart, Share2, MapPin, Calendar, Clock, Copy, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
@@ -132,6 +132,12 @@ const ProductInfo = ({
           <Calendar className="h-3 w-3 md:h-4 md:w-4" />
           <span>{new Date(createdAt).toLocaleDateString()}</span>
         </div>
+        {category === 'vehicles' && km_driven !== null && (
+          <div className="flex items-center gap-1">
+            <Clock className="h-3 w-3 md:h-4 md:w-4" />
+            <span>{km_driven.toLocaleString()} km driven</span>
+          </div>
+        )}
         <div className="flex items-center gap-1">
           <Eye className="h-3 w-3 md:h-4 md:w-4" />
           <span>{viewCount} views</span>
@@ -142,6 +148,11 @@ const ProductInfo = ({
         <Badge className="bg-primary/10 text-primary hover:bg-primary/20">
           {condition}
         </Badge>
+        {km_driven !== null && km_driven > 0 && (
+          <Badge variant="outline">
+            {km_driven.toLocaleString()} km
+          </Badge>
+        )}
         {brand && (
           <Badge variant="outline" className="bg-gray-100">
             {brand}
@@ -149,7 +160,7 @@ const ProductInfo = ({
         )}
       </div>
 
-      {/* Product Specifications Card - Include all specs here */}
+      {/* Product Specifications Card */}
       <ProductSpecsCard 
         brand={brand}
         specs={specs}

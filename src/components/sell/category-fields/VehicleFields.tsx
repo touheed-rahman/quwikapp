@@ -1,202 +1,127 @@
 
 import { useState, useEffect } from "react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import VehicleBasicInfoTab from "./vehicle-tabs/VehicleBasicInfoTab";
-import VehicleFeaturesTab from "./vehicle-tabs/VehicleFeaturesTab";
-import VehicleSafetyTab from "./vehicle-tabs/VehicleSafetyTab";
-import VehicleAdditionalTab from "./vehicle-tabs/VehicleAdditionalTab";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { 
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface VehicleFieldsProps {
   updateFormData: (fields: Record<string, any>) => void;
-  subcategory?: string;
 }
 
-const VehicleFields = ({ updateFormData, subcategory = "" }: VehicleFieldsProps) => {
-  // Initialize with empty string to make it optional
+const VehicleFields = ({ updateFormData }: VehicleFieldsProps) => {
   const [kmDriven, setKmDriven] = useState("");
   const [yearManufactured, setYearManufactured] = useState("");
   const [fuelType, setFuelType] = useState("");
   const [transmission, setTransmission] = useState("");
   const [color, setColor] = useState("");
-  const [engineCapacity, setEngineCapacity] = useState("");
-  const [makeMonth, setMakeMonth] = useState("");
-  const [registrationPlace, setRegistrationPlace] = useState("");
-  const [insuranceType, setInsuranceType] = useState("");
   
-  // Boolean fields
-  const [abs, setAbs] = useState(false);
-  const [accidental, setAccidental] = useState(false);
-  const [adjustableExternalMirror, setAdjustableExternalMirror] = useState(false);
-  const [adjustableSteering, setAdjustableSteering] = useState(false);
-  const [airConditioning, setAirConditioning] = useState(false);
-  const [alloyWheels, setAlloyWheels] = useState(false);
-  const [antiTheftDevice, setAntiTheftDevice] = useState(false);
-  const [auxCompatibility, setAuxCompatibility] = useState(false);
-  const [bluetooth, setBluetooth] = useState(false);
-  const [certified, setCertified] = useState(false);
-  const [cruiseControl, setCruiseControl] = useState(false);
-  const [navigationSystem, setNavigationSystem] = useState(false);
-  const [parkingSensors, setParkingSensors] = useState(false);
-  const [powerSteering, setPowerSteering] = useState(false);
-  const [rearParkingCamera, setRearParkingCamera] = useState(false);
-  const [sunroof, setSunroof] = useState(false);
-  const [usbCompatibility, setUsbCompatibility] = useState(false);
-  const [exchange, setExchange] = useState(false);
-  const [radio, setRadio] = useState(false);
-  
-  // Additional fields
-  const [airbags, setAirbags] = useState("");
-  const [batteryCondition, setBatteryCondition] = useState("");
-  const [tyreCondition, setTyreCondition] = useState("");
-  const [lockSystem, setLockSystem] = useState("");
-  const [serviceHistory, setServiceHistory] = useState("");
-  const [powerWindows, setPowerWindows] = useState("");
-
-  // Determine which fields to show based on subcategory
-  const isCar = subcategory === 'cars' || subcategory === 'luxury-cars';
-  const isBike = subcategory === 'motorcycles' || subcategory === 'scooters';
-  const isCommercial = subcategory === 'commercial-vehicles' || subcategory === 'transport-vehicles';
+  // The current year for the manufacturing year dropdown
+  const currentYear = new Date().getFullYear();
+  const yearOptions = Array.from({ length: 30 }, (_, i) => currentYear - i);
 
   // Update parent component when values change
   useEffect(() => {
-    // Initialize with empty fields for form data
     const formFields: Record<string, any> = {};
     
-    // Only add km_driven if it has a value
-    if (kmDriven !== "") {
-      const parsed = parseInt(kmDriven, 10);
-      if (!isNaN(parsed)) {
-        formFields.km_driven = parsed;
-      } else {
-        formFields.km_driven = null;
-      }
-    } else {
-      formFields.km_driven = null;
-    }
-    
+    formFields.km_driven = kmDriven ? parseInt(kmDriven) : 0;
     formFields.specs = {
-      // Basic information
       year: yearManufactured ? parseInt(yearManufactured) : null,
       fuel_type: fuelType || null,
       transmission: transmission || null,
-      color: color || null,
-      engine_capacity: engineCapacity ? parseInt(engineCapacity) : null,
-      make_month: makeMonth || null,
-      registration_place: registrationPlace || null,
-      insurance_type: insuranceType || null,
-      
-      // Boolean fields - only include relevant ones based on subcategory
-      abs: isCar || isBike ? abs : null,
-      accidental: accidental,
-      adjustable_external_mirror: isCar ? adjustableExternalMirror : null,
-      adjustable_steering: isCar ? adjustableSteering : null,
-      air_conditioning: isCar ? airConditioning : null,
-      alloy_wheels: isCar || isBike ? alloyWheels : null,
-      anti_theft_device: antiTheftDevice,
-      aux_compatibility: isCar ? auxCompatibility : null,
-      bluetooth: isCar ? bluetooth : null,
-      certified: certified,
-      cruise_control: isCar ? cruiseControl : null,
-      navigation_system: isCar ? navigationSystem : null,
-      parking_sensors: isCar ? parkingSensors : null,
-      power_steering: isCar ? powerSteering : null,
-      rear_parking_camera: isCar ? rearParkingCamera : null,
-      sunroof: isCar ? sunroof : null,
-      usb_compatibility: isCar ? usbCompatibility : null,
-      exchange: exchange,
-      radio: isCar ? radio : null,
-      
-      // Additional fields
-      airbags: isCar ? airbags : null,
-      battery_condition: batteryCondition || null,
-      tyre_condition: tyreCondition || null,
-      lock_system: lockSystem || null,
-      service_history: serviceHistory || null,
-      power_windows: isCar ? powerWindows : null,
+      color: color || null
     };
     
-    // Log the form fields for debugging
-    console.log("Vehicle form data:", formFields);
-    
     updateFormData(formFields);
-  }, [
-    kmDriven, yearManufactured, fuelType, transmission, color, 
-    engineCapacity, makeMonth, registrationPlace, insuranceType,
-    abs, accidental, adjustableExternalMirror, adjustableSteering, 
-    airConditioning, alloyWheels, antiTheftDevice, auxCompatibility, 
-    bluetooth, certified, cruiseControl, navigationSystem, parkingSensors, 
-    powerSteering, rearParkingCamera, sunroof, usbCompatibility, exchange, radio,
-    airbags, batteryCondition, tyreCondition, lockSystem, serviceHistory, powerWindows,
-    updateFormData, isCar, isBike, isCommercial
-  ]);
-
-  const vehicleStateProps = {
-    kmDriven, setKmDriven,
-    yearManufactured, setYearManufactured,
-    fuelType, setFuelType,
-    transmission, setTransmission,
-    color, setColor,
-    engineCapacity, setEngineCapacity,
-    makeMonth, setMakeMonth,
-    registrationPlace, setRegistrationPlace,
-    insuranceType, setInsuranceType,
-    abs, setAbs,
-    accidental, setAccidental,
-    adjustableExternalMirror, setAdjustableExternalMirror,
-    adjustableSteering, setAdjustableSteering,
-    airConditioning, setAirConditioning,
-    alloyWheels, setAlloyWheels,
-    antiTheftDevice, setAntiTheftDevice,
-    auxCompatibility, setAuxCompatibility,
-    bluetooth, setBluetooth,
-    certified, setCertified,
-    cruiseControl, setCruiseControl,
-    navigationSystem, setNavigationSystem,
-    parkingSensors, setParkingSensors,
-    powerSteering, setPowerSteering,
-    rearParkingCamera, setRearParkingCamera,
-    sunroof, setSunroof,
-    usbCompatibility, setUsbCompatibility,
-    exchange, setExchange,
-    radio, setRadio,
-    airbags, setAirbags,
-    batteryCondition, setBatteryCondition,
-    tyreCondition, setTyreCondition,
-    lockSystem, setLockSystem,
-    serviceHistory, setServiceHistory,
-    powerWindows, setPowerWindows,
-    isCar, isBike, isCommercial,
-  };
+  }, [kmDriven, yearManufactured, fuelType, transmission, color, updateFormData]);
 
   return (
-    <Tabs defaultValue="basic" className="w-full">
-      <TabsList className="grid grid-cols-4 mb-4">
-        <TabsTrigger value="basic">Basic Info</TabsTrigger>
-        {isCar && <TabsTrigger value="features">Features</TabsTrigger>}
-        {(isCar || isBike) && <TabsTrigger value="safety">Safety</TabsTrigger>}
-        <TabsTrigger value="additional">Additional</TabsTrigger>
-      </TabsList>
+    <>
+      <div className="space-y-2">
+        <Label htmlFor="kmDriven">Kilometers Driven *</Label>
+        <Input
+          id="kmDriven"
+          type="number"
+          placeholder="Enter kilometers driven"
+          value={kmDriven}
+          onChange={(e) => setKmDriven(e.target.value)}
+          min="0"
+          required
+        />
+      </div>
       
-      <TabsContent value="basic">
-        <VehicleBasicInfoTab {...vehicleStateProps} />
-      </TabsContent>
+      <div className="space-y-2">
+        <Label htmlFor="yearManufactured">Year of Manufacture *</Label>
+        <Select 
+          value={yearManufactured} 
+          onValueChange={setYearManufactured}
+        >
+          <SelectTrigger id="yearManufactured">
+            <SelectValue placeholder="Select year" />
+          </SelectTrigger>
+          <SelectContent>
+            {yearOptions.map(year => (
+              <SelectItem key={year} value={year.toString()}>
+                {year}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
       
-      {isCar && (
-        <TabsContent value="features">
-          <VehicleFeaturesTab {...vehicleStateProps} />
-        </TabsContent>
-      )}
+      <div className="space-y-2">
+        <Label htmlFor="fuelType">Fuel Type</Label>
+        <Select 
+          value={fuelType} 
+          onValueChange={setFuelType}
+        >
+          <SelectTrigger id="fuelType">
+            <SelectValue placeholder="Select fuel type" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="petrol">Petrol</SelectItem>
+            <SelectItem value="diesel">Diesel</SelectItem>
+            <SelectItem value="electric">Electric</SelectItem>
+            <SelectItem value="hybrid">Hybrid</SelectItem>
+            <SelectItem value="cng">CNG</SelectItem>
+            <SelectItem value="lpg">LPG</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
       
-      {(isCar || isBike) && (
-        <TabsContent value="safety">
-          <VehicleSafetyTab {...vehicleStateProps} />
-        </TabsContent>
-      )}
+      <div className="space-y-2">
+        <Label htmlFor="transmission">Transmission</Label>
+        <Select 
+          value={transmission} 
+          onValueChange={setTransmission}
+        >
+          <SelectTrigger id="transmission">
+            <SelectValue placeholder="Select transmission type" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="manual">Manual</SelectItem>
+            <SelectItem value="automatic">Automatic</SelectItem>
+            <SelectItem value="semi-automatic">Semi-Automatic</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
       
-      <TabsContent value="additional">
-        <VehicleAdditionalTab {...vehicleStateProps} />
-      </TabsContent>
-    </Tabs>
+      <div className="space-y-2">
+        <Label htmlFor="color">Color</Label>
+        <Input
+          id="color"
+          type="text"
+          placeholder="Enter vehicle color"
+          value={color}
+          onChange={(e) => setColor(e.target.value)}
+        />
+      </div>
+    </>
   );
 };
 
