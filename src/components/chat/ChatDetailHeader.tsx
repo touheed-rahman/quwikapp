@@ -32,9 +32,10 @@ const ChatDetailHeader = ({
 
   const handleDeleteChat = async () => {
     try {
-      if (!conversationDetails.id || isProcessing) return;
+      if (!conversationDetails.id || !sessionUserId || isProcessing) return;
       
       setIsProcessing(true);
+      console.log('Deleting chat from header:', conversationDetails.id);
       
       // Update the conversation with a deleted_by field that includes this user ID
       const { error } = await supabase
@@ -44,7 +45,12 @@ const ChatDetailHeader = ({
         })
         .eq('id', conversationDetails.id);
         
-      if (error) throw error;
+      if (error) {
+        console.error('Error updating deleted_by in header:', error);
+        throw error;
+      }
+      
+      console.log('Successfully marked conversation as deleted from header');
       
       toast({
         title: "Chat deleted",

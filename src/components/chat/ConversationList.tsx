@@ -34,8 +34,12 @@ const ConversationList = ({
   // Initialize local state with conversations
   useEffect(() => {
     // Filter conversations that should be shown to this user
-    setLocalConversations(conversations);
-  }, [conversations]);
+    const filteredConversations = conversations.filter(conv => 
+      !conv.deleted && (!conv.deleted_by || conv.deleted_by !== userId)
+    );
+    console.log('Filtered conversations for display:', filteredConversations.length);
+    setLocalConversations(filteredConversations);
+  }, [conversations, userId]);
 
   const handleConversationClick = (conversation: Conversation) => {
     navigate(`/chat/${conversation.id}`);

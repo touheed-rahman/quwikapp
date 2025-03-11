@@ -191,6 +191,7 @@ export function useConversations(
       if (isDeleting) return false;
       
       setIsDeleting(true);
+      console.log('Deleting conversation:', conversationId);
       
       // Update the conversation record to mark it as deleted by this user
       const { error } = await supabase
@@ -201,8 +202,11 @@ export function useConversations(
         .eq('id', conversationId);
         
       if (error) {
+        console.error('Error updating deleted_by:', error);
         throw error;
       }
+
+      console.log('Successfully marked conversation as deleted');
 
       // Remove the deleted conversation from the state immediately
       setConversations(prev => prev.filter(conv => conv.id !== conversationId));
