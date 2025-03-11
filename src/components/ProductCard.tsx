@@ -8,7 +8,6 @@ import { ProductCondition } from "@/types/categories";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "./ui/use-toast";
-import { generateProductSlug } from "@/hooks/useProductDetails";
 
 interface ProductCardProps {
   id: string;
@@ -35,11 +34,6 @@ const ProductCard = ({
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
-
-  // Generate ad number for the product
-  const adNumber = `QUWIK-${id.substring(0, 4).toUpperCase()}`;
-  // Generate slug for SEO-friendly URLs
-  const productSlug = generateProductSlug(title, adNumber);
 
   useEffect(() => {
     const checkWishlistStatus = async () => {
@@ -122,7 +116,7 @@ const ProductCard = ({
   };
 
   return (
-    <Link to={`/product/${productSlug}`} className="block transform hover:-translate-y-1 transition-all duration-300">
+    <Link to={`/product/${id}`} className="block transform hover:-translate-y-1 transition-all duration-300">
       <Card className="group overflow-hidden border-[1.5px] border-neutral-200 hover:border-primary/50 hover:shadow-lg transition-all duration-200">
         <div className="relative aspect-[4/3] overflow-hidden">
           <img

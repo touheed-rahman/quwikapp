@@ -26,7 +26,7 @@ interface Seller {
 }
 
 const ProductPage = () => {
-  const { slug } = useParams();
+  const { id } = useParams();
   const navigate = useNavigate();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [session, setSession] = useState<any>(null);
@@ -35,23 +35,17 @@ const ProductPage = () => {
   const { toast } = useToast();
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
-  const { data: product, isLoading, isError } = useProductDetails(slug);
-  const { data: relatedProducts = [] } = useRelatedProducts(slug, product?.category, product?.subcategory);
+  const { data: product, isLoading, isError } = useProductDetails(id);
+  const { data: relatedProducts = [] } = useRelatedProducts(id, product?.category, product?.subcategory);
   const {
     isOfferDialogOpen,
     setIsOfferDialogOpen,
     currentConversationId,
     handleChatWithSeller,
     handleMakeOffer
-  } = useProductActions(slug, product?.user_id);
+  } = useProductActions(id, product?.user_id);
 
-  // Update URL to use slug if needed
-  useEffect(() => {
-    if (product && product.slug && slug !== product.slug) {
-      navigate(`/product/${product.slug}`, { replace: true });
-    }
-  }, [product, slug, navigate]);
-
+  // Fetch seller data
   const { data: seller } = useQuery({
     queryKey: ['seller', product?.user_id],
     queryFn: async () => {
@@ -99,8 +93,6 @@ const ProductPage = () => {
   if (isError || !product) {
     return <ProductNotFound />;
   }
-
-  document.title = `${product.title} | ${product.adNumber} | Quwik`;
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-primary/5">
