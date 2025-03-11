@@ -50,26 +50,22 @@ const HeroSearch = () => {
     try {
       const trimmedQuery = searchQuery.trim();
       
-      // Build a query for listings table
-      let query = supabase.from('listings')
+      // Fetch listings with a simpler approach to avoid complex type instantiation
+      let { data: matches, error } = await supabase
+        .from('listings')
         .select('id, title, category, subcategory')
-        .eq('status', 'approved');
+        .eq('status', 'approved')
+        .ilike('title', `%${trimmedQuery}%`);
       
-      // Add title search
-      query = query.ilike('title', `%${trimmedQuery}%`);
-      
-      // Add shop filter if needed
+      // Apply shop filter if needed  
       if (activeTab === "shop") {
-        query = query.eq('is_shop_item', true);
+        matches = matches?.filter(item => item.is_shop_item === true) || [];
       }
       
-      // Add location filter if needed
-      if (selectedLocation) {
-        query = query.eq('location', selectedLocation);
+      // Apply location filter if needed
+      if (selectedLocation && matches) {
+        matches = matches.filter(item => item.location === selectedLocation);
       }
-      
-      // Execute the query
-      const { data: matches, error } = await query;
       
       if (error) throw error;
 
