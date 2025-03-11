@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { categories } from "@/types/categories";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
@@ -114,7 +115,7 @@ const CategoryFilter = () => {
               {visibleRows.map((row, rowIndex) => (
                 <motion.div 
                   key={rowIndex} 
-                  className={`grid grid-cols-${itemsPerRow} gap-4`}
+                  className="grid grid-cols-4 md:grid-cols-6 gap-2 md:gap-4"
                   variants={{
                     hidden: { opacity: 0, y: 10 },
                     visible: { opacity: 1, y: 0 }
@@ -128,20 +129,20 @@ const CategoryFilter = () => {
                       <motion.button
                         key={category.id}
                         onClick={() => navigate(`/category/${category.id}`)}
-                        className="flex flex-col items-center justify-center gap-2 rounded-lg p-3 hover:bg-primary/5 transition-all"
+                        className="flex flex-col items-center justify-center gap-2 rounded-lg p-2 md:p-3 hover:bg-primary/5 transition-all"
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
                       >
                         <motion.div 
-                          className={`p-3 rounded-full ${bgColor} text-white shadow-md`}
+                          className={`p-2 md:p-3 rounded-full ${bgColor} text-white shadow-md`}
                           whileHover={{ 
                             scale: 1.1,
                             boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)"
                           }}
                         >
-                          <Icon className="h-6 w-6" />
+                          <Icon className="h-5 w-5 md:h-6 md:w-6" />
                         </motion.div>
-                        <span className={`text-${isMobile ? 'xs' : 'sm'} font-medium text-center line-clamp-1`}>{category.name}</span>
+                        <span className="text-xs md:text-sm font-medium text-center line-clamp-1">{category.name}</span>
                       </motion.button>
                     );
                   })}

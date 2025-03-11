@@ -54,6 +54,10 @@ const Sell = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-primary/5">
+      <div className="sticky top-0 z-10 bg-background/95 border-b border-primary/10 shadow-sm">
+        <Header />
+      </div>
+      
       <AnimatePresence mode="wait">
         {step === 1 ? (
           <motion.div
@@ -62,7 +66,7 @@ const Sell = () => {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="w-full"
+            className="w-full pt-24"
           >
             <SellStepOne onNext={handleStepOneComplete} />
           </motion.div>
@@ -73,7 +77,7 @@ const Sell = () => {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="w-full"
+            className="w-full pt-24"
           >
             <SellStepTwo
               title={title}

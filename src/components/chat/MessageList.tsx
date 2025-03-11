@@ -30,7 +30,7 @@ export const MessageList = ({
   };
 
   const renderMessageContent = (message: Message) => {
-    // Check if it's an image message by looking for image markdown pattern
+    // Check if it's an image message
     if (message.content.startsWith('[Image](') && message.content.includes(')')) {
       const imageUrl = message.content.match(/\[Image\]\((.*?)\)/)?.[1];
       
@@ -54,7 +54,7 @@ export const MessageList = ({
   };
 
   return (
-    <div className="flex-1 space-y-4 p-4 overflow-y-auto">
+    <div className="flex-1 space-y-4 p-4 overflow-y-auto scrollbar-hide">
       {messages.map((message) => {
         const isCurrentUser = message.sender_id === sessionUserId;
         const unread = isUnread(message);
@@ -69,7 +69,7 @@ export const MessageList = ({
           >
             <div
               className={cn(
-                "relative max-w-[80%] rounded-lg px-3 py-2 text-sm",
+                "relative max-w-[80%] rounded-lg px-3 py-2 text-sm shadow-sm",
                 isCurrentUser
                   ? "bg-primary text-primary-foreground"
                   : "bg-muted",

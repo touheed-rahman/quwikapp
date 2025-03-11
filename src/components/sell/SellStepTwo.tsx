@@ -4,7 +4,6 @@ import Header from "@/components/Header";
 import SellFormDetails from "./SellFormDetails";
 import { useLocation } from "@/contexts/LocationContext";
 import { motion } from "framer-motion";
-import { ListChecks } from "lucide-react";
 
 interface SellStepTwoProps {
   title: string;
@@ -41,11 +40,7 @@ const SellStepTwo = memo(({
 
   return (
     <div className="transition-opacity duration-200 bg-gradient-to-b from-background to-primary/5 min-h-screen">
-      <div className="sticky top-0 z-10 bg-background/95 border-b border-primary/10 shadow-sm">
-        <Header />
-      </div>
-      
-      <div className="container mx-auto px-4 pt-8 pb-24 w-full">
+      <div className="container mx-auto px-4 py-8 w-full">
         <motion.div 
           className="text-center mb-8"
           initial={{ opacity: 0 }}
