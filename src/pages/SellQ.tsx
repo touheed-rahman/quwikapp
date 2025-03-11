@@ -1,3 +1,4 @@
+
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -10,7 +11,20 @@ import { Progress } from '@/components/ui/progress';
 import { useLocation } from "@/contexts/LocationContext";
 import SellStepOne from "@/components/sell/SellStepOne";
 import SellStepTwo from "@/components/sell/SellStepTwo";
-import { Upload, Camera, X, Sparkles, TextIcon, Check, RefreshCw, Send, Music, Filter, FlipHorizontal, Maximize2 } from 'lucide-react';
+import { 
+  Upload, 
+  Camera, 
+  X, 
+  Sparkles, 
+  TextIcon, 
+  Check, 
+  RefreshCw, 
+  Music, 
+  Filter, 
+  FlipHorizontal, 
+  Maximize2, 
+  Send
+} from 'lucide-react';
 import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Slider } from '@/components/ui/slider';
@@ -43,6 +57,7 @@ const SellQ = () => {
   const [selectedFilter, setSelectedFilter] = useState(0);
   const [zoom, setZoom] = useState([1]);
   const [isFullScreen, setIsFullScreen] = useState(false);
+  const [facingMode, setFacingMode] = useState<"user" | "environment">("user");
   
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -131,31 +146,76 @@ const SellQ = () => {
     };
   }, []);
 
+  const toggleCamera = () => {
+    const newFacingMode = facingMode === "user" ? "environment" : "user";
+    setFacingMode(newFacingMode);
+    
+    // If already recording, restart with new camera
+    if (isRecording) {
+      stopRecording();
+      setTimeout(() => startRecording(), 300);
+    }
+  };
+
   const startRecording = async () => {
     try {
+      // Stop any existing stream
+      if (mediaStreamRef.current) {
+        mediaStreamRef.current.getTracks().forEach(track => track.stop());
+      }
+      
+      // Configure video constraints
       const constraints = {
         video: {
-          width: { ideal: window.innerHeight },
-          height: { ideal: window.innerWidth },
-          facingMode: "user",
+          facingMode: facingMode,
+          width: { ideal: 1080 },
+          height: { ideal: 1920 },
           aspectRatio: { ideal: 9/16 }
         },
         audio: true
       };
       
+      console.log("Requesting media with constraints:", constraints);
       const stream = await navigator.mediaDevices.getUserMedia(constraints);
+      console.log("Media stream obtained:", stream);
       
       mediaStreamRef.current = stream;
       
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
-        videoRef.current.style.transform = 'scaleX(-1)'; // Mirror effect for selfie view
-        await videoRef.current.play();
+        videoRef.current.muted = true; // Mute to prevent feedback
+        
+        // Apply mirror effect for selfie camera only
+        if (facingMode === "user") {
+          videoRef.current.style.transform = `scale(-1, 1) scale(${zoom[0]})`;
+        } else {
+          videoRef.current.style.transform = `scale(${zoom[0]})`;
+        }
+        
+        try {
+          await videoRef.current.play();
+          console.log("Video playback started");
+        } catch (playError) {
+          console.error("Error playing video:", playError);
+        }
       }
       
-      const mediaRecorder = new MediaRecorder(stream, {
-        mimeType: 'video/webm;codecs=vp9'
-      });
+      // Setup media recorder
+      const options = { mimeType: 'video/webm;codecs=vp9,opus' };
+      let mediaRecorder;
+      
+      try {
+        mediaRecorder = new MediaRecorder(stream, options);
+      } catch (e) {
+        console.log("WebM VP9 not supported, trying alternative codec");
+        try {
+          mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/webm;codecs=vp8,opus' });
+        } catch (e2) {
+          console.log("WebM VP8 not supported, trying without codec specification");
+          mediaRecorder = new MediaRecorder(stream);
+        }
+      }
+      
       mediaRecorderRef.current = mediaRecorder;
       
       const chunks: BlobPart[] = [];
@@ -200,7 +260,7 @@ const SellQ = () => {
       console.error('Error starting recording:', error);
       toast({
         title: 'Camera Error',
-        description: 'Could not access camera or microphone',
+        description: 'Could not access camera or microphone. Please check permissions.',
         variant: 'destructive',
       });
     }
@@ -350,49 +410,51 @@ const SellQ = () => {
       <div className="min-h-screen bg-black">
         {isMobile ? <ProfileHeader /> : <Header />}
         
-        <div ref={videoContainerRef} className="relative h-screen w-full bg-black overflow-hidden">
+        <div ref={videoContainerRef} className="fixed inset-0 z-10 bg-black">
           {(!recordedVideo && !isRecording) && (
-            <Card className="max-w-2xl mx-auto">
-              <CardHeader>
-                <CardTitle className="text-2xl font-bold">Create Q Video</CardTitle>
-              </CardHeader>
-              
-              <CardContent className="space-y-6">
-                <div className="space-y-3">
-                  <h3 className="font-medium">Title: {title}</h3>
-                  <p className="text-sm text-muted-foreground">Price: ₹{price}</p>
-                  
-                  <div className="grid grid-cols-2 gap-4">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className="h-24 flex flex-col items-center justify-center gap-2"
-                      onClick={startRecording}
-                    >
-                      <Camera className="h-6 w-6" />
-                      <span>Record Video</span>
-                    </Button>
+            <div className="absolute inset-0 flex items-center justify-center p-4">
+              <Card className="max-w-md w-full mx-auto bg-black/90 border-[#33C3F0]/30 text-white">
+                <CardHeader>
+                  <CardTitle className="text-2xl font-bold text-[#33C3F0]">Create Q Video</CardTitle>
+                </CardHeader>
+                
+                <CardContent className="space-y-6">
+                  <div className="space-y-3">
+                    <h3 className="font-medium text-white/90">Title: {title}</h3>
+                    <p className="text-sm text-white/70">Price: ₹{price}</p>
                     
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className="h-24 flex flex-col items-center justify-center gap-2"
-                      onClick={() => videoFileInputRef.current?.click()}
-                    >
-                      <Upload className="h-6 w-6" />
-                      <span>Upload Video</span>
-                      <input
-                        type="file"
-                        accept="video/*"
-                        className="hidden"
-                        ref={videoFileInputRef}
-                        onChange={handleFileUpload}
-                      />
-                    </Button>
+                    <div className="grid grid-cols-2 gap-4 mt-6">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="h-24 flex flex-col items-center justify-center gap-2 border-[#33C3F0]/50 hover:bg-[#33C3F0]/20 text-white"
+                        onClick={startRecording}
+                      >
+                        <Camera className="h-6 w-6 text-[#33C3F0]" />
+                        <span>Record Video</span>
+                      </Button>
+                      
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="h-24 flex flex-col items-center justify-center gap-2 border-[#33C3F0]/50 hover:bg-[#33C3F0]/20 text-white"
+                        onClick={() => videoFileInputRef.current?.click()}
+                      >
+                        <Upload className="h-6 w-6 text-[#33C3F0]" />
+                        <span>Upload Video</span>
+                        <input
+                          type="file"
+                          accept="video/*"
+                          className="hidden"
+                          ref={videoFileInputRef}
+                          onChange={handleFileUpload}
+                        />
+                      </Button>
+                    </div>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            </div>
           )}
           
           {isRecording && (
@@ -400,12 +462,13 @@ const SellQ = () => {
               <video
                 ref={videoRef}
                 className={`w-full h-full object-cover ${FILTERS[selectedFilter].class}`}
-                muted
+                autoPlay
                 playsInline
+                muted
               />
               
               {/* TikTok-style right sidebar controls */}
-              <div className="absolute right-4 bottom-20 flex flex-col items-center space-y-6">
+              <div className="absolute right-4 bottom-24 flex flex-col items-center space-y-6">
                 <Button 
                   variant="ghost" 
                   size="icon" 
@@ -419,7 +482,6 @@ const SellQ = () => {
                   variant="ghost" 
                   size="icon" 
                   className="text-white hover:bg-white/20 rounded-full w-12 h-12"
-                  onClick={() => {/* Add effect handler */}}
                 >
                   <Sparkles className="h-6 w-6" />
                 </Button>
@@ -428,7 +490,6 @@ const SellQ = () => {
                   variant="ghost" 
                   size="icon" 
                   className="text-white hover:bg-white/20 rounded-full w-12 h-12"
-                  onClick={() => {/* Add music handler */}}
                 >
                   <Music className="h-6 w-6" />
                 </Button>
@@ -443,13 +504,27 @@ const SellQ = () => {
                 </Button>
               </div>
 
+              {/* Caption input popup */}
+              {showCaptionInput && (
+                <div className="absolute bottom-24 left-4 right-16 bg-black/70 p-3 rounded-lg">
+                  <input
+                    type="text"
+                    ref={captionInputRef}
+                    value={captionText}
+                    onChange={(e) => setCaptionText(e.target.value)}
+                    placeholder="Add a caption..."
+                    className="w-full bg-transparent border-b border-white/30 text-white px-2 py-1 focus:outline-none focus:border-[#33C3F0]"
+                  />
+                </div>
+              )}
+
               {/* Bottom controls */}
               <div className="absolute bottom-6 left-0 right-0 flex justify-center items-center space-x-8">
                 <Button 
                   variant="ghost" 
                   size="icon" 
                   className="text-white hover:bg-white/20 rounded-full w-12 h-12"
-                  onClick={() => {/* Switch camera handler */}}
+                  onClick={toggleCamera}
                 >
                   <FlipHorizontal className="h-6 w-6" />
                 </Button>
@@ -473,12 +548,24 @@ const SellQ = () => {
                 </Button>
               </div>
               
+              {/* Filter name display */}
+              <div className="absolute top-4 left-0 right-0 flex justify-center">
+                <div className="bg-black/50 px-4 py-1 rounded-full text-white text-sm">
+                  {FILTERS[selectedFilter].name}
+                </div>
+              </div>
+              
               {/* Close button */}
               <Button
                 variant="ghost"
                 size="icon"
                 className="absolute top-4 left-4 text-white hover:bg-white/20 rounded-full"
-                onClick={() => setShowVideoUI(false)}
+                onClick={() => {
+                  if (mediaStreamRef.current) {
+                    mediaStreamRef.current.getTracks().forEach(track => track.stop());
+                  }
+                  setShowVideoUI(false);
+                }}
               >
                 <X className="h-6 w-6" />
               </Button>
@@ -486,14 +573,14 @@ const SellQ = () => {
           )}
           
           {recordedVideo && !isRecording && (
-            <div className="space-y-4">
-              <Card className="max-w-2xl mx-auto">
+            <div className="absolute inset-0 flex items-center justify-center p-4">
+              <Card className="max-w-md w-full mx-auto bg-black/90 border-[#33C3F0]/30 text-white">
                 <CardHeader>
-                  <CardTitle className="text-xl font-bold">Preview Your Q Video</CardTitle>
+                  <CardTitle className="text-xl font-bold text-[#33C3F0]">Preview Your Q Video</CardTitle>
                 </CardHeader>
                 
                 <CardContent className="space-y-6">
-                  <div className="aspect-video bg-black rounded-lg overflow-hidden">
+                  <div className="aspect-[9/16] bg-black rounded-lg overflow-hidden">
                     <video
                       ref={videoRef}
                       src={recordedVideo}
@@ -504,9 +591,9 @@ const SellQ = () => {
                   
                   <div className="space-y-4">
                     <Tabs defaultValue="filter" className="w-full">
-                      <TabsList className="grid w-full grid-cols-2">
-                        <TabsTrigger value="filter">Filters</TabsTrigger>
-                        <TabsTrigger value="caption">Caption</TabsTrigger>
+                      <TabsList className="grid w-full grid-cols-2 bg-black/60 text-white">
+                        <TabsTrigger value="filter" className="data-[state=active]:bg-[#33C3F0] data-[state=active]:text-white">Filters</TabsTrigger>
+                        <TabsTrigger value="caption" className="data-[state=active]:bg-[#33C3F0] data-[state=active]:text-white">Caption</TabsTrigger>
                       </TabsList>
                       
                       <TabsContent value="filter" className="space-y-4 pt-4">
@@ -515,7 +602,7 @@ const SellQ = () => {
                             <Button
                               key={filter.name}
                               variant={selectedFilter === index ? "default" : "outline"}
-                              className="w-full"
+                              className={`w-full ${selectedFilter === index ? 'bg-[#33C3F0] text-white' : 'border-[#33C3F0]/50 text-white hover:bg-[#33C3F0]/20'}`}
                               onClick={() => setSelectedFilter(index)}
                             >
                               {filter.name}
@@ -527,13 +614,13 @@ const SellQ = () => {
                       
                       <TabsContent value="caption" className="space-y-4 pt-4">
                         <div className="space-y-2">
-                          <label className="text-sm font-medium">Add Caption</label>
+                          <label className="text-sm font-medium text-white/90">Add Caption</label>
                           <input
                             type="text"
                             value={captionText}
                             onChange={(e) => setCaptionText(e.target.value)}
                             placeholder="Write something about your item..."
-                            className="w-full px-4 py-2 border rounded-md"
+                            className="w-full px-4 py-2 bg-transparent border border-[#33C3F0]/30 rounded-md text-white focus:border-[#33C3F0] focus:outline-none"
                           />
                         </div>
                       </TabsContent>
@@ -552,25 +639,28 @@ const SellQ = () => {
                         setCaptionText("");
                         setSelectedFilter(0);
                       }}
-                      className="flex items-center gap-2"
+                      className="flex items-center gap-2 border-[#33C3F0]/50 text-white hover:bg-[#33C3F0]/20"
                     >
                       <RefreshCw className="h-4 w-4" />
-                      Discard & Re-record
+                      Re-record
                     </Button>
                     
                     <Button
                       onClick={handleSubmitVideo}
                       disabled={isSubmitting}
-                      className="flex items-center gap-2"
+                      className="flex items-center gap-2 bg-[#33C3F0] text-white hover:bg-[#33C3F0]/90"
                     >
-                      {isSubmitting ? 'Uploading...' : 'Submit Q Video'}
+                      <Send className="h-4 w-4" />
+                      {isSubmitting ? 'Uploading...' : 'Submit Q'}
                     </Button>
                   </div>
                   
                   {isSubmitting && (
                     <div className="w-full space-y-2 mt-4">
-                      <Progress value={uploadProgress} className="w-full" />
-                      <p className="text-center text-sm text-muted-foreground">
+                      <Progress value={uploadProgress} className="w-full bg-[#33C3F0]/20">
+                        <div className="h-full bg-[#33C3F0]" style={{ width: `${uploadProgress}%` }}></div>
+                      </Progress>
+                      <p className="text-center text-sm text-white/70">
                         {uploadProgress < 100 ? 'Uploading video...' : 'Processing...'}
                       </p>
                     </div>
@@ -581,11 +671,12 @@ const SellQ = () => {
           )}
           
           {!isRecording && !recordedVideo && !isFullScreen && (
-            <div className="flex justify-center mt-4">
+            <div className="absolute bottom-4 left-0 right-0 flex justify-center">
               <Button
                 variant="outline"
                 onClick={() => setShowVideoUI(false)}
                 disabled={isSubmitting}
+                className="border-[#33C3F0]/50 text-white hover:bg-[#33C3F0]/20"
               >
                 Back to Details
               </Button>

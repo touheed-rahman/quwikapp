@@ -1,6 +1,6 @@
 
 import { Button } from "@/components/ui/button";
-import { Loader2, ArrowLeft, Send, Video } from "lucide-react";
+import { Loader2, ArrowLeft, Send } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface FormActionsProps {
@@ -58,7 +58,7 @@ const FormActions = ({ isSubmitting, onBack, isQVideo = false }: FormActionsProp
           >
             <Button 
               type="submit" 
-              className="w-full bg-primary hover:bg-primary/90 text-white shadow-md hover:shadow-lg transition-all"
+              className={`w-full ${isQVideo ? 'bg-[#33C3F0] hover:bg-[#33C3F0]/90' : 'bg-primary hover:bg-primary/90'} text-white shadow-md hover:shadow-lg transition-all`}
             >
               <motion.div 
                 className="flex items-center gap-2"
@@ -67,7 +67,7 @@ const FormActions = ({ isSubmitting, onBack, isQVideo = false }: FormActionsProp
               >
                 {isQVideo ? (
                   <>
-                    <div className="font-bold">Q</div>
+                    <span className="font-bold text-lg">Q</span>
                     <span className="font-medium">Create Q</span>
                   </>
                 ) : (
