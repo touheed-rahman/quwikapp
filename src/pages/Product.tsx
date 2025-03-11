@@ -45,6 +45,7 @@ const ProductPage = () => {
     handleMakeOffer
   } = useProductActions(slug, product?.user_id);
 
+  // Update URL to use slug if needed
   useEffect(() => {
     if (product && product.slug && slug !== product.slug) {
       navigate(`/product/${product.slug}`, { replace: true });

@@ -15,8 +15,8 @@ export const generateProductSlug = (title: string, adNumber: string): string => 
 
 // Helper to extract id from slug (used when navigating using slug)
 export const extractIdFromSlug = (slug: string): string | null => {
-  // Try to extract the ID from the slug
-  const idMatch = slug.match(/-(QUWIK-[A-Z0-9]{4})$/);
+  // Try to extract the ad number from the slug (format: title-QUWIK-XXXX)
+  const idMatch = slug.match(/-QUWIK-([A-Z0-9]{4,})/);
   if (idMatch && idMatch[1]) {
     return idMatch[1];
   }
@@ -39,20 +39,26 @@ export const useProductDetails = (idOrSlug: string | undefined) => {
       
       // If this is a slug, extract the ID/ad number
       const extractedId = extractIdFromSlug(idOrSlug);
-      if (extractedId && extractedId.startsWith('QUWIK-')) {
-        // If it's an ad number, we need to fetch the product by the ad number
-        const { data: productByAdNumber } = await supabase
+      console.log("Extracted ID from slug:", extractedId);
+      
+      if (extractedId) {
+        // First try looking for listings where the ID starts with the extracted code
+        const { data: productByAdNumber, error } = await supabase
           .from('listings')
           .select('id')
-          .ilike('id', `${extractedId.substring(6)}%`)
-          .single();
+          .ilike('id', `${extractedId}%`)
+          .limit(1);
           
-        if (productByAdNumber) {
-          id = productByAdNumber.id;
+        if (productByAdNumber && productByAdNumber.length > 0) {
+          id = productByAdNumber[0].id;
+          console.log("Found product by ad number:", id);
+        } else {
+          // If that fails, try the old method directly using the ID
+          id = extractedId;
         }
-      } else if (extractedId) {
-        id = extractedId;
       }
+
+      console.log("Final ID used for query:", id);
 
       // First, increment the view count for this product
       try {
@@ -90,8 +96,14 @@ export const useProductDetails = (idOrSlug: string | undefined) => {
         .eq('id', id)
         .single();
 
-      if (error) throw error;
-      if (!data) throw new Error('Product not found');
+      if (error) {
+        console.error("Error fetching product:", error);
+        throw error;
+      }
+      if (!data) {
+        console.error("Product not found for ID:", id);
+        throw new Error('Product not found');
+      }
 
       // Generate an ad number based on the ID
       // Use the first 4 characters of the ID and format it as "QUWIK-XXXX"
@@ -115,5 +127,6 @@ export const useProductDetails = (idOrSlug: string | undefined) => {
       };
     },
     enabled: !!idOrSlug,
+    retry: 1,
   });
 };
