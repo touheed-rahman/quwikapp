@@ -155,12 +155,15 @@ export default function FeatureDialog({
       // Generate a free invoice record
       const invoiceNumber = `INV-${Date.now().toString().substring(7)}`;
       
-      // Use REST API directly to avoid TypeScript errors with orders table
-      const response = await fetch(`${process.env.SUPABASE_URL || 'https://cgrtrdwvkkhraizqukwt.supabase.co'}/rest/v1/orders`, {
+      // Use direct fetch with the REST API to bypass TypeScript issues
+      const url = `${process.env.SUPABASE_URL || 'https://cgrtrdwvkkhraizqukwt.supabase.co'}/rest/v1/orders`;
+      const apiKey = process.env.SUPABASE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNncnRyZHd2a2tocmFpenF1a3d0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzgwNjE2NTIsImV4cCI6MjA1MzYzNzY1Mn0.mnC-NB_broDr4nOHggi0ngeDC1CxZsda6X-wyEMD2tE';
+      
+      const response = await fetch(url, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'apikey': process.env.SUPABASE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNncnRyZHd2a2tocmFpenF1a3d0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzgwNjE2NTIsImV4cCI6MjA1MzYzNzY1Mn0.mnC-NB_broDr4nOHggi0ngeDC1CxZsda6X-wyEMD2tE',
+          'apikey': apiKey,
           'Authorization': `Bearer ${session.access_token}`
         },
         body: JSON.stringify({
@@ -179,7 +182,9 @@ export default function FeatureDialog({
       });
 
       if (!response.ok) {
-        throw new Error('Failed to create order');
+        const errorData = await response.json();
+        console.error("Order creation error:", errorData);
+        throw new Error('Failed to create order: ' + (errorData.message || response.statusText));
       }
 
       setPaymentComplete(true);
@@ -200,12 +205,12 @@ export default function FeatureDialog({
       }, 2000);
       
     } catch (error: any) {
+      console.error("Feature request error:", error);
       toast({
         title: "Error",
-        description: "Failed to process your request. Please try again.",
+        description: error.message || "Failed to process your request. Please try again.",
         variant: "destructive",
       });
-      console.error("Feature request error:", error);
     } finally {
       setIsSubmitting(false);
     }
@@ -333,4 +338,4 @@ export default function FeatureDialog({
       </DialogContent>
     </Dialog>
   );
-};
+}

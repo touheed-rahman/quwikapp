@@ -1,572 +1,212 @@
 
 import { useState, useEffect } from "react";
-import { useToast } from "@/components/ui/use-toast";
-import { supabase } from "@/integrations/supabase/client";
-import Header from "@/components/Header";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
-} from "@/components/ui/table";
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogHeader, 
-  DialogTitle 
-} from "@/components/ui/dialog";
+import { useNavigate } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import Header from "@/components/Header";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { FileText, Download, CreditCard, Clock, CheckCircle, AlertTriangle } from "lucide-react";
-import { format } from "date-fns";
+import { useToast } from "@/components/ui/use-toast";
+import { Loader2, ShoppingBag, ChevronLeft } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
+// Define an Order type for TypeScript
 interface Order {
   id: string;
-  created_at: string;
   product_id: string;
-  product_name: string;
-  amount: number;
-  payment_status: "pending" | "completed" | "failed";
-  invoice_number: string;
+  buyer_id: string;
   seller_id: string;
-  seller_name: string;
+  amount: number;
+  payment_status: string;
+  invoice_number: string;
+  created_at: string;
+  updated_at: string;
+  order_type: string;
+  feature_plan?: string;
+  contact_name?: string;
+  contact_phone?: string;
+  contact_address?: string;
+  listing?: {
+    id: string;
+    title: string;
+    price: number;
+    images: string[];
+  };
 }
 
-const MyOrders = () => {
-  const [orders, setOrders] = useState<Order[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [selectedInvoice, setSelectedInvoice] = useState<Order | null>(null);
-  const [openInvoice, setOpenInvoice] = useState(false);
+export default function MyOrders() {
+  const navigate = useNavigate();
   const { toast } = useToast();
+  const [activeTab, setActiveTab] = useState("all");
+  const [userId, setUserId] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchOrders();
+    const getUserId = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        setUserId(session.user.id);
+      }
+    };
+    getUserId();
   }, []);
 
-  const fetchOrders = async () => {
-    try {
-      setLoading(true);
-      const { data: session } = await supabase.auth.getSession();
+  const {
+    data: orders,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["orders", userId, activeTab],
+    queryFn: async () => {
+      if (!userId) return [];
       
-      if (!session.session?.user) {
-        toast({
-          title: "Authentication required",
-          description: "Please login to view your orders",
-          variant: "destructive",
-        });
-        return;
-      }
-      
-      // Use a direct fetch approach to avoid TypeScript issues with the orders table
-      const response = await fetch(`${supabase.supabaseUrl}/rest/v1/orders?buyer_id=eq.${session.session.user.id}&order=created_at.desc`, {
-        headers: {
-          'apikey': supabase.supabaseKey,
-          'Authorization': `Bearer ${session.session.access_token}`
+      try {
+        // Use fetch API directly to avoid TypeScript issues with Supabase client
+        const url = `${process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://cgrtrdwvkkhraizqukwt.supabase.co'}/rest/v1/orders`;
+        const apiKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNncnRyZHd2a2tocmFpenF1a3d0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzgwNjE2NTIsImV4cCI6MjA1MzYzNzY1Mn0.mnC-NB_broDr4nOHggi0ngeDC1CxZsda6X-wyEMD2tE';
+        
+        let query = `?buyer_id=eq.${userId}&select=*,listing:listings(id,title,price,images)`;
+        
+        if (activeTab === 'features') {
+          query += `&order_type=eq.feature`;
+        } else if (activeTab === 'purchases') {
+          query += `&order_type=eq.purchase`;
         }
-      });
-      
-      if (!response.ok) {
-        throw new Error('Failed to fetch orders');
+        
+        query += `&order=created_at.desc`;
+        
+        const response = await fetch(`${url}${query}`, {
+          headers: {
+            'apikey': apiKey,
+            'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`
+          }
+        });
+        
+        if (!response.ok) {
+          throw new Error('Failed to fetch orders');
+        }
+        
+        const data = await response.json();
+        return data as Order[];
+      } catch (error) {
+        console.error("Error fetching orders:", error);
+        throw error;
       }
-      
-      const ordersData = await response.json();
-      
-      // Fetch related listings data
-      const orderWithProductDetails = await Promise.all(
-        ordersData.map(async (order: any) => {
-          let productName = order.order_type === "feature" ? "Featured Listing Request" : "Unknown Product";
-          let sellerName = "Unknown Seller";
-          
-          if (order.product_id) {
-            const { data: listing } = await supabase
-              .from('listings')
-              .select('title')
-              .eq('id', order.product_id)
-              .single();
-              
-            if (listing) {
-              productName = listing.title;
-            }
-          }
-          
-          if (order.seller_id) {
-            const { data: profile } = await supabase
-              .from('profiles')
-              .select('full_name')
-              .eq('id', order.seller_id)
-              .single();
-              
-            if (profile) {
-              sellerName = profile.full_name;
-            }
-          }
-          
-          return {
-            id: order.id,
-            created_at: order.created_at,
-            product_id: order.product_id,
-            product_name: productName,
-            amount: order.amount || 0,
-            payment_status: order.payment_status || "pending",
-            invoice_number: order.invoice_number || `INV-${order.id.substring(0, 8)}`,
-            seller_id: order.seller_id,
-            seller_name: sellerName
-          };
-        })
-      );
-      
-      setOrders(orderWithProductDetails);
-    } catch (error: any) {
-      console.error("Error fetching orders:", error.message);
-      toast({
-        title: "Error fetching orders",
-        description: error.message,
-        variant: "destructive",
-      });
-      
-      // If no orders exist yet, set empty array
-      setOrders([]);
-    } finally {
-      setLoading(false);
-    }
-  };
+    },
+    enabled: !!userId,
+  });
 
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case "pending":
-        return (
-          <Badge variant="outline" className="bg-yellow-50 text-yellow-600 border-yellow-200 flex items-center gap-1">
-            <Clock className="h-3 w-3" />
-            Pending
-          </Badge>
-        );
-      case "completed":
-        return (
-          <Badge variant="outline" className="bg-green-50 text-green-600 border-green-200 flex items-center gap-1">
-            <CheckCircle className="h-3 w-3" />
-            Completed
-          </Badge>
-        );
-      case "failed":
-        return (
-          <Badge variant="outline" className="bg-red-50 text-red-600 border-red-200 flex items-center gap-1">
-            <AlertTriangle className="h-3 w-3" />
-            Failed
-          </Badge>
-        );
-      default:
-        return (
-          <Badge variant="outline">
-            {status}
-          </Badge>
-        );
-    }
-  };
-
-  const viewInvoice = (order: Order) => {
-    setSelectedInvoice(order);
-    setOpenInvoice(true);
-  };
-
-  const downloadInvoice = (order: Order) => {
+  if (error) {
     toast({
-      title: "Invoice download started",
-      description: `Invoice ${order.invoice_number} is being downloaded.`,
+      title: "Error loading orders",
+      description: "Failed to load your orders. Please try again.",
+      variant: "destructive",
     });
-  };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen pt-16 bg-gray-50">
-        <Header />
-        <div className="container max-w-6xl mx-auto p-4 pt-8">
-          <div className="flex justify-center items-center h-64">
-            <div className="animate-pulse">Loading your orders...</div>
-          </div>
-        </div>
-      </div>
-    );
   }
 
   return (
-    <div className="min-h-screen pt-16 bg-gray-50">
+    <div className="min-h-screen bg-background">
       <Header />
-      <div className="container max-w-6xl mx-auto p-4 pt-8">
-        <div className="mb-6">
+      <main className="container mx-auto px-4 pt-20 pb-16">
+        <div className="mb-6 flex items-center">
+          <Button 
+            variant="ghost" 
+            className="mr-2 p-2" 
+            onClick={() => navigate('/profile')}
+          >
+            <ChevronLeft className="h-5 w-5" />
+          </Button>
           <h1 className="text-2xl font-bold">My Orders</h1>
-          <p className="text-muted-foreground">Manage and track all your purchases</p>
         </div>
 
-        <Tabs defaultValue="all" className="w-full">
-          <TabsList className="mb-4">
+        <Tabs defaultValue="all" value={activeTab} onValueChange={setActiveTab}>
+          <TabsList className="mb-6">
             <TabsTrigger value="all">All Orders</TabsTrigger>
-            <TabsTrigger value="pending">Pending</TabsTrigger>
-            <TabsTrigger value="completed">Completed</TabsTrigger>
-            <TabsTrigger value="failed">Failed</TabsTrigger>
-            <TabsTrigger value="invoices">Invoices</TabsTrigger>
+            <TabsTrigger value="features">Featured Listings</TabsTrigger>
+            <TabsTrigger value="purchases">Purchases</TabsTrigger>
           </TabsList>
-          
-          <TabsContent value="all">
-            <Card>
-              <CardHeader>
-                <CardTitle>All Orders</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {orders.length === 0 ? (
-                  <div className="text-center py-6">
-                    <p className="text-muted-foreground">You haven't placed any orders yet.</p>
-                  </div>
-                ) : (
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Order ID</TableHead>
-                        <TableHead>Date</TableHead>
-                        <TableHead>Product</TableHead>
-                        <TableHead>Amount</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {orders.map((order) => (
-                        <TableRow key={order.id}>
-                          <TableCell className="font-medium">{order.id.substring(0, 8)}</TableCell>
-                          <TableCell>{format(new Date(order.created_at), 'MMM dd, yyyy')}</TableCell>
-                          <TableCell>{order.product_name}</TableCell>
-                          <TableCell>₹{order.amount.toFixed(2)}</TableCell>
-                          <TableCell>{getStatusBadge(order.payment_status)}</TableCell>
-                          <TableCell>
-                            <div className="flex space-x-2">
-                              <Button 
-                                variant="outline" 
-                                size="sm" 
-                                className="h-8"
-                                onClick={() => viewInvoice(order)}
-                              >
-                                <FileText className="mr-1 h-3 w-3" />
-                                Invoice
-                              </Button>
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
-          
-          <TabsContent value="pending">
-            <Card>
-              <CardHeader>
-                <CardTitle>Pending Payments</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {orders.filter(o => o.payment_status === "pending").length === 0 ? (
-                  <div className="text-center py-6">
-                    <p className="text-muted-foreground">No pending payments.</p>
-                  </div>
-                ) : (
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Order ID</TableHead>
-                        <TableHead>Date</TableHead>
-                        <TableHead>Product</TableHead>
-                        <TableHead>Amount</TableHead>
-                        <TableHead>Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {orders
-                        .filter(order => order.payment_status === "pending")
-                        .map((order) => (
-                          <TableRow key={order.id}>
-                            <TableCell className="font-medium">{order.id.substring(0, 8)}</TableCell>
-                            <TableCell>{format(new Date(order.created_at), 'MMM dd, yyyy')}</TableCell>
-                            <TableCell>{order.product_name}</TableCell>
-                            <TableCell>₹{order.amount.toFixed(2)}</TableCell>
-                            <TableCell>
-                              <Button 
-                                variant="default" 
-                                size="sm" 
-                                className="h-8"
-                              >
-                                <CreditCard className="mr-1 h-3 w-3" />
-                                Pay Now
-                              </Button>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                    </TableBody>
-                  </Table>
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
-          
-          <TabsContent value="completed">
-            <Card>
-              <CardHeader>
-                <CardTitle>Completed Payments</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {orders.filter(o => o.payment_status === "completed").length === 0 ? (
-                  <div className="text-center py-6">
-                    <p className="text-muted-foreground">No completed payments.</p>
-                  </div>
-                ) : (
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Order ID</TableHead>
-                        <TableHead>Date</TableHead>
-                        <TableHead>Product</TableHead>
-                        <TableHead>Amount</TableHead>
-                        <TableHead>Invoice</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {orders
-                        .filter(order => order.payment_status === "completed")
-                        .map((order) => (
-                          <TableRow key={order.id}>
-                            <TableCell className="font-medium">{order.id.substring(0, 8)}</TableCell>
-                            <TableCell>{format(new Date(order.created_at), 'MMM dd, yyyy')}</TableCell>
-                            <TableCell>{order.product_name}</TableCell>
-                            <TableCell>₹{order.amount.toFixed(2)}</TableCell>
-                            <TableCell>
-                              <Button 
-                                variant="outline" 
-                                size="sm" 
-                                className="h-8"
-                                onClick={() => viewInvoice(order)}
-                              >
-                                <FileText className="mr-1 h-3 w-3" />
-                                View
-                              </Button>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                    </TableBody>
-                  </Table>
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
-          
-          <TabsContent value="failed">
-            <Card>
-              <CardHeader>
-                <CardTitle>Failed Payments</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {orders.filter(o => o.payment_status === "failed").length === 0 ? (
-                  <div className="text-center py-6">
-                    <p className="text-muted-foreground">No failed payments.</p>
-                  </div>
-                ) : (
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Order ID</TableHead>
-                        <TableHead>Date</TableHead>
-                        <TableHead>Product</TableHead>
-                        <TableHead>Amount</TableHead>
-                        <TableHead>Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {orders
-                        .filter(order => order.payment_status === "failed")
-                        .map((order) => (
-                          <TableRow key={order.id}>
-                            <TableCell className="font-medium">{order.id.substring(0, 8)}</TableCell>
-                            <TableCell>{format(new Date(order.created_at), 'MMM dd, yyyy')}</TableCell>
-                            <TableCell>{order.product_name}</TableCell>
-                            <TableCell>₹{order.amount.toFixed(2)}</TableCell>
-                            <TableCell>
-                              <Button 
-                                variant="default" 
-                                size="sm" 
-                                className="h-8"
-                              >
-                                <CreditCard className="mr-1 h-3 w-3" />
-                                Try Again
-                              </Button>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                    </TableBody>
-                  </Table>
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
-          
-          <TabsContent value="invoices">
-            <Card>
-              <CardHeader>
-                <CardTitle>All Invoices</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {orders.length === 0 ? (
-                  <div className="text-center py-6">
-                    <p className="text-muted-foreground">No invoices available.</p>
-                  </div>
-                ) : (
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Invoice Number</TableHead>
-                        <TableHead>Date</TableHead>
-                        <TableHead>Product</TableHead>
-                        <TableHead>Amount</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {orders.map((order) => (
-                        <TableRow key={order.id}>
-                          <TableCell className="font-medium">{order.invoice_number}</TableCell>
-                          <TableCell>{format(new Date(order.created_at), 'MMM dd, yyyy')}</TableCell>
-                          <TableCell>{order.product_name}</TableCell>
-                          <TableCell>₹{order.amount.toFixed(2)}</TableCell>
-                          <TableCell>{getStatusBadge(order.payment_status)}</TableCell>
-                          <TableCell>
-                            <div className="flex space-x-2">
-                              <Button 
-                                variant="outline" 
-                                size="sm" 
-                                className="h-8"
-                                onClick={() => viewInvoice(order)}
-                              >
-                                <FileText className="mr-1 h-3 w-3" />
-                                View
-                              </Button>
-                              <Button 
-                                variant="outline" 
-                                size="sm" 
-                                className="h-8"
-                                onClick={() => downloadInvoice(order)}
-                              >
-                                <Download className="mr-1 h-3 w-3" />
-                                Download
-                              </Button>
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                )}
-              </CardContent>
-            </Card>
+
+          <TabsContent value={activeTab} className="space-y-4">
+            {isLoading ? (
+              <div className="flex justify-center py-12">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+              </div>
+            ) : orders && orders.length > 0 ? (
+              <>
+                {orders.map((order) => (
+                  <Card key={order.id} className="overflow-hidden">
+                    <CardHeader className="bg-muted/50 pb-4">
+                      <div className="flex justify-between">
+                        <div>
+                          <CardTitle className="flex items-center gap-2">
+                            <ShoppingBag className="h-5 w-5" /> 
+                            {order.order_type === 'feature' 
+                              ? 'Featured Listing' 
+                              : 'Purchase'
+                            }
+                          </CardTitle>
+                          <CardDescription>
+                            Invoice #{order.invoice_number}
+                          </CardDescription>
+                        </div>
+                        <Badge variant={order.payment_status === 'completed' ? 'success' : 'outline'}>
+                          {order.payment_status === 'completed' ? 'Paid' : 'Pending'}
+                        </Badge>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="pt-4">
+                      {order.listing && (
+                        <div className="flex gap-3">
+                          <div className="h-16 w-16 overflow-hidden rounded-md bg-muted">
+                            <img 
+                              src={order.listing.images?.[0] || "/placeholder.svg"} 
+                              alt={order.listing.title} 
+                              className="h-full w-full object-cover"
+                            />
+                          </div>
+                          <div>
+                            <h3 className="font-medium">{order.listing.title}</h3>
+                            <p className="text-sm text-muted-foreground">
+                              {order.order_type === 'feature' 
+                                ? `Feature Plan: ${order.feature_plan}` 
+                                : `Price: ₹${order.listing.price}`
+                              }
+                            </p>
+                          </div>
+                        </div>
+                      )}
+                      
+                      {order.order_type === 'feature' && (
+                        <div className="mt-3 space-y-1 text-sm">
+                          <p><span className="font-medium">Contact:</span> {order.contact_name}</p>
+                          <p><span className="font-medium">Phone:</span> {order.contact_phone}</p>
+                          <p><span className="font-medium">Address:</span> {order.contact_address}</p>
+                        </div>
+                      )}
+                    </CardContent>
+                    <CardFooter className="border-t bg-muted/20 text-sm text-muted-foreground">
+                      <span>Ordered on {new Date(order.created_at).toLocaleDateString()}</span>
+                    </CardFooter>
+                  </Card>
+                ))}
+              </>
+            ) : (
+              <div className="flex flex-col items-center justify-center py-12">
+                <ShoppingBag className="h-12 w-12 text-muted-foreground mb-3" />
+                <h3 className="text-lg font-medium">No orders found</h3>
+                <p className="text-muted-foreground">
+                  {activeTab === 'features' 
+                    ? "You haven't featured any listings yet" 
+                    : activeTab === 'purchases' 
+                      ? "You haven't made any purchases yet"
+                      : "You don't have any orders yet"
+                  }
+                </p>
+              </div>
+            )}
           </TabsContent>
         </Tabs>
-      </div>
-
-      {/* Invoice Dialog */}
-      <Dialog open={openInvoice} onOpenChange={setOpenInvoice}>
-        <DialogContent className="max-w-3xl">
-          <DialogHeader>
-            <DialogTitle>Invoice {selectedInvoice?.invoice_number}</DialogTitle>
-          </DialogHeader>
-          
-          {selectedInvoice && (
-            <div className="mt-4 space-y-6">
-              <div className="flex justify-between">
-                <div>
-                  <h3 className="text-lg font-semibold">Quwik</h3>
-                  <p className="text-sm text-muted-foreground">123 Commerce Street</p>
-                  <p className="text-sm text-muted-foreground">New York, NY 10001</p>
-                  <p className="text-sm text-muted-foreground">support@quwik.com</p>
-                </div>
-                <div className="text-right">
-                  <div className="text-sm font-medium">Invoice To:</div>
-                  <div className="text-sm">John Smith</div>
-                  <div className="text-sm text-muted-foreground">456 Customer Avenue</div>
-                  <div className="text-sm text-muted-foreground">Brooklyn, NY 11201</div>
-                </div>
-              </div>
-
-              <div className="flex justify-between pt-6 border-t">
-                <div>
-                  <p className="text-sm font-medium">Invoice Number:</p>
-                  <p className="text-sm">{selectedInvoice.invoice_number}</p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium">Date Issued:</p>
-                  <p className="text-sm">{format(new Date(selectedInvoice.created_at), 'MMMM dd, yyyy')}</p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium">Status:</p>
-                  <div>{getStatusBadge(selectedInvoice.payment_status)}</div>
-                </div>
-              </div>
-
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Description</TableHead>
-                    <TableHead className="text-right">Qty</TableHead>
-                    <TableHead className="text-right">Unit Price</TableHead>
-                    <TableHead className="text-right">Amount</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  <TableRow>
-                    <TableCell>{selectedInvoice.product_name}</TableCell>
-                    <TableCell className="text-right">1</TableCell>
-                    <TableCell className="text-right">₹{selectedInvoice.amount.toFixed(2)}</TableCell>
-                    <TableCell className="text-right">₹{selectedInvoice.amount.toFixed(2)}</TableCell>
-                  </TableRow>
-                </TableBody>
-              </Table>
-
-              <div className="flex justify-end pt-6 border-t">
-                <div className="w-1/3 space-y-2">
-                  <div className="flex justify-between">
-                    <span className="font-medium">Subtotal:</span>
-                    <span>₹{selectedInvoice.amount.toFixed(2)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="font-medium">Tax:</span>
-                    <span>₹0.00</span>
-                  </div>
-                  <div className="flex justify-between text-lg font-bold pt-2 border-t">
-                    <span>Total:</span>
-                    <span>₹{selectedInvoice.amount.toFixed(2)}</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="pt-6 border-t text-center text-sm text-muted-foreground">
-                <p>Thank you for your business!</p>
-                <p>Payment processed by Quwik Secure Payment.</p>
-              </div>
-
-              <div className="flex justify-end space-x-2">
-                <Button
-                  onClick={() => downloadInvoice(selectedInvoice)}
-                >
-                  <Download className="mr-2 h-4 w-4" />
-                  Download Invoice
-                </Button>
-              </div>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
+      </main>
     </div>
   );
-};
-
-export default MyOrders;
+}
