@@ -3,11 +3,56 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { ProductCondition } from "@/types/categories";
 
-export const useProductDetails = (id: string | undefined) => {
+// Helper function to generate slug from title
+export const generateProductSlug = (title: string, adNumber: string): string => {
+  // Remove special characters, convert spaces to hyphens and lowercase it
+  return `${title.toLowerCase()
+    .replace(/[^\w\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .substring(0, 50)}-${adNumber}`;
+};
+
+// Helper to extract id from slug (used when navigating using slug)
+export const extractIdFromSlug = (slug: string): string | null => {
+  // Try to extract the ID from the slug
+  const idMatch = slug.match(/-(QUWIK-[A-Z0-9]{4})$/);
+  if (idMatch && idMatch[1]) {
+    return idMatch[1];
+  }
+  
+  // If it's not a slug but a direct UUID, return it
+  if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(slug)) {
+    return slug;
+  }
+  
+  return null;
+};
+
+export const useProductDetails = (idOrSlug: string | undefined) => {
   return useQuery({
-    queryKey: ['product', id],
+    queryKey: ['product', idOrSlug],
     queryFn: async () => {
-      if (!id) throw new Error('Product ID is required');
+      if (!idOrSlug) throw new Error('Product ID is required');
+      
+      let id = idOrSlug;
+      
+      // If this is a slug, extract the ID/ad number
+      const extractedId = extractIdFromSlug(idOrSlug);
+      if (extractedId && extractedId.startsWith('QUWIK-')) {
+        // If it's an ad number, we need to fetch the product by the ad number
+        const { data: productByAdNumber } = await supabase
+          .from('listings')
+          .select('id')
+          .ilike('id', `${extractedId.substring(6)}%`)
+          .single();
+          
+        if (productByAdNumber) {
+          id = productByAdNumber.id;
+        }
+      } else if (extractedId) {
+        id = extractedId;
+      }
 
       // First, increment the view count for this product
       try {
@@ -52,6 +97,9 @@ export const useProductDetails = (id: string | undefined) => {
       // Use the first 4 characters of the ID and format it as "QUWIK-XXXX"
       const adNumber = `QUWIK-${id.substring(0, 4).toUpperCase()}`;
 
+      // Generate the SEO-friendly slug for this product
+      const slug = generateProductSlug(data.title, adNumber);
+
       // Ensure specs is a proper object even if it's null or undefined
       const specs = data.specs && typeof data.specs === 'object' 
         ? data.specs as Record<string, any>
@@ -62,9 +110,10 @@ export const useProductDetails = (id: string | undefined) => {
         condition: data.condition as ProductCondition,
         adNumber,
         brand: data.brand || null,
-        specs
+        specs,
+        slug
       };
     },
-    enabled: !!id,
+    enabled: !!idOrSlug,
   });
 };

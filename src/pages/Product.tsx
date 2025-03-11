@@ -18,6 +18,7 @@ import { useProductActions } from "@/hooks/useProductActions";
 import { useToast } from "@/components/ui/use-toast";
 import MobileNavigation from "@/components/navigation/MobileNavigation";
 import { motion } from "framer-motion";
+import { useEffect } from "react";
 
 interface Seller {
   id: string;
@@ -26,7 +27,7 @@ interface Seller {
 }
 
 const ProductPage = () => {
-  const { id } = useParams();
+  const { slug } = useParams();
   const navigate = useNavigate();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [session, setSession] = useState<any>(null);
@@ -35,15 +36,23 @@ const ProductPage = () => {
   const { toast } = useToast();
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
-  const { data: product, isLoading, isError } = useProductDetails(id);
-  const { data: relatedProducts = [] } = useRelatedProducts(id, product?.category, product?.subcategory);
+  const { data: product, isLoading, isError } = useProductDetails(slug);
+  const { data: relatedProducts = [] } = useRelatedProducts(slug, product?.category, product?.subcategory);
   const {
     isOfferDialogOpen,
     setIsOfferDialogOpen,
     currentConversationId,
     handleChatWithSeller,
     handleMakeOffer
-  } = useProductActions(id, product?.user_id);
+  } = useProductActions(slug, product?.user_id);
+
+  // Update URL to use slug if needed
+  useEffect(() => {
+    if (product && product.slug && slug !== product.slug) {
+      // If we're on the product page with a UUID but have a nice slug available, update the URL
+      navigate(`/product/${product.slug}`, { replace: true });
+    }
+  }, [product, slug, navigate]);
 
   // Fetch seller data
   const { data: seller } = useQuery({
@@ -93,6 +102,9 @@ const ProductPage = () => {
   if (isError || !product) {
     return <ProductNotFound />;
   }
+
+  // Update the document title to include the product title and ad number
+  document.title = `${product.title} | ${product.adNumber} | Quwik`;
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-primary/5">
