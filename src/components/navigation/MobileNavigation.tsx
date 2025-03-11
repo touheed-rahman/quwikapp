@@ -1,6 +1,6 @@
 
-import { Link, useNavigate } from "react-router-dom";
-import { Home, MessageSquare, Plus, ListOrdered, Heart } from "lucide-react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
+import { Home, MessageSquare, Plus, ListOrdered, Heart, Video } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -12,6 +12,7 @@ interface MobileNavigationProps {
 const MobileNavigation = ({ onChatOpen }: MobileNavigationProps) => {
   const [unreadCount, setUnreadCount] = useState(0);
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     const getSession = async () => {
@@ -62,11 +63,17 @@ const MobileNavigation = ({ onChatOpen }: MobileNavigationProps) => {
   }, []);
 
   return (
-    <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t flex items-center justify-between px-6 py-2 z-50">
+    <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t flex items-center justify-between px-4 py-2 z-50">
       <Link to="/" className="flex flex-col items-center gap-1">
-        <Home className="h-6 w-6 text-primary" />
+        <Home className={`h-6 w-6 ${location.pathname === '/' ? 'text-primary' : 'text-muted-foreground'}`} />
         <span className="text-xs">Home</span>
       </Link>
+      
+      <Link to="/q" className="flex flex-col items-center gap-1">
+        <Video className={`h-6 w-6 ${location.pathname === '/q' ? 'text-primary' : 'text-muted-foreground'}`} />
+        <span className="text-xs">Q</span>
+      </Link>
+      
       <div className="relative">
         <button 
           onClick={onChatOpen}
@@ -83,6 +90,7 @@ const MobileNavigation = ({ onChatOpen }: MobileNavigationProps) => {
           </Badge>
         )}
       </div>
+      
       <Link
         to="/sell"
         className="flex flex-col items-center -mt-8"
@@ -92,13 +100,15 @@ const MobileNavigation = ({ onChatOpen }: MobileNavigationProps) => {
         </div>
         <span className="text-xs mt-1">Sell Now</span>
       </Link>
+      
       <Link to="/my-ads" className="flex flex-col items-center gap-1">
-        <ListOrdered className="h-6 w-6 text-muted-foreground hover:text-primary transition-colors" />
-        <span className="text-xs hover:text-primary transition-colors">My Ads</span>
+        <ListOrdered className={`h-6 w-6 ${location.pathname === '/my-ads' ? 'text-primary' : 'text-muted-foreground'}`} />
+        <span className="text-xs">My Ads</span>
       </Link>
+      
       <Link to="/wishlist" className="flex flex-col items-center gap-1">
-        <Heart className="h-6 w-6 text-muted-foreground hover:text-primary transition-colors" />
-        <span className="text-xs hover:text-primary transition-colors">Wishlist</span>
+        <Heart className={`h-6 w-6 ${location.pathname === '/wishlist' ? 'text-primary' : 'text-muted-foreground'}`} />
+        <span className="text-xs">Wishlist</span>
       </Link>
     </div>
   );
