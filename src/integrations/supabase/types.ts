@@ -815,6 +815,24 @@ export type Database = {
           },
         ]
       }
+      waiting_for_feature: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+        }
+        Relationships: []
+      }
       wishlists: {
         Row: {
           created_at: string

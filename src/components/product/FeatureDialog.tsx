@@ -12,6 +12,7 @@ import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/components/ui/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 interface FeatureDialogProps {
   isOpen: boolean;
@@ -23,9 +24,10 @@ export default function FeatureDialog({
   onClose,
 }: FeatureDialogProps) {
   const [email, setEmail] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     // Email validation
     if (!email || !/^\S+@\S+\.\S+$/.test(email)) {
       toast({
@@ -36,25 +38,54 @@ export default function FeatureDialog({
       return;
     }
 
-    // Just show a success toast for now
-    toast({
-      title: "Thank you!",
-      description: "We'll notify you when the feature is launched.",
-      variant: "default",
-    });
-    
-    // Clear form and close dialog
-    setEmail("");
-    onClose();
+    setIsSubmitting(true);
+
+    try {
+      const { error } = await supabase
+        .from('waiting_for_feature')
+        .insert([{ email }]);
+
+      if (error) throw error;
+
+      toast({
+        title: "Thank you for your interest!",
+        description: "We'll notify you as soon as featuring launches with special early-bird pricing!",
+        variant: "default",
+      });
+      
+      setEmail("");
+      onClose();
+    } catch (error) {
+      if (error.code === '23505') {
+        toast({
+          title: "Already registered",
+          description: "This email is already registered for feature notifications",
+          variant: "default",
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: "Something went wrong. Please try again.",
+          variant: "destructive",
+        });
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[400px]">
         <DialogHeader>
-          <DialogTitle className="text-xl">Feature Coming Soon!</DialogTitle>
-          <DialogDescription>
-            Our featuring service is coming soon. Leave your email and we'll notify you when it launches.
+          <DialogTitle className="text-xl font-semibold">
+            🌟 Feature Your Listing
+          </DialogTitle>
+          <DialogDescription className="text-base pt-2">
+            <p className="mb-2">Get ready for something special! Our featuring service is launching soon with incredible introductory prices.</p>
+            <p className="font-medium text-primary">
+              Early subscribers will receive exclusive discounts that are way more affordable than you think!
+            </p>
           </DialogDescription>
         </DialogHeader>
 
@@ -73,10 +104,10 @@ export default function FeatureDialog({
 
         <DialogFooter>
           <Button type="button" variant="outline" onClick={onClose}>
-            Cancel
+            Maybe Later
           </Button>
-          <Button onClick={handleSubmit}>
-            Notify Me
+          <Button onClick={handleSubmit} disabled={isSubmitting}>
+            {isSubmitting ? "Submitting..." : "Notify Me"}
           </Button>
         </DialogFooter>
       </DialogContent>
