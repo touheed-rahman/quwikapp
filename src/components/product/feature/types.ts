@@ -1,5 +1,6 @@
-
 import { ReactNode } from "react";
+
+export type FeatureIconType = 'home' | 'tag' | 'shopping-bag';
 
 export interface FeatureOption {
   id: string;
@@ -7,7 +8,7 @@ export interface FeatureOption {
   description: string;
   price: number;
   originalPrice: number;
-  icon: ReactNode;
+  iconType: FeatureIconType;
 }
 
 export interface UserDetails {

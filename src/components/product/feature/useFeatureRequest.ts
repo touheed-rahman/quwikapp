@@ -4,7 +4,6 @@ import { FeatureOption, UserDetails } from "./types";
 import { useInvoiceGeneration } from "./hooks/useInvoiceGeneration";
 import { useOrderManagement } from "./hooks/useOrderManagement";
 import { supabase } from "@/integrations/supabase/client";
-import { Home, ShoppingBag, Tag } from "lucide-react";
 
 export function useFeatureRequest(
   productId: string,
@@ -53,7 +52,7 @@ export function useFeatureRequest(
         description: "Your listing will be featured on our homepage",
         price: hasFreeFeatures ? 0 : (featurePricing?.homepage?.price || 499),
         originalPrice: featurePricing?.homepage?.original_price || 499,
-        icon: <Home className="h-5 w-5 text-secondary" />
+        iconType: 'home'
       },
       {
         id: "productPage",
@@ -61,7 +60,7 @@ export function useFeatureRequest(
         description: "Your listing will be featured in its category page",
         price: hasFreeFeatures ? 0 : (featurePricing?.productPage?.price || 299),
         originalPrice: featurePricing?.productPage?.original_price || 299,
-        icon: <Tag className="h-5 w-5 text-primary" />
+        iconType: 'tag'
       },
       {
         id: "both",
@@ -69,7 +68,7 @@ export function useFeatureRequest(
         description: "Your listing will be featured everywhere!",
         price: hasFreeFeatures ? 0 : (featurePricing?.both?.price || 799),
         originalPrice: featurePricing?.both?.original_price || 799,
-        icon: <ShoppingBag className="h-5 w-5 text-accent" />
+        iconType: 'shopping-bag'
       }
     ];
   };
@@ -84,7 +83,6 @@ export function useFeatureRequest(
       setFreeRequestsCount(count);
       setHasFreeFeatures(count < 3);
 
-      // Load pricing for the category and subcategory
       const { data: listing } = await supabase
         .from('listings')
         .select('category, subcategory')
@@ -127,10 +125,8 @@ export function useFeatureRequest(
       const invoiceNumber = `INV-${Date.now().toString().substring(7)}`;
       const selectedFeatureOption = featureOptions.find(o => o.id === selectedOption) as FeatureOption;
       
-      // Check if the user still has free features available
       const userHasFreeFeatures = await getFeatureRequestCount(session.user.id) < 3;
       
-      // Set the actual price based on whether they've used up free features
       const actualPrice = userHasFreeFeatures ? 0 : selectedFeatureOption.price;
       const paymentStatus = actualPrice === 0 ? "completed" : "pending";
       
@@ -172,7 +168,6 @@ export function useFeatureRequest(
         variant: "default",
       });
       
-      // Refresh the free features count
       loadUserFeaturesStatus();
       
       setTimeout(() => {
