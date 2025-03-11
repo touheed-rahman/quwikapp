@@ -140,9 +140,11 @@ const CategoryFilter = () => {
                             boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)"
                           }}
                         >
-                          <Icon className="h-5 w-5 md:h-6 md:w-6 text-black" />
+                          <Icon className="h-6 w-6 md:h-7 md:w-7 text-black" />
                         </motion.div>
-                        <span className="text-xs md:text-sm font-medium text-center line-clamp-1">{category.name}</span>
+                        <span className="text-xs md:text-sm font-medium text-center line-clamp-1 text-black">
+                          {category.name}
+                        </span>
                       </motion.button>
                     );
                   })}

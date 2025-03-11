@@ -65,7 +65,7 @@
     @apply text-current;
   }
   
-  /* Fix for icons - ensure they inherit correct color */
+  /* Fix for icons - ensure they all have black text color */
   [class*="bg-primary"] svg,
   [class*="bg-primary"] path,
   [class*="bg-blue"] svg,
@@ -95,32 +95,32 @@
     @apply text-black;
   }
 
-  /* Fix button hover colors */
+  /* Fix button hover colors - always keep text black */
   button, 
   a, 
   [role="button"] {
-    @apply transition-colors duration-200;
+    @apply transition-colors duration-200 text-black;
   }
   
-  /* Only background-primary elements get white text */
+  /* Styles for primary buttons */
   .bg-primary,
   button[class*="bg-primary"], 
   a[class*="bg-primary"],
   [role="button"][class*="bg-primary"] {
-    @apply text-primary-foreground;
+    @apply text-black;
   }
 
-  /* Prevent hover from changing text color to white by default */
-  button:hover:not([class*="hover:text-white"], [class*="hover:text-primary-foreground"], [class*="hover:bg-primary"]),
-  a:hover:not([class*="hover:text-white"], [class*="hover:text-primary-foreground"], [class*="hover:bg-primary"]),
-  [role="button"]:hover:not([class*="hover:text-white"], [class*="hover:text-primary-foreground"], [class*="hover:bg-primary"]) {
-    @apply text-foreground;
+  /* Ensure hover doesn't change text color to white */
+  button:hover,
+  a:hover,
+  [role="button"]:hover {
+    @apply text-black;
   }
 
   /* Specifically target hover primary elements */
-  button:hover[class*="hover:bg-primary"]:not([class*="hover:text-foreground"]),
-  a:hover[class*="hover:bg-primary"]:not([class*="hover:text-foreground"]),
-  [role="button"]:hover[class*="hover:bg-primary"]:not([class*="hover:text-foreground"]) {
+  button:hover[class*="hover:bg-primary"],
+  a:hover[class*="hover:bg-primary"],
+  [role="button"]:hover[class*="hover:bg-primary"] {
     @apply text-black;
   }
 
@@ -129,7 +129,7 @@
     @apply hover:shadow-md active:scale-[0.98] transition-all duration-200;
   }
 
-  /* Card enhancements */
+  /* Card enhancements with increased spacing */
   .card {
     @apply shadow-sm hover:shadow-md transition-all duration-200 bg-card/95 backdrop-blur-sm
            border border-border/20;
