@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -189,14 +190,11 @@ export default function FeatureDialog({
       if (!session) throw new Error("No session found");
 
       // First, update the listing with feature information
-      const { error } = await supabase
-        .from("listings")
-        .update({
-          featured_requested: true,
-          feature_plan: selectedOption,
-          feature_requested_at: new Date().toISOString()
-        })
-        .eq("id", productId);
+      // Fixing the schema error by using a different approach
+      const { error } = await supabase.rpc('request_feature', {
+        listing_id: productId,
+        feature_type: selectedOption
+      });
 
       if (error) throw error;
 
@@ -216,7 +214,7 @@ export default function FeatureDialog({
         payment_status: "completed",
         invoice_number: invoiceNumber,
         order_type: "feature",
-        feature_plan: selectedOption,
+        feature_type: selectedOption,
         contact_name: userDetails.name,
         contact_phone: userDetails.phone,
         contact_address: userDetails.address

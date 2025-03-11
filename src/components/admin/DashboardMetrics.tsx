@@ -1,16 +1,24 @@
 
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { Shield, Users, ListChecks, Clock, Star, XCircle, BellRing } from "lucide-react";
+import { Shield, Users, ListChecks, Clock, Star, XCircle, BellRing, ArrowLeft } from "lucide-react";
 import MetricCard from "./MetricCard";
 import { useAdminMetrics } from "@/hooks/useAdminMetrics";
+import { Button } from "@/components/ui/button"; 
 
 const DashboardMetrics = () => {
   const navigate = useNavigate();
   const { metrics, isLoading } = useAdminMetrics();
   
   if (isLoading) {
-    return <div>Loading metrics...</div>;
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-pulse flex flex-col items-center gap-4">
+          <div className="h-12 w-12 bg-primary/20 rounded-full"></div>
+          <div className="h-4 w-32 bg-primary/20 rounded"></div>
+        </div>
+      </div>
+    );
   }
 
   const metricCards = [

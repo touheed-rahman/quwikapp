@@ -1,8 +1,9 @@
 
-import { ArrowUpRight, TrendingUp, ExternalLink } from "lucide-react";
+import { ArrowUpRight, TrendingUp, ExternalLink, ArrowLeft } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { motion } from "framer-motion";
 import { LucideIcon } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface MetricCardProps {
   title: string;
@@ -13,6 +14,8 @@ interface MetricCardProps {
   hoverBgColor: string;
   onClick: () => void;
   index: number;
+  showBackButton?: boolean;
+  onBackClick?: () => void;
 }
 
 const MetricCard = ({ 
@@ -23,7 +26,9 @@ const MetricCard = ({
   bgColor, 
   hoverBgColor, 
   onClick, 
-  index 
+  index,
+  showBackButton = false,
+  onBackClick
 }: MetricCardProps) => {
   // Calculate a random but consistent trend percentage for demo purposes
   const trendPercentage = Math.floor(((index + 1) * 7) % 30);
@@ -35,9 +40,10 @@ const MetricCard = ({
       transition={{ delay: index * 0.05, duration: 0.3 }}
       whileHover={{ y: -5, transition: { duration: 0.2 } }}
       whileTap={{ scale: 0.98 }}
+      className="h-full"
     >
       <Card 
-        className={`p-6 ${bgColor} border border-${color.replace('text-', '')}/10 cursor-pointer transition-all duration-300 ${hoverBgColor} hover:shadow-lg relative overflow-hidden group`}
+        className={`p-6 ${bgColor} border border-${color.replace('text-', '')}/10 cursor-pointer transition-all duration-300 ${hoverBgColor} hover:shadow-lg relative overflow-hidden group h-full`}
         onClick={onClick}
       >
         {/* Background pattern */}
@@ -46,6 +52,21 @@ const MetricCard = ({
             <circle cx="75" cy="25" r="50" fill="currentColor" className={color} />
           </svg>
         </div>
+        
+        {showBackButton && onBackClick && (
+          <Button
+            variant="ghost" 
+            size="sm"
+            className="absolute top-2 left-2 p-1 h-8 w-8 rounded-full bg-background/80 hover:bg-background z-20"
+            onClick={(e) => {
+              e.stopPropagation();
+              onBackClick();
+            }}
+          >
+            <ArrowLeft className="h-4 w-4" />
+            <span className="sr-only">Back to dashboard</span>
+          </Button>
+        )}
         
         <div className="flex items-center justify-between relative z-10">
           <div>

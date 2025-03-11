@@ -1,16 +1,39 @@
 
-import { Gauge, LayoutGrid, Users, BarChart3 } from "lucide-react";
+import { Gauge, LayoutGrid, Users, BarChart3, ArrowLeft } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { motion } from "framer-motion";
+import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 
 interface AdminNavTabsProps {
   activeTab: string;
   setActiveTab: (tab: string) => void;
+  showBackButton?: boolean;
 }
 
-const AdminNavTabs = ({ activeTab, setActiveTab }: AdminNavTabsProps) => {
+const AdminNavTabs = ({ activeTab, setActiveTab, showBackButton = false }: AdminNavTabsProps) => {
+  const navigate = useNavigate();
+  
   return (
-    <div className="hidden md:flex items-center space-x-1 ml-8">
+    <div className="hidden md:flex items-center space-x-1 ml-8 relative">
+      {showBackButton && (
+        <motion.div 
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          className="absolute -left-12"
+        >
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="rounded-full w-8 h-8 p-0 bg-primary/10 text-primary hover:bg-primary/20"
+            onClick={() => setActiveTab('dashboard')}
+          >
+            <ArrowLeft className="h-4 w-4" />
+            <span className="sr-only">Back to dashboard</span>
+          </Button>
+        </motion.div>
+      )}
+      
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="bg-primary/10 p-1 rounded-lg border border-primary/20 shadow-sm">
           <TabsTrigger 

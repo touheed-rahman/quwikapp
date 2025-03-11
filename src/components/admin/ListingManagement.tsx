@@ -1,5 +1,5 @@
 
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import ListingSearchBar from "./ListingSearchBar";
 import ListingTable from "./ListingTable";
 import ListingTabs from "./ListingTabs";
@@ -8,11 +8,12 @@ import ListingError from "./ListingError";
 import ListingEmpty from "./ListingEmpty";
 import { useAdminListings } from "@/hooks/useAdminListings";
 import { Button } from "@/components/ui/button";
-import { RefreshCw, Download, Upload, PlusCircle } from "lucide-react";
+import { RefreshCw, Download, Upload, PlusCircle, ArrowLeft } from "lucide-react";
 import { motion } from "framer-motion";
 
 const ListingManagement = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const filter = location.state?.filter || 'all';
   const {
     filteredListings,
@@ -26,12 +27,34 @@ const ListingManagement = () => {
     refetch
   } = useAdminListings(filter);
 
+  const handleBackToDashboard = () => {
+    // Navigate back to dashboard tab
+    const event = new CustomEvent('adminTabChange', { detail: 'dashboard' });
+    window.dispatchEvent(event);
+  };
+
   if (error) {
     return <ListingError />;
   }
 
   return (
     <div className="space-y-4">
+      <motion.div 
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="flex items-center gap-2 mb-4"
+      >
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          onClick={handleBackToDashboard}
+          className="flex items-center gap-1 text-primary h-8"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          <span>Back to Dashboard</span>
+        </Button>
+      </motion.div>
+    
       <ListingTabs currentFilter={filter} />
       
       <motion.div 

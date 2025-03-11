@@ -33,6 +33,19 @@ const AdminPanel = () => {
     }
   }, [location.state]);
 
+  // Listen for custom event to change tabs
+  useEffect(() => {
+    const handleTabChange = (event: CustomEvent<string>) => {
+      setActiveTab(event.detail);
+    };
+
+    window.addEventListener('adminTabChange', handleTabChange as EventListener);
+    
+    return () => {
+      window.removeEventListener('adminTabChange', handleTabChange as EventListener);
+    };
+  }, []);
+
   useEffect(() => {
     const checkAdminAccess = async () => {
       try {
@@ -83,6 +96,9 @@ const AdminPanel = () => {
     }
   };
 
+  // Determine if we should show the back button
+  const shouldShowBackButton = activeTab !== 'dashboard';
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       {/* Top navbar */}
@@ -90,7 +106,11 @@ const AdminPanel = () => {
       
       <div className="flex items-center absolute left-4 top-0 h-16 md:relative md:left-0 md:top-0">
         <AdminMobileMenu activeTab={activeTab} setActiveTab={setActiveTab} />
-        <AdminNavTabs activeTab={activeTab} setActiveTab={setActiveTab} />
+        <AdminNavTabs 
+          activeTab={activeTab} 
+          setActiveTab={setActiveTab} 
+          showBackButton={shouldShowBackButton}
+        />
       </div>
       
       {/* Main content */}
