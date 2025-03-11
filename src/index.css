@@ -67,7 +67,7 @@
     @apply transition-colors duration-200;
   }
   
-  /* Button with primary background gets white text */
+  /* Only background-primary elements get white text */
   .bg-primary,
   button[class*="bg-primary"], 
   a[class*="bg-primary"],
@@ -75,11 +75,18 @@
     @apply text-primary-foreground;
   }
 
-  /* Background remains primary but text stays the same when hovering */
-  button:hover:not([class*="hover:text-white"], [class*="hover:text-primary-foreground"]),
-  a:hover:not([class*="hover:text-white"], [class*="hover:text-primary-foreground"]),
-  [role="button"]:hover:not([class*="hover:text-white"], [class*="hover:text-primary-foreground"]) {
+  /* Prevent hover from changing text color to white by default */
+  button:hover:not([class*="hover:text-white"], [class*="hover:text-primary-foreground"], [class*="hover:bg-primary"]),
+  a:hover:not([class*="hover:text-white"], [class*="hover:text-primary-foreground"], [class*="hover:bg-primary"]),
+  [role="button"]:hover:not([class*="hover:text-white"], [class*="hover:text-primary-foreground"], [class*="hover:bg-primary"]) {
     @apply text-foreground;
+  }
+
+  /* Specifically target hover primary elements */
+  button:hover[class*="hover:bg-primary"]:not([class*="hover:text-foreground"]),
+  a:hover[class*="hover:bg-primary"]:not([class*="hover:text-foreground"]),
+  [role="button"]:hover[class*="hover:bg-primary"]:not([class*="hover:text-foreground"]) {
+    @apply text-primary-foreground;
   }
 
   /* Enhanced button hover effects */

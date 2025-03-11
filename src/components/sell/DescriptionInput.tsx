@@ -11,7 +11,7 @@ interface DescriptionInputProps {
 const DescriptionInput = ({ value, onChange }: DescriptionInputProps) => {
   return (
     <motion.div 
-      className="space-y-2"
+      className="space-y-1.5"
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3, delay: 0.1 }}
@@ -25,7 +25,7 @@ const DescriptionInput = ({ value, onChange }: DescriptionInputProps) => {
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder="Include condition, features and reason for selling"
-          className="min-h-[100px] resize-none border-primary/20 focus-visible:ring-primary/30 shadow-sm transition-all duration-200"
+          className="min-h-[90px] resize-none border-primary/20 focus-visible:ring-primary/30 shadow-sm transition-all duration-200"
           required
         />
       </div>

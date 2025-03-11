@@ -54,7 +54,7 @@ const SellerInfo = ({ seller, onChatClick, onMakeOffer }: SellerInfoProps) => {
 
       <div className="flex gap-4 mt-4">
         <Button 
-          className="flex-1 h-12 bg-primary hover:bg-primary/90 text-primary-foreground hover:text-primary-foreground"
+          className="flex-1 h-12 bg-primary hover:bg-primary/90 text-primary-foreground"
           onClick={onChatClick}
         >
           <MessageCircle className="h-5 w-5 mr-2" />
@@ -62,7 +62,7 @@ const SellerInfo = ({ seller, onChatClick, onMakeOffer }: SellerInfoProps) => {
         </Button>
         <Button 
           variant="outline" 
-          className="flex-1 h-12 hover:bg-primary hover:text-primary-foreground transition-colors"
+          className="flex-1 h-12 hover:bg-primary/10 text-foreground hover:text-foreground transition-colors"
           onClick={onMakeOffer}
         >
           <Tag className="h-5 w-5 mr-2" />

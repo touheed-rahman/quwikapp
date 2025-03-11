@@ -9,7 +9,6 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import ChatWindow from "@/components/chat/ChatWindow";
 import FeedbackDialog from "@/components/feedback/FeedbackDialog";
 import { toast } from "@/hooks/use-toast";
-import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 
 const Header = () => {
   const [session, setSession] = useState<any>(null);
@@ -96,7 +95,7 @@ const Header = () => {
               <Button 
                 variant="ghost" 
                 size="icon" 
-                className="relative hidden md:flex flex-col items-center justify-center h-16 w-16 gap-0.5 hover:bg-primary hover:text-white"
+                className="relative hidden md:flex flex-col items-center justify-center h-16 w-16 gap-0.5 hover:bg-gray-100 text-foreground"
                 onClick={handleNotificationClick}
               >
                 <Bell className="h-5 w-5" />
@@ -114,7 +113,7 @@ const Header = () => {
                   variant="ghost" 
                   size="icon"
                   onClick={() => setIsChatOpen(true)}
-                  className="flex flex-col items-center justify-center h-16 w-16 gap-0.5 hover:bg-primary hover:text-white"
+                  className="flex flex-col items-center justify-center h-16 w-16 gap-0.5 hover:bg-gray-100 text-foreground"
                 >
                   <MessageSquare className="h-5 w-5" />
                   <span className="text-[10px]">Chats</span>
@@ -128,13 +127,13 @@ const Header = () => {
                 )}
               </div>
               <Link to="/my-ads" className="hidden md:block">
-                <Button variant="ghost" size="icon" className="flex flex-col items-center justify-center h-16 w-16 gap-0.5 hover:bg-primary hover:text-white">
+                <Button variant="ghost" size="icon" className="flex flex-col items-center justify-center h-16 w-16 gap-0.5 hover:bg-gray-100 text-foreground">
                   <ListOrdered className="h-5 w-5" />
                   <span className="text-[10px]">My Ads</span>
                 </Button>
               </Link>
               <Link to="/profile">
-                <Button variant="ghost" size="icon" className="flex flex-col items-center justify-center h-16 w-16 gap-0.5 hover:bg-primary hover:text-white">
+                <Button variant="ghost" size="icon" className="flex flex-col items-center justify-center h-16 w-16 gap-0.5 hover:bg-gray-100 text-foreground">
                   <User className="h-5 w-5" />
                   <span className="text-[10px]">Profile</span>
                 </Button>
@@ -143,7 +142,7 @@ const Header = () => {
                 variant="ghost" 
                 size="icon"
                 onClick={() => setIsFeedbackOpen(true)}
-                className="flex flex-col items-center justify-center h-16 w-16 gap-0.5 hover:bg-primary hover:text-white"
+                className="flex flex-col items-center justify-center h-16 w-16 gap-0.5 hover:bg-gray-100 text-foreground"
               >
                 <HelpCircle className="h-5 w-5" />
                 <span className="text-[10px]">Help</span>
@@ -158,7 +157,7 @@ const Header = () => {
                 variant="ghost" 
                 size="icon"
                 onClick={() => setIsFeedbackOpen(true)}
-                className="flex flex-col items-center justify-center h-16 w-16 gap-0.5 hover:bg-primary hover:text-white"
+                className="flex flex-col items-center justify-center h-16 w-16 gap-0.5 hover:bg-gray-100 text-foreground"
               >
                 <HelpCircle className="h-5 w-5" />
                 <span className="text-[10px]">Help</span>

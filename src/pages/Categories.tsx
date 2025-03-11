@@ -35,14 +35,14 @@ const Categories = () => {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      <main className="container mx-auto px-4 pt-28 pb-24">
+      <main className="container mx-auto px-4 pt-20 pb-24">
         <motion.div 
           className="space-y-6"
           variants={container}
           initial="hidden"
           animate="show"
         >
-          <motion.div variants={item} className="space-y-2">
+          <motion.div variants={item} className="space-y-2 mt-4">
             <h1 className="text-2xl md:text-3xl font-bold text-foreground flex items-center gap-2">
               <Tag className="h-6 w-6 text-primary" />
               Browse Categories
@@ -64,16 +64,16 @@ const Categories = () => {
           </motion.div>
           
           <motion.div variants={item}>
-            <div className="grid gap-6">
+            <div className="grid gap-5">
               {filteredCategories.map((category, index) => (
                 <motion.div 
                   key={category.id}
                   className="bg-white rounded-xl shadow-sm border p-5 hover:shadow-md transition-shadow"
                   variants={item}
-                  whileHover={{ y: -5 }}
+                  whileHover={{ y: -3 }}
                   transition={{ type: "spring", stiffness: 300 }}
                 >
-                  <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center justify-between mb-3">
                     <h2 className="text-xl font-semibold text-primary">{category.name}</h2>
                     <Link 
                       to={`/category/${category.id}`}
@@ -82,7 +82,7 @@ const Categories = () => {
                       View All <ArrowRight className="h-4 w-4" />
                     </Link>
                   </div>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
                     {category.subcategories.map((sub) => (
                       <Link 
                         key={sub.id} 
