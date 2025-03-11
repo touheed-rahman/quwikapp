@@ -92,20 +92,20 @@ export function useFeatureRequest(
 
       // First, update the product's featured_requested status
       const { error: updateError } = await supabase
-        .from('products')
+        .from('listings')
         .update({ featured_requested: true })
         .eq('id', productId);
 
       if (updateError) {
-        throw new Error('Failed to update product feature status');
+        throw new Error('Failed to update listing feature status');
       }
 
       // Generate invoice number
       const invoiceNumber = `INV-${Date.now().toString().substring(7)}`;
       
-      // Create order data
+      // Create order data with correct listing_id field
       const orderData = {
-        product_id: productId,
+        listing_id: productId, // Changed from product_id to listing_id
         buyer_id: session.user.id,
         seller_id: session.user.id,
         amount: 0,
@@ -118,11 +118,11 @@ export function useFeatureRequest(
         contact_address: userDetails.address
       };
       
-      // Create order
       const { data: orderResult, error: orderError } = await supabase
-        .from('orders')
-        .insert([orderData])
-        .select();
+        .from('feature_orders') // Changed table name to feature_orders
+        .insert(orderData)
+        .select()
+        .single();
 
       if (orderError) {
         throw new Error('Failed to create order: ' + orderError.message);
@@ -133,12 +133,16 @@ export function useFeatureRequest(
       // Generate and upload invoice
       const invoiceUrl = await generateInvoice(orderData, selectedFeatureOption);
       
-      if (invoiceUrl) {
+      if (invoiceUrl && orderResult) {
         // Update order with invoice URL
-        await supabase
-          .from('orders')
+        const { error: invoiceError } = await supabase
+          .from('feature_orders')
           .update({ invoice_url: invoiceUrl })
-          .eq('id', orderResult[0].id);
+          .eq('id', orderResult.id);
+          
+        if (invoiceError) {
+          console.error('Failed to update invoice URL:', invoiceError);
+        }
         
         setInvoiceUrl(invoiceUrl);
       }
