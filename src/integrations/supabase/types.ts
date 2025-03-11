@@ -1885,6 +1885,13 @@ export type Database = {
         }
         Returns: unknown
       }
+      increment_unread_count: {
+        Args: {
+          p_conversation_id: string
+          p_user_id: string
+        }
+        Returns: undefined
+      }
       is_admin: {
         Args: {
           user_uid: string

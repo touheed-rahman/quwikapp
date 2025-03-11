@@ -29,6 +29,7 @@ const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
       const { data: { session } } = await supabase.auth.getSession();
       setIsAuthenticated(!!session);
       setUserId(session?.user?.id || null);
+      console.log("Auth check - User ID:", session?.user?.id);
     };
     
     checkAuth();
@@ -37,6 +38,7 @@ const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
     const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
       setIsAuthenticated(!!session);
       setUserId(session?.user?.id || null);
+      console.log("Auth state change - User ID:", session?.user?.id);
     });
 
     return () => {
@@ -68,18 +70,18 @@ const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
       .reduce((sum, conv) => sum + (unreadCounts[conv.id] || 0), 0)
   };
 
-  // Re-fetch conversations when the window is opened or filter changes
+  // Force refresh when chat window opens, filter changes, or auth state changes
   useEffect(() => {
     if (isOpen && isAuthenticated && userId) {
-      console.log('Chat window opened, refreshing conversations');
+      console.log('Chat window opened or filter changed, refreshing conversations');
       refreshConversations();
     }
   }, [isOpen, filter, isAuthenticated, userId, refreshConversations]);
 
-  // Additionally fetch when tab becomes visible
+  // Additional refresh when tab becomes visible
   useEffect(() => {
     const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible' && isAuthenticated && userId) {
+      if (document.visibilityState === 'visible' && isAuthenticated && userId && isOpen) {
         console.log('Tab became visible, refreshing conversations');
         refreshConversations();
       }
@@ -90,7 +92,23 @@ const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
-  }, [isAuthenticated, userId, refreshConversations]);
+  }, [isAuthenticated, userId, refreshConversations, isOpen]);
+
+  // Periodic refresh every 30 seconds when window is open
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    
+    if (isOpen && isAuthenticated && userId) {
+      interval = setInterval(() => {
+        console.log('Periodic refresh of conversations');
+        refreshConversations();
+      }, 30000); // Every 30 seconds
+    }
+    
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [isOpen, isAuthenticated, userId, refreshConversations]);
 
   const handleFilterChange = (newFilter: 'all' | 'buying' | 'selling') => {
     setFilter(newFilter);
@@ -116,6 +134,9 @@ const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
         (conv.last_message && conv.last_message.toLowerCase().includes(searchTerm.toLowerCase()))
       )
     : conversations;
+
+  console.log("Chat window rendering with", conversations.length, "conversations");
+  console.log("Filtered to", filteredConversations.length, "conversations");
 
   if (isAuthenticated === null) {
     return null; // Don't render anything while checking auth

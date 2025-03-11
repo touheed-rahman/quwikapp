@@ -1,4 +1,3 @@
-
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Check } from "lucide-react";
@@ -18,14 +17,26 @@ export const ConversationItem = ({
   userId, 
   unreadCount = 0 
 }: ConversationItemProps) => {
+  // Enhanced logging for debugging
+  if (!conversation) {
+    console.error("ConversationItem received null conversation");
+    return null;
+  }
+
   // Don't render deleted conversations
-  if (conversation.deleted || (conversation.deleted_by && userId === conversation.deleted_by)) {
+  if (conversation.deleted || (conversation.deleted_by && conversation.deleted_by === userId)) {
+    console.log("Skipping deleted conversation", conversation.id);
     return null;
   }
 
   // Ensure we have the necessary data before rendering
   if (!conversation.seller || !conversation.buyer || !conversation.listing) {
-    console.error("Missing conversation data", conversation);
+    console.error("Missing conversation data", {
+      id: conversation.id,
+      hasSeller: !!conversation.seller,
+      hasBuyer: !!conversation.buyer,
+      hasListing: !!conversation.listing
+    });
     return null;
   }
   
@@ -34,6 +45,36 @@ export const ConversationItem = ({
   
   // Get the other user (if you're the buyer, get the seller, and vice versa)
   const otherUser = isBuyer ? conversation.seller : conversation.buyer;
+  
+  // Format the date intelligently
+  const formatDate = (dateString?: string) => {
+    if (!dateString) return '';
+    
+    const messageDate = new Date(dateString);
+    const today = new Date();
+    const yesterday = new Date(today);
+    yesterday.setDate(today.getDate() - 1);
+    
+    // If today, show time
+    if (messageDate.toDateString() === today.toDateString()) {
+      return messageDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    }
+    
+    // If yesterday, show "Yesterday"
+    if (messageDate.toDateString() === yesterday.toDateString()) {
+      return 'Yesterday';
+    }
+    
+    // If within the last 7 days, show day name
+    const oneWeekAgo = new Date(today);
+    oneWeekAgo.setDate(today.getDate() - 6);
+    if (messageDate >= oneWeekAgo) {
+      return messageDate.toLocaleDateString([], { weekday: 'short' });
+    }
+    
+    // Otherwise show date
+    return messageDate.toLocaleDateString();
+  };
   
   return (
     <div
@@ -69,10 +110,10 @@ export const ConversationItem = ({
               )}
             </div>
             <span className="text-sm text-muted-foreground">
-              {conversation.last_message_at ? new Date(conversation.last_message_at).toLocaleDateString() : ''}
+              {formatDate(conversation.last_message_at)}
             </span>
           </div>
-          <p className="text-sm font-medium text-primary/90 mt-1">
+          <p className="text-sm font-medium text-primary/90 mt-1 truncate">
             {conversation.listing.title}
             {conversation.listing.price && ` - ₹${conversation.listing.price}`}
           </p>

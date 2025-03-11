@@ -27,20 +27,7 @@ export function useConversations(
       console.log('Fetching conversations for user:', userId);
       setIsLoading(true);
 
-      // First check if we have any conversation records
-      const { data: convCount, error: countError } = await supabase
-        .from('conversations')
-        .select('id', { count: 'exact', head: true })
-        .or(`buyer_id.eq.${userId},seller_id.eq.${userId}`)
-        .is('deleted_by', null); // Don't include conversations deleted by this user
-      
-      if (countError) {
-        console.error('Error checking conversations count:', countError);
-        throw countError;
-      }
-      
-      console.log('Found conversation count:', convCount);
-
+      // Create query for conversations
       let query = supabase
         .from('conversations')
         .select(`
@@ -49,9 +36,9 @@ export function useConversations(
           seller:profiles!conversations_seller_id_fkey(id, full_name, avatar_url),
           buyer:profiles!conversations_buyer_id_fkey(id, full_name, avatar_url)
         `)
-        .or(`deleted_by.is.null,and(deleted_by.neq.${userId})`) // Don't include conversations deleted by this user
-        .order('last_message_at', { ascending: false });
+        .or(`deleted_by.is.null,and(deleted_by.neq.${userId})`); // Don't include conversations deleted by this user
 
+      // Apply filter
       if (filter === 'buying') {
         query = query.eq('buyer_id', userId);
       } else if (filter === 'selling') {
@@ -60,16 +47,20 @@ export function useConversations(
         query = query.or(`buyer_id.eq.${userId},seller_id.eq.${userId}`);
       }
 
+      // Order by most recent message
+      query = query.order('last_message_at', { ascending: false });
+
       const { data, error } = await query;
+
       if (error) {
         console.error('Error fetching conversations:', error);
         throw error;
       }
       
-      console.log('Fetched conversations:', data?.length || 0);
+      console.log('Fetched conversations count:', data?.length || 0);
       
       if (data) {
-        // Filter out conversations that don't have required data
+        // Filter out conversations without required data and not deleted by current user
         const validConversations = data.filter(conv => 
           conv.listing && 
           conv.buyer && 
@@ -77,14 +68,16 @@ export function useConversations(
           (conv.deleted_by === null || conv.deleted_by !== userId)
         );
         
-        console.log('Valid conversations:', validConversations.length);
-        setConversations(validConversations || []);
+        console.log('Valid conversations after filtering:', validConversations.length);
+        
+        // Update state with valid conversations
+        setConversations(validConversations);
       } else {
         setConversations([]);
       }
       
       // Fetch unread counts for each conversation
-      if (data && data.length > 0) {
+      if (userId) {
         const { data: notifications, error: notificationsError } = await supabase
           .from('notifications')
           .select('conversation_id, unread_count')
@@ -92,29 +85,33 @@ export function useConversations(
           
         if (notificationsError) {
           console.error('Error fetching notifications:', notificationsError);
-          throw notificationsError;
-        }
-        
-        if (notifications) {
+        } else if (notifications) {
           const counts: Record<string, number> = {};
           notifications.forEach(notification => {
             counts[notification.conversation_id] = notification.unread_count || 0;
           });
           setUnreadCounts(counts);
+          console.log('Unread counts:', counts);
         }
       }
     } catch (error) {
-      console.error('Error fetching conversations:', error);
+      console.error('Error in fetchConversations:', error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to load conversations"
+      });
     } finally {
       setIsLoading(false);
     }
-  }, [filter, userId]);
+  }, [filter, userId, toast]);
 
+  // Initialize conversations when component mounts or filter/auth changes
   useEffect(() => {
     if (isAuthenticated && userId) {
       fetchConversations();
       
-      // Subscribe to changes in conversations
+      // Set up subscriptions for real-time updates
       const conversationsChannel = supabase
         .channel(`user-conversations-${userId}`)
         .on(
@@ -163,7 +160,7 @@ export function useConversations(
         )
         .subscribe();
 
-      // Subscribe to messages changes to update conversations list
+      // Subscribe to messages changes
       const messagesChannel = supabase
         .channel(`user-messages-${userId}`)
         .on(
@@ -235,11 +232,12 @@ export function useConversations(
   };
 
   // Force a refresh of conversations
-  const refreshConversations = () => {
+  const refreshConversations = useCallback(() => {
     if (isAuthenticated && userId) {
+      console.log('Manually refreshing conversations');
       fetchConversations();
     }
-  };
+  }, [isAuthenticated, userId, fetchConversations]);
 
   return {
     conversations,

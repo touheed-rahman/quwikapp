@@ -63,11 +63,12 @@ export function useMessageSender(conversationId: string | undefined, userId: str
         console.error('Error updating conversation:', updateError);
       }
 
-      // Increment unread count for the recipient
-      const { error: notifError } = await supabase.rpc('increment_unread_count', {
-        p_conversation_id: conversationId,
-        p_user_id: receiverId
-      });
+      // Increment unread count for the recipient using rpc
+      const { error: notifError } = await supabase
+        .rpc('increment_unread_count', {
+          p_conversation_id: conversationId,
+          p_user_id: receiverId
+        } as any); // Type assertion to fix the TypeScript error
 
       if (notifError) {
         console.error('Error updating notification count:', notifError);
@@ -142,10 +143,11 @@ export function useMessageSender(conversationId: string | undefined, userId: str
       }
 
       // Increment unread count for the recipient
-      const { error: notifError } = await supabase.rpc('increment_unread_count', {
-        p_conversation_id: conversationId,
-        p_user_id: receiverId
-      });
+      const { error: notifError } = await supabase
+        .rpc('increment_unread_count', {
+          p_conversation_id: conversationId,
+          p_user_id: receiverId
+        } as any); // Type assertion to fix the TypeScript error
 
       if (notifError) {
         console.error('Error updating notification count:', notifError);
