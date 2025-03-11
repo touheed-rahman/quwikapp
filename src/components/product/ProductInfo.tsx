@@ -16,7 +16,6 @@ interface ProductInfoProps {
   condition: ProductCondition;
   description: string;
   category?: string;
-  km_driven?: number | null;
   adNumber?: string;
   id?: string;
   viewCount?: number;
@@ -32,7 +31,6 @@ const ProductInfo = ({
   condition,
   description,
   category,
-  km_driven,
   adNumber,
   id,
   viewCount = 0,
@@ -151,18 +149,12 @@ const ProductInfo = ({
             {brand}
           </Badge>
         )}
-        {km_driven !== null && km_driven !== undefined && (
-          <Badge variant="outline" className="bg-gray-100">
-            {km_driven.toLocaleString()} km
-          </Badge>
-        )}
       </div>
 
       {/* Product Specifications Card */}
       <ProductSpecsCard 
         brand={brand}
         specs={specs}
-        km_driven={km_driven}
         category={category}
         condition={condition}
       />

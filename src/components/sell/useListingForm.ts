@@ -83,16 +83,6 @@ export const useListingForm = () => {
       return false;
     }
 
-    // Category-specific validations only for vehicles
-    if (formData.category === 'vehicles' && (formData.km_driven === undefined || formData.km_driven === null)) {
-      toast({
-        title: "Missing Kilometers Driven",
-        description: "Please enter the kilometers driven",
-        variant: "destructive"
-      });
-      return false;
-    }
-
     return true;
   };
 
@@ -145,8 +135,7 @@ export const useListingForm = () => {
         images: uploadedImagePaths,
         user_id: user.id,
         status: 'pending',
-        // Include specs and other category-specific fields
-        km_driven: formData.km_driven !== undefined ? Number(formData.km_driven) : null,
+        // Include brand and other category-specific fields
         brand: formData.brand || null,
         specs: formData.specs || null
       };

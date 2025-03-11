@@ -6,7 +6,6 @@ import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
 interface ProductSpecsCardProps {
   brand?: string | null;
   specs?: Record<string, any> | null;
-  km_driven?: number | null;
   category?: string;
   condition: string;
 }
@@ -14,7 +13,6 @@ interface ProductSpecsCardProps {
 const ProductSpecsCard = ({ 
   brand, 
   specs, 
-  km_driven, 
   category,
   condition 
 }: ProductSpecsCardProps) => {
@@ -92,9 +90,7 @@ const ProductSpecsCard = ({
   };
 
   // Check if we have specifications to show
-  const hasSpecs = (specs && Object.values(specs).some(value => value !== null)) || 
-                   (brand) || 
-                   (category === 'vehicles' && km_driven !== null);
+  const hasSpecs = (specs && Object.values(specs).some(value => value !== null)) || (brand);
 
   if (!hasSpecs) {
     return null;
@@ -120,18 +116,6 @@ const ProductSpecsCard = ({
                 </TableCell>
                 <TableCell className="text-xs md:text-sm py-2">
                   {brand}
-                </TableCell>
-              </TableRow>
-            )}
-            
-            {/* Show km_driven for vehicles */}
-            {category === 'vehicles' && km_driven !== null && (
-              <TableRow>
-                <TableCell className="font-medium text-xs md:text-sm py-2">
-                  Kilometers Driven
-                </TableCell>
-                <TableCell className="text-xs md:text-sm py-2">
-                  {km_driven.toLocaleString()} km
                 </TableCell>
               </TableRow>
             )}

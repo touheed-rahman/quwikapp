@@ -19,7 +19,6 @@ interface ProductCardProps {
   featured?: boolean;
   condition?: ProductCondition;
   category?: string;
-  km_driven?: number | null;
 }
 
 const ProductCard = ({
@@ -30,8 +29,7 @@ const ProductCard = ({
   image,
   featured,
   condition,
-  category,
-  km_driven
+  category
 }: ProductCardProps) => {
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -161,13 +159,6 @@ const ProductCard = ({
                   className={`text-[10px] px-2 py-0.5 rounded-full ring-2 ${getConditionColor(condition)}`}
                 >
                   {capitalizeFirstLetter(condition)}
-                </Badge>
-              )}
-              {category === 'vehicles' && km_driven !== null && km_driven !== undefined && (
-                <Badge 
-                  className="text-[10px] px-2 py-0.5 rounded-full ring-2 bg-gray-500 text-white ring-gray-200"
-                >
-                  {km_driven.toLocaleString()} km
                 </Badge>
               )}
             </div>
