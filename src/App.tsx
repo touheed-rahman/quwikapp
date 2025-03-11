@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -20,15 +19,11 @@ import MyAds from "./pages/MyAds";
 import Wishlist from "./pages/Wishlist";
 import Subcategory from "./pages/Subcategory";
 import AdminLogin from "./pages/AdminLogin";
-import FreshRecommendations from "./pages/FreshRecommendations";
-import RecentSubcategoryListings from "./pages/RecentSubcategoryListings";
-import React from 'react';
 import CategorySubcategories from "./pages/CategorySubcategories";
-import SellerProfile from "./pages/SellerProfile";
 import MyOrders from "./pages/MyOrders";
+import SellerProfile from "./pages/SellerProfile";
 import SitemapRoute from "./components/seo/SitemapRoute";
 
-// Create a client outside of the component to avoid recreating it on every render
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -85,9 +80,6 @@ const App = () => (
               <Route path="/" element={<Index />} />
               <Route path="/category/:categoryId" element={<CategorySubcategories />} />
               <Route path="/category/:category/:subcategory" element={<Subcategory />} />
-              <Route path="/fresh-recommendations" element={<FreshRecommendations />} />
-              <Route path="/recent-listings/:category" element={<RecentSubcategoryListings />} />
-              <Route path="/seller/:id" element={<SellerProfile />} />
               <Route
                 path="/sell"
                 element={
@@ -98,6 +90,7 @@ const App = () => (
               />
               <Route path="/product/:id" element={<Product />} />
               <Route path="/categories" element={<Categories />} />
+              <Route path="/seller/:id" element={<SellerProfile />} />
               <Route
                 path="/chat/:id"
                 element={
@@ -140,7 +133,6 @@ const App = () => (
                   </PrivateRoute>
                 }
               />
-              {/* SEO sitemap route */}
               <Route path="/sitemap.xml" element={<SitemapRoute />} />
             </Routes>
           </ErrorBoundary>
