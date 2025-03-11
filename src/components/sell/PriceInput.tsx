@@ -1,6 +1,6 @@
 
 import { Input } from "@/components/ui/input";
-import { IndianRupee, ArrowTrendingUp } from "lucide-react";
+import { IndianRupee, TrendingUp } from "lucide-react";
 import { motion } from "framer-motion";
 import { useState } from "react";
 
@@ -46,22 +46,7 @@ const PriceInput = ({ value, onChange }: PriceInputProps) => {
         />
       </div>
       
-      <motion.div 
-        className={`rounded-md p-3 text-xs ${value ? "bg-green-50 border border-green-100" : "bg-primary/5"}`}
-        initial={{ opacity: 0, height: 0 }}
-        animate={{ opacity: 1, height: "auto" }}
-        transition={{ duration: 0.3 }}
-      >
-        <p className="font-medium flex items-center gap-1.5">
-          <ArrowTrendingUp className="h-3.5 w-3.5 text-primary" />
-          <span className={value ? "text-green-700" : "text-primary-foreground/80"}>Pricing Tips:</span>
-        </p>
-        <ul className="mt-1.5 space-y-1 list-disc list-inside text-foreground/80">
-          <li>Research similar items before setting your price</li>
-          <li>Consider item condition when pricing</li>
-          <li>Be open to reasonable offers from buyers</li>
-        </ul>
-      </motion.div>
+      {/* Removing the pricing idea feature as requested */}
     </motion.div>
   );
 };

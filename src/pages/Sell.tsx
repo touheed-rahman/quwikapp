@@ -62,6 +62,7 @@ const Sell = () => {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
+            className="w-full"
           >
             <SellStepOne onNext={handleStepOneComplete} />
           </motion.div>
@@ -72,6 +73,7 @@ const Sell = () => {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
+            className="w-full"
           >
             <SellStepTwo
               title={title}

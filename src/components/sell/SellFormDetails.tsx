@@ -54,30 +54,14 @@ const SellFormDetails = ({
     }
   };
 
-  const container = {
-    hidden: { opacity: 0 },
-    show: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1
-      }
-    }
-  };
-
-  const item = {
-    hidden: { opacity: 0, y: 20 },
-    show: { opacity: 1, y: 0 }
-  };
-
   return (
     <motion.form 
       onSubmit={onSubmit} 
-      className="space-y-6 max-w-3xl mx-auto"
-      variants={container}
-      initial="hidden"
-      animate="show"
+      className="w-full space-y-6"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
     >
-      <Card className="bg-white rounded-lg shadow-md border-primary/10 overflow-hidden">
+      <Card className="bg-white rounded-lg shadow-md border-primary/10 overflow-hidden w-full">
         <div className="p-4 bg-gradient-to-r from-primary/10 to-primary/5 border-b border-primary/10">
           <h3 className="font-medium text-lg flex items-center text-primary/90">
             <Check className="w-5 h-5 mr-2 text-primary" />
@@ -85,37 +69,37 @@ const SellFormDetails = ({
           </h3>
         </div>
         
-        <div className="p-5 space-y-6">
-          <motion.div variants={item} className="transition-all duration-300 hover:translate-y-[-2px]">
+        <div className="p-5 space-y-6 w-full">
+          <div className="transition-all duration-300">
             <TitleInput value={title} onChange={setTitle} />
-          </motion.div>
+          </div>
           
-          <motion.div variants={item} className="transition-all duration-300 hover:translate-y-[-2px]">
+          <div className="transition-all duration-300">
             <DescriptionInput value={description} onChange={setDescription} />
-          </motion.div>
+          </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <motion.div variants={item} className="transition-all duration-300 hover:translate-y-[-2px]">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
+            <div className="transition-all duration-300">
               <ConditionSelect value={condition} onChange={setCondition} />
-            </motion.div>
+            </div>
             
-            <motion.div variants={item} className="transition-all duration-300 hover:translate-y-[-2px]">
+            <div className="transition-all duration-300">
               <PriceInput value={price} onChange={setPrice} />
-            </motion.div>
+            </div>
           </div>
           
           {/* Only show category specific fields if we have both category and subcategory */}
           {category && subcategory && (
-            <motion.div variants={item} className="transition-all duration-300 hover:translate-y-[-2px]">
+            <div className="transition-all duration-300">
               <CategorySpecificFields 
                 category={category} 
                 subcategory={subcategory}
                 updateFormData={updateFormData}
               />
-            </motion.div>
+            </div>
           )}
           
-          <motion.div variants={item} className="transition-all duration-300 hover:translate-y-[-2px]">
+          <div className="transition-all duration-300">
             <div>
               <label className="text-sm font-medium mb-1.5 block">
                 Location *
@@ -125,13 +109,13 @@ const SellFormDetails = ({
                 onChange={setSelectedLocation}
               />
             </div>
-          </motion.div>
+          </div>
         </div>
       </Card>
       
-      <motion.div variants={item}>
+      <div>
         <FormActions isSubmitting={isSubmitting} onBack={onBack} />
-      </motion.div>
+      </div>
     </motion.form>
   );
 };
