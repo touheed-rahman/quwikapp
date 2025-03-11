@@ -1,13 +1,19 @@
 
 import { ReactNode } from "react";
 
+export enum FeatureIconType {
+  HOME = "home",
+  TAG = "tag",
+  SHOPPING_BAG = "shopping_bag"
+}
+
 export interface FeatureOption {
   id: string;
   title: string;
   description: string;
   price: number;
   originalPrice: number;
-  icon: ReactNode;
+  iconType: FeatureIconType;
 }
 
 export interface UserDetails {

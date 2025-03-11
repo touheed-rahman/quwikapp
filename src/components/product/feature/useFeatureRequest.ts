@@ -1,9 +1,9 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useToast } from "@/components/ui/use-toast";
+import { FeatureIconType, FeatureOption, UserDetails } from "./types";
 import { supabase } from "@/integrations/supabase/client";
 import { generateInvoicePDF } from "@/utils/pdfUtils";
-import { useToast } from "@/components/ui/use-toast";
-import { UserDetails, FeatureOption } from "./types";
 
 export function useFeatureRequest(
   productId: string,
@@ -21,7 +21,31 @@ export function useFeatureRequest(
     phone: "",
     address: ""
   });
+  const [freeRequestsCount, setFreeRequestsCount] = useState<number | null>(null);
   const { toast } = useToast();
+
+  useEffect(() => {
+    loadFreeRequestsCount();
+  }, []);
+
+  const loadFreeRequestsCount = async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+
+      // Count user's previous feature requests
+      const { count, error } = await supabase
+        .from('orders')
+        .select('id', { count: 'exact' })
+        .eq('buyer_id', session.user.id)
+        .eq('order_type', 'feature');
+
+      if (error) throw error;
+      setFreeRequestsCount(count || 0);
+    } catch (error) {
+      console.error("Error checking free requests count:", error);
+    }
+  };
 
   const handleUserDetailsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -29,6 +53,35 @@ export function useFeatureRequest(
       ...prev,
       [name]: value
     }));
+  };
+
+  const getFeatureOptions = (): FeatureOption[] => {
+    return [
+      {
+        id: "homepage",
+        title: "Homepage Feature",
+        description: "Your listing will be featured on our homepage",
+        price: 0,
+        originalPrice: 499,
+        iconType: FeatureIconType.HOME
+      },
+      {
+        id: "productPage",
+        title: "Category Feature",
+        description: "Your listing will be featured in its category page",
+        price: 0,
+        originalPrice: 299,
+        iconType: FeatureIconType.TAG
+      },
+      {
+        id: "both",
+        title: "Premium Feature",
+        description: "Your listing will be featured everywhere!",
+        price: 0,
+        originalPrice: 799,
+        iconType: FeatureIconType.SHOPPING_BAG
+      }
+    ];
   };
 
   const generateInvoice = async (order: any, selectedFeatureOption: FeatureOption) => {
@@ -81,7 +134,7 @@ export function useFeatureRequest(
     }
   };
 
-  const handleSubmitFeatureRequest = async (featureOptions: FeatureOption[]) => {
+  const handleSubmitFeatureRequest = async () => {
     if (!selectedOption) return;
     
     setIsSubmitting(true);
@@ -148,7 +201,7 @@ export function useFeatureRequest(
 
       const orderResult = await createOrderResponse.json();
       
-      const selectedFeatureOption = featureOptions.find(o => o.id === selectedOption) as FeatureOption;
+      const selectedFeatureOption = getFeatureOptions().find(o => o.id === selectedOption) as FeatureOption;
       
       // Generate and upload invoice
       const invoiceUrl = await generateInvoice({
@@ -212,7 +265,7 @@ export function useFeatureRequest(
     setStep(2);
   };
 
-  const handleDetailsNext = (featureOptions: FeatureOption[]) => {
+  const handleDetailsNext = () => {
     // Validate details
     if (!userDetails.name || !userDetails.phone || !userDetails.address) {
       toast({
@@ -224,7 +277,7 @@ export function useFeatureRequest(
     }
     
     // Submit feature request
-    handleSubmitFeatureRequest(featureOptions);
+    handleSubmitFeatureRequest();
   };
 
   const handleDownloadInvoice = () => {
@@ -242,9 +295,11 @@ export function useFeatureRequest(
     paymentComplete,
     invoiceUrl,
     userDetails,
+    freeRequestsCount,
     handleUserDetailsChange,
     handleNext,
     handleDetailsNext,
-    handleDownloadInvoice
+    handleDownloadInvoice,
+    getFeatureOptions
   };
 }

@@ -1,6 +1,7 @@
 
 import { Card } from "@/components/ui/card";
-import { FeatureOption } from "./types";
+import { FeatureIconType, FeatureOption } from "./types";
+import { Home, ShoppingBag, Tag } from "lucide-react";
 
 interface FeatureOptionCardProps {
   option: FeatureOption;
@@ -9,6 +10,19 @@ interface FeatureOptionCardProps {
 }
 
 export default function FeatureOptionCard({ option, isSelected, onSelect }: FeatureOptionCardProps) {
+  const renderIcon = (iconType: FeatureIconType) => {
+    switch (iconType) {
+      case FeatureIconType.HOME:
+        return <Home className="h-5 w-5 text-secondary" />;
+      case FeatureIconType.TAG:
+        return <Tag className="h-5 w-5 text-primary" />;
+      case FeatureIconType.SHOPPING_BAG:
+        return <ShoppingBag className="h-5 w-5 text-accent" />;
+      default:
+        return <Home className="h-5 w-5 text-secondary" />;
+    }
+  };
+
   return (
     <Card 
       key={option.id}
@@ -21,7 +35,7 @@ export default function FeatureOptionCard({ option, isSelected, onSelect }: Feat
     >
       <div className="flex items-start gap-3">
         <div className="bg-primary/10 p-2 rounded-full">
-          {option.icon}
+          {renderIcon(option.iconType)}
         </div>
         <div className="flex-1">
           <h3 className="font-medium">{option.title}</h3>

@@ -9,8 +9,6 @@ import FeatureOptionsStep from "./feature/FeatureOptionsStep";
 import ContactDetailsStep from "./feature/ContactDetailsStep";
 import FeatureSuccess from "./feature/FeatureSuccess";
 import { useFeatureRequest } from "./feature/useFeatureRequest";
-import { Home, ShoppingBag, Tag } from "lucide-react";
-import { FeatureOption } from "./feature/types";
 
 interface FeatureDialogProps {
   isOpen: boolean;
@@ -38,43 +36,15 @@ export default function FeatureDialog({
     paymentComplete,
     invoiceUrl,
     userDetails,
+    freeRequestsCount,
     handleUserDetailsChange,
     handleNext,
     handleDetailsNext,
-    handleDownloadInvoice
+    handleDownloadInvoice,
+    getFeatureOptions
   } = useFeatureRequest(productId, productTitle, onFeatureSuccess, onClose);
 
-  // Feature options with both paid and free options
-  const getFeaturePricing = (): FeatureOption[] => {
-    return [
-      {
-        id: "homepage",
-        title: "Homepage Feature",
-        description: "Your listing will be featured on our homepage",
-        price: 0,
-        originalPrice: 499,
-        icon: <Home className="h-5 w-5 text-secondary" />
-      },
-      {
-        id: "productPage",
-        title: "Category Feature",
-        description: "Your listing will be featured in its category page",
-        price: 0,
-        originalPrice: 299,
-        icon: <Tag className="h-5 w-5 text-primary" />
-      },
-      {
-        id: "both",
-        title: "Premium Feature",
-        description: "Your listing will be featured everywhere!",
-        price: 0,
-        originalPrice: 799,
-        icon: <ShoppingBag className="h-5 w-5 text-accent" />
-      }
-    ];
-  };
-
-  const featureOptions = getFeaturePricing();
+  const featureOptions = getFeatureOptions();
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -89,6 +59,8 @@ export default function FeatureDialog({
             <FeatureOptionsStep
               selectedOption={selectedOption}
               setSelectedOption={setSelectedOption}
+              featureOptions={featureOptions}
+              freeRequestsCount={freeRequestsCount}
             />
             
             <DialogFooter>
@@ -115,7 +87,7 @@ export default function FeatureDialog({
                 Back
               </Button>
               <Button 
-                onClick={() => handleDetailsNext(featureOptions)} 
+                onClick={handleDetailsNext} 
                 disabled={isSubmitting}
               >
                 {isSubmitting ? 'Processing...' : 'Submit Request'}
