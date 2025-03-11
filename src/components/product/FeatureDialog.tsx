@@ -189,23 +189,32 @@ export default function FeatureDialog({
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) throw new Error("No session found");
 
-      // First, update the listing with feature information
-      // Fixing the schema error by using a different approach
-      const { error } = await supabase.rpc('request_feature', {
-        listing_id: productId,
-        feature_type: selectedOption
+      // Use direct fetch with the REST API for the RPC call
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://cgrtrdwvkkhraizqukwt.supabase.co';
+      const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNncnRyZHd2a2tocmFpenF1a3d0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzgwNjE2NTIsImV4cCI6MjA1MzYzNzY1Mn0.mnC-NB_broDr4nOHggi0ngeDC1CxZsda6X-wyEMD2tE';
+      
+      // Call the RPC function using REST API
+      const rpcResponse = await fetch(`${supabaseUrl}/rest/v1/rpc/request_feature`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': supabaseKey,
+          'Authorization': `Bearer ${session.access_token}`
+        },
+        body: JSON.stringify({
+          listing_id: productId,
+          feature_type: selectedOption
+        })
       });
 
-      if (error) throw error;
+      if (!rpcResponse.ok) {
+        throw new Error('Failed to submit feature request');
+      }
 
       // Generate a free invoice record
       const invoiceNumber = `INV-${Date.now().toString().substring(7)}`;
       
-      // Use direct fetch with the REST API to create the order
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://cgrtrdwvkkhraizqukwt.supabase.co';
-      const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNncnRyZHd2a2tocmFpenF1a3d0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzgwNjE2NTIsImV4cCI6MjA1MzYzNzY1Mn0.mnC-NB_broDr4nOHggi0ngeDC1CxZsda6X-wyEMD2tE';
-      
-      // Create order data without the problematic fields
+      // Create order data
       const orderData = {
         product_id: productId,
         buyer_id: session.user.id,
@@ -220,7 +229,7 @@ export default function FeatureDialog({
         contact_address: userDetails.address
       };
       
-      // Create order
+      // Create order using REST API
       const createOrderResponse = await fetch(`${supabaseUrl}/rest/v1/orders`, {
         method: 'POST',
         headers: {
@@ -233,7 +242,6 @@ export default function FeatureDialog({
 
       if (!createOrderResponse.ok) {
         const errorData = await createOrderResponse.json();
-        console.error("Order creation error:", errorData);
         throw new Error('Failed to create order: ' + (errorData.message || createOrderResponse.statusText));
       }
 
@@ -246,7 +254,7 @@ export default function FeatureDialog({
       });
       
       if (invoiceUrl) {
-        // Update order with invoice URL
+        // Update order with invoice URL using REST API
         await fetch(`${supabaseUrl}/rest/v1/orders?id=eq.${orderResult[0]?.id}`, {
           method: 'PATCH',
           headers: {
@@ -254,9 +262,7 @@ export default function FeatureDialog({
             'apikey': supabaseKey,
             'Authorization': `Bearer ${session.access_token}`
           },
-          body: JSON.stringify({ 
-            invoice_url: invoiceUrl 
-          })
+          body: JSON.stringify({ invoice_url: invoiceUrl })
         });
         
         setInvoiceUrl(invoiceUrl);
@@ -269,7 +275,6 @@ export default function FeatureDialog({
         variant: "default",
       });
       
-      // Wait a moment to show success state before closing
       setTimeout(() => {
         onFeatureSuccess();
         onClose();
