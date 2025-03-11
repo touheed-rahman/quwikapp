@@ -4,6 +4,8 @@ export interface Message {
   content: string;
   sender_id: string;
   created_at: string;
+  is_offer?: boolean;
+  is_image?: boolean;
 }
 
 export interface Listing {

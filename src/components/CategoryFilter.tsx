@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { categories } from "@/types/categories";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
@@ -21,7 +20,7 @@ import {
   ChevronUp,
   Smartphone
 } from "lucide-react";
-import { useMobile } from "@/hooks/use-mobile";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const categoryIcons: Record<string, any> = {
   mobile: Smartphone,
@@ -58,7 +57,7 @@ const categoryColors: Record<string, string> = {
 const CategoryFilter = () => {
   const navigate = useNavigate();
   const [showAll, setShowAll] = useState(false);
-  const { isMobile } = useMobile();
+  const isMobile = useIsMobile();
 
   const itemsPerRow = isMobile ? 4 : 6;
   const initialRows = 1;

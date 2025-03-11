@@ -30,8 +30,8 @@ export const MessageList = ({
   };
 
   const renderMessageContent = (message: Message) => {
-    // Check if it's an image message
-    if (message.is_image) {
+    // Check if it's an image message by looking for image markdown pattern
+    if (message.content.startsWith('[Image](') && message.content.includes(')')) {
       const imageUrl = message.content.match(/\[Image\]\((.*?)\)/)?.[1];
       
       if (imageUrl) {
