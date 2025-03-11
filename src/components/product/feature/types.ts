@@ -14,7 +14,6 @@ export interface UserDetails {
   name: string;
   phone: string;
   address: string;
-  location?: string | null;
 }
 
 export interface OrderData {
@@ -29,7 +28,6 @@ export interface OrderData {
   contact_name: string;
   contact_phone: string;
   contact_address: string;
-  contact_location?: string | null;
 }
 
 export interface InvoiceData {

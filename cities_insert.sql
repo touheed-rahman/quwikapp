@@ -1,4 +1,3 @@
-
 INSERT INTO cities (name, state_id, latitude, longitude)
 WITH data AS (
   SELECT * FROM (
@@ -88,102 +87,6 @@ WITH data AS (
       ('Bhopal', (SELECT id FROM states WHERE name = 'Madhya Pradesh'), 23.2599, 77.4126),
       ('Indore', (SELECT id FROM states WHERE name = 'Madhya Pradesh'), 22.7196, 75.8577),
       ('Gwalior', (SELECT id FROM states WHERE name = 'Madhya Pradesh'), 26.2183, 78.1828)
-  ) AS t(name, state_id, latitude, longitude)
-)
-SELECT name, state_id, latitude, longitude
-FROM data d
-WHERE NOT EXISTS (
-  SELECT 1 FROM cities c 
-  WHERE c.name = d.name 
-  AND c.state_id = d.state_id
-)
-ON CONFLICT (name, state_id) DO NOTHING;
-
--- Also insert an SQL to create new countries, states, and cities for worldwide release
--- This should be run after adding new countries and states to your database
-
--- Add International Cities
-INSERT INTO states (name)
-VALUES 
-  ('United States'),
-  ('United Kingdom'),
-  ('Canada'),
-  ('Australia'),
-  ('Germany'),
-  ('France'),
-  ('Japan'),
-  ('Singapore'),
-  ('UAE'),
-  ('South Africa')
-ON CONFLICT (name) DO NOTHING;
-
--- Now insert international cities
-INSERT INTO cities (name, state_id, latitude, longitude)
-WITH data AS (
-  SELECT * FROM (
-    VALUES
-      -- United States
-      ('New York', (SELECT id FROM states WHERE name = 'United States'), 40.7128, -74.0060),
-      ('Los Angeles', (SELECT id FROM states WHERE name = 'United States'), 34.0522, -118.2437),
-      ('Chicago', (SELECT id FROM states WHERE name = 'United States'), 41.8781, -87.6298),
-      ('Houston', (SELECT id FROM states WHERE name = 'United States'), 29.7604, -95.3698),
-      ('San Francisco', (SELECT id FROM states WHERE name = 'United States'), 37.7749, -122.4194),
-      
-      -- United Kingdom
-      ('London', (SELECT id FROM states WHERE name = 'United Kingdom'), 51.5074, -0.1278),
-      ('Manchester', (SELECT id FROM states WHERE name = 'United Kingdom'), 53.4808, -2.2426),
-      ('Birmingham', (SELECT id FROM states WHERE name = 'United Kingdom'), 52.4862, -1.8904),
-      ('Edinburgh', (SELECT id FROM states WHERE name = 'United Kingdom'), 55.9533, -3.1883),
-      ('Glasgow', (SELECT id FROM states WHERE name = 'United Kingdom'), 55.8642, -4.2518),
-      
-      -- Canada
-      ('Toronto', (SELECT id FROM states WHERE name = 'Canada'), 43.6532, -79.3832),
-      ('Vancouver', (SELECT id FROM states WHERE name = 'Canada'), 49.2827, -123.1207),
-      ('Montreal', (SELECT id FROM states WHERE name = 'Canada'), 45.5017, -73.5673),
-      ('Calgary', (SELECT id FROM states WHERE name = 'Canada'), 51.0447, -114.0719),
-      ('Ottawa', (SELECT id FROM states WHERE name = 'Canada'), 45.4215, -75.6972),
-      
-      -- Australia
-      ('Sydney', (SELECT id FROM states WHERE name = 'Australia'), -33.8688, 151.2093),
-      ('Melbourne', (SELECT id FROM states WHERE name = 'Australia'), -37.8136, 144.9631),
-      ('Brisbane', (SELECT id FROM states WHERE name = 'Australia'), -27.4698, 153.0251),
-      ('Perth', (SELECT id FROM states WHERE name = 'Australia'), -31.9505, 115.8605),
-      ('Adelaide', (SELECT id FROM states WHERE name = 'Australia'), -34.9285, 138.6007),
-      
-      -- Germany
-      ('Berlin', (SELECT id FROM states WHERE name = 'Germany'), 52.5200, 13.4050),
-      ('Munich', (SELECT id FROM states WHERE name = 'Germany'), 48.1351, 11.5820),
-      ('Frankfurt', (SELECT id FROM states WHERE name = 'Germany'), 50.1109, 8.6821),
-      ('Hamburg', (SELECT id FROM states WHERE name = 'Germany'), 53.5511, 9.9937),
-      ('Cologne', (SELECT id FROM states WHERE name = 'Germany'), 50.9375, 6.9603),
-      
-      -- France
-      ('Paris', (SELECT id FROM states WHERE name = 'France'), 48.8566, 2.3522),
-      ('Lyon', (SELECT id FROM states WHERE name = 'France'), 45.7640, 4.8357),
-      ('Marseille', (SELECT id FROM states WHERE name = 'France'), 43.2965, 5.3698),
-      ('Nice', (SELECT id FROM states WHERE name = 'France'), 43.7102, 7.2620),
-      ('Bordeaux', (SELECT id FROM states WHERE name = 'France'), 44.8378, -0.5792),
-      
-      -- Japan
-      ('Tokyo', (SELECT id FROM states WHERE name = 'Japan'), 35.6762, 139.6503),
-      ('Osaka', (SELECT id FROM states WHERE name = 'Japan'), 34.6937, 135.5023),
-      ('Kyoto', (SELECT id FROM states WHERE name = 'Japan'), 35.0116, 135.7681),
-      ('Yokohama', (SELECT id FROM states WHERE name = 'Japan'), 35.4437, 139.6380),
-      ('Sapporo', (SELECT id FROM states WHERE name = 'Japan'), 43.0618, 141.3545),
-      
-      -- Singapore
-      ('Singapore City', (SELECT id FROM states WHERE name = 'Singapore'), 1.3521, 103.8198),
-      
-      -- UAE
-      ('Dubai', (SELECT id FROM states WHERE name = 'UAE'), 25.2048, 55.2708),
-      ('Abu Dhabi', (SELECT id FROM states WHERE name = 'UAE'), 24.4539, 54.3773),
-      ('Sharjah', (SELECT id FROM states WHERE name = 'UAE'), 25.3463, 55.4209),
-      
-      -- South Africa
-      ('Cape Town', (SELECT id FROM states WHERE name = 'South Africa'), -33.9249, 18.4241),
-      ('Johannesburg', (SELECT id FROM states WHERE name = 'South Africa'), -26.2041, 28.0473),
-      ('Durban', (SELECT id FROM states WHERE name = 'South Africa'), -29.8587, 31.0218),
-      ('Pretoria', (SELECT id FROM states WHERE name = 'South Africa'), -25.7479, 28.2293)
   ) AS t(name, state_id, latitude, longitude)
 )
 SELECT name, state_id, latitude, longitude
