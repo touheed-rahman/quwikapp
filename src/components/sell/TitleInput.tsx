@@ -10,7 +10,6 @@ interface TitleInputProps {
 
 const TitleInput = ({ value, onChange }: TitleInputProps) => {
   const maxLength = 100;
-  const charactersLeft = maxLength - value.length;
   
   return (
     <motion.div 
@@ -32,9 +31,6 @@ const TitleInput = ({ value, onChange }: TitleInputProps) => {
           maxLength={maxLength}
           required 
         />
-        <div className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
-          {charactersLeft}
-        </div>
       </div>
       <p className="text-xs text-muted-foreground">
         A good title helps your item get noticed

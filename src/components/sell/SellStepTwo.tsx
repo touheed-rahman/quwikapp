@@ -4,6 +4,7 @@ import Header from "@/components/Header";
 import SellFormDetails from "./SellFormDetails";
 import { useLocation } from "@/contexts/LocationContext";
 import { motion } from "framer-motion";
+import { CheckCircle } from "lucide-react";
 
 interface SellStepTwoProps {
   title: string;
@@ -41,6 +42,17 @@ const SellStepTwo = memo(({
   return (
     <div className="transition-opacity duration-200 bg-gradient-to-b from-background to-primary/5 min-h-screen">
       <div className="container mx-auto px-4 py-8 w-full">
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.3 }}
+          className="mb-6 flex items-center justify-center"
+        >
+          <div className="bg-primary/10 rounded-full px-4 py-2 inline-flex items-center">
+            <CheckCircle className="w-5 h-5 mr-2 text-primary" />
+            <span className="font-medium text-primary">Step 2: Item Details</span>
+          </div>
+        </motion.div>
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}

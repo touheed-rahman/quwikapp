@@ -1,8 +1,10 @@
 
-import { useState, useCallback } from "react";
+import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { ChevronLeft, ChevronRight, Share } from "lucide-react";
+import { motion } from "framer-motion";
+import { useToast } from "@/components/ui/use-toast";
 
 interface ImageGalleryProps {
   images: string[];
@@ -10,91 +12,166 @@ interface ImageGalleryProps {
   setCurrentImageIndex: (index: number) => void;
 }
 
-const ImageGallery = ({ 
-  images, 
-  currentImageIndex, 
-  setCurrentImageIndex 
-}: ImageGalleryProps) => {
-  const [touchStart, setTouchStart] = useState<number | null>(null);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const isMobile = useIsMobile();
+const ImageGallery = ({ images, currentImageIndex, setCurrentImageIndex }: ImageGalleryProps) => {
+  const [thumbnails, setThumbnails] = useState<string[]>([]);
+  const [mainImage, setMainImage] = useState<string>("");
+  const { toast } = useToast();
 
-  const getImageUrl = useCallback((imagePath: string) => {
-    return supabase.storage.from('listings').getPublicUrl(imagePath).data.publicUrl;
-  }, []);
+  useEffect(() => {
+    if (images && images.length > 0) {
+      const mainUrl = supabase.storage.from('listings').getPublicUrl(images[currentImageIndex]).data.publicUrl;
+      setMainImage(mainUrl);
 
-  // Touch slide handling
-  const handleTouchStart = (e: React.TouchEvent) => {
-    setTouchStart(e.touches[0].clientX);
-  };
+      const thumbUrls = images.map(img => 
+        supabase.storage.from('listings').getPublicUrl(img).data.publicUrl
+      );
+      setThumbnails(thumbUrls);
+    }
+  }, [images, currentImageIndex]);
 
-  const handleTouchEnd = (e: React.TouchEvent) => {
-    if (touchStart === null) return;
-    
-    const touchEnd = e.changedTouches[0].clientX;
-    const diff = touchStart - touchEnd;
-
-    if (Math.abs(diff) > 50) { // Minimum swipe distance
-      if (diff > 0) {
-        // Swipe left
-        setCurrentImageIndex(currentImageIndex === images.length - 1 ? 0 : currentImageIndex + 1);
-      } else {
-        // Swipe right
-        setCurrentImageIndex(currentImageIndex === 0 ? images.length - 1 : currentImageIndex - 1);
+  const handleShare = async () => {
+    if (images && images.length > 0) {
+      try {
+        // Check if Web Share API is available
+        if (navigator.share) {
+          await navigator.share({
+            title: 'Check out this listing',
+            text: 'I found this great item on Quwik!',
+            url: window.location.href,
+          });
+        } else {
+          // Fallback to copying URL
+          await navigator.clipboard.writeText(window.location.href);
+          toast({
+            title: "Link copied!",
+            description: "Share link copied to clipboard",
+          });
+        }
+      } catch (error) {
+        console.error('Error sharing:', error);
+        toast({
+          title: "Error sharing",
+          description: "Could not share this listing",
+          variant: "destructive"
+        });
       }
     }
-    setTouchStart(null);
   };
 
+  const goToNextImage = () => {
+    if (images.length > 1) {
+      setCurrentImageIndex((prevIndex) => (prevIndex + 1) % images.length);
+    }
+  };
+
+  const goToPrevImage = () => {
+    if (images.length > 1) {
+      setCurrentImageIndex((prevIndex) => (prevIndex - 1 + images.length) % images.length);
+    }
+  };
+
+  if (!images || images.length === 0) {
+    return (
+      <div className="w-full aspect-square bg-gray-100 rounded-lg flex items-center justify-center mb-4">
+        <p className="text-muted-foreground">No images available</p>
+      </div>
+    );
+  }
+
   return (
-    <>
-      <div 
-        className="relative rounded-lg overflow-hidden bg-black/5"
-        style={{ 
-          height: isMobile ? '250px' : '400px',
-          width: '100%'
-        }}
-        onTouchStart={handleTouchStart}
-        onTouchEnd={handleTouchEnd}
-      >
-        <div className="w-full h-full flex items-center justify-center">
+    <div className="space-y-4">
+      <div className="relative rounded-lg overflow-hidden bg-white">
+        {/* Main image */}
+        <div className="aspect-square w-full relative">
           <img
-            src={getImageUrl(images[currentImageIndex])}
-            alt="Product image"
-            className="object-contain w-full h-full"
-            onClick={() => setIsDialogOpen(true)}
-            loading="eager"
+            src={mainImage || "/placeholder.svg"}
+            alt="Product"
+            className="w-full h-full object-contain"
+            onError={(e) => {
+              (e.target as HTMLImageElement).src = "/placeholder.svg";
+            }}
           />
-        </div>
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
-          {images.map((_, index) => (
-            <button
-              key={index}
-              className={`w-2 h-2 rounded-full transition-colors ${
-                index === currentImageIndex
-                  ? "bg-white"
-                  : "bg-white/50 hover:bg-white/75"
-              }`}
-              onClick={(e) => {
-                e.stopPropagation();
-                setCurrentImageIndex(index);
-              }}
-            />
-          ))}
+          
+          {/* Share button */}
+          <Button 
+            onClick={handleShare}
+            size="icon"
+            variant="secondary"
+            className="absolute top-4 right-4 z-10 bg-white/80 backdrop-blur-sm rounded-full shadow-md"
+          >
+            <Share className="h-5 w-5" />
+          </Button>
+
+          {/* Navigation arrows for desktop - only show when multiple images */}
+          {images.length > 1 && (
+            <>
+              <Button
+                onClick={goToPrevImage}
+                size="icon"
+                variant="secondary"
+                className="absolute top-1/2 left-2 z-10 -translate-y-1/2 bg-white/80 backdrop-blur-sm rounded-full shadow-md hidden md:flex"
+              >
+                <ChevronLeft className="h-5 w-5" />
+              </Button>
+              
+              <Button
+                onClick={goToNextImage}
+                size="icon"
+                variant="secondary"
+                className="absolute top-1/2 right-2 z-10 -translate-y-1/2 bg-white/80 backdrop-blur-sm rounded-full shadow-md hidden md:flex"
+              >
+                <ChevronRight className="h-5 w-5" />
+              </Button>
+            </>
+          )}
+          
+          {/* Image indicator for mobile */}
+          {images.length > 1 && (
+            <div className="absolute bottom-3 left-0 right-0 flex justify-center gap-1.5 md:hidden">
+              {images.map((_, index) => (
+                <button
+                  key={index}
+                  className={`w-2 h-2 rounded-full ${
+                    currentImageIndex === index ? "bg-primary" : "bg-gray-300"
+                  }`}
+                  onClick={() => setCurrentImageIndex(index)}
+                />
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Fullscreen dialog */}
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="max-w-3xl w-full h-[80vh] md:h-auto p-1 md:p-6 flex items-center justify-center">
-          <img
-            src={getImageUrl(images[currentImageIndex])}
-            alt="Product image fullscreen"
-            className="max-w-full max-h-full object-contain"
-          />
-        </DialogContent>
-      </Dialog>
-    </>
+      {/* Thumbnails - only show when multiple images */}
+      {images.length > 1 && (
+        <div className="flex overflow-x-auto gap-2 pb-2 hide-scrollbar">
+          {thumbnails.map((thumb, index) => (
+            <motion.button
+              key={index}
+              className={`relative rounded-md overflow-hidden flex-shrink-0 border-2 ${
+                currentImageIndex === index
+                  ? "border-primary"
+                  : "border-transparent"
+              }`}
+              onClick={() => setCurrentImageIndex(index)}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <div className="w-16 h-16 md:w-20 md:h-20">
+                <img
+                  src={thumb}
+                  alt={`Thumbnail ${index + 1}`}
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = "/placeholder.svg";
+                  }}
+                />
+              </div>
+            </motion.button>
+          ))}
+        </div>
+      )}
+    </div>
   );
 };
 

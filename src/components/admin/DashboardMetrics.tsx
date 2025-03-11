@@ -2,9 +2,10 @@
 import { Card } from "@/components/ui/card";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Shield, Users, ListChecks, Clock, Star, XCircle } from "lucide-react";
+import { Shield, Users, ListChecks, Clock, Star, XCircle, ArrowUpRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
+import { motion } from "framer-motion";
 
 interface DashboardMetrics {
   totalListings: number;
@@ -108,6 +109,7 @@ const DashboardMetrics = () => {
       icon: ListChecks,
       color: "text-blue-600",
       bgColor: "bg-blue-50",
+      hoverBgColor: "hover:bg-blue-100",
       onClick: () => navigate('/admin', { state: { filter: 'all' } })
     },
     {
@@ -116,6 +118,7 @@ const DashboardMetrics = () => {
       icon: Clock,
       color: "text-yellow-600",
       bgColor: "bg-yellow-50",
+      hoverBgColor: "hover:bg-yellow-100",
       onClick: () => navigate('/admin', { state: { filter: 'pending' } })
     },
     {
@@ -124,6 +127,7 @@ const DashboardMetrics = () => {
       icon: Shield,
       color: "text-green-600",
       bgColor: "bg-green-50",
+      hoverBgColor: "hover:bg-green-100",
       onClick: () => navigate('/admin', { state: { filter: 'approved' } })
     },
     {
@@ -132,6 +136,7 @@ const DashboardMetrics = () => {
       icon: Star,
       color: "text-purple-600",
       bgColor: "bg-purple-50",
+      hoverBgColor: "hover:bg-purple-100",
       onClick: () => navigate('/admin', { state: { filter: 'featured' } })
     },
     {
@@ -140,6 +145,7 @@ const DashboardMetrics = () => {
       icon: XCircle,
       color: "text-red-600",
       bgColor: "bg-red-50",
+      hoverBgColor: "hover:bg-red-100",
       onClick: () => navigate('/admin', { state: { filter: 'rejected' } })
     },
     {
@@ -148,30 +154,48 @@ const DashboardMetrics = () => {
       icon: Users,
       color: "text-indigo-600",
       bgColor: "bg-indigo-50",
+      hoverBgColor: "hover:bg-indigo-100",
       onClick: () => navigate('/admin', { state: { filter: 'users' } })
     }
   ];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-      {cards.map((card) => (
-        <Card 
-          key={card.title} 
-          className={`p-6 ${card.bgColor} border-none cursor-pointer transition-transform hover:scale-105`}
-          onClick={card.onClick}
+    <motion.div 
+      className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+    >
+      {cards.map((card, index) => (
+        <motion.div
+          key={card.title}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: index * 0.05, duration: 0.3 }}
         >
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-muted-foreground">
-                {card.title}
-              </p>
-              <p className="text-2xl font-bold">{card.value}</p>
+          <Card 
+            className={`p-6 ${card.bgColor} border-none cursor-pointer transition-all duration-200 ${card.hoverBgColor} hover:shadow-md`}
+            onClick={card.onClick}
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">
+                  {card.title}
+                </p>
+                <p className="text-2xl font-bold">{card.value}</p>
+              </div>
+              <div className="flex flex-col items-end gap-2">
+                <card.icon className={`h-8 w-8 ${card.color}`} />
+                <div className={`text-xs font-medium flex items-center gap-1 ${card.color}`}>
+                  <span>View</span>
+                  <ArrowUpRight className="h-3 w-3" />
+                </div>
+              </div>
             </div>
-            <card.icon className={`h-8 w-8 ${card.color}`} />
-          </div>
-        </Card>
+          </Card>
+        </motion.div>
       ))}
-    </div>
+    </motion.div>
   );
 };
 
