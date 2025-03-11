@@ -90,29 +90,17 @@ export function useFeatureRequest(
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) throw new Error("No session found");
 
-      // Use direct fetch with the REST API for the RPC call
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://cgrtrdwvkkhraizqukwt.supabase.co';
-      const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNncnRyZHd2a2tocmFpenF1a3d0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzgwNjE2NTIsImV4cCI6MjA1MzYzNzY1Mn0.mnC-NB_broDr4nOHggi0ngeDC1CxZsda6X-wyEMD2tE';
-      
-      // Call the RPC function using REST API
-      const rpcResponse = await fetch(`${supabaseUrl}/rest/v1/rpc/request_feature`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'apikey': supabaseKey,
-          'Authorization': `Bearer ${session.access_token}`
-        },
-        body: JSON.stringify({
-          listing_id: productId,
-          feature_type: selectedOption
-        })
-      });
+      // First, update the product's featured_requested status
+      const { error: updateError } = await supabase
+        .from('products')
+        .update({ featured_requested: true })
+        .eq('id', productId);
 
-      if (!rpcResponse.ok) {
-        throw new Error('Failed to submit feature request');
+      if (updateError) {
+        throw new Error('Failed to update product feature status');
       }
 
-      // Generate a free invoice record
+      // Generate invoice number
       const invoiceNumber = `INV-${Date.now().toString().substring(7)}`;
       
       // Create order data
@@ -130,43 +118,27 @@ export function useFeatureRequest(
         contact_address: userDetails.address
       };
       
-      // Create order using REST API
-      const createOrderResponse = await fetch(`${supabaseUrl}/rest/v1/orders`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'apikey': supabaseKey,
-          'Authorization': `Bearer ${session.access_token}`
-        },
-        body: JSON.stringify(orderData)
-      });
+      // Create order
+      const { data: orderResult, error: orderError } = await supabase
+        .from('orders')
+        .insert([orderData])
+        .select();
 
-      if (!createOrderResponse.ok) {
-        const errorData = await createOrderResponse.json();
-        throw new Error('Failed to create order: ' + (errorData.message || createOrderResponse.statusText));
+      if (orderError) {
+        throw new Error('Failed to create order: ' + orderError.message);
       }
 
-      const orderResult = await createOrderResponse.json();
-      
       const selectedFeatureOption = featureOptions.find(o => o.id === selectedOption) as FeatureOption;
       
       // Generate and upload invoice
-      const invoiceUrl = await generateInvoice({
-        ...orderData,
-        id: orderResult[0]?.id
-      }, selectedFeatureOption);
+      const invoiceUrl = await generateInvoice(orderData, selectedFeatureOption);
       
       if (invoiceUrl) {
-        // Update order with invoice URL using REST API
-        await fetch(`${supabaseUrl}/rest/v1/orders?id=eq.${orderResult[0]?.id}`, {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            'apikey': supabaseKey,
-            'Authorization': `Bearer ${session.access_token}`
-          },
-          body: JSON.stringify({ invoice_url: invoiceUrl })
-        });
+        // Update order with invoice URL
+        await supabase
+          .from('orders')
+          .update({ invoice_url: invoiceUrl })
+          .eq('id', orderResult[0].id);
         
         setInvoiceUrl(invoiceUrl);
       }
