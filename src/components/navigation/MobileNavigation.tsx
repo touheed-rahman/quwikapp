@@ -71,10 +71,10 @@ const MobileNavigation = ({ onChatOpen }: MobileNavigationProps) => {
   };
 
   return (
-    <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t flex items-center justify-between px-6 py-2 z-50">
+    <div className="md:hidden fixed bottom-0 left-0 right-0 bg-background border-t flex items-center justify-between px-6 py-2 z-50">
       <Link to="/" className="flex flex-col items-center gap-1 text-foreground hover:text-primary">
-        <Home className="h-6 w-6 text-primary" />
-        <span className="text-xs">Home</span>
+        <Home className="h-6 w-6 text-foreground hover:text-primary transition-colors" />
+        <span className="text-xs text-foreground hover:text-primary transition-colors">Home</span>
       </Link>
       <div className="relative">
         <button 
@@ -82,11 +82,11 @@ const MobileNavigation = ({ onChatOpen }: MobileNavigationProps) => {
           className="flex flex-col items-center gap-1 text-foreground hover:text-primary"
         >
           <MessageSquare className="h-6 w-6 text-foreground hover:text-primary transition-colors" />
-          <span className="text-xs hover:text-primary transition-colors">Chats</span>
+          <span className="text-xs text-foreground hover:text-primary transition-colors">Chats</span>
         </button>
         {unreadCount > 0 && (
           <Badge 
-            className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center bg-destructive hover:bg-destructive p-0"
+            className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center bg-destructive p-0"
           >
             {unreadCount}
           </Badge>
@@ -97,17 +97,17 @@ const MobileNavigation = ({ onChatOpen }: MobileNavigationProps) => {
         className="flex flex-col items-center -mt-8 text-foreground hover:text-primary"
       >
         <div className="bg-primary rounded-full p-4 shadow-lg">
-          <Plus className="h-6 w-6 text-white" />
+          <Plus className="h-6 w-6 text-primary-foreground" />
         </div>
-        <span className="text-xs mt-1">Sell Now</span>
+        <span className="text-xs mt-1 text-foreground hover:text-primary transition-colors">Sell Now</span>
       </Link>
       <Link to="/my-ads" className="flex flex-col items-center gap-1 text-foreground hover:text-primary">
         <ListOrdered className="h-6 w-6 text-foreground hover:text-primary transition-colors" />
-        <span className="text-xs hover:text-primary transition-colors">My Ads</span>
+        <span className="text-xs text-foreground hover:text-primary transition-colors">My Ads</span>
       </Link>
       <button onClick={handleNotificationClick} className="flex flex-col items-center gap-1 text-foreground hover:text-primary">
         <Heart className="h-6 w-6 text-foreground hover:text-primary transition-colors" />
-        <span className="text-xs hover:text-primary transition-colors">Wishlist</span>
+        <span className="text-xs text-foreground hover:text-primary transition-colors">Wishlist</span>
       </button>
     </div>
   );
