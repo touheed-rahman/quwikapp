@@ -5,7 +5,7 @@ import { Link } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
-import { UserRound, Edit } from "lucide-react";
+import { UserRound, Edit, ShoppingBag } from "lucide-react";
 
 interface ProfileSidebarProps {
   profile: any;
@@ -35,6 +35,12 @@ const ProfileSidebar = ({ profile, handleLogout }: ProfileSidebarProps) => {
         <Link to="/wishlist">
           <Button variant="ghost" className="w-full justify-center" size="sm">
             Saved Items
+          </Button>
+        </Link>
+        <Link to="/seller-dashboard">
+          <Button variant="ghost" className="w-full justify-center" size="sm">
+            <ShoppingBag className="mr-2 h-4 w-4" />
+            Seller Dashboard
           </Button>
         </Link>
         {profile?.isAdmin && (

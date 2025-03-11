@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Search, Loader2, Tag, ShoppingBag } from "lucide-react";
@@ -50,7 +49,6 @@ const HeroSearch = () => {
     try {
       const trimmedQuery = searchQuery.trim();
       
-      // Fetch listings with only columns that exist in the database
       let { data: matches, error } = await supabase
         .from('listings')
         .select('id, title, category, subcategory, location')
@@ -61,22 +59,16 @@ const HeroSearch = () => {
       
       let filteredMatches = matches || [];
       
-      // Shop vs Classified filtering needs to be handled differently
-      // since there's no is_shop_item column.
-      // For now, let's use the category as a proxy
       if (activeTab === "shop") {
-        // Assuming some categories are for shop items
         filteredMatches = filteredMatches.filter(item => 
           item.category === 'electronics' || item.category === 'fashion'
         );
       } else {
-        // Assuming other categories are for classifieds
         filteredMatches = filteredMatches.filter(item => 
           item.category !== 'electronics' && item.category !== 'fashion'
         );
       }
       
-      // Apply location filter if needed
       if (selectedLocation) {
         filteredMatches = filteredMatches.filter(item => item.location === selectedLocation);
       }
@@ -111,7 +103,6 @@ const HeroSearch = () => {
   return (
     <div className="w-full mx-auto">
       <div className="w-full max-w-4xl mx-auto px-4 py-6 md:py-8">
-        {/* Tabs placed above the card */}
         <Tabs 
           defaultValue="classified" 
           value={activeTab} 
