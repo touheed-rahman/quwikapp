@@ -1,6 +1,7 @@
 
 import { Listing } from "@/hooks/useListings";
 import { supabase } from "@/integrations/supabase/client";
+import { Helmet } from "react-helmet";
 
 interface HomeSchemaProps {
   randomFeaturedListings: Listing[];
@@ -46,11 +47,11 @@ const HomeSchema = ({ randomFeaturedListings, locationDetails, faqData }: HomeSc
   };
 
   return (
-    <>
+    <Helmet>
       <script type="application/ld+json">
         {JSON.stringify(homepageStructuredData)}
       </script>
-    </>
+    </Helmet>
   );
 };
 
