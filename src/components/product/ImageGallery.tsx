@@ -124,35 +124,35 @@ const ImageGallery = ({ images, currentImageIndex, setCurrentImageIndex }: Image
             }}
           />
           
-          {/* Share button */}
+          {/* Share button - Updated with background color */}
           <Button 
             onClick={handleShare}
             size="icon"
             variant="secondary"
-            className="absolute top-4 right-4 z-10 bg-white/80 backdrop-blur-sm rounded-full shadow-md"
+            className="absolute top-4 right-4 z-10 bg-background/90 backdrop-blur-sm rounded-full shadow-md hover:bg-background/80"
           >
-            <Share className="h-5 w-5" />
+            <Share className="h-5 w-5 text-foreground" />
           </Button>
 
-          {/* Navigation arrows - always show on desktop, hidden on mobile */}
+          {/* Navigation arrows - Updated with background color */}
           {images.length > 1 && (
             <>
               <Button
                 onClick={goToPrevImage}
                 size="icon"
                 variant="secondary"
-                className="absolute top-1/2 left-2 z-10 -translate-y-1/2 bg-white/80 backdrop-blur-sm rounded-full shadow-md hidden md:flex"
+                className="absolute top-1/2 left-2 z-10 -translate-y-1/2 bg-background/90 backdrop-blur-sm rounded-full shadow-md hidden md:flex hover:bg-background/80"
               >
-                <ChevronLeft className="h-5 w-5" />
+                <ChevronLeft className="h-5 w-5 text-foreground" />
               </Button>
               
               <Button
                 onClick={goToNextImage}
                 size="icon"
                 variant="secondary"
-                className="absolute top-1/2 right-2 z-10 -translate-y-1/2 bg-white/80 backdrop-blur-sm rounded-full shadow-md hidden md:flex"
+                className="absolute top-1/2 right-2 z-10 -translate-y-1/2 bg-background/90 backdrop-blur-sm rounded-full shadow-md hidden md:flex hover:bg-background/80"
               >
-                <ChevronRight className="h-5 w-5" />
+                <ChevronRight className="h-5 w-5 text-foreground" />
               </Button>
             </>
           )}

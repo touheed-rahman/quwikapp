@@ -110,17 +110,17 @@ const ProductInfo = ({
           <Button 
             variant="outline" 
             size="icon" 
-            className="h-8 w-8 md:h-10 md:w-10 rounded-full hover:bg-primary/10 hover:text-primary transition-colors"
+            className="h-8 w-8 md:h-10 md:w-10 rounded-full bg-background/80 hover:bg-background/90 transition-colors"
             onClick={handleShare}
           >
-            <Share2 className={`h-4 w-4 md:h-5 md:w-5 ${copying ? 'text-primary' : ''}`} />
+            <Share2 className={`h-4 w-4 md:h-5 md:w-5 ${copying ? 'text-primary' : 'text-foreground'}`} />
           </Button>
           <Button 
             variant="outline" 
             size="icon" 
-            className="h-8 w-8 md:h-10 md:w-10 rounded-full hover:bg-primary/10 hover:text-primary transition-colors"
+            className="h-8 w-8 md:h-10 md:w-10 rounded-full bg-background/80 hover:bg-background/90 transition-colors"
           >
-            <Heart className="h-4 w-4 md:h-5 md:w-5" />
+            <Heart className="h-4 w-4 md:h-5 md:w-5 text-foreground hover:text-primary" />
           </Button>
         </div>
       </div>
