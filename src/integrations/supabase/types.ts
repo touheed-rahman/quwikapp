@@ -2172,6 +2172,13 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: string
       }
+      request_feature: {
+        Args: {
+          listing_id: string
+          feature_type: string
+        }
+        Returns: undefined
+      }
       set_limit: {
         Args: {
           "": number
