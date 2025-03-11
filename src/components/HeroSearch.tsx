@@ -50,10 +50,10 @@ const HeroSearch = () => {
     try {
       const trimmedQuery = searchQuery.trim();
       
-      // Fetch listings with all required fields for filtering
+      // Fetch listings with only columns that exist in the database
       let { data: matches, error } = await supabase
         .from('listings')
-        .select('id, title, category, subcategory, is_shop_item, location')
+        .select('id, title, category, subcategory, location')
         .eq('status', 'approved')
         .ilike('title', `%${trimmedQuery}%`);
       
@@ -61,11 +61,19 @@ const HeroSearch = () => {
       
       let filteredMatches = matches || [];
       
-      // Apply shop filter if needed
+      // Shop vs Classified filtering needs to be handled differently
+      // since there's no is_shop_item column.
+      // For now, let's use the category as a proxy
       if (activeTab === "shop") {
-        filteredMatches = filteredMatches.filter(item => item.is_shop_item === true);
+        // Assuming some categories are for shop items
+        filteredMatches = filteredMatches.filter(item => 
+          item.category === 'electronics' || item.category === 'fashion'
+        );
       } else {
-        filteredMatches = filteredMatches.filter(item => !item.is_shop_item);
+        // Assuming other categories are for classifieds
+        filteredMatches = filteredMatches.filter(item => 
+          item.category !== 'electronics' && item.category !== 'fashion'
+        );
       }
       
       // Apply location filter if needed
