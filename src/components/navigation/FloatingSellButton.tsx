@@ -12,6 +12,7 @@ const FloatingSellButton = () => {
       <Button 
         size="lg" 
         className="shadow-lg rounded-full px-8 gap-2"
+        variant="accent"
       >
         <Plus className="h-5 w-5" />
         <span className="font-medium">Sell Now</span>

@@ -86,7 +86,8 @@ const MobileNavigation = ({ onChatOpen }: MobileNavigationProps) => {
         </button>
         {unreadCount > 0 && (
           <Badge 
-            className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center bg-destructive p-0"
+            className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center bg-accent p-0"
+            variant="accent"
           >
             {unreadCount}
           </Badge>
@@ -96,8 +97,8 @@ const MobileNavigation = ({ onChatOpen }: MobileNavigationProps) => {
         to="/sell"
         className="flex flex-col items-center -mt-8 text-foreground hover:text-primary"
       >
-        <div className="bg-primary rounded-full p-4 shadow-lg">
-          <Plus className="h-6 w-6 text-primary-foreground" />
+        <div className="bg-accent rounded-full p-4 shadow-lg">
+          <Plus className="h-6 w-6 text-accent-foreground" />
         </div>
         <span className="text-xs mt-1 text-foreground hover:text-primary transition-colors">Sell Now</span>
       </Link>

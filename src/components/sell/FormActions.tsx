@@ -39,11 +39,12 @@ const FormActions = ({ isSubmitting, onBack }: FormActionsProps) => {
             <Button 
               type="button"
               disabled
-              className="w-full bg-primary/80 text-white flex items-center gap-2 shadow-md"
+              className="w-full bg-accent/80 text-accent-foreground flex items-center gap-2 shadow-md"
+              variant="accent"
             >
               <div className="flex items-center gap-2">
-                <Loader2 className="h-4 w-4 animate-spin text-white" />
-                <span className="font-medium text-white">Posting Ad...</span>
+                <Loader2 className="h-4 w-4 animate-spin text-accent-foreground" />
+                <span className="font-medium text-accent-foreground">Posting Ad...</span>
               </div>
             </Button>
           </motion.div>
@@ -57,15 +58,16 @@ const FormActions = ({ isSubmitting, onBack }: FormActionsProps) => {
           >
             <Button 
               type="submit" 
-              className="w-full bg-primary hover:bg-primary/90 text-white shadow-md hover:shadow-lg transition-all"
+              className="w-full shadow-md hover:shadow-lg transition-all"
+              variant="accent"
             >
               <motion.div 
                 className="flex items-center gap-2"
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.97 }}
               >
-                <Send className="h-4 w-4 text-white" />
-                <span className="font-medium text-white">Post Ad</span>
+                <Send className="h-4 w-4 text-accent-foreground" />
+                <span className="font-medium text-accent-foreground">Post Ad</span>
               </motion.div>
             </Button>
           </motion.div>

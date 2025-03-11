@@ -5,27 +5,27 @@
  
 @layer base {
   :root {
-    --background: 260 40% 98%;
-    --foreground: 262 47% 11%;
+    --background: 192 15% 94%;
+    --foreground: 210 29% 29%;
     --card: 0 0% 100%;
-    --card-foreground: 262 47% 11%;
+    --card-foreground: 210 29% 29%;
     --popover: 0 0% 100%;
-    --popover-foreground: 262 47% 11%;
-    --primary: 265 83% 53%;
-    --primary-foreground: 260 40% 98%;
-    --secondary: 260 40% 96%;
-    --secondary-foreground: 262 47% 11%;
-    --muted: 260 40% 96%;
-    --muted-foreground: 265 16% 47%;
-    --accent: 265 83% 53%;
-    --accent-foreground: 260 40% 98%;
+    --popover-foreground: 210 29% 29%;
+    --primary: 210 30% 24%;
+    --primary-foreground: 192 15% 94%;
+    --secondary: 168 75% 42%;
+    --secondary-foreground: 210 29% 29%;
+    --muted: 192 15% 90%;
+    --muted-foreground: 210 19% 35%;
+    --accent: 6 78% 57%;
+    --accent-foreground: 192 15% 94%;
     --destructive: 0 84% 60%;
-    --destructive-foreground: 260 40% 98%;
-    --border: 264 32% 91%;
-    --input: 264 32% 91%;
-    --ring: 265 83% 53%;
+    --destructive-foreground: 192 15% 94%;
+    --border: 210 15% 85%;
+    --input: 210 15% 85%;
+    --ring: 210 30% 24%;
     --radius: 0.75rem;
-    --icon-color: 262 47% 11%;
+    --icon-color: 210 29% 29%;
   }
 }
 
@@ -63,36 +63,27 @@
 
   /* Fix text colors for elements on colored backgrounds */
   [class*="bg-primary"] *,
-  [class*="bg-purple"] *,
-  [class*="bg-violet"] *,
-  [class*="bg-indigo"] *,
-  [class*="bg-blue"] *,
-  [class*="bg-green"] *,
-  [class*="bg-red"] *,
-  [class*="bg-orange"] *,
-  [class*="bg-yellow"] *,
-  [class*="bg-teal"] *,
-  [class*="bg-cyan"] *,
-  [class*="bg-pink"] *,
-  [class*="bg-emerald"] * {
-    @apply text-white;
+  [class*="bg-secondary"] *,
+  [class*="bg-accent"] *,
+  [class*="bg-destructive"] * {
+    @apply text-primary-foreground;
   }
   
   /* Ensure text in category items and buttons is visible */
   .category-item span, 
   .category-name,
   .category-label {
-    @apply text-black font-medium;
+    @apply text-foreground font-medium;
   }
 
   /* Category icon labels should be visible */
   .category-label {
-    @apply text-black font-medium;
+    @apply text-foreground font-medium;
   }
   
   /* Ensure SVG elements have consistent coloring */
   svg:not([class*="text-"]) {
-    @apply text-black;
+    @apply text-foreground;
   }
 
   /* Default icon styles - border should be primary color, icons should be black */
@@ -101,7 +92,7 @@
   }
   
   .icon-container svg {
-    @apply text-black;
+    @apply text-foreground;
   }
 
   /* Section titles with icons should have black icons */
@@ -110,30 +101,30 @@
   }
   
   .section-title-with-icon svg {
-    @apply text-black bg-primary/10 p-1.5 rounded-full;
+    @apply text-foreground bg-primary/10 p-1.5 rounded-full;
   }
 
   /* Featured and Recent sections title area */
   .section-title-area svg {
-    @apply text-black;
+    @apply text-foreground;
   }
 
   /* Form fields and labels */
   .form-label {
-    @apply text-black font-medium;
+    @apply text-foreground font-medium;
   }
 
   .form-input {
-    @apply text-black border-primary/30;
+    @apply text-foreground border-primary/30;
   }
 
   /* Admin panel tabs */
   .admin-tabs [data-state="active"] {
-    @apply bg-primary text-white !important;
+    @apply bg-primary text-primary-foreground !important;
   }
   
   .admin-tabs [data-state="inactive"] {
-    @apply text-black !important;
+    @apply text-foreground !important;
   }
 
   /* Default for buttons, links, and interactive elements */
