@@ -2,7 +2,6 @@
 import { DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { FeatureOption } from "./types";
 import FeatureOptionCard from "./FeatureOptionCard";
-import { Home, ShoppingBag, Tag } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 
@@ -33,7 +32,7 @@ export default function FeatureOptionsStep({
         description: "Your listing will be featured on our homepage",
         price: hasFreeFeatures ? 0 : (featurePricing?.homepage?.price || 499),
         originalPrice: featurePricing?.homepage?.original_price || 499,
-        icon: <Home className="h-5 w-5 text-secondary" />
+        iconType: 'home'
       },
       {
         id: "productPage",
@@ -41,7 +40,7 @@ export default function FeatureOptionsStep({
         description: "Your listing will be featured in its category page",
         price: hasFreeFeatures ? 0 : (featurePricing?.productPage?.price || 299),
         originalPrice: featurePricing?.productPage?.original_price || 299,
-        icon: <Tag className="h-5 w-5 text-primary" />
+        iconType: 'tag'
       },
       {
         id: "both",
@@ -49,7 +48,7 @@ export default function FeatureOptionsStep({
         description: "Your listing will be featured everywhere!",
         price: hasFreeFeatures ? 0 : (featurePricing?.both?.price || 799),
         originalPrice: featurePricing?.both?.original_price || 799,
-        icon: <ShoppingBag className="h-5 w-5 text-accent" />
+        iconType: 'shopping-bag'
       }
     ];
 

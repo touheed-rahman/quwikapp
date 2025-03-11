@@ -49,9 +49,9 @@ export default function CouponManagementCard() {
 
     setIsLoading(true);
     try {
-      // Check if coupon code already exists
-      const { data: existingCoupon, error: checkError } = await supabase
-        .from('feature_coupons')
+      // Check if coupon code already exists - use type assertion
+      const { data: existingCoupon, error: checkError } = await (supabase
+        .from('feature_coupons') as any)
         .select('id')
         .eq('code', code)
         .single();
@@ -70,9 +70,9 @@ export default function CouponManagementCard() {
         return;
       }
 
-      // Create the coupon
-      const { error: createError } = await supabase
-        .from('feature_coupons')
+      // Create the coupon - use type assertion
+      const { error: createError } = await (supabase
+        .from('feature_coupons') as any)
         .insert({
           code,
           discount_percent: parseInt(discountPercent),
@@ -83,7 +83,7 @@ export default function CouponManagementCard() {
           valid_until: validUntil?.toISOString(),
           usage_limit: usageLimit ? parseInt(usageLimit) : null,
           usage_count: 0
-        } as FeatureCoupon);
+        });
 
       if (createError) throw createError;
 

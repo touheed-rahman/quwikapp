@@ -48,8 +48,8 @@ export default function FeaturePricingCard() {
     setIsLoading(true);
     try {
       // Check if pricing exists for this category/subcategory/feature type
-      const { data: existingPricing, error: fetchError } = await supabase
-        .from('feature_pricing')
+      const { data: existingPricing, error: fetchError } = await (supabase
+        .from('feature_pricing') as any)
         .select('id')
         .eq('category', category)
         .eq('subcategory', subcategory || null)
@@ -62,27 +62,27 @@ export default function FeaturePricingCard() {
 
       if (existingPricing) {
         // Update existing pricing
-        const { error: updateError } = await supabase
-          .from('feature_pricing')
+        const { error: updateError } = await (supabase
+          .from('feature_pricing') as any)
           .update({
             price: parseFloat(price),
             original_price: parseFloat(originalPrice),
             updated_at: new Date().toISOString()
-          } as FeaturePricing)
+          })
           .eq('id', existingPricing.id);
 
         if (updateError) throw updateError;
       } else {
         // Insert new pricing
-        const { error: insertError } = await supabase
-          .from('feature_pricing')
+        const { error: insertError } = await (supabase
+          .from('feature_pricing') as any)
           .insert({
             category,
             subcategory: subcategory || null,
             feature_type: featureType,
             price: parseFloat(price),
             original_price: parseFloat(originalPrice)
-          } as FeaturePricing);
+          });
 
         if (insertError) throw insertError;
       }
@@ -114,14 +114,12 @@ export default function FeaturePricingCard() {
   const loadCurrentPricing = async () => {
     setIsLoading(true);
     try {
-      // Use a straightforward query instead of RPC
-      const { data, error } = await supabase
-        .from('feature_pricing')
-        .select('price, original_price')
-        .eq('category', category)
-        .eq('subcategory', subcategory || null)
-        .eq('feature_type', featureType)
-        .maybeSingle();
+      // Use RPC function with type assertion 
+      const { data, error } = await supabase.rpc('get_feature_price', {
+        category_name: category,
+        subcategory_name: subcategory || null,
+        feature_type_name: featureType
+      }) as any;
 
       if (error) throw error;
       
@@ -130,8 +128,8 @@ export default function FeaturePricingCard() {
         setOriginalPrice(data.original_price?.toString() || "");
       } else {
         // If no specific pricing found, try to get default pricing
-        const { data: defaultData, error: defaultError } = await supabase
-          .from('feature_pricing')
+        const { data: defaultData, error: defaultError } = await (supabase
+          .from('feature_pricing') as any)
           .select('price, original_price')
           .eq('category', 'default')
           .eq('subcategory', null)
