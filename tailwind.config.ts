@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -79,10 +80,19 @@ export default {
             transform: "translateY(0)",
           },
         },
+        "pulse-glow": {
+          "0%, 100%": {
+            boxShadow: "0 0 0 rgba(59, 130, 246, 0.5)"
+          },
+          "50%": {
+            boxShadow: "0 0 20px rgba(59, 130, 246, 0.8)"
+          }
+        }
       },
       animation: {
         "fade-up": "fade-up 0.5s ease-out",
         "fade-down": "fade-down 0.5s ease-out",
+        "pulse-glow": "pulse-glow 2s infinite"
       },
     },
   },

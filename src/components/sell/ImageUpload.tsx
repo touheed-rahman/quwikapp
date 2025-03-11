@@ -1,5 +1,5 @@
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { UploadCloud, X, Image } from "lucide-react";
@@ -15,6 +15,7 @@ const ImageUpload = ({ images, setImages, maxImages = 12 }: ImageUploadProps) =>
   const { toast } = useToast();
   const [previews, setPreviews] = useState<string[]>([]);
   const [dragActive, setDragActive] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     // Generate previews when images change
@@ -99,48 +100,45 @@ const ImageUpload = ({ images, setImages, maxImages = 12 }: ImageUploadProps) =>
     setImages(newImages);
   };
 
+  const triggerFileInput = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  };
+
   return (
     <div className="space-y-4">
       {/* Drop zone */}
       <div 
-        className={`border-2 border-dashed rounded-xl p-6 text-center flex flex-col items-center justify-center gap-3 transition-colors ${
-          dragActive ? "border-primary bg-primary/5" : "border-gray-300 hover:border-primary/50"
+        className={`border-2 border-dashed rounded-xl p-6 text-center flex flex-col items-center justify-center gap-3 transition-colors cursor-pointer ${
+          dragActive ? "border-secondary bg-secondary/5" : "border-gray-300 hover:border-secondary/50"
         }`}
         onDragEnter={handleDrag}
         onDragLeave={handleDrag}
         onDragOver={handleDrag}
         onDrop={handleDrop}
+        onClick={triggerFileInput}
       >
         <UploadCloud 
-          className={`w-10 h-10 ${dragActive ? "text-primary" : "text-gray-400"}`} 
+          className={`w-10 h-10 ${dragActive ? "text-secondary" : "text-gray-400"}`} 
         />
         <div>
           <p className="font-medium text-sm">
-            Drag and drop your images here
+            Click or drag and drop your images here
           </p>
           <p className="text-xs text-muted-foreground mt-1">
             You can upload up to {maxImages} images (PNG, JPG, WEBP)
           </p>
         </div>
-        <label>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            className="mt-2"
-            disabled={images.length >= maxImages}
-          >
-            Browse files
-            <input
-              type="file"
-              accept="image/*"
-              onChange={handleChange}
-              multiple
-              className="hidden"
-              disabled={images.length >= maxImages}
-            />
-          </Button>
-        </label>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          onChange={handleChange}
+          multiple
+          className="hidden"
+          disabled={images.length >= maxImages}
+        />
       </div>
 
       {/* Preview images - display in a grid */}
@@ -166,7 +164,10 @@ const ImageUpload = ({ images, setImages, maxImages = 12 }: ImageUploadProps) =>
                   variant="destructive"
                   size="icon"
                   className="absolute -top-2 -right-2 w-6 h-6 opacity-80 group-hover:opacity-100"
-                  onClick={() => removeImage(index)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    removeImage(index);
+                  }}
                 >
                   <X className="w-3.5 h-3.5" />
                 </Button>
@@ -183,8 +184,8 @@ const ImageUpload = ({ images, setImages, maxImages = 12 }: ImageUploadProps) =>
 
       {/* Empty state */}
       {previews.length === 0 && (
-        <div className="text-center p-6 bg-gray-50 rounded-lg border border-gray-200">
-          <Image className="w-10 h-10 mx-auto text-gray-400 mb-2" />
+        <div className="text-center p-6 bg-muted rounded-lg border border-border">
+          <Image className="w-10 h-10 mx-auto text-muted-foreground mb-2" />
           <p className="text-sm text-muted-foreground">No images uploaded yet</p>
         </div>
       )}
