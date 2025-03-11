@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -60,7 +61,7 @@ const MyOrders = () => {
         return;
       }
       
-      // Fetch real orders from the database
+      // Fetch orders from the database
       const { data: ordersData, error } = await supabase
         .from('orders')
         .select(`
@@ -71,8 +72,9 @@ const MyOrders = () => {
           payment_status,
           invoice_number,
           seller_id,
+          order_type,
           listings(title),
-          profiles(full_name)
+          profiles!profiles_id_fkey(full_name)
         `)
         .eq('buyer_id', session.session.user.id)
         .order('created_at', { ascending: false });
@@ -86,7 +88,8 @@ const MyOrders = () => {
         id: order.id,
         created_at: order.created_at,
         product_id: order.product_id,
-        product_name: order.listings?.title || "Unknown Product",
+        product_name: order.listings?.title || 
+          (order.order_type === "feature" ? "Featured Listing Request" : "Unknown Product"),
         amount: order.amount,
         payment_status: order.payment_status || "pending",
         invoice_number: order.invoice_number || `INV-${order.id.substring(0, 8)}`,
@@ -210,10 +213,10 @@ const MyOrders = () => {
                     <TableBody>
                       {orders.map((order) => (
                         <TableRow key={order.id}>
-                          <TableCell className="font-medium">{order.id}</TableCell>
+                          <TableCell className="font-medium">{order.id.substring(0, 8)}</TableCell>
                           <TableCell>{format(new Date(order.created_at), 'MMM dd, yyyy')}</TableCell>
                           <TableCell>{order.product_name}</TableCell>
-                          <TableCell>${order.amount.toFixed(2)}</TableCell>
+                          <TableCell>₹{order.amount.toFixed(2)}</TableCell>
                           <TableCell>{getStatusBadge(order.payment_status)}</TableCell>
                           <TableCell>
                             <div className="flex space-x-2">
@@ -263,10 +266,10 @@ const MyOrders = () => {
                         .filter(order => order.payment_status === "pending")
                         .map((order) => (
                           <TableRow key={order.id}>
-                            <TableCell className="font-medium">{order.id}</TableCell>
+                            <TableCell className="font-medium">{order.id.substring(0, 8)}</TableCell>
                             <TableCell>{format(new Date(order.created_at), 'MMM dd, yyyy')}</TableCell>
                             <TableCell>{order.product_name}</TableCell>
-                            <TableCell>${order.amount.toFixed(2)}</TableCell>
+                            <TableCell>₹{order.amount.toFixed(2)}</TableCell>
                             <TableCell>
                               <Button 
                                 variant="default" 
@@ -312,10 +315,10 @@ const MyOrders = () => {
                         .filter(order => order.payment_status === "completed")
                         .map((order) => (
                           <TableRow key={order.id}>
-                            <TableCell className="font-medium">{order.id}</TableCell>
+                            <TableCell className="font-medium">{order.id.substring(0, 8)}</TableCell>
                             <TableCell>{format(new Date(order.created_at), 'MMM dd, yyyy')}</TableCell>
                             <TableCell>{order.product_name}</TableCell>
-                            <TableCell>${order.amount.toFixed(2)}</TableCell>
+                            <TableCell>₹{order.amount.toFixed(2)}</TableCell>
                             <TableCell>
                               <Button 
                                 variant="outline" 
@@ -362,10 +365,10 @@ const MyOrders = () => {
                         .filter(order => order.payment_status === "failed")
                         .map((order) => (
                           <TableRow key={order.id}>
-                            <TableCell className="font-medium">{order.id}</TableCell>
+                            <TableCell className="font-medium">{order.id.substring(0, 8)}</TableCell>
                             <TableCell>{format(new Date(order.created_at), 'MMM dd, yyyy')}</TableCell>
                             <TableCell>{order.product_name}</TableCell>
-                            <TableCell>${order.amount.toFixed(2)}</TableCell>
+                            <TableCell>₹{order.amount.toFixed(2)}</TableCell>
                             <TableCell>
                               <Button 
                                 variant="default" 
@@ -413,7 +416,7 @@ const MyOrders = () => {
                           <TableCell className="font-medium">{order.invoice_number}</TableCell>
                           <TableCell>{format(new Date(order.created_at), 'MMM dd, yyyy')}</TableCell>
                           <TableCell>{order.product_name}</TableCell>
-                          <TableCell>${order.amount.toFixed(2)}</TableCell>
+                          <TableCell>₹{order.amount.toFixed(2)}</TableCell>
                           <TableCell>{getStatusBadge(order.payment_status)}</TableCell>
                           <TableCell>
                             <div className="flex space-x-2">
@@ -500,8 +503,8 @@ const MyOrders = () => {
                   <TableRow>
                     <TableCell>{selectedInvoice.product_name}</TableCell>
                     <TableCell className="text-right">1</TableCell>
-                    <TableCell className="text-right">${selectedInvoice.amount.toFixed(2)}</TableCell>
-                    <TableCell className="text-right">${selectedInvoice.amount.toFixed(2)}</TableCell>
+                    <TableCell className="text-right">₹{selectedInvoice.amount.toFixed(2)}</TableCell>
+                    <TableCell className="text-right">₹{selectedInvoice.amount.toFixed(2)}</TableCell>
                   </TableRow>
                 </TableBody>
               </Table>
@@ -510,15 +513,15 @@ const MyOrders = () => {
                 <div className="w-1/3 space-y-2">
                   <div className="flex justify-between">
                     <span className="font-medium">Subtotal:</span>
-                    <span>${selectedInvoice.amount.toFixed(2)}</span>
+                    <span>₹{selectedInvoice.amount.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="font-medium">Tax:</span>
-                    <span>$0.00</span>
+                    <span>₹0.00</span>
                   </div>
                   <div className="flex justify-between text-lg font-bold pt-2 border-t">
                     <span>Total:</span>
-                    <span>${selectedInvoice.amount.toFixed(2)}</span>
+                    <span>₹{selectedInvoice.amount.toFixed(2)}</span>
                   </div>
                 </div>
               </div>

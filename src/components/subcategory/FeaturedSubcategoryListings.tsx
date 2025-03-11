@@ -61,7 +61,12 @@ const FeaturedSubcategoryListings = ({ category, subcategory }: FeaturedSubcateg
       // Shuffle the array
       const shuffled = [...featuredListings].sort(() => 0.5 - Math.random());
       // Take only first 4 items
-      setRandomFeaturedListings(shuffled.slice(0, 4));
+      const formattedListings = shuffled.slice(0, 4).map(listing => ({
+        ...listing,
+        condition: listing.condition as ProductCondition
+      }));
+      
+      setRandomFeaturedListings(formattedListings);
     } else {
       setRandomFeaturedListings([]);
     }
@@ -88,7 +93,7 @@ const FeaturedSubcategoryListings = ({ category, subcategory }: FeaturedSubcateg
             price={listing.price}
             location={listing.location || "Location not specified"}
             image={getFirstImageUrl(listing.images)}
-            condition={listing.condition as ProductCondition}
+            condition={listing.condition}
             featured={true}
             date={new Date(listing.created_at).toLocaleDateString()}
           />

@@ -36,16 +36,13 @@ const Index = () => {
     if (listings.length > 0) {
       const featuredItems = listings.filter(listing => listing.featured);
       
-      // If we have more than the limit, randomly select some
-      if (featuredItems.length > FEATURED_ITEMS_LIMIT) {
-        // Shuffle the featured listings array
-        const shuffled = [...featuredItems].sort(() => 0.5 - Math.random());
-        // Take only the first few items to match our limit
-        setRandomFeaturedListings(shuffled.slice(0, FEATURED_ITEMS_LIMIT));
-      } else {
-        // If we have fewer featured items than the limit, use all of them
-        setRandomFeaturedListings(featuredItems);
-      }
+      // Always shuffle the featured listings array
+      const shuffled = [...featuredItems].sort(() => 0.5 - Math.random());
+      
+      // Take only the first 4 items regardless of how many featured items we have
+      setRandomFeaturedListings(shuffled.slice(0, FEATURED_ITEMS_LIMIT));
+    } else {
+      setRandomFeaturedListings([]);
     }
   }, [listings]);
 

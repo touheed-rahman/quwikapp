@@ -9,7 +9,6 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
@@ -44,60 +43,32 @@ export default function FeatureDialog({
 }: FeatureDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
-  const [paymentInfo, setPaymentInfo] = useState({
-    name: "",
-    address: "",
-    cardNumber: "",
-    expDate: "",
-    cvv: "",
-  });
   const [step, setStep] = useState(1);
   const [paymentComplete, setPaymentComplete] = useState(false);
   const { toast } = useToast();
 
+  // Now all feature options are free (0 rupees)
   const getFeaturePricing = (): FeatureOption[] => {
-    // Different pricing based on category
-    let basePricing = {
-      homepage: 59,
-      productPage: 49,
-      both: 79
-    };
-    
-    // Adjust pricing for premium categories
-    if (['electronics', 'vehicles', 'property'].includes(category)) {
-      basePricing = {
-        homepage: 79,
-        productPage: 69,
-        both: 99
-      };
-    } else if (['fashion', 'furniture'].includes(category)) {
-      basePricing = {
-        homepage: 49,
-        productPage: 39,
-        both: 69
-      };
-    }
-
     return [
       {
         id: "homepage",
         title: "Homepage Feature",
         description: "Your listing will be featured on our homepage",
-        price: basePricing.homepage,
+        price: 0,
         icon: <Home className="h-5 w-5 text-secondary" />
       },
       {
         id: "productPage",
         title: "Category Feature",
         description: "Your listing will be featured in its category page",
-        price: basePricing.productPage,
+        price: 0,
         icon: <Tag className="h-5 w-5 text-primary" />
       },
       {
         id: "both",
         title: "Premium Feature",
         description: "Your listing will be featured everywhere!",
-        price: basePricing.both,
+        price: 0,
         icon: <ShoppingBag className="h-5 w-5 text-accent" />
       }
     ];
@@ -114,11 +85,11 @@ export default function FeatureDialog({
       });
       return;
     }
-    setStep(2);
+    // Since we're skipping payment, we can directly submit the feature request
+    handleSubmitFeatureRequest();
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmitFeatureRequest = async () => {
     if (!selectedOption) return;
     
     setIsSubmitting(true);
@@ -127,10 +98,7 @@ export default function FeatureDialog({
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) throw new Error("No session found");
 
-      // Simulating payment processing
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
-      // Set the request flag instead of directly featuring the listing
+      // Set the request flag directly without payment
       const { error } = await supabase
         .from("listings")
         .update({
@@ -142,9 +110,27 @@ export default function FeatureDialog({
 
       if (error) throw error;
 
+      // Generate a free invoice record
+      const invoiceNumber = `INV-${Date.now().toString().substring(7)}`;
+      
+      const { error: orderError } = await supabase
+        .from("orders")
+        .insert({
+          product_id: productId,
+          buyer_id: session.user.id,
+          seller_id: session.user.id, // In this case, the seller and buyer are the same
+          amount: 0, // Free listing
+          payment_status: "completed", // Auto-complete the payment
+          invoice_number: invoiceNumber,
+          order_type: "feature",
+          feature_plan: selectedOption
+        });
+
+      if (orderError) throw orderError;
+
       setPaymentComplete(true);
       toast({
-        title: "Payment Successful!",
+        title: "Feature Request Submitted!",
         description: "Your listing has been submitted for featuring. An admin will review and approve it soon.",
         variant: "default",
       });
@@ -161,17 +147,13 @@ export default function FeatureDialog({
     } catch (error: any) {
       toast({
         title: "Error",
-        description: "Failed to process payment. Please try again.",
+        description: "Failed to process your request. Please try again.",
         variant: "destructive",
       });
+      console.error("Feature request error:", error);
     } finally {
       setIsSubmitting(false);
     }
-  };
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setPaymentInfo(prev => ({ ...prev, [name]: value }));
   };
 
   return (
@@ -182,17 +164,17 @@ export default function FeatureDialog({
             <div className="bg-green-100 p-3 rounded-full mb-4">
               <CheckCircle className="h-12 w-12 text-green-600" />
             </div>
-            <h2 className="text-xl font-bold mb-2">Payment Successful!</h2>
+            <h2 className="text-xl font-bold mb-2">Request Submitted!</h2>
             <p className="text-center text-muted-foreground mb-6">
-              Your listing will be featured soon after admin review.
+              Your free featured listing will be active soon after admin review.
             </p>
           </div>
-        ) : step === 1 ? (
+        ) : (
           <>
             <DialogHeader>
               <DialogTitle className="text-xl">Feature Your Listing</DialogTitle>
               <DialogDescription>
-                Make your listing stand out by featuring it on our platform
+                Make your listing stand out by featuring it on our platform (currently free!)
               </DialogDescription>
             </DialogHeader>
             
@@ -215,7 +197,7 @@ export default function FeatureDialog({
                       <h3 className="font-medium">{option.title}</h3>
                       <p className="text-sm text-muted-foreground">{option.description}</p>
                     </div>
-                    <div className="text-lg font-bold text-primary">₹{option.price}</div>
+                    <div className="text-lg font-bold text-green-600">Free!</div>
                   </div>
                 </Card>
               ))}
@@ -225,101 +207,16 @@ export default function FeatureDialog({
               <Button type="button" variant="outline" onClick={onClose}>
                 Cancel
               </Button>
-              <Button onClick={handleNext} disabled={!selectedOption}>
-                Continue
+              <Button 
+                onClick={handleNext} 
+                disabled={!selectedOption || isSubmitting}
+              >
+                {isSubmitting ? 'Processing...' : 'Submit Request'}
               </Button>
             </DialogFooter>
           </>
-        ) : (
-          <form onSubmit={handleSubmit}>
-            <DialogHeader>
-              <DialogTitle>Payment Information</DialogTitle>
-              <DialogDescription>
-                Enter your details to complete the feature process
-              </DialogDescription>
-            </DialogHeader>
-            
-            <div className="grid gap-4 py-4">
-              <div>
-                <label htmlFor="name" className="text-sm font-medium">Full Name</label>
-                <Input
-                  id="name"
-                  name="name"
-                  value={paymentInfo.name}
-                  onChange={handleInputChange}
-                  required
-                />
-              </div>
-              
-              <div>
-                <label htmlFor="address" className="text-sm font-medium">Billing Address</label>
-                <Input
-                  id="address"
-                  name="address"
-                  value={paymentInfo.address}
-                  onChange={handleInputChange}
-                  required
-                />
-              </div>
-              
-              <div>
-                <label htmlFor="cardNumber" className="text-sm font-medium">Card Number</label>
-                <Input
-                  id="cardNumber"
-                  name="cardNumber"
-                  value={paymentInfo.cardNumber}
-                  onChange={handleInputChange}
-                  placeholder="XXXX XXXX XXXX XXXX"
-                  required
-                />
-              </div>
-              
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label htmlFor="expDate" className="text-sm font-medium">Expiration Date</label>
-                  <Input
-                    id="expDate"
-                    name="expDate"
-                    value={paymentInfo.expDate}
-                    onChange={handleInputChange}
-                    placeholder="MM/YY"
-                    required
-                  />
-                </div>
-                <div>
-                  <label htmlFor="cvv" className="text-sm font-medium">CVV</label>
-                  <Input
-                    id="cvv"
-                    name="cvv"
-                    value={paymentInfo.cvv}
-                    onChange={handleInputChange}
-                    placeholder="XXX"
-                    required
-                  />
-                </div>
-              </div>
-            </div>
-            
-            <DialogFooter className="flex-col sm:flex-row gap-2">
-              <Button 
-                type="button" 
-                variant="outline" 
-                onClick={() => setStep(1)}
-                disabled={isSubmitting}
-              >
-                Back
-              </Button>
-              <Button 
-                type="submit" 
-                className="bg-primary hover:bg-primary/90"
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? 'Processing...' : 'Pay & Feature Now'}
-              </Button>
-            </DialogFooter>
-          </form>
         )}
       </DialogContent>
     </Dialog>
   );
-}
+};
