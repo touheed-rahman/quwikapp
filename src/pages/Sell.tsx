@@ -1,5 +1,6 @@
 
 import { useState, useCallback } from "react";
+import Header from "@/components/Header";
 import SellStepOne from "@/components/sell/SellStepOne";
 import SellStepTwo from "@/components/sell/SellStepTwo";
 import ChatWindow from "@/components/chat/ChatWindow";
