@@ -39,9 +39,11 @@ const categoryIcons: Record<string, any> = {
   services: Wrench,
 };
 
+// Updated category colors - changed vehicles to indigo and electronics to teal
 const categoryColors: Record<string, string> = {
   mobile: "bg-primary",
-  vehicles: "bg-blue-500",
+  vehicles: "bg-indigo-500", // Changed from blue-500
+  electronics: "bg-teal-600", // Changed from blue-600
   furniture: "bg-orange-500", 
   property: "bg-emerald-600",
   jobs: "bg-indigo-500",
@@ -52,7 +54,6 @@ const categoryColors: Record<string, string> = {
   gaming: "bg-violet-500",
   books: "bg-cyan-500",
   services: "bg-emerald-500",
-  electronics: "bg-blue-600",
 };
 
 const CategoryFilter = () => {
@@ -142,7 +143,7 @@ const CategoryFilter = () => {
                         >
                           <Icon className="h-8 w-8 md:h-8 md:w-8 text-white" />
                         </motion.div>
-                        <span className="text-xs md:text-sm font-medium text-center line-clamp-1 text-foreground">
+                        <span className="text-xs md:text-sm font-medium text-center line-clamp-1 text-foreground category-label">
                           {category.name}
                         </span>
                       </motion.button>

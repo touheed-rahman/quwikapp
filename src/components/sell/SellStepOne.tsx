@@ -101,7 +101,7 @@ const SellStepOne = ({ onNext }: SellStepOneProps) => {
           >
             <div className="space-y-3">
               <h2 className="text-2xl font-bold text-foreground">Post Your Ad</h2>
-              <p className="text-muted-foreground">Choose a category that best fits your item</p>
+              <p className="text-black font-medium">Choose a category that best fits your item</p>
               
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mt-4">
                 {categories.map((category) => (
@@ -112,7 +112,7 @@ const SellStepOne = ({ onNext }: SellStepOneProps) => {
                       "h-auto py-3 px-2 flex-col gap-2 relative transition-all text-sm break-words",
                       selectedCategory === category.id 
                         ? "bg-primary text-white shadow-md scale-105" 
-                        : "hover:border-primary hover:bg-primary/5"
+                        : "hover:border-primary hover:bg-primary/5 text-black" // Ensure text is black
                     )}
                     onClick={() => {
                       setSelectedCategory(category.id);
@@ -156,7 +156,7 @@ const SellStepOne = ({ onNext }: SellStepOneProps) => {
                           "h-auto py-2 justify-start px-4 text-sm break-words",
                           selectedSubcategory === sub.id 
                             ? "bg-primary text-white shadow-md" 
-                            : "hover:border-primary hover:bg-primary/5"
+                            : "hover:border-primary hover:bg-primary/5 text-black" // Ensure text is black
                         )}
                         onClick={() => setSelectedSubcategory(sub.id)}
                       >
@@ -180,7 +180,7 @@ const SellStepOne = ({ onNext }: SellStepOneProps) => {
                 <Camera className="h-5 w-5 text-primary" />
                 Upload Images
               </h3>
-              <p className="text-sm text-muted-foreground">Add up to 12 photos to showcase your item.</p>
+              <p className="text-black font-medium">Add up to 12 photos to showcase your item.</p>
             </div>
             
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">

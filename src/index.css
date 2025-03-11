@@ -25,7 +25,7 @@
     --input: 214 32% 91%;
     --ring: 221 83% 53%;
     --radius: 0.75rem;
-    --icon-color: 221 83% 53%; /* New global icon color variable */
+    --icon-color: 221 83% 53%; /* Global icon color variable */
   }
 }
 
@@ -52,7 +52,7 @@
   }
 
   p {
-    @apply text-foreground/80 leading-relaxed;
+    @apply text-foreground/90 leading-relaxed; /* Increased text opacity for better visibility */
   }
 
   /* Enhanced input styling */
@@ -62,7 +62,7 @@
   }
 
   /* Fix text colors for elements on colored backgrounds */
-  /* White text on colored backgrounds */
+  /* Ensuring text on colored backgrounds is always white and visible */
   [class*="bg-primary"] *,
   [class*="bg-blue"] *,
   [class*="bg-green"] *,
@@ -77,6 +77,18 @@
   [class*="bg-purple"] *,
   [class*="bg-emerald"] * {
     @apply text-white;
+  }
+  
+  /* Ensure text in category items and buttons is visible */
+  .category-item span, 
+  .category-name,
+  .category-label {
+    @apply text-foreground font-medium;
+  }
+
+  /* Category icon labels should be visible */
+  .category-label {
+    @apply text-black font-medium;
   }
   
   /* Ensure SVG elements have consistent coloring */
@@ -151,5 +163,10 @@
   .search-icon svg,
   .filter-icon svg {
     @apply text-primary;
+  }
+
+  /* Category item labels - ensure visibility */
+  .category-item-label {
+    @apply text-foreground font-medium mt-2;
   }
 }

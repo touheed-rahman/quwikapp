@@ -47,7 +47,7 @@ const Categories = () => {
               <Tag className="h-6 w-6 text-primary" />
               Browse Categories
             </h1>
-            <p className="text-muted-foreground">Find what you're looking for by category</p>
+            <p className="text-black font-medium">Find what you're looking for by category</p>
           </motion.div>
           
           <motion.div variants={item} className="max-w-md">
@@ -87,7 +87,7 @@ const Categories = () => {
                       <Link 
                         key={sub.id} 
                         to={`/category/${category.id}/${sub.id}`}
-                        className="px-3 py-2 border rounded-lg text-sm text-foreground/80 hover:bg-primary/5 hover:text-primary hover:border-primary/30 transition-colors"
+                        className="px-3 py-2 border rounded-lg text-sm text-black font-medium hover:bg-primary/5 hover:text-primary hover:border-primary/30 transition-colors"
                       >
                         {sub.name}
                       </Link>
@@ -98,7 +98,7 @@ const Categories = () => {
 
               {filteredCategories.length === 0 && (
                 <div className="text-center py-8">
-                  <p className="text-muted-foreground">No categories match your search.</p>
+                  <p className="text-black font-medium">No categories match your search.</p>
                 </div>
               )}
             </div>
