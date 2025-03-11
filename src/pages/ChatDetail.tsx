@@ -25,7 +25,15 @@ const ChatDetail = () => {
     handleImageUpload
   } = useChat(id);
 
-  const { handleUploadImage } = useImageUpload(id, sessionUser?.id, handleImageUpload);
+  // Create a wrapper function to handle type conversion
+  const imageUploadWrapper = (file: File) => {
+    const { handleUploadImage } = useImageUpload(id, sessionUser?.id, (url: string) => {
+      // This is safe because we're just passing the string URL from the upload
+      handleImageUpload(url);
+    });
+    
+    return handleUploadImage(file);
+  };
 
   const handleBack = () => {
     navigate('/');
@@ -69,7 +77,7 @@ const ChatDetail = () => {
       chatDisabled={chatDisabled}
       disabledReason={disabledReason}
       onBack={handleBack}
-      onImageUpload={handleUploadImage}
+      onImageUpload={imageUploadWrapper}
       isEmptyChat={isEmptyChat}
     />
   );

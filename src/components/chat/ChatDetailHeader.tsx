@@ -36,14 +36,13 @@ const ChatDetailHeader = ({
       
       setIsProcessing(true);
       
-      // Mark the conversation as deleted for the current user only
+      // Update the conversation with a deleted_by field that includes this user ID
       const { error } = await supabase
-        .from('conversation_participants')
-        .upsert({ 
-          conversation_id: conversationDetails.id,
-          user_id: sessionUserId,
-          deleted_at: new Date().toISOString()
-        });
+        .from('conversations')
+        .update({ 
+          deleted_by: sessionUserId 
+        })
+        .eq('id', conversationDetails.id);
         
       if (error) throw error;
       

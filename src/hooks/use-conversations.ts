@@ -24,16 +24,6 @@ export function useConversations(
         return;
       }
 
-      // First, get conversation participants where the user has not deleted the conversation
-      const { data: participantData, error: participantError } = await supabase
-        .from('conversation_participants')
-        .select('conversation_id')
-        .eq('user_id', userId)
-        .not('deleted_at', 'is', null);
-        
-      // Get the IDs of deleted conversations
-      const deletedConversationIds = participantData ? participantData.map(p => p.conversation_id) : [];
-      
       let query = supabase
         .from('conversations')
         .select(`
@@ -42,6 +32,7 @@ export function useConversations(
           seller:profiles!conversations_seller_id_fkey(id, full_name, avatar_url),
           buyer:profiles!conversations_buyer_id_fkey(id, full_name, avatar_url)
         `)
+        .not('deleted_by', 'eq', userId) // Don't include conversations deleted by this user
         .order('last_message_at', { ascending: false });
 
       if (filter === 'buying') {
@@ -55,12 +46,7 @@ export function useConversations(
       const { data, error } = await query;
       if (error) throw error;
       
-      // Filter out conversations that user has deleted
-      const filteredConversations = data ? data.filter(conv => 
-        !deletedConversationIds.includes(conv.id)
-      ) : [];
-      
-      setConversations(filteredConversations || []);
+      setConversations(data || []);
       
       // Fetch unread counts for each conversation
       if (data && data.length > 0) {
@@ -90,23 +76,6 @@ export function useConversations(
     if (isAuthenticated && userId) {
       fetchConversations();
       
-      // Subscribe to changes in conversation_participants
-      const participantsChannel = supabase
-        .channel(`user-conversation-participants-${userId}`)
-        .on(
-          'postgres_changes',
-          {
-            event: '*',
-            schema: 'public',
-            table: 'conversation_participants',
-            filter: `user_id=eq.${userId}`,
-          },
-          () => {
-            fetchConversations();
-          }
-        )
-        .subscribe();
-        
       // Subscribe to changes in conversations
       const conversationsChannel = supabase
         .channel(`user-conversations-${userId}`)
@@ -154,7 +123,6 @@ export function useConversations(
         .subscribe();
 
       return () => {
-        supabase.removeChannel(participantsChannel);
         supabase.removeChannel(conversationsChannel);
         supabase.removeChannel(notificationsChannel);
       };
@@ -167,14 +135,13 @@ export function useConversations(
       
       setIsDeleting(true);
       
-      // Mark the conversation as deleted for this user only
+      // Update the conversation record to mark it as deleted by this user
       const { error } = await supabase
-        .from('conversation_participants')
-        .upsert({ 
-          conversation_id: conversationId,
-          user_id: userId,
-          deleted_at: new Date().toISOString()
-        });
+        .from('conversations')
+        .update({ 
+          deleted_by: userId 
+        })
+        .eq('id', conversationId);
         
       if (error) {
         throw error;

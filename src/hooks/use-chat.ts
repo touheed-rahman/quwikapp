@@ -25,7 +25,7 @@ export function useChat(conversationId: string | undefined) {
     newMessage,
     setNewMessage,
     handleSend,
-    handleImageUpload: handleImageUpload as (file: File) => Promise<void>, // Fix type issue
+    handleImageUpload, // No type casting needed, we'll fix the consumer
     chatDisabled: isDisabled,
     disabledReason
   };

@@ -24,24 +24,7 @@ export function useConversationDetails(
       try {
         setIsLoading(true);
         
-        // Check if the user has deleted this conversation
-        const { data: participantData, error: participantError } = await supabase
-          .from('conversation_participants')
-          .select('deleted_at')
-          .eq('conversation_id', conversationId)
-          .eq('user_id', sessionUser.id)
-          .maybeSingle();
-          
-        if (participantData && participantData.deleted_at) {
-          // User has deleted this conversation, redirect to home
-          toast({
-            title: "Conversation deleted",
-            description: "This conversation has been deleted."
-          });
-          navigate('/');
-          return;
-        }
-        
+        // Get the conversation and check if it was deleted by this user
         const { data, error } = await supabase
           .from('conversations')
           .select(`
@@ -98,6 +81,17 @@ export function useConversationDetails(
           return;
         }
 
+        // Check if this user deleted the conversation
+        if (data.deleted_by === sessionUser.id) {
+          toast({
+            title: "Conversation deleted",
+            description: "This conversation has been deleted."
+          });
+          navigate('/');
+          return;
+        }
+
+        // Check if the user is part of the conversation
         if (data.buyer_id !== sessionUser.id && data.seller_id !== sessionUser.id) {
           toast({
             variant: "destructive",
@@ -124,20 +118,21 @@ export function useConversationDetails(
 
     fetchConversationDetails();
     
-    // Subscribe to changes in conversation_participants for this conversation and user
-    const participantsChannel = supabase
-      .channel(`conv-participants-${conversationId}-${sessionUser.id}`)
+    // Subscribe to changes in the conversation
+    const conversationChannel = supabase
+      .channel(`conversation-${conversationId}`)
       .on(
         'postgres_changes',
         {
           event: '*',
           schema: 'public',
-          table: 'conversation_participants',
-          filter: `conversation_id=eq.${conversationId},user_id=eq.${sessionUser.id}`
+          table: 'conversations',
+          filter: `id=eq.${conversationId}`
         },
         (payload) => {
           const newData = payload.new as any;
-          if (newData && newData.deleted_at) {
+          // If this user deleted the conversation, redirect
+          if (newData && newData.deleted_by === sessionUser.id) {
             toast({
               title: "Conversation deleted",
               description: "This conversation has been deleted."
@@ -149,7 +144,7 @@ export function useConversationDetails(
       .subscribe();
 
     return () => {
-      supabase.removeChannel(participantsChannel);
+      supabase.removeChannel(conversationChannel);
     };
   }, [conversationId, sessionUser, toast, navigate]);
 
