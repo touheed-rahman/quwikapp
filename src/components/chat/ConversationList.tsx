@@ -21,7 +21,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface ConversationListProps {
   conversations: Conversation[];
@@ -43,6 +43,12 @@ const ConversationList = ({
   const navigate = useNavigate();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
+  const [localConversations, setLocalConversations] = useState<Conversation[]>([]);
+  
+  // Initialize local state with filtered conversations
+  useEffect(() => {
+    setLocalConversations(conversations.filter(conv => !conv.deleted));
+  }, [conversations]);
 
   const handleConversationClick = (conversation: Conversation) => {
     // Skip deleted conversations
@@ -52,34 +58,36 @@ const ConversationList = ({
     onSelectConversation(conversation.id);
   };
 
-  const confirmDelete = (conversation: Conversation) => {
+  const confirmDelete = (conversation: Conversation, e: React.MouseEvent) => {
+    e.stopPropagation();
     setSelectedConversation(conversation);
     setDeleteDialogOpen(true);
   };
 
   const handleDeleteConfirmed = async () => {
     if (selectedConversation) {
-      await onDelete(selectedConversation.id);
+      const success = await onDelete(selectedConversation.id);
+      if (success) {
+        // Remove the deleted conversation from the local state
+        setLocalConversations(prev => prev.filter(conv => conv.id !== selectedConversation.id));
+      }
       setDeleteDialogOpen(false);
       setSelectedConversation(null);
     }
   };
 
-  // Filter out any deleted conversations just to be sure
-  const availableConversations = conversations.filter(conv => !conv.deleted);
-
   if (isLoading) {
     return <div className="p-4 text-center text-muted-foreground">Loading...</div>;
   }
 
-  if (availableConversations.length === 0) {
+  if (localConversations.length === 0) {
     return <div className="p-4 text-center text-muted-foreground">No conversations</div>;
   }
 
   return (
     <>
       <ScrollArea className="flex-1">
-        {availableConversations.map((conversation) => (
+        {localConversations.map((conversation) => (
           <div key={conversation.id} className="group relative">
             <ConversationItem
               conversation={conversation}
@@ -97,10 +105,7 @@ const ConversationList = ({
                 <DropdownMenuContent align="end">
                   <DropdownMenuItem 
                     className="text-destructive focus:text-destructive"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      confirmDelete(conversation);
-                    }}
+                    onClick={(e) => confirmDelete(conversation, e)}
                   >
                     <Trash2 className="mr-2 h-4 w-4" />
                     Delete Chat

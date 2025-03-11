@@ -95,26 +95,18 @@ const ChatDetailHeader = ({
     try {
       if (!otherUser?.id || !sessionUserId) return;
       
-      // Use an RPC call or ordinary message insert since blocked_users table 
-      // doesn't exist yet in the types
-      const { error } = await supabase.rpc('block_user', {
-        blocked_id: otherUser.id
-      });
-      
-      if (error) {
-        // Fallback approach - create a system message indicating user was blocked
-        const { error: msgError } = await supabase
-          .from('messages')
-          .insert({
-            conversation_id: conversationDetails.id,
-            sender_id: sessionUserId,
-            content: `User ${otherUser.full_name} was blocked`,
-            is_system_message: true,
-            is_block_message: true
-          });
-          
-        if (msgError) throw msgError;
-      }
+      // Create a system message indicating user was blocked
+      const { error } = await supabase
+        .from('messages')
+        .insert({
+          conversation_id: conversationDetails.id,
+          sender_id: sessionUserId,
+          content: `User ${otherUser.full_name} was blocked`,
+          is_system_message: true,
+          is_block_message: true
+        });
+        
+      if (error) throw error;
       
       toast({
         title: "User blocked",
@@ -139,28 +131,18 @@ const ChatDetailHeader = ({
     try {
       if (!otherUser?.id || !sessionUserId || !conversationDetails.id) return;
       
-      // Use an RPC call or ordinary message insert since reported_conversations table 
-      // doesn't exist yet in the types
-      const { error } = await supabase.rpc('report_conversation', {
-        reported_id: otherUser.id,
-        conversation_id: conversationDetails.id,
-        reason: 'spam'
-      });
-      
-      if (error) {
-        // Fallback approach - create a system message indicating conversation was reported
-        const { error: msgError } = await supabase
-          .from('messages')
-          .insert({
-            conversation_id: conversationDetails.id,
-            sender_id: sessionUserId,
-            content: `Reported conversation as spam`,
-            is_system_message: true,
-            is_report: true
-          });
-          
-        if (msgError) throw msgError;
-      }
+      // Create a system message indicating conversation was reported
+      const { error } = await supabase
+        .from('messages')
+        .insert({
+          conversation_id: conversationDetails.id,
+          sender_id: sessionUserId,
+          content: `Reported conversation as spam`,
+          is_system_message: true,
+          is_report: true
+        });
+        
+      if (error) throw error;
       
       toast({
         title: "Report submitted",
