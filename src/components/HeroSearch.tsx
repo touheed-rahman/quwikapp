@@ -50,28 +50,41 @@ const HeroSearch = () => {
     try {
       const trimmedQuery = searchQuery.trim();
       
-      // Fix for the type error - explicitly type the query and avoid excessive chaining
-      let baseQuery = supabase
-        .from('listings')
-        .select('id, title, category, subcategory');
+      // Simplified query approach to avoid the TS2589 error
+      const query = {
+        from: 'listings',
+        select: 'id, title, category, subcategory',
+        filters: [
+          { column: 'status', operator: 'eq', value: 'approved' },
+          { column: 'title', operator: 'ilike', value: `%${trimmedQuery}%` }
+        ]
+      };
       
-      // Apply status filter
-      baseQuery = baseQuery.eq('status', 'approved');
-      
-      // Apply title search filter
-      baseQuery = baseQuery.ilike('title', `%${trimmedQuery}%`);
-      
-      // Apply shop filter if needed
+      // Add shop-specific filter if needed
       if (activeTab === "shop") {
-        baseQuery = baseQuery.eq('is_shop_item', true);
+        query.filters.push({ column: 'is_shop_item', operator: 'eq', value: true });
       }
       
-      // Apply location filter if needed
+      // Add location filter if needed
       if (selectedLocation) {
-        baseQuery = baseQuery.eq('location', selectedLocation);
+        query.filters.push({ column: 'location', operator: 'eq', value: selectedLocation });
       }
       
-      const { data: matches, error } = await baseQuery;
+      // Build and execute the query
+      let supabaseQuery = supabase
+        .from(query.from)
+        .select(query.select);
+      
+      // Apply all filters
+      for (const filter of query.filters) {
+        if (filter.operator === 'eq') {
+          supabaseQuery = supabaseQuery.eq(filter.column, filter.value);
+        } else if (filter.operator === 'ilike') {
+          supabaseQuery = supabaseQuery.ilike(filter.column, filter.value);
+        }
+      }
+      
+      const { data: matches, error } = await supabaseQuery;
       
       if (error) throw error;
 
@@ -105,24 +118,25 @@ const HeroSearch = () => {
   return (
     <div className="w-full mx-auto">
       <div className="w-full max-w-4xl mx-auto px-4 py-6 md:py-8">
-        <div className="bg-gradient-to-br from-[#8B5CF6]/10 to-[#D946EF]/5 backdrop-blur-sm rounded-xl shadow-lg p-4 md:p-6">
-          <Tabs 
-            defaultValue="classified" 
-            value={activeTab} 
-            onValueChange={setActiveTab}
-            className="w-full"
-          >
-            <TabsList className="grid w-full grid-cols-2 mb-6">
-              <TabsTrigger value="classified" className="flex items-center gap-2">
-                <Tag className="h-4 w-4" />
-                <span>Classified</span>
-              </TabsTrigger>
-              <TabsTrigger value="shop" className="flex items-center gap-2">
-                <ShoppingBag className="h-4 w-4" />
-                <span>Shop</span>
-              </TabsTrigger>
-            </TabsList>
-            
+        {/* Move tabs above the card */}
+        <Tabs 
+          defaultValue="classified" 
+          value={activeTab} 
+          onValueChange={setActiveTab}
+          className="w-full"
+        >
+          <TabsList className="grid w-full grid-cols-2 mb-4">
+            <TabsTrigger value="classified" className="flex items-center gap-2">
+              <Tag className="h-4 w-4" />
+              <span>Classified</span>
+            </TabsTrigger>
+            <TabsTrigger value="shop" className="flex items-center gap-2">
+              <ShoppingBag className="h-4 w-4" />
+              <span>Shop</span>
+            </TabsTrigger>
+          </TabsList>
+          
+          <div className="bg-gradient-to-br from-[#8B5CF6]/10 to-[#D946EF]/5 backdrop-blur-sm rounded-xl shadow-lg p-4 md:p-6">
             <TabsContent value="classified" className="mt-0 space-y-4">
               <h2 className="text-xl md:text-2xl font-bold text-center mb-4 text-[#8B5CF6]">
                 Find What You Need
@@ -198,8 +212,8 @@ const HeroSearch = () => {
                 </Button>
               </div>
             </TabsContent>
-          </Tabs>
-        </div>
+          </div>
+        </Tabs>
       </div>
     </div>
   );

@@ -21,10 +21,16 @@ const ProductSpecsCard = ({
   category,
   condition 
 }: ProductSpecsCardProps) => {
-  // Determine if we have any specs to show
-  const hasSpecs = brand || 
-    (specs && Object.keys(specs).some(key => specs[key] !== null)) || 
-    km_driven !== null;
+  // Determine if we have any specs to show - modified to better check specs
+  const specsHasValues = specs && Object.entries(specs).some(([_, value]) => 
+    value !== null && value !== undefined && value !== ''
+  );
+  
+  const hasSpecs = brand || specsHasValues || km_driven !== null;
+
+  // Simplified check to display appropriate component
+  const shouldDisplayVehicleSpecs = category === 'vehicles';
+  const shouldDisplayGeneralSpecs = !shouldDisplayVehicleSpecs && (specsHasValues || brand);
 
   return (
     <Card className="p-3 md:p-4 max-w-full overflow-hidden border border-primary/10 hover:border-primary/20 transition-all duration-200">
@@ -39,20 +45,18 @@ const ProductSpecsCard = ({
           </Badge>
         </div>
         
-        {hasSpecs ? (
-          category === 'vehicles' ? (
-            <VehicleSpecsDetails 
-              brand={brand} 
-              specs={specs} 
-              km_driven={km_driven} 
-            />
-          ) : (
-            <GeneralSpecsDetails 
-              brand={brand} 
-              specs={specs} 
-              category={category} 
-            />
-          )
+        {shouldDisplayVehicleSpecs ? (
+          <VehicleSpecsDetails 
+            brand={brand} 
+            specs={specs} 
+            km_driven={km_driven} 
+          />
+        ) : shouldDisplayGeneralSpecs ? (
+          <GeneralSpecsDetails 
+            brand={brand} 
+            specs={specs} 
+            category={category} 
+          />
         ) : (
           <div className="py-2 text-sm text-muted-foreground">
             {brand ? (
