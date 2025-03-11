@@ -22,6 +22,9 @@ interface VehicleSafetyTabProps {
   setRearParkingCamera: (value: boolean) => void;
   lockSystem: string;
   setLockSystem: (value: string) => void;
+  isCar?: boolean;
+  isBike?: boolean;
+  isCommercial?: boolean;
 }
 
 const VehicleSafetyTab = ({
@@ -36,43 +39,50 @@ const VehicleSafetyTab = ({
   rearParkingCamera,
   setRearParkingCamera,
   lockSystem,
-  setLockSystem
+  setLockSystem,
+  isCar = false,
+  isBike = false,
+  isCommercial = false
 }: VehicleSafetyTabProps) => {
   return (
     <div className="space-y-4">
-      <div className="space-y-2">
-        <Label htmlFor="airbags">Number of Airbags</Label>
-        <Select 
-          value={airbags} 
-          onValueChange={setAirbags}
-        >
-          <SelectTrigger id="airbags">
-            <SelectValue placeholder="Select number of airbags" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="0">0</SelectItem>
-            <SelectItem value="1">1</SelectItem>
-            <SelectItem value="2">2</SelectItem>
-            <SelectItem value="4">4</SelectItem>
-            <SelectItem value="6">6</SelectItem>
-            <SelectItem value="8+">8+</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
+      {isCar && (
+        <div className="space-y-2">
+          <Label htmlFor="airbags">Number of Airbags</Label>
+          <Select 
+            value={airbags} 
+            onValueChange={setAirbags}
+          >
+            <SelectTrigger id="airbags">
+              <SelectValue placeholder="Select number of airbags" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="0">0</SelectItem>
+              <SelectItem value="1">1</SelectItem>
+              <SelectItem value="2">2</SelectItem>
+              <SelectItem value="4">4</SelectItem>
+              <SelectItem value="6">6</SelectItem>
+              <SelectItem value="8+">8+</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      )}
       
       <div className="space-y-2">
         <Label>Safety Features</Label>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2">
-          <div className="flex items-center space-x-2">
-            <Checkbox 
-              id="abs" 
-              checked={abs}
-              onCheckedChange={(checked) => setAbs(checked as boolean)}
-            />
-            <label htmlFor="abs" className="text-sm cursor-pointer">
-              ABS
-            </label>
-          </div>
+          {(isCar || isBike) && (
+            <div className="flex items-center space-x-2">
+              <Checkbox 
+                id="abs" 
+                checked={abs}
+                onCheckedChange={(checked) => setAbs(checked as boolean)}
+              />
+              <label htmlFor="abs" className="text-sm cursor-pointer">
+                ABS
+              </label>
+            </div>
+          )}
           
           <div className="flex items-center space-x-2">
             <Checkbox 
@@ -85,27 +95,31 @@ const VehicleSafetyTab = ({
             </label>
           </div>
           
-          <div className="flex items-center space-x-2">
-            <Checkbox 
-              id="parkingSensors" 
-              checked={parkingSensors}
-              onCheckedChange={(checked) => setParkingSensors(checked as boolean)}
-            />
-            <label htmlFor="parkingSensors" className="text-sm cursor-pointer">
-              Parking Sensors
-            </label>
-          </div>
-          
-          <div className="flex items-center space-x-2">
-            <Checkbox 
-              id="rearParkingCamera" 
-              checked={rearParkingCamera}
-              onCheckedChange={(checked) => setRearParkingCamera(checked as boolean)}
-            />
-            <label htmlFor="rearParkingCamera" className="text-sm cursor-pointer">
-              Rear Parking Camera
-            </label>
-          </div>
+          {isCar && (
+            <>
+              <div className="flex items-center space-x-2">
+                <Checkbox 
+                  id="parkingSensors" 
+                  checked={parkingSensors}
+                  onCheckedChange={(checked) => setParkingSensors(checked as boolean)}
+                />
+                <label htmlFor="parkingSensors" className="text-sm cursor-pointer">
+                  Parking Sensors
+                </label>
+              </div>
+              
+              <div className="flex items-center space-x-2">
+                <Checkbox 
+                  id="rearParkingCamera" 
+                  checked={rearParkingCamera}
+                  onCheckedChange={(checked) => setRearParkingCamera(checked as boolean)}
+                />
+                <label htmlFor="rearParkingCamera" className="text-sm cursor-pointer">
+                  Rear Parking Camera
+                </label>
+              </div>
+            </>
+          )}
         </div>
       </div>
       

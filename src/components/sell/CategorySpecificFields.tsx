@@ -37,7 +37,10 @@ const CategorySpecificFields = ({
       
       {/* Render different fields based on category */}
       {category === 'vehicles' && (
-        <VehicleFields updateFormData={updateFormData} />
+        <VehicleFields 
+          updateFormData={updateFormData} 
+          subcategory={subcategory}
+        />
       )}
       
       {category === 'electronics' && (

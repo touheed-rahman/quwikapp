@@ -149,7 +149,7 @@ const ProductInfo = ({
         )}
       </div>
 
-      {/* Product Specifications Card - Includes km_driven information */}
+      {/* Product Specifications Card - Include all specs here */}
       <ProductSpecsCard 
         brand={brand}
         specs={specs}

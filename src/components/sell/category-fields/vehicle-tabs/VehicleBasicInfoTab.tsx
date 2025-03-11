@@ -30,6 +30,9 @@ interface VehicleBasicInfoTabProps {
   setRegistrationPlace: (value: string) => void;
   insuranceType: string;
   setInsuranceType: (value: string) => void;
+  isCar?: boolean;
+  isBike?: boolean;
+  isCommercial?: boolean;
 }
 
 const VehicleBasicInfoTab = ({
@@ -50,7 +53,10 @@ const VehicleBasicInfoTab = ({
   registrationPlace,
   setRegistrationPlace,
   insuranceType,
-  setInsuranceType
+  setInsuranceType,
+  isCar = false,
+  isBike = false,
+  isCommercial = false
 }: VehicleBasicInfoTabProps) => {
   // The current year for the manufacturing year dropdown
   const currentYear = new Date().getFullYear();
@@ -172,7 +178,7 @@ const VehicleBasicInfoTab = ({
         "The type of fuel the vehicle uses"
       )}
       
-      {renderFieldWithTooltip(
+      {(isCar || isBike) && renderFieldWithTooltip(
         "Transmission", 
         "transmission", 
         <Select 
@@ -204,7 +210,7 @@ const VehicleBasicInfoTab = ({
         "The exterior color of the vehicle"
       )}
       
-      {renderFieldWithTooltip(
+      {(isCar || isBike) && renderFieldWithTooltip(
         "Engine Capacity (cc)", 
         "engineCapacity", 
         <Input

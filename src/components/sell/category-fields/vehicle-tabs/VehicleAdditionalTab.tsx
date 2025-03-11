@@ -22,6 +22,9 @@ interface VehicleAdditionalTabProps {
   setTyreCondition: (value: string) => void;
   exchange: boolean;
   setExchange: (value: boolean) => void;
+  isCar?: boolean;
+  isBike?: boolean;
+  isCommercial?: boolean;
 }
 
 const VehicleAdditionalTab = ({
@@ -36,7 +39,10 @@ const VehicleAdditionalTab = ({
   tyreCondition,
   setTyreCondition,
   exchange,
-  setExchange
+  setExchange,
+  isCar = false,
+  isBike = false,
+  isCommercial = false
 }: VehicleAdditionalTabProps) => {
   return (
     <div className="space-y-4">

@@ -84,13 +84,20 @@ export const useListingForm = () => {
     }
 
     // Category-specific validations
-    if (formData.category === 'vehicles' && formData.km_driven === undefined) {
-      toast({
-        title: "Missing Kilometers Driven",
-        description: "Please enter the kilometers driven",
-        variant: "destructive"
-      });
-      return false;
+    if (formData.category === 'vehicles') {
+      // Check if km_driven exists and is a valid number
+      if (formData.km_driven === undefined || 
+          formData.km_driven === null ||
+          (typeof formData.km_driven === 'string' && formData.km_driven.trim() === '') ||
+          isNaN(Number(formData.km_driven))) {
+        toast({
+          title: "Missing Kilometers Driven",
+          description: "Please enter the kilometers driven for your vehicle",
+          variant: "destructive"
+        });
+        console.error("km_driven validation failed:", formData.km_driven);
+        return false;
+      }
     }
 
     return true;
@@ -98,6 +105,9 @@ export const useListingForm = () => {
 
   const handleSubmit = async (e: React.FormEvent, selectedLocation: string | null) => {
     e.preventDefault();
+    
+    // Log the form data for debugging
+    console.log("Form data before submission:", formData);
     
     if (!validateForm(selectedLocation)) {
       return;
@@ -130,6 +140,18 @@ export const useListingForm = () => {
 
       const uploadedImagePaths = await Promise.all(imageUploadPromises);
 
+      // Ensure km_driven is a number for vehicle listings
+      let kmDriven = null;
+      if (formData.category === 'vehicles') {
+        if (formData.km_driven !== undefined && formData.km_driven !== null) {
+          // Convert to number and ensure it's valid
+          kmDriven = Number(formData.km_driven);
+          if (isNaN(kmDriven)) kmDriven = 0;
+        } else {
+          kmDriven = 0; // Default to 0 if undefined
+        }
+      }
+
       // Prepare the listing data with all the fields
       const listingData = {
         title,
@@ -143,7 +165,7 @@ export const useListingForm = () => {
         user_id: user.id,
         status: 'pending',
         // Include specs and other category-specific fields
-        km_driven: formData.km_driven !== undefined ? Number(formData.km_driven) : null,
+        km_driven: kmDriven,
         brand: formData.brand || null,
         specs: formData.specs || null
       };

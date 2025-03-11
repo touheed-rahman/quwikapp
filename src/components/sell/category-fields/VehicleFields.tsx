@@ -14,12 +14,15 @@ import VehicleFeaturesTab from "./vehicle-tabs/VehicleFeaturesTab";
 import VehicleSafetyTab from "./vehicle-tabs/VehicleSafetyTab";
 import VehicleAdditionalTab from "./vehicle-tabs/VehicleAdditionalTab";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useToast } from "@/components/ui/use-toast";
 
 interface VehicleFieldsProps {
   updateFormData: (fields: Record<string, any>) => void;
+  subcategory?: string;
 }
 
-const VehicleFields = ({ updateFormData }: VehicleFieldsProps) => {
+const VehicleFields = ({ updateFormData, subcategory = "" }: VehicleFieldsProps) => {
+  const { toast } = useToast();
   const [kmDriven, setKmDriven] = useState("");
   const [yearManufactured, setYearManufactured] = useState("");
   const [fuelType, setFuelType] = useState("");
@@ -59,17 +62,37 @@ const VehicleFields = ({ updateFormData }: VehicleFieldsProps) => {
   const [serviceHistory, setServiceHistory] = useState("");
   const [powerWindows, setPowerWindows] = useState("");
 
+  // Determine which fields to show based on subcategory
+  const isCar = subcategory === 'cars' || subcategory === 'luxury-cars';
+  const isBike = subcategory === 'motorcycles' || subcategory === 'scooters';
+  const isCommercial = subcategory === 'commercial-vehicles' || subcategory === 'transport-vehicles';
+
   // Update parent component when values change
   useEffect(() => {
-    const formFields: Record<string, any> = {};
+    // Always ensure kmDriven is a number and not undefined/null/empty
+    let kmDrivenNumber = 0;
     
-    // CRITICAL FIX: Always set km_driven as a number, default to 0 if empty
-    const kmDrivenNumber = kmDriven && kmDriven.trim() !== "" 
-      ? parseInt(kmDriven, 10) 
-      : 0;
+    if (kmDriven && kmDriven.trim() !== "") {
+      const parsed = parseInt(kmDriven, 10);
+      if (!isNaN(parsed)) {
+        kmDrivenNumber = parsed;
+      }
+    }
     
-    // Always include km_driven as a number, never undefined
-    formFields.km_driven = kmDrivenNumber;
+    // Alert user if they try to submit without km_driven
+    if (kmDriven.trim() === "") {
+      // Don't show a toast on every render, only when debugging
+      // toast({
+      //   title: "Missing Kilometers Driven",
+      //   description: "Please enter the kilometers driven",
+      //   variant: "destructive"
+      // });
+    }
+    
+    const formFields: Record<string, any> = {
+      // CRITICAL: Always set km_driven as a number, default to 0 if empty
+      km_driven: kmDrivenNumber,
+    };
     
     formFields.specs = {
       // Basic information
@@ -82,35 +105,38 @@ const VehicleFields = ({ updateFormData }: VehicleFieldsProps) => {
       registration_place: registrationPlace || null,
       insurance_type: insuranceType || null,
       
-      // Boolean fields
-      abs: abs,
+      // Boolean fields - only include relevant ones based on subcategory
+      abs: isCar || isBike ? abs : null,
       accidental: accidental,
-      adjustable_external_mirror: adjustableExternalMirror,
-      adjustable_steering: adjustableSteering,
-      air_conditioning: airConditioning,
-      alloy_wheels: alloyWheels,
+      adjustable_external_mirror: isCar ? adjustableExternalMirror : null,
+      adjustable_steering: isCar ? adjustableSteering : null,
+      air_conditioning: isCar ? airConditioning : null,
+      alloy_wheels: isCar || isBike ? alloyWheels : null,
       anti_theft_device: antiTheftDevice,
-      aux_compatibility: auxCompatibility,
-      bluetooth: bluetooth,
+      aux_compatibility: isCar ? auxCompatibility : null,
+      bluetooth: isCar ? bluetooth : null,
       certified: certified,
-      cruise_control: cruiseControl,
-      navigation_system: navigationSystem,
-      parking_sensors: parkingSensors,
-      power_steering: powerSteering,
-      rear_parking_camera: rearParkingCamera,
-      sunroof: sunroof,
-      usb_compatibility: usbCompatibility,
+      cruise_control: isCar ? cruiseControl : null,
+      navigation_system: isCar ? navigationSystem : null,
+      parking_sensors: isCar ? parkingSensors : null,
+      power_steering: isCar ? powerSteering : null,
+      rear_parking_camera: isCar ? rearParkingCamera : null,
+      sunroof: isCar ? sunroof : null,
+      usb_compatibility: isCar ? usbCompatibility : null,
       exchange: exchange,
-      radio: radio,
+      radio: isCar ? radio : null,
       
       // Additional fields
-      airbags: airbags || null,
+      airbags: isCar ? airbags : null,
       battery_condition: batteryCondition || null,
       tyre_condition: tyreCondition || null,
       lock_system: lockSystem || null,
       service_history: serviceHistory || null,
-      power_windows: powerWindows || null,
+      power_windows: isCar ? powerWindows : null,
     };
+    
+    // Log the form fields for debugging
+    console.log("Vehicle form data:", formFields);
     
     updateFormData(formFields);
   }, [
@@ -121,7 +147,7 @@ const VehicleFields = ({ updateFormData }: VehicleFieldsProps) => {
     bluetooth, certified, cruiseControl, navigationSystem, parkingSensors, 
     powerSteering, rearParkingCamera, sunroof, usbCompatibility, exchange, radio,
     airbags, batteryCondition, tyreCondition, lockSystem, serviceHistory, powerWindows,
-    updateFormData
+    updateFormData, isCar, isBike, isCommercial
   ]);
 
   const vehicleStateProps = {
@@ -159,14 +185,15 @@ const VehicleFields = ({ updateFormData }: VehicleFieldsProps) => {
     lockSystem, setLockSystem,
     serviceHistory, setServiceHistory,
     powerWindows, setPowerWindows,
+    isCar, isBike, isCommercial,
   };
 
   return (
     <Tabs defaultValue="basic" className="w-full">
       <TabsList className="grid grid-cols-4 mb-4">
         <TabsTrigger value="basic">Basic Info</TabsTrigger>
-        <TabsTrigger value="features">Features</TabsTrigger>
-        <TabsTrigger value="safety">Safety</TabsTrigger>
+        {isCar && <TabsTrigger value="features">Features</TabsTrigger>}
+        {(isCar || isBike) && <TabsTrigger value="safety">Safety</TabsTrigger>}
         <TabsTrigger value="additional">Additional</TabsTrigger>
       </TabsList>
       
@@ -174,13 +201,17 @@ const VehicleFields = ({ updateFormData }: VehicleFieldsProps) => {
         <VehicleBasicInfoTab {...vehicleStateProps} />
       </TabsContent>
       
-      <TabsContent value="features">
-        <VehicleFeaturesTab {...vehicleStateProps} />
-      </TabsContent>
+      {isCar && (
+        <TabsContent value="features">
+          <VehicleFeaturesTab {...vehicleStateProps} />
+        </TabsContent>
+      )}
       
-      <TabsContent value="safety">
-        <VehicleSafetyTab {...vehicleStateProps} />
-      </TabsContent>
+      {(isCar || isBike) && (
+        <TabsContent value="safety">
+          <VehicleSafetyTab {...vehicleStateProps} />
+        </TabsContent>
+      )}
       
       <TabsContent value="additional">
         <VehicleAdditionalTab {...vehicleStateProps} />
