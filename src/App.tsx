@@ -25,6 +25,7 @@ import RecentSubcategoryListings from "./pages/RecentSubcategoryListings";
 import React from 'react';
 import CategorySubcategories from "./pages/CategorySubcategories";
 import SellerProfile from "./pages/SellerProfile";
+import MyOrders from "./pages/MyOrders";
 
 // Create a client outside of the component to avoid recreating it on every render
 const queryClient = new QueryClient({
@@ -119,6 +120,14 @@ const App = () => (
                 element={
                   <PrivateRoute>
                     <MyAds />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/my-orders"
+                element={
+                  <PrivateRoute>
+                    <MyOrders />
                   </PrivateRoute>
                 }
               />
