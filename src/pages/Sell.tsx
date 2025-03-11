@@ -7,7 +7,6 @@ import ChatWindow from "@/components/chat/ChatWindow";
 import { useLocation } from "@/contexts/LocationContext";
 import { useListingForm } from "@/components/sell/useListingForm";
 import { motion, AnimatePresence } from "framer-motion";
-import { CheckCircle } from "lucide-react";
 
 const Sell = () => {
   const [step, setStep] = useState(1);
@@ -68,22 +67,9 @@ const Sell = () => {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="w-full pt-20"
+            className="w-full pt-24"
           >
-            <div className="container mx-auto px-4 py-4">
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.3 }}
-                className="mb-4 flex items-center justify-center"
-              >
-                <div className="bg-primary/10 rounded-full px-4 py-2 inline-flex items-center">
-                  <CheckCircle className="w-5 h-5 mr-2 text-primary" />
-                  <span className="font-medium text-primary">Step 1: Upload Photos & Category</span>
-                </div>
-              </motion.div>
-              <SellStepOne onNext={handleStepOneComplete} />
-            </div>
+            <SellStepOne onNext={handleStepOneComplete} />
           </motion.div>
         ) : (
           <motion.div
@@ -92,7 +78,7 @@ const Sell = () => {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="w-full"
+            className="w-full pt-24"
           >
             <SellStepTwo
               title={title}

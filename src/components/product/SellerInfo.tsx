@@ -9,7 +9,6 @@ interface SellerInfoProps {
     id: string;
     full_name: string;
     created_at: string;
-    avatar_url?: string;
   };
   onChatClick: () => void;
   onMakeOffer: () => void;
@@ -22,22 +21,10 @@ const SellerInfo = ({ seller, onChatClick, onMakeOffer }: SellerInfoProps) => {
   return (
     <Card className="p-4">
       <div className="flex items-center gap-4">
-        <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center overflow-hidden">
-          {seller.avatar_url ? (
-            <img
-              src={seller.avatar_url}
-              alt={sellerName}
-              className="w-full h-full object-cover"
-              onError={(e) => {
-                (e.target as HTMLImageElement).style.display = "none";
-                e.currentTarget.parentElement!.innerHTML += `<span class="text-lg font-semibold text-primary">${sellerName[0]?.toUpperCase() || 'A'}</span>`;
-              }}
-            />
-          ) : (
-            <span className="text-lg font-semibold text-primary">
-              {sellerName[0]?.toUpperCase() || 'A'}
-            </span>
-          )}
+        <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
+          <span className="text-lg font-semibold text-primary">
+            {sellerName[0]?.toUpperCase() || 'A'}
+          </span>
         </div>
         <div>
           <Link 
@@ -54,7 +41,7 @@ const SellerInfo = ({ seller, onChatClick, onMakeOffer }: SellerInfoProps) => {
 
       <div className="flex gap-4 mt-4">
         <Button 
-          className="flex-1 h-12 bg-primary hover:bg-primary/90 text-primary-foreground"
+          className="flex-1 h-12 bg-primary hover:bg-primary/90"
           onClick={onChatClick}
         >
           <MessageCircle className="h-5 w-5 mr-2" />
@@ -62,7 +49,7 @@ const SellerInfo = ({ seller, onChatClick, onMakeOffer }: SellerInfoProps) => {
         </Button>
         <Button 
           variant="outline" 
-          className="flex-1 h-12 hover:bg-primary/10 text-foreground hover:text-foreground transition-colors"
+          className="flex-1 h-12 hover:bg-primary hover:text-white transition-colors"
           onClick={onMakeOffer}
         >
           <Tag className="h-5 w-5 mr-2" />

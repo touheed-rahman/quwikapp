@@ -94,9 +94,9 @@ const ProductPage = () => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-primary/5">
       <Header />
-      <main className="container mx-auto px-2 sm:px-4 pt-20 pb-20 overflow-x-hidden max-w-full">
+      <main className="container mx-auto px-2 sm:px-4 pt-16 pb-20 overflow-x-hidden max-w-full">
         <motion.div 
-          className="grid lg:grid-cols-2 gap-4 lg:gap-8 mt-6"
+          className="grid lg:grid-cols-2 gap-4 lg:gap-8"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.4 }}
@@ -149,7 +149,6 @@ const ProductPage = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3, duration: 0.5 }}
-          className="mt-6"
         >
           <RelatedProducts products={relatedProducts} />
         </motion.div>

@@ -87,22 +87,22 @@ const ProductInfo = ({
     <div className="space-y-3 md:space-y-6 overflow-hidden">
       <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-2 md:gap-4">
         <div className="space-y-1 md:space-y-2">
-          <h1 className="text-lg md:text-3xl font-bold break-words text-primary">{title}</h1>
-          <p className="text-xl md:text-4xl font-bold text-accent">
+          <h1 className="text-lg md:text-3xl font-bold break-words">{title}</h1>
+          <p className="text-xl md:text-4xl font-bold text-primary">
             ₹{price.toLocaleString()}
           </p>
           {adNumber && (
             <div className="flex items-center gap-2 mt-1">
-              <Badge variant="outline" className="bg-primary/5 hover:bg-primary/10 text-primary">
+              <Badge variant="outline" className="bg-primary/5 hover:bg-primary/10">
                 {adNumber}
               </Badge>
               <Button 
                 variant="ghost" 
                 size="sm" 
-                className="h-7 px-2 text-primary" 
+                className="h-7 px-2" 
                 onClick={() => copyToClipboard(adNumber)}
               >
-                <Copy className="h-3 w-3 mr-1 text-accent" />
+                <Copy className="h-3 w-3 mr-1" />
                 <span className="text-xs">Copy</span>
               </Button>
             </div>
@@ -115,29 +115,29 @@ const ProductInfo = ({
             className="h-8 w-8 md:h-10 md:w-10 rounded-full hover:bg-primary/10 hover:text-primary transition-colors"
             onClick={handleShare}
           >
-            <Share2 className={`h-4 w-4 md:h-5 md:w-5 text-accent ${copying ? 'text-accent' : ''}`} />
+            <Share2 className={`h-4 w-4 md:h-5 md:w-5 ${copying ? 'text-primary' : ''}`} />
           </Button>
           <Button 
             variant="outline" 
             size="icon" 
             className="h-8 w-8 md:h-10 md:w-10 rounded-full hover:bg-primary/10 hover:text-primary transition-colors"
           >
-            <Heart className="h-4 w-4 md:h-5 md:w-5 text-accent" />
+            <Heart className="h-4 w-4 md:h-5 md:w-5" />
           </Button>
         </div>
       </div>
 
-      <div className="flex flex-wrap items-center gap-2 md:gap-3 text-xs md:text-sm text-primary/80">
+      <div className="flex flex-wrap items-center gap-2 md:gap-3 text-xs md:text-sm text-muted-foreground">
         <div className="flex items-center gap-1">
-          <MapPin className="h-3 w-3 md:h-4 md:w-4 text-accent" />
+          <MapPin className="h-3 w-3 md:h-4 md:w-4" />
           <span>{displayLocation}</span>
         </div>
         <div className="flex items-center gap-1">
-          <Calendar className="h-3 w-3 md:h-4 md:w-4 text-accent" />
+          <Calendar className="h-3 w-3 md:h-4 md:w-4" />
           <span>{new Date(createdAt).toLocaleDateString()}</span>
         </div>
         <div className="flex items-center gap-1">
-          <Eye className="h-3 w-3 md:h-4 md:w-4 text-accent" />
+          <Eye className="h-3 w-3 md:h-4 md:w-4" />
           <span>{viewCount} views</span>
         </div>
       </div>
@@ -147,7 +147,7 @@ const ProductInfo = ({
           {condition}
         </Badge>
         {brand && (
-          <Badge variant="outline" className="bg-gray-100 text-primary">
+          <Badge variant="outline" className="bg-gray-100">
             {brand}
           </Badge>
         )}
@@ -165,8 +165,8 @@ const ProductInfo = ({
       {/* Product Description Card */}
       <Card className="p-3 md:p-4 max-w-full hover:shadow-md transition-shadow">
         <div className="space-y-2 md:space-y-4">
-          <h2 className="font-semibold text-sm md:text-base text-primary">Description</h2>
-          <p className="text-primary/80 whitespace-pre-wrap text-xs md:text-sm break-words max-w-full overflow-x-hidden">{description}</p>
+          <h2 className="font-semibold text-sm md:text-base">Description</h2>
+          <p className="text-black whitespace-pre-wrap text-xs md:text-sm break-words max-w-full overflow-x-hidden">{description}</p>
         </div>
       </Card>
     </div>

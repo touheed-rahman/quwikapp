@@ -39,16 +39,15 @@ const categoryIcons: Record<string, any> = {
   services: Wrench,
 };
 
-// Updated category colors - kept vehicles as indigo and electronics as teal
 const categoryColors: Record<string, string> = {
-  mobile: "bg-primary",
-  vehicles: "bg-indigo-500",
-  electronics: "bg-teal-600",
-  furniture: "bg-orange-500", 
-  property: "bg-emerald-600",
+  mobile: "bg-[#8B5CF6]", // Vivid purple color
+  vehicles: "bg-blue-500",
+  electronics: "bg-purple-500",
+  furniture: "bg-orange-500",
+  property: "bg-green-500",
   jobs: "bg-indigo-500",
   bikes: "bg-red-500",
-  education: "bg-amber-500",
+  education: "bg-yellow-500",
   pets: "bg-pink-500",
   fashion: "bg-teal-500",
   gaming: "bg-violet-500",
@@ -81,7 +80,7 @@ const CategoryFilter = () => {
       <ScrollArea className="w-full rounded-xl border border-primary/10 shadow-md bg-white overflow-hidden">
         <div className="p-4 space-y-4">
           <div className="flex items-center justify-between pb-2">
-            <h3 className="text-lg font-bold text-black">Categories</h3>
+            <h3 className="text-lg font-bold text-foreground/90">Categories</h3>
             {rows.length > initialRows && (
               <button
                 onClick={() => setShowAll(!showAll)}
@@ -89,11 +88,11 @@ const CategoryFilter = () => {
               >
                 {showAll ? (
                   <>
-                    Show Less <ChevronUp className="h-4 w-4 text-primary" />
+                    Show Less <ChevronUp className="h-4 w-4" />
                   </>
                 ) : (
                   <>
-                    Show All <ChevronDown className="h-4 w-4 text-primary" />
+                    Show All <ChevronDown className="h-4 w-4" />
                   </>
                 )}
               </button>
@@ -124,7 +123,7 @@ const CategoryFilter = () => {
                 >
                   {row.map((category) => {
                     const Icon = categoryIcons[category.id] || Car;
-                    const bgColor = categoryColors[category.id] || "bg-primary";
+                    const bgColor = categoryColors[category.id] || "bg-gray-500";
                     
                     return (
                       <motion.button
@@ -135,17 +134,15 @@ const CategoryFilter = () => {
                         whileTap={{ scale: 0.95 }}
                       >
                         <motion.div 
-                          className={`p-3.5 md:p-4 rounded-full ${bgColor} shadow-md`}
+                          className={`p-2 md:p-3 rounded-full ${bgColor} text-white shadow-md`}
                           whileHover={{ 
                             scale: 1.1,
                             boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)"
                           }}
                         >
-                          <Icon className="h-8 w-8 md:h-8 md:w-8 text-white" />
+                          <Icon className="h-5 w-5 md:h-6 md:w-6" />
                         </motion.div>
-                        <span className="text-xs md:text-sm font-medium text-center line-clamp-1 text-black">
-                          {category.name}
-                        </span>
+                        <span className="text-xs md:text-sm font-medium text-center line-clamp-1">{category.name}</span>
                       </motion.button>
                     );
                   })}

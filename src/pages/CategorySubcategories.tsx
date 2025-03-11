@@ -19,9 +19,9 @@ const CategorySubcategories = () => {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      <main className="container mx-auto px-4 pt-20 pb-24">
+      <main className="container mx-auto px-4 pt-16 pb-24">
         <motion.div 
-          className="space-y-6 max-w-3xl mx-auto mt-4"
+          className="space-y-6 max-w-3xl mx-auto"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.4 }}
@@ -29,7 +29,7 @@ const CategorySubcategories = () => {
           <div className="flex flex-col space-y-2">
             <Button
               variant="outline"
-              className="w-fit flex items-center gap-2 mb-2 text-foreground hover:text-foreground"
+              className="w-fit flex items-center gap-2 mb-2"
               onClick={() => navigate('/')}
             >
               <ArrowLeft className="h-4 w-4" />
@@ -37,7 +37,7 @@ const CategorySubcategories = () => {
             </Button>
             
             <motion.div 
-              className="flex items-center gap-2 mb-3"
+              className="flex items-center gap-2 mb-4"
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
@@ -59,7 +59,7 @@ const CategorySubcategories = () => {
           </div>
           
           <motion.div 
-            className="grid gap-2.5"
+            className="grid gap-3"
             initial="hidden"
             animate="visible"
             variants={{
@@ -83,7 +83,7 @@ const CategorySubcategories = () => {
               >
                 <Link
                   to={`/category/${categoryId}/${subcategory.id}`}
-                  className="bg-white rounded-xl shadow-sm border p-4 flex items-center justify-between hover:border-primary/50 hover:shadow-md transition-all duration-200 text-foreground hover:text-foreground"
+                  className="bg-white rounded-xl shadow-sm border p-4 flex items-center justify-between hover:border-primary/50 hover:shadow-md transition-all duration-200"
                 >
                   <div className="flex items-center gap-3">
                     <div className="bg-primary/10 p-2 rounded-full">

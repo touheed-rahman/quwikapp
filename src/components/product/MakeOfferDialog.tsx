@@ -90,14 +90,14 @@ export default function MakeOfferDialog({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle className="text-foreground">Make an Offer</DialogTitle>
-          <DialogDescription className="text-foreground/80">
+          <DialogTitle>Make an Offer</DialogTitle>
+          <DialogDescription>
             Send your offer for {productTitle}. Current price is ₹{productPrice.toLocaleString()}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <label htmlFor="amount" className="text-sm font-medium text-foreground">
+            <label htmlFor="amount" className="text-sm font-medium">
               Your Offer (₹)
             </label>
             <Input
@@ -108,7 +108,7 @@ export default function MakeOfferDialog({
               placeholder="Enter amount"
               min="1"
               required
-              className="col-span-3 text-foreground"
+              className="col-span-3"
             />
           </div>
           <DialogFooter>
@@ -117,11 +117,10 @@ export default function MakeOfferDialog({
               variant="outline"
               onClick={onClose}
               disabled={isSubmitting}
-              className="text-foreground"
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={isSubmitting} className="bg-primary text-white">
+            <Button type="submit" disabled={isSubmitting}>
               Send Offer
             </Button>
           </DialogFooter>

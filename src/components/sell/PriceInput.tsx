@@ -2,6 +2,7 @@
 import { Input } from "@/components/ui/input";
 import { IndianRupee } from "lucide-react";
 import { motion } from "framer-motion";
+import { useState } from "react";
 
 interface PriceInputProps {
   value: string;
@@ -9,9 +10,11 @@ interface PriceInputProps {
 }
 
 const PriceInput = ({ value, onChange }: PriceInputProps) => {
+  const [isFocused, setIsFocused] = useState(false);
+  
   return (
     <motion.div 
-      className="space-y-2"
+      className="space-y-2.5"
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3, delay: 0.2 }}
@@ -27,6 +30,8 @@ const PriceInput = ({ value, onChange }: PriceInputProps) => {
           onChange={(e) => onChange(e.target.value)}
           className="border-primary/20 focus-visible:ring-primary/30 shadow-sm transition-all duration-200" 
           placeholder="Enter price"
+          onFocus={() => setIsFocused(true)}
+          onBlur={() => setIsFocused(false)}
           required
         />
       </div>

@@ -5,27 +5,26 @@
  
 @layer base {
   :root {
-    --background: 192 15% 94%;
-    --foreground: 210 29% 29%;
+    --background: 262 83% 98%;
+    --foreground: 222.2 84% 4.9%;
     --card: 0 0% 100%;
-    --card-foreground: 210 29% 29%;
+    --card-foreground: 222.2 84% 4.9%;
     --popover: 0 0% 100%;
-    --popover-foreground: 210 29% 29%;
-    --primary: 210 30% 24%;
-    --primary-foreground: 192 15% 94%;
-    --secondary: 168 75% 42%;
-    --secondary-foreground: 210 29% 29%;
-    --muted: 192 15% 90%;
-    --muted-foreground: 210 19% 35%;
-    --accent: 6 78% 57%;
-    --accent-foreground: 192 15% 94%;
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 192 15% 94%;
-    --border: 210 15% 85%;
-    --input: 210 15% 85%;
-    --ring: 210 30% 24%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 262 83% 58%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 262 83% 96%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 262 83% 96%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 262 83% 58%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 262 83% 96%;
+    --input: 262 83% 96%;
+    --ring: 262 83% 58%;
     --radius: 0.75rem;
-    --icon-color: 210 30% 24%;
   }
 }
 
@@ -34,119 +33,113 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-primary antialiased;
-  }
-
-  /* Content spacing for fixed header */
-  main {
-    @apply pt-28;
+    @apply bg-background text-foreground antialiased;
   }
 
   /* Enhanced text and headings */
   h1 {
-    @apply text-primary font-bold tracking-tight;
+    @apply text-foreground/90 font-bold tracking-tight;
   }
   
   h2, h3 {
-    @apply text-primary font-semibold tracking-tight;
+    @apply text-foreground/85 font-semibold tracking-tight;
   }
 
   p {
-    @apply text-primary/90 leading-relaxed;
+    @apply text-foreground/75 leading-relaxed;
   }
 
   /* Enhanced input styling */
   input, textarea, select {
-    @apply bg-background border-primary/30 focus-visible:ring-2 focus-visible:ring-primary/50 
+    @apply bg-background border-input/30 focus-visible:ring-2 focus-visible:ring-primary/50 
            focus-visible:ring-offset-2 transition-all duration-200 shadow-sm;
   }
 
-  /* Fix text colors for elements on colored backgrounds */
-  [class*="bg-primary"] *,
-  [class*="bg-secondary"] *,
-  [class*="bg-accent"] *,
-  [class*="bg-destructive"] * {
-    @apply text-primary-foreground;
-  }
-  
-  /* Ensure text in category items and buttons is visible */
-  .category-item span, 
-  .category-name,
-  .category-label {
-    @apply text-primary font-medium;
-  }
-
-  /* Category icon labels should be visible */
-  .category-label {
-    @apply text-primary font-medium;
-  }
-  
-  /* Ensure SVG elements have consistent coloring */
-  svg:not([class*="text-"]) {
-    @apply text-accent;
-  }
-
-  /* Default icon styles - border should be primary color, icons should be accent color */
-  .icon-container {
-    @apply border border-primary/30 rounded-md p-1;
-  }
-  
-  .icon-container svg {
-    @apply text-accent;
-  }
-
-  /* Section titles with icons should have accent icons */
-  .section-title-with-icon {
-    @apply flex items-center gap-2;
-  }
-  
-  .section-title-with-icon svg {
-    @apply text-accent bg-primary/10 p-1.5 rounded-full;
-  }
-
-  /* Featured and Recent sections title area */
-  .section-title-area svg {
-    @apply text-accent;
-  }
-
-  /* Form fields and labels */
-  .form-label {
-    @apply text-primary font-medium;
-  }
-
-  .form-input {
-    @apply text-primary border-primary/30;
-  }
-
-  /* Admin panel tabs */
-  .admin-tabs [data-state="active"] {
-    @apply bg-primary text-primary-foreground !important;
-  }
-  
-  .admin-tabs [data-state="inactive"] {
-    @apply text-primary !important;
-  }
-
-  /* Default for buttons, links, and interactive elements */
-  button, 
-  a, 
-  [role="button"] {
-    @apply transition-colors duration-200;
-  }
-  
   /* Enhanced button hover effects */
   button {
     @apply hover:shadow-md active:scale-[0.98] transition-all duration-200;
   }
 
-  /* Card enhancements with increased spacing */
+  /* Card enhancements */
   .card {
     @apply shadow-sm hover:shadow-md transition-all duration-200 bg-card/95 backdrop-blur-sm
            border border-border/20;
   }
-  
-  /* Product icons */
-  .product-icon {
-    @apply text-accent;
-  }
+}
+
+/* Enhanced scrollbar styling */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Command menu enhancements */
+.cmd-menu {
+  @apply bg-white/95 backdrop-blur-sm border border-input/50 shadow-lg;
+}
+
+/* Enhanced transitions */
+.transition-all {
+  @apply duration-200 ease-in-out;
+}
+
+/* Enhanced focus styles */
+.focus-ring {
+  @apply focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2;
+}
+
+/* Enhanced text readability */
+.text-enhanced {
+  @apply tracking-wide leading-relaxed;
+}
+
+/* Enhanced responsive padding */
+.section-padding {
+  @apply py-20 px-6 md:px-12 lg:px-24;
+}
+
+/* Enhanced container width */
+.container {
+  @apply px-4 mx-auto max-w-7xl;
+}
+
+/* Glass effect components */
+.glass {
+  @apply bg-white/80 backdrop-blur-sm border border-white/20 shadow-lg;
+}
+
+/* Enhanced list items */
+.list-item {
+  @apply hover:bg-accent/5 transition-colors duration-200 rounded-md;
+}
+
+/* Enhanced interactive elements */
+.interactive {
+  @apply hover:shadow-md active:scale-[0.98] transition-all duration-200;
+}
+
+/* Enhanced card layouts */
+.card-grid {
+  @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4;
+}
+
+/* Enhanced form elements */
+.form-input {
+  @apply w-full rounded-md border border-input/30 bg-background px-3 py-2
+         focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all duration-200;
+}
+
+/* Enhanced loading states */
+.loading {
+  @apply animate-pulse bg-muted rounded;
+}
+
+/* Enhanced badges */
+.badge {
+  @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium
+         transition-colors duration-200;
 }

@@ -33,7 +33,7 @@ const ElectronicsFields = ({ updateFormData, showBrand }: ElectronicsFieldsProps
     <>
       {showBrand && (
         <div className="space-y-2">
-          <Label htmlFor="brand" className="text-black">
+          <Label htmlFor="brand">
             Brand
           </Label>
           <Input
@@ -42,32 +42,29 @@ const ElectronicsFields = ({ updateFormData, showBrand }: ElectronicsFieldsProps
             placeholder="Enter brand name"
             value={brand}
             onChange={(e) => setBrand(e.target.value)}
-            className="text-black"
           />
         </div>
       )}
       
       <div className="space-y-2">
-        <Label htmlFor="modelNumber" className="text-black">Model Number</Label>
+        <Label htmlFor="modelNumber">Model Number</Label>
         <Input
           id="modelNumber"
           type="text"
           placeholder="Enter model number"
           value={modelNumber}
           onChange={(e) => setModelNumber(e.target.value)}
-          className="text-black"
         />
       </div>
       
       <div className="space-y-2">
-        <Label htmlFor="warranty" className="text-black">Warranty Information</Label>
+        <Label htmlFor="warranty">Warranty Information</Label>
         <Input
           id="warranty"
           type="text"
           placeholder="E.g., 1 year manufacturer warranty"
           value={warranty}
           onChange={(e) => setWarranty(e.target.value)}
-          className="text-black"
         />
       </div>
     </>

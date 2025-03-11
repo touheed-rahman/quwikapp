@@ -57,19 +57,19 @@ const SellFormDetails = ({
   return (
     <motion.form 
       onSubmit={onSubmit} 
-      className="w-full space-y-4"
+      className="w-full space-y-6"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
     >
       <Card className="bg-white rounded-lg shadow-md border-primary/10 overflow-hidden w-full">
-        <div className="p-3 bg-gradient-to-r from-primary/10 to-primary/5 border-b border-primary/10">
-          <h3 className="font-medium text-lg flex items-center text-black">
-            <Check className="w-5 h-5 mr-2 text-black" />
+        <div className="p-4 bg-gradient-to-r from-primary/10 to-primary/5 border-b border-primary/10">
+          <h3 className="font-medium text-lg flex items-center text-primary/90">
+            <Check className="w-5 h-5 mr-2 text-primary" />
             Item Details
           </h3>
         </div>
         
-        <div className="p-4 space-y-4 w-full">
+        <div className="p-5 space-y-6 w-full">
           <div className="transition-all duration-300">
             <TitleInput value={title} onChange={setTitle} />
           </div>
@@ -78,7 +78,7 @@ const SellFormDetails = ({
             <DescriptionInput value={description} onChange={setDescription} />
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
             <div className="transition-all duration-300">
               <ConditionSelect value={condition} onChange={setCondition} />
             </div>
@@ -101,7 +101,7 @@ const SellFormDetails = ({
           
           <div className="transition-all duration-300">
             <div>
-              <label className="text-sm font-medium mb-1.5 block text-black">
+              <label className="text-sm font-medium mb-1.5 block">
                 Location *
               </label>
               <LocationSelector 

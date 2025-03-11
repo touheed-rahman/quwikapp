@@ -35,19 +35,19 @@ const Categories = () => {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      <main className="container mx-auto px-4 pt-20 pb-24">
+      <main className="container mx-auto px-4 pt-24 pb-24">
         <motion.div 
           className="space-y-6"
           variants={container}
           initial="hidden"
           animate="show"
         >
-          <motion.div variants={item} className="space-y-2 mt-4">
-            <h1 className="text-2xl md:text-3xl font-bold text-black flex items-center gap-2 section-title-with-icon">
-              <Tag className="h-6 w-6 text-black" />
+          <motion.div variants={item} className="space-y-2">
+            <h1 className="text-2xl md:text-3xl font-bold text-foreground flex items-center gap-2">
+              <Tag className="h-6 w-6 text-primary" />
               Browse Categories
             </h1>
-            <p className="text-black font-medium">Find what you're looking for by category</p>
+            <p className="text-muted-foreground">Find what you're looking for by category</p>
           </motion.div>
           
           <motion.div variants={item} className="max-w-md">
@@ -64,16 +64,16 @@ const Categories = () => {
           </motion.div>
           
           <motion.div variants={item}>
-            <div className="grid gap-5">
+            <div className="grid gap-6">
               {filteredCategories.map((category, index) => (
                 <motion.div 
                   key={category.id}
                   className="bg-white rounded-xl shadow-sm border p-5 hover:shadow-md transition-shadow"
                   variants={item}
-                  whileHover={{ y: -3 }}
+                  whileHover={{ y: -5 }}
                   transition={{ type: "spring", stiffness: 300 }}
                 >
-                  <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center justify-between mb-4">
                     <h2 className="text-xl font-semibold text-primary">{category.name}</h2>
                     <Link 
                       to={`/category/${category.id}`}
@@ -82,12 +82,12 @@ const Categories = () => {
                       View All <ArrowRight className="h-4 w-4" />
                     </Link>
                   </div>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
                     {category.subcategories.map((sub) => (
                       <Link 
                         key={sub.id} 
                         to={`/category/${category.id}/${sub.id}`}
-                        className="px-3 py-2 border rounded-lg text-sm text-black font-medium hover:bg-primary/5 hover:text-primary hover:border-primary/30 transition-colors"
+                        className="px-3 py-2 border rounded-lg text-sm text-foreground/80 hover:bg-primary/5 hover:text-primary hover:border-primary/30 transition-colors"
                       >
                         {sub.name}
                       </Link>
@@ -98,7 +98,7 @@ const Categories = () => {
 
               {filteredCategories.length === 0 && (
                 <div className="text-center py-8">
-                  <p className="text-black font-medium">No categories match your search.</p>
+                  <p className="text-muted-foreground">No categories match your search.</p>
                 </div>
               )}
             </div>

@@ -59,31 +59,31 @@ const ListingItem = ({ listing, onMarkAsSold, showSoldButton, onListingDeleted }
       <div className="flex-1 min-w-0">
         <div className="flex flex-col h-full justify-between">
           <div>
-            <h3 className="text-base font-semibold line-clamp-1 group-hover:text-primary transition-colors text-black">
+            <h3 className="text-base font-semibold line-clamp-1 group-hover:text-primary transition-colors">
               {listing.title}
             </h3>
             <p className="text-base font-bold text-primary mt-0.5">
               ₹{listing.price.toLocaleString()}
             </p>
             <div className="flex flex-wrap items-center gap-2 mt-1">
-              <p className="text-xs text-black">
+              <p className="text-xs text-muted-foreground">
                 {cityName}
               </p>
-              <Badge variant="secondary" className="text-xs text-black">
+              <Badge variant="secondary" className="text-xs">
                 {listing.condition}
               </Badge>
               {listing.status === 'rejected' && (
-                <Badge variant="destructive" className="text-xs text-black">
+                <Badge variant="destructive" className="text-xs">
                   Rejected
                 </Badge>
               )}
               {isSold && (
-                <Badge variant="secondary" className="text-xs bg-gray-500 text-black">
+                <Badge variant="secondary" className="text-xs bg-gray-500 text-white">
                   Sold
                 </Badge>
               )}
               {listing.featured && (
-                <Badge variant="secondary" className="text-xs bg-yellow-500 text-black">
+                <Badge variant="secondary" className="text-xs bg-yellow-500 text-white">
                   Featured
                 </Badge>
               )}
@@ -105,7 +105,7 @@ const ListingItem = ({ listing, onMarkAsSold, showSoldButton, onListingDeleted }
                   e.stopPropagation();
                   onMarkAsSold(listing.id);
                 }}
-                className="h-7 text-xs hover:bg-primary hover:text-black transition-colors"
+                className="h-7 text-xs hover:bg-primary hover:text-white transition-colors"
               >
                 <CheckSquare className="w-3.5 h-3.5 mr-1" />
                 Mark as Sold
@@ -126,7 +126,7 @@ const ListingItem = ({ listing, onMarkAsSold, showSoldButton, onListingDeleted }
         {!isSold && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-primary/10 text-black">
+              <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-primary/10">
                 <MoreVertical className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>

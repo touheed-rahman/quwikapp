@@ -25,41 +25,41 @@ const ListingActions = ({ listingId, onStatusUpdate, onDelete }: ListingActionsP
       <Button
         variant="outline"
         size="sm"
-        className="bg-emerald-600 hover:bg-emerald-700 text-white"
+        className="bg-green-50 hover:bg-green-100 text-green-700"
         onClick={() => onStatusUpdate(listingId, 'approved')}
       >
-        <CheckCircle2 className="h-4 w-4 text-white" />
-        <span className="text-white">Approve</span>
+        <CheckCircle2 className="h-4 w-4 mr-1" />
+        Approve
       </Button>
       <Button
         variant="outline"
         size="sm"
-        className="bg-red-500 hover:bg-red-600 text-white"
+        className="bg-red-50 hover:bg-red-100 text-red-700"
         onClick={() => onStatusUpdate(listingId, 'rejected')}
       >
-        <XCircle className="h-4 w-4 text-white" />
-        <span className="text-white">Reject</span>
+        <XCircle className="h-4 w-4 mr-1" />
+        Reject
       </Button>
       <AlertDialog>
         <AlertDialogTrigger asChild>
           <Button
             variant="outline"
             size="sm"
-            className="bg-red-500 hover:bg-red-600 text-white font-medium"
+            className="bg-red-50 hover:bg-red-100 text-red-700 font-medium"
           >
-            <Trash2 className="h-4 w-4 text-white" />
-            <span className="text-white">Delete</span>
+            <Trash2 className="h-4 w-4 mr-1" />
+            Delete
           </Button>
         </AlertDialogTrigger>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-primary">Are you sure?</AlertDialogTitle>
-            <AlertDialogDescription className="text-primary/80">
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
               This action cannot be undone. This will permanently delete the listing and all associated data.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel className="text-primary">Cancel</AlertDialogCancel>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => onDelete(listingId)}
               className="bg-red-600 hover:bg-red-700 text-white font-medium"

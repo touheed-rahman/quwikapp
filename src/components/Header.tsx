@@ -1,4 +1,3 @@
-
 import { Bell, MessageSquare, User, HelpCircle, ListOrdered } from "lucide-react";
 import { Button } from "./ui/button";
 import { Link } from "react-router-dom";
@@ -9,6 +8,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import ChatWindow from "@/components/chat/ChatWindow";
 import FeedbackDialog from "@/components/feedback/FeedbackDialog";
 import { toast } from "@/hooks/use-toast";
+import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 
 const Header = () => {
   const [session, setSession] = useState<any>(null);
@@ -81,7 +81,7 @@ const Header = () => {
   };
 
   return (
-    <header className="fixed top-0 left-0 right-0 bg-background border-b border-primary/10 z-50 shadow-sm">
+    <header className="fixed top-0 left-0 right-0 bg-white border-b z-50">
       <div className="container mx-auto px-4 h-16 flex items-center gap-4">
         <Link to="/" className="shrink-0">
           <h1 className="text-2xl font-semibold bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent">
@@ -95,15 +95,14 @@ const Header = () => {
               <Button 
                 variant="ghost" 
                 size="icon" 
-                className="relative hidden md:flex flex-col items-center justify-center h-16 w-16 gap-0.5 hover:bg-muted text-foreground"
+                className="relative hidden md:flex flex-col items-center justify-center h-16 w-16 gap-0.5"
                 onClick={handleNotificationClick}
               >
-                <Bell className="h-5 w-5 text-foreground" />
-                <span className="text-[10px] text-foreground">Notifications</span>
+                <Bell className="h-5 w-5" />
+                <span className="text-[10px]">Notifications</span>
                 {unreadCount > 0 && (
                   <Badge 
-                    className="absolute top-2 right-2 h-5 w-5 flex items-center justify-center bg-accent hover:bg-accent p-0 text-accent-foreground"
-                    variant="accent"
+                    className="absolute top-2 right-2 h-5 w-5 flex items-center justify-center bg-destructive hover:bg-destructive p-0"
                   >
                     {unreadCount}
                   </Badge>
@@ -114,43 +113,42 @@ const Header = () => {
                   variant="ghost" 
                   size="icon"
                   onClick={() => setIsChatOpen(true)}
-                  className="flex flex-col items-center justify-center h-16 w-16 gap-0.5 hover:bg-muted text-foreground"
+                  className="flex flex-col items-center justify-center h-16 w-16 gap-0.5"
                 >
-                  <MessageSquare className="h-5 w-5 text-foreground" />
-                  <span className="text-[10px] text-foreground">Chats</span>
+                  <MessageSquare className="h-5 w-5" />
+                  <span className="text-[10px]">Chats</span>
                 </Button>
                 {unreadCount > 0 && (
                   <Badge 
-                    className="absolute top-2 right-2 h-5 w-5 flex items-center justify-center bg-accent hover:bg-accent p-0 text-accent-foreground"
-                    variant="accent"
+                    className="absolute top-2 right-2 h-5 w-5 flex items-center justify-center bg-destructive hover:bg-destructive p-0"
                   >
                     {unreadCount}
                   </Badge>
                 )}
               </div>
               <Link to="/my-ads" className="hidden md:block">
-                <Button variant="ghost" size="icon" className="flex flex-col items-center justify-center h-16 w-16 gap-0.5 hover:bg-muted text-foreground">
-                  <ListOrdered className="h-5 w-5 text-foreground" />
-                  <span className="text-[10px] text-foreground">My Ads</span>
+                <Button variant="ghost" size="icon" className="flex flex-col items-center justify-center h-16 w-16 gap-0.5">
+                  <ListOrdered className="h-5 w-5" />
+                  <span className="text-[10px]">My Ads</span>
                 </Button>
               </Link>
               <Link to="/profile">
-                <Button variant="ghost" size="icon" className="flex flex-col items-center justify-center h-16 w-16 gap-0.5 hover:bg-muted text-foreground">
-                  <User className="h-5 w-5 text-foreground" />
-                  <span className="text-[10px] text-foreground">Profile</span>
+                <Button variant="ghost" size="icon" className="flex flex-col items-center justify-center h-16 w-16 gap-0.5">
+                  <User className="h-5 w-5" />
+                  <span className="text-[10px]">Profile</span>
                 </Button>
               </Link>
               <Button 
                 variant="ghost" 
                 size="icon"
                 onClick={() => setIsFeedbackOpen(true)}
-                className="flex flex-col items-center justify-center h-16 w-16 gap-0.5 hover:bg-muted text-foreground"
+                className="flex flex-col items-center justify-center h-16 w-16 gap-0.5"
               >
-                <HelpCircle className="h-5 w-5 text-foreground" />
-                <span className="text-[10px] text-foreground">Help</span>
+                <HelpCircle className="h-5 w-5" />
+                <span className="text-[10px]">Help</span>
               </Button>
               <Link to="/sell" className="hidden md:block shrink-0">
-                <Button variant="accent">Sell Now</Button>
+                <Button className="hover:bg-primary hover:text-white whitespace-nowrap">Sell Now</Button>
               </Link>
             </>
           ) : (
@@ -159,13 +157,13 @@ const Header = () => {
                 variant="ghost" 
                 size="icon"
                 onClick={() => setIsFeedbackOpen(true)}
-                className="flex flex-col items-center justify-center h-16 w-16 gap-0.5 hover:bg-muted text-foreground"
+                className="flex flex-col items-center justify-center h-16 w-16 gap-0.5"
               >
-                <HelpCircle className="h-5 w-5 text-foreground" />
-                <span className="text-[10px] text-foreground">Help</span>
+                <HelpCircle className="h-5 w-5" />
+                <span className="text-[10px]">Help</span>
               </Button>
               <Link to="/profile">
-                <Button variant="accent">Sign In</Button>
+                <Button>Sign In</Button>
               </Link>
             </>
           )}

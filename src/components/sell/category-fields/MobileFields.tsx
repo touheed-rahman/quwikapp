@@ -35,7 +35,7 @@ const MobileFields = ({ updateFormData, showBrand }: MobileFieldsProps) => {
     <>
       {showBrand && (
         <div className="space-y-2">
-          <Label htmlFor="brand" className="text-black">
+          <Label htmlFor="brand">
             Brand
           </Label>
           <Input
@@ -44,44 +44,40 @@ const MobileFields = ({ updateFormData, showBrand }: MobileFieldsProps) => {
             placeholder="Enter brand name"
             value={brand}
             onChange={(e) => setBrand(e.target.value)}
-            className="text-black"
           />
         </div>
       )}
       
       <div className="space-y-2">
-        <Label htmlFor="storage" className="text-black">Storage</Label>
+        <Label htmlFor="storage">Storage</Label>
         <Input
           id="storage"
           type="text"
           placeholder="E.g., 128GB, 256GB"
           value={storage}
           onChange={(e) => setStorage(e.target.value)}
-          className="text-black"
         />
       </div>
       
       <div className="space-y-2">
-        <Label htmlFor="screenSize" className="text-black">Screen Size</Label>
+        <Label htmlFor="screenSize">Screen Size</Label>
         <Input
           id="screenSize"
           type="text"
           placeholder="E.g., 6.1 inches"
           value={screenSize}
           onChange={(e) => setScreenSize(e.target.value)}
-          className="text-black"
         />
       </div>
       
       <div className="space-y-2">
-        <Label htmlFor="batteryCapacity" className="text-black">Battery Capacity</Label>
+        <Label htmlFor="batteryCapacity">Battery Capacity</Label>
         <Input
           id="batteryCapacity"
           type="text"
           placeholder="E.g., 4000mAh"
           value={batteryCapacity}
           onChange={(e) => setBatteryCapacity(e.target.value)}
-          className="text-black"
         />
       </div>
     </>

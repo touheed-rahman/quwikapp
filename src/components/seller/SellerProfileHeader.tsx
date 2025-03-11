@@ -1,5 +1,5 @@
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Calendar, MapPin, UserCheck, UserPlus, Users } from "lucide-react";
@@ -17,13 +17,11 @@ import { supabase } from "@/integrations/supabase/client";
 
 interface SellerProfileHeaderProps {
   profile: {
-    id: string;
     full_name: string;
     created_at: string;
     location?: string;
     followers_count: number;
     following_count: number;
-    avatar_url?: string;
   };
   isFollowing: boolean;
   currentUserId: string | null;
@@ -74,22 +72,11 @@ const SellerProfileHeader = ({
     };
   }, [profileId]);
 
-  // Function to get profile picture URL from Supabase storage
-  const getProfilePictureUrl = () => {
-    if (profile?.avatar_url) {
-      return supabase.storage.from('profiles').getPublicUrl(profile.avatar_url).data.publicUrl;
-    }
-    return null;
-  };
-
   return (
     <Card className="p-6 shadow-md hover:shadow-lg transition-shadow duration-200 bg-white">
       <div className="flex flex-col md:flex-row md:items-start justify-between gap-6">
         <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
           <Avatar className="h-24 w-24 md:h-32 md:w-32 ring-2 ring-primary/10">
-            {getProfilePictureUrl() ? (
-              <AvatarImage src={getProfilePictureUrl()} alt={profile.full_name} />
-            ) : null}
             <AvatarFallback className="text-3xl md:text-4xl bg-primary/5">
               {profile.full_name?.[0]?.toUpperCase()}
             </AvatarFallback>
@@ -118,7 +105,7 @@ const SellerProfileHeader = ({
             <div className="flex items-center justify-center md:justify-start gap-6">
               <Dialog>
                 <DialogTrigger asChild>
-                  <Button variant="ghost" size="sm" className="gap-1 text-foreground hover:text-foreground">
+                  <Button variant="ghost" size="sm" className="gap-1">
                     <strong>{profile.followers_count || 0}</strong>
                     <span className="text-muted-foreground">followers</span>
                     <Users className="h-4 w-4 ml-1 text-muted-foreground" />
@@ -134,7 +121,7 @@ const SellerProfileHeader = ({
 
               <Dialog>
                 <DialogTrigger asChild>
-                  <Button variant="ghost" size="sm" className="gap-1 text-foreground hover:text-foreground">
+                  <Button variant="ghost" size="sm" className="gap-1">
                     <strong>{profile.following_count || 0}</strong>
                     <span className="text-muted-foreground">following</span>
                     <Users className="h-4 w-4 ml-1 text-muted-foreground" />
@@ -155,7 +142,7 @@ const SellerProfileHeader = ({
           <Button
             onClick={handleFollow}
             variant={isFollowing ? "outline" : "default"}
-            className="w-full md:w-auto text-primary-foreground hover:text-primary-foreground"
+            className="w-full md:w-auto"
             size={isMobile ? "lg" : "default"}
           >
             {isFollowing ? (

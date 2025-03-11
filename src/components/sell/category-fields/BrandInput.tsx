@@ -19,7 +19,7 @@ const BrandInput = ({ updateFormData }: BrandInputProps) => {
 
   return (
     <div className="space-y-2">
-      <Label htmlFor="brand" className="text-primary font-medium">
+      <Label htmlFor="brand">
         Brand
       </Label>
       <Input
@@ -28,7 +28,6 @@ const BrandInput = ({ updateFormData }: BrandInputProps) => {
         placeholder="Enter brand name"
         value={brand}
         onChange={(e) => setBrand(e.target.value)}
-        className="text-primary border-primary/30"
       />
     </div>
   );

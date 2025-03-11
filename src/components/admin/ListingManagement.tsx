@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useLocation } from "react-router-dom";
@@ -6,21 +7,18 @@ import { useToast } from "@/components/ui/use-toast";
 import ListingSearchBar from "./ListingSearchBar";
 import ListingTable from "./ListingTable";
 import { type Listing } from "./types";
-import { Loader2, ListChecks, Clock, CheckCircle, XCircle, Star } from "lucide-react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { motion } from "framer-motion";
+import { Loader2 } from "lucide-react";
 
 const ListingManagement = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const { toast } = useToast();
   const location = useLocation();
-  const initialFilter = location.state?.filter || 'all';
-  const [activeFilter, setActiveFilter] = useState(initialFilter);
+  const filter = location.state?.filter || 'all';
 
   const { data: listings, isLoading, error, refetch } = useQuery({
-    queryKey: ['admin-listings', activeFilter],
+    queryKey: ['admin-listings', filter],
     queryFn: async () => {
-      console.log('Fetching admin listings with filter:', activeFilter);
+      console.log('Fetching admin listings with filter:', filter);
       const { data: { user } } = await supabase.auth.getUser();
       
       if (!user) {
@@ -42,13 +40,13 @@ const ListingManagement = () => {
         .order('created_at', { ascending: false });
 
       // Apply filters based on dashboard metrics selection
-      if (activeFilter === 'pending') {
+      if (filter === 'pending') {
         query = query.eq('status', 'pending');
-      } else if (activeFilter === 'approved') {
+      } else if (filter === 'approved') {
         query = query.eq('status', 'approved');
-      } else if (activeFilter === 'rejected') {
+      } else if (filter === 'rejected') {
         query = query.eq('status', 'rejected');
-      } else if (activeFilter === 'featured') {
+      } else if (filter === 'featured') {
         query = query.eq('featured', true);
       }
 
@@ -207,14 +205,6 @@ const ListingManagement = () => {
     listing.category.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const tabItems = [
-    { id: 'all', label: 'All Listings', icon: <ListChecks className="h-4 w-4 mr-1 text-black" /> },
-    { id: 'pending', label: 'Pending', icon: <Clock className="h-4 w-4 mr-1 text-black" /> },
-    { id: 'approved', label: 'Approved', icon: <CheckCircle className="h-4 w-4 mr-1 text-black" /> },
-    { id: 'rejected', label: 'Rejected', icon: <XCircle className="h-4 w-4 mr-1 text-black" /> },
-    { id: 'featured', label: 'Featured', icon: <Star className="h-4 w-4 mr-1 text-black" /> },
-  ];
-
   if (error) {
     return (
       <div className="text-red-500 p-4">
@@ -224,61 +214,31 @@ const ListingManagement = () => {
   }
 
   return (
-    <motion.div 
-      className="space-y-6"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.3 }}
-    >
-      <div className="flex flex-col gap-6">
-        <Tabs 
-          defaultValue={activeFilter} 
-          className="w-full"
-          onValueChange={(value) => setActiveFilter(value)}
-        >
-          <TabsList className="w-full md:w-auto flex overflow-x-auto no-scrollbar mb-2 p-1 bg-muted/30">
-            {tabItems.map(tab => (
-              <TabsTrigger 
-                key={tab.id} 
-                value={tab.id}
-                className="flex items-center data-[state=active]:bg-primary data-[state=active]:text-black"
-              >
-                {tab.icon}
-                {tab.label}
-              </TabsTrigger>
-            ))}
-          </TabsList>
-
-          <div className="mt-4">
-            <ListingSearchBar 
-              searchTerm={searchTerm}
-              onSearchChange={setSearchTerm}
-            />
-          </div>
-
-          {tabItems.map(tab => (
-            <TabsContent key={tab.id} value={tab.id} className="mt-2">
-              {isLoading ? (
-                <div className="flex items-center justify-center p-8">
-                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                </div>
-              ) : listings?.length === 0 ? (
-                <div className="text-center p-8 text-muted-foreground">
-                  No {tab.id !== 'all' ? tab.label.toLowerCase() : ''} listings found
-                </div>
-              ) : (
-                <ListingTable 
-                  listings={filteredListings || []}
-                  onStatusUpdate={(id, status) => handleStatusUpdate(id, status)}
-                  onFeaturedToggle={(id, featured) => handleFeaturedToggle(id, featured)}
-                  onDelete={(id) => handleDelete(id)}
-                />
-              )}
-            </TabsContent>
-          ))}
-        </Tabs>
+    <div className="space-y-4">
+      <div className="flex items-center gap-4">
+        <ListingSearchBar 
+          searchTerm={searchTerm}
+          onSearchChange={setSearchTerm}
+        />
       </div>
-    </motion.div>
+
+      {isLoading ? (
+        <div className="flex items-center justify-center p-8">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      ) : listings?.length === 0 ? (
+        <div className="text-center p-8 text-muted-foreground">
+          No listings found
+        </div>
+      ) : (
+        <ListingTable 
+          listings={filteredListings || []}
+          onStatusUpdate={handleStatusUpdate}
+          onFeaturedToggle={handleFeaturedToggle}
+          onDelete={handleDelete}
+        />
+      )}
+    </div>
   );
 };
 
