@@ -5,27 +5,27 @@
  
 @layer base {
   :root {
-    --background: 210 40% 98%;
-    --foreground: 222 47% 11%;
+    --background: 260 40% 98%;
+    --foreground: 262 47% 11%;
     --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
+    --card-foreground: 262 47% 11%;
     --popover: 0 0% 100%;
-    --popover-foreground: 222 47% 11%;
-    --primary: 221 83% 53%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96%;
-    --secondary-foreground: 222 47% 11%;
-    --muted: 210 40% 96%;
-    --muted-foreground: 215 16% 47%;
-    --accent: 221 83% 53%;
-    --accent-foreground: 210 40% 98%;
+    --popover-foreground: 262 47% 11%;
+    --primary: 265 83% 53%;
+    --primary-foreground: 260 40% 98%;
+    --secondary: 260 40% 96%;
+    --secondary-foreground: 262 47% 11%;
+    --muted: 260 40% 96%;
+    --muted-foreground: 265 16% 47%;
+    --accent: 265 83% 53%;
+    --accent-foreground: 260 40% 98%;
     --destructive: 0 84% 60%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214 32% 91%;
-    --input: 214 32% 91%;
-    --ring: 221 83% 53%;
+    --destructive-foreground: 260 40% 98%;
+    --border: 264 32% 91%;
+    --input: 264 32% 91%;
+    --ring: 265 83% 53%;
     --radius: 0.75rem;
-    --icon-color: 222 47% 11%; /* Changed from primary to black/foreground color */
+    --icon-color: 262 47% 11%;
   }
 }
 
@@ -39,7 +39,7 @@
 
   /* Content spacing for fixed header */
   main {
-    @apply pt-28; /* Increased space for the fixed navbar and product pages */
+    @apply pt-28;
   }
 
   /* Enhanced text and headings */
@@ -52,29 +52,28 @@
   }
 
   p {
-    @apply text-foreground/90 leading-relaxed; /* Increased text opacity for better visibility */
+    @apply text-foreground/90 leading-relaxed;
   }
 
   /* Enhanced input styling */
   input, textarea, select {
-    @apply bg-background border-input/30 focus-visible:ring-2 focus-visible:ring-primary/50 
+    @apply bg-background border-primary/30 focus-visible:ring-2 focus-visible:ring-primary/50 
            focus-visible:ring-offset-2 transition-all duration-200 shadow-sm;
   }
 
   /* Fix text colors for elements on colored backgrounds */
-  /* Ensuring text on colored backgrounds is always white and visible */
   [class*="bg-primary"] *,
+  [class*="bg-purple"] *,
+  [class*="bg-violet"] *,
+  [class*="bg-indigo"] *,
   [class*="bg-blue"] *,
   [class*="bg-green"] *,
   [class*="bg-red"] *,
   [class*="bg-orange"] *,
   [class*="bg-yellow"] *,
   [class*="bg-teal"] *,
-  [class*="bg-violet"] *,
-  [class*="bg-pink"] *,
-  [class*="bg-indigo"] *,
   [class*="bg-cyan"] *,
-  [class*="bg-purple"] *,
+  [class*="bg-pink"] *,
   [class*="bg-emerald"] * {
     @apply text-white;
   }
@@ -83,7 +82,7 @@
   .category-item span, 
   .category-name,
   .category-label {
-    @apply text-foreground font-medium;
+    @apply text-black font-medium;
   }
 
   /* Category icon labels should be visible */
@@ -92,81 +91,16 @@
   }
   
   /* Ensure SVG elements have consistent coloring */
-  [class*="bg-primary"] svg,
-  [class*="bg-primary"] path,
-  [class*="bg-blue"] svg,
-  [class*="bg-blue"] path,
-  [class*="bg-green"] svg,
-  [class*="bg-green"] path,
-  [class*="bg-red"] svg,
-  [class*="bg-red"] path,
-  [class*="bg-orange"] svg,
-  [class*="bg-orange"] path,
-  [class*="bg-yellow"] svg,
-  [class*="bg-yellow"] path,
-  [class*="bg-teal"] svg,
-  [class*="bg-teal"] path,
-  [class*="bg-violet"] svg,
-  [class*="bg-violet"] path,
-  [class*="bg-pink"] svg,
-  [class*="bg-pink"] path,
-  [class*="bg-indigo"] svg,
-  [class*="bg-indigo"] path,
-  [class*="bg-cyan"] svg,
-  [class*="bg-cyan"] path,
-  [class*="bg-purple"] svg,
-  [class*="bg-purple"] path,
-  [class*="bg-emerald"] svg,
-  [class*="bg-emerald"] path {
-    @apply text-white;
-  }
-
-  /* Default for buttons, links, and interactive elements */
-  button, 
-  a, 
-  [role="button"] {
-    @apply transition-colors duration-200;
-  }
-  
-  /* Fix hover text colors to not change on hover */
-  button:hover,
-  a:hover,
-  [role="button"]:hover {
-    @apply text-current;
-  }
-
-  /* Enhanced button hover effects */
-  button {
-    @apply hover:shadow-md active:scale-[0.98] transition-all duration-200;
-  }
-
-  /* Card enhancements with increased spacing */
-  .card {
-    @apply shadow-sm hover:shadow-md transition-all duration-200 bg-card/95 backdrop-blur-sm
-           border border-border/20;
-  }
-
-  /* Fixed Admin Panel Tabs - black text on admin tabs */
-  .admin-tabs [data-state="active"] {
-    @apply bg-primary text-white !important;
-  }
-  
-  /* Inactive Admin Panel Tabs should have black text */
-  .admin-tabs [data-state="inactive"] {
-    @apply text-black !important;
-  }
-
-  /* Global icon styling - black text instead of primary */
   svg:not([class*="text-"]) {
-    @apply text-foreground; /* Changed from primary to foreground */
+    @apply text-black;
   }
 
-  /* Specific icon overrides for locations where we want border primary but icon black */
-  .icon-container-border-primary {
+  /* Default icon styles - border should be primary color, icons should be black */
+  .icon-container {
     @apply border border-primary/30 rounded-md p-1;
   }
   
-  .icon-container-border-primary svg {
+  .icon-container svg {
     @apply text-black;
   }
 
@@ -184,17 +118,39 @@
     @apply text-black;
   }
 
-  /* Category item labels - ensure visibility */
-  .category-item-label {
-    @apply text-foreground font-medium mt-2;
+  /* Form fields and labels */
+  .form-label {
+    @apply text-black font-medium;
+  }
+
+  .form-input {
+    @apply text-black border-primary/30;
+  }
+
+  /* Admin panel tabs */
+  .admin-tabs [data-state="active"] {
+    @apply bg-primary text-white !important;
   }
   
-  /* SellStepOne category grid - ensure text is black */
-  .sell-category-grid button {
-    @apply text-black;
+  .admin-tabs [data-state="inactive"] {
+    @apply text-black !important;
+  }
+
+  /* Default for buttons, links, and interactive elements */
+  button, 
+  a, 
+  [role="button"] {
+    @apply transition-colors duration-200;
   }
   
-  .sell-category-grid button[class*="bg-primary"] {
-    @apply text-white;
+  /* Enhanced button hover effects */
+  button {
+    @apply hover:shadow-md active:scale-[0.98] transition-all duration-200;
+  }
+
+  /* Card enhancements with increased spacing */
+  .card {
+    @apply shadow-sm hover:shadow-md transition-all duration-200 bg-card/95 backdrop-blur-sm
+           border border-border/20;
   }
 }

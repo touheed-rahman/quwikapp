@@ -1,3 +1,4 @@
+
 import { Bell, MessageSquare, User, HelpCircle, ListOrdered } from "lucide-react";
 import { Button } from "./ui/button";
 import { Link } from "react-router-dom";
@@ -80,7 +81,7 @@ const Header = () => {
   };
 
   return (
-    <header className="fixed top-0 left-0 right-0 bg-white border-b border-gray-200 z-50 shadow-sm">
+    <header className="fixed top-0 left-0 right-0 bg-white border-b border-primary/10 z-50 shadow-sm">
       <div className="container mx-auto px-4 h-16 flex items-center gap-4">
         <Link to="/" className="shrink-0">
           <h1 className="text-2xl font-semibold bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent">
@@ -94,11 +95,11 @@ const Header = () => {
               <Button 
                 variant="ghost" 
                 size="icon" 
-                className="relative hidden md:flex flex-col items-center justify-center h-16 w-16 gap-0.5 hover:bg-gray-100 text-foreground"
+                className="relative hidden md:flex flex-col items-center justify-center h-16 w-16 gap-0.5 hover:bg-gray-100 text-black"
                 onClick={handleNotificationClick}
               >
-                <Bell className="h-5 w-5 text-foreground" />
-                <span className="text-[10px] text-foreground">Notifications</span>
+                <Bell className="h-5 w-5 text-black" />
+                <span className="text-[10px] text-black">Notifications</span>
                 {unreadCount > 0 && (
                   <Badge 
                     className="absolute top-2 right-2 h-5 w-5 flex items-center justify-center bg-destructive hover:bg-destructive p-0 text-white"
@@ -112,10 +113,10 @@ const Header = () => {
                   variant="ghost" 
                   size="icon"
                   onClick={() => setIsChatOpen(true)}
-                  className="flex flex-col items-center justify-center h-16 w-16 gap-0.5 hover:bg-gray-100 text-foreground"
+                  className="flex flex-col items-center justify-center h-16 w-16 gap-0.5 hover:bg-gray-100 text-black"
                 >
-                  <MessageSquare className="h-5 w-5 text-foreground" />
-                  <span className="text-[10px] text-foreground">Chats</span>
+                  <MessageSquare className="h-5 w-5 text-black" />
+                  <span className="text-[10px] text-black">Chats</span>
                 </Button>
                 {unreadCount > 0 && (
                   <Badge 
@@ -126,25 +127,25 @@ const Header = () => {
                 )}
               </div>
               <Link to="/my-ads" className="hidden md:block">
-                <Button variant="ghost" size="icon" className="flex flex-col items-center justify-center h-16 w-16 gap-0.5 hover:bg-gray-100 text-foreground">
-                  <ListOrdered className="h-5 w-5 text-foreground" />
-                  <span className="text-[10px] text-foreground">My Ads</span>
+                <Button variant="ghost" size="icon" className="flex flex-col items-center justify-center h-16 w-16 gap-0.5 hover:bg-gray-100 text-black">
+                  <ListOrdered className="h-5 w-5 text-black" />
+                  <span className="text-[10px] text-black">My Ads</span>
                 </Button>
               </Link>
               <Link to="/profile">
-                <Button variant="ghost" size="icon" className="flex flex-col items-center justify-center h-16 w-16 gap-0.5 hover:bg-gray-100 text-foreground">
-                  <User className="h-5 w-5 text-foreground" />
-                  <span className="text-[10px] text-foreground">Profile</span>
+                <Button variant="ghost" size="icon" className="flex flex-col items-center justify-center h-16 w-16 gap-0.5 hover:bg-gray-100 text-black">
+                  <User className="h-5 w-5 text-black" />
+                  <span className="text-[10px] text-black">Profile</span>
                 </Button>
               </Link>
               <Button 
                 variant="ghost" 
                 size="icon"
                 onClick={() => setIsFeedbackOpen(true)}
-                className="flex flex-col items-center justify-center h-16 w-16 gap-0.5 hover:bg-gray-100 text-foreground"
+                className="flex flex-col items-center justify-center h-16 w-16 gap-0.5 hover:bg-gray-100 text-black"
               >
-                <HelpCircle className="h-5 w-5 text-foreground" />
-                <span className="text-[10px] text-foreground">Help</span>
+                <HelpCircle className="h-5 w-5 text-black" />
+                <span className="text-[10px] text-black">Help</span>
               </Button>
               <Link to="/sell" className="hidden md:block shrink-0">
                 <Button>Sell Now</Button>
@@ -156,10 +157,10 @@ const Header = () => {
                 variant="ghost" 
                 size="icon"
                 onClick={() => setIsFeedbackOpen(true)}
-                className="flex flex-col items-center justify-center h-16 w-16 gap-0.5 hover:bg-gray-100 text-foreground"
+                className="flex flex-col items-center justify-center h-16 w-16 gap-0.5 hover:bg-gray-100 text-black"
               >
-                <HelpCircle className="h-5 w-5 text-foreground" />
-                <span className="text-[10px] text-foreground">Help</span>
+                <HelpCircle className="h-5 w-5 text-black" />
+                <span className="text-[10px] text-black">Help</span>
               </Button>
               <Link to="/profile">
                 <Button>Sign In</Button>

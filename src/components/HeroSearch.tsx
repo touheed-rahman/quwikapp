@@ -91,7 +91,7 @@ const HeroSearch = () => {
   return (
     <div className="w-full max-w-4xl mx-auto px-4 py-6 md:py-8">
       <div className="bg-gradient-to-br from-primary/10 to-primary/5 backdrop-blur-sm rounded-xl shadow-lg p-4 md:p-6">
-        <h2 className="text-xl md:text-2xl font-bold text-center mb-4 text-primary">
+        <h2 className="text-xl md:text-2xl font-bold text-center mb-4 text-black">
           Find Anything You Need
         </h2>
         <div className="flex flex-col gap-3">
@@ -104,12 +104,12 @@ const HeroSearch = () => {
               <Input
                 type="text"
                 placeholder="What are you looking for?"
-                className="pl-10 pr-4 h-12 text-sm md:text-base w-full border-primary/20 focus-visible:ring-primary/20 text-foreground"
+                className="pl-10 pr-4 h-12 text-sm md:text-base w-full border-primary/30 focus-visible:ring-primary/30 text-black"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onKeyPress={handleKeyPress}
               />
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-primary search-icon" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-primary" />
             </div>
             <Button 
               size="lg" 

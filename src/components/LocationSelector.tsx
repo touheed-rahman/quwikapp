@@ -100,16 +100,16 @@ const LocationSelector = ({ value, onChange }: { value: string | null, onChange:
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className="w-full justify-between text-muted-foreground hover:text-foreground ring-offset-background"
+          className="w-full justify-between text-black border-primary/30 hover:border-primary/50 hover:text-black"
         >
           <div className="flex items-center gap-2 truncate">
-            <MapPin className="h-4 w-4 shrink-0 text-primary location-icon" />
+            <MapPin className="h-4 w-4 shrink-0 text-primary" />
             <span className="truncate">{value ? getLocationName(value) : "Select location"}</span>
           </div>
         </Button>
       </PopoverTrigger>
       <PopoverContent 
-        className="w-[300px] p-0" 
+        className="w-[300px] p-0 bg-white border border-primary/20 shadow-md" 
         align="start"
       >
         <Command>
@@ -117,7 +117,7 @@ const LocationSelector = ({ value, onChange }: { value: string | null, onChange:
             {loading ? (
               <CommandEmpty>
                 <Loader2 className="h-4 w-4 animate-spin mx-auto text-primary" />
-                <p className="text-sm text-muted-foreground text-center mt-2">
+                <p className="text-sm text-black text-center mt-2">
                   Loading...
                 </p>
               </CommandEmpty>
@@ -126,7 +126,7 @@ const LocationSelector = ({ value, onChange }: { value: string | null, onChange:
                 <div className="p-2">
                   <Button
                     variant="ghost"
-                    className="w-full justify-start font-normal hover:bg-primary hover:text-white"
+                    className="w-full justify-start font-normal text-black hover:bg-primary hover:text-white"
                     onClick={() => {
                       setSelectedState(null);
                       setCities([]);
@@ -141,7 +141,7 @@ const LocationSelector = ({ value, onChange }: { value: string | null, onChange:
                   {cities.map((city) => (
                     <div
                       key={city.id}
-                      className="px-2 py-1.5 cursor-pointer hover:bg-primary hover:text-white"
+                      className="px-2 py-1.5 cursor-pointer hover:bg-primary hover:text-white text-black"
                       onClick={() => handleCitySelect(city)}
                     >
                       {city.name}
@@ -154,7 +154,7 @@ const LocationSelector = ({ value, onChange }: { value: string | null, onChange:
                 {states.map((state) => (
                   <div
                     key={state.id}
-                    className="px-2 py-1.5 cursor-pointer hover:bg-primary hover:text-white flex items-center justify-between"
+                    className="px-2 py-1.5 cursor-pointer hover:bg-primary hover:text-white flex items-center justify-between text-black"
                     onClick={() => handleStateSelect(state)}
                   >
                     <span>{state.name}</span>

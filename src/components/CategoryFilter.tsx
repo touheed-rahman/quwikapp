@@ -89,11 +89,11 @@ const CategoryFilter = () => {
               >
                 {showAll ? (
                   <>
-                    Show Less <ChevronUp className="h-4 w-4 text-primary filter-icon" />
+                    Show Less <ChevronUp className="h-4 w-4 text-primary" />
                   </>
                 ) : (
                   <>
-                    Show All <ChevronDown className="h-4 w-4 text-primary filter-icon" />
+                    Show All <ChevronDown className="h-4 w-4 text-primary" />
                   </>
                 )}
               </button>
@@ -143,7 +143,7 @@ const CategoryFilter = () => {
                         >
                           <Icon className="h-8 w-8 md:h-8 md:w-8 text-white" />
                         </motion.div>
-                        <span className="text-xs md:text-sm font-medium text-center line-clamp-1 text-black category-label">
+                        <span className="text-xs md:text-sm font-medium text-center line-clamp-1 text-black">
                           {category.name}
                         </span>
                       </motion.button>
