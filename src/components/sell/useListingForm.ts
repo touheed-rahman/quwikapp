@@ -84,7 +84,7 @@ export const useListingForm = () => {
     }
 
     // Category-specific validations
-    if (formData.category === 'vehicles' && (!formData.km_driven && formData.km_driven !== 0)) {
+    if (formData.category === 'vehicles' && (formData.km_driven === undefined || formData.km_driven === null)) {
       toast({
         title: "Missing Kilometers Driven",
         description: "Please enter the kilometers driven",
@@ -104,6 +104,7 @@ export const useListingForm = () => {
     }
 
     setIsSubmitting(true);
+    console.log("Form data before submission:", formData);
 
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -145,7 +146,7 @@ export const useListingForm = () => {
         user_id: user.id,
         status: 'pending',
         // Include specs and other category-specific fields
-        km_driven: formData.km_driven !== undefined ? formData.km_driven : null,
+        km_driven: formData.km_driven !== undefined ? Number(formData.km_driven) : null,
         brand: formData.brand || null,
         specs: formData.specs || null
       };
@@ -163,11 +164,11 @@ export const useListingForm = () => {
 
       setTimeout(() => navigate('/'), 1000);
 
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error posting ad:', error);
       toast({
         title: "Error",
-        description: "Failed to post your ad. Please try again.",
+        description: error.message || "Failed to post your ad. Please try again.",
         variant: "destructive"
       });
     } finally {
