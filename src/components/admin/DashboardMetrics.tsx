@@ -1,108 +1,19 @@
 
-import { Card } from "@/components/ui/card";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { Shield, Users, ListChecks, Clock, Star, XCircle, ArrowUpRight } from "lucide-react";
-import { useNavigate } from "react-router-dom";
-import { useEffect } from "react";
 import { motion } from "framer-motion";
-
-interface DashboardMetrics {
-  totalListings: number;
-  pendingListings: number;
-  approvedListings: number;
-  totalUsers: number;
-  featuredListings: number;
-  rejectedListings: number;
-}
+import { useNavigate } from "react-router-dom";
+import { Shield, Users, ListChecks, Clock, Star, XCircle } from "lucide-react";
+import MetricCard from "./MetricCard";
+import { useAdminMetrics } from "@/hooks/useAdminMetrics";
 
 const DashboardMetrics = () => {
   const navigate = useNavigate();
+  const { metrics, isLoading } = useAdminMetrics();
   
-  const { data: metrics, isLoading, refetch } = useQuery<DashboardMetrics>({
-    queryKey: ['admin-metrics'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .rpc('get_dashboard_metrics') as { 
-          data: DashboardMetrics | null; 
-          error: Error | null 
-        };
-
-      if (error) {
-        console.error('Error fetching metrics:', error);
-        return {
-          totalListings: 0,
-          pendingListings: 0,
-          approvedListings: 0,
-          totalUsers: 0,
-          featuredListings: 0,
-          rejectedListings: 0
-        };
-      }
-
-      return data || {
-        totalListings: 0,
-        pendingListings: 0,
-        approvedListings: 0,
-        totalUsers: 0,
-        featuredListings: 0,
-        rejectedListings: 0
-      };
-    },
-    staleTime: 1000, // Data considered fresh for 1 second
-    gcTime: 3000, // Keep unused data for 3 seconds (replaces old cacheTime)
-    refetchOnWindowFocus: false
-  });
-
-  // Optimize real-time subscriptions
-  useEffect(() => {
-    let timeoutId: NodeJS.Timeout;
-    const debouncedRefetch = () => {
-      clearTimeout(timeoutId);
-      timeoutId = setTimeout(() => {
-        refetch();
-      }, 300);
-    };
-
-    const channel = supabase
-      .channel('dashboard-metrics')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'listings'
-        },
-        () => {
-          console.log('Listings changed, triggering debounced refetch...');
-          debouncedRefetch();
-        }
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'profiles'
-        },
-        () => {
-          console.log('Profiles changed, triggering debounced refetch...');
-          debouncedRefetch();
-        }
-      )
-      .subscribe();
-
-    return () => {
-      clearTimeout(timeoutId);
-      supabase.removeChannel(channel);
-    };
-  }, [refetch]);
-
   if (isLoading) {
     return <div>Loading metrics...</div>;
   }
 
-  const cards = [
+  const metricCards = [
     {
       title: "Total Listings",
       value: metrics?.totalListings || 0,
@@ -166,34 +77,18 @@ const DashboardMetrics = () => {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
     >
-      {cards.map((card, index) => (
-        <motion.div
+      {metricCards.map((card, index) => (
+        <MetricCard
           key={card.title}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: index * 0.05, duration: 0.3 }}
-        >
-          <Card 
-            className={`p-6 ${card.bgColor} border-none cursor-pointer transition-all duration-200 ${card.hoverBgColor} hover:shadow-md`}
-            onClick={card.onClick}
-          >
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">
-                  {card.title}
-                </p>
-                <p className="text-2xl font-bold">{card.value}</p>
-              </div>
-              <div className="flex flex-col items-end gap-2">
-                <card.icon className={`h-8 w-8 ${card.color}`} />
-                <div className={`text-xs font-medium flex items-center gap-1 ${card.color}`}>
-                  <span>View</span>
-                  <ArrowUpRight className="h-3 w-3" />
-                </div>
-              </div>
-            </div>
-          </Card>
-        </motion.div>
+          title={card.title}
+          value={card.value}
+          icon={card.icon}
+          color={card.color}
+          bgColor={card.bgColor}
+          hoverBgColor={card.hoverBgColor}
+          onClick={card.onClick}
+          index={index}
+        />
       ))}
     </motion.div>
   );
