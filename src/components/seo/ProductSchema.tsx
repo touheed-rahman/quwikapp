@@ -44,13 +44,13 @@ const ProductSchema = ({
 
   // Map condition to standard schema values
   let itemCondition = "https://schema.org/UsedCondition";
-  if (condition === "New") {
+  if (condition === "new") {
     itemCondition = "https://schema.org/NewCondition";
-  } else if (condition === "Like New") {
+  } else if (condition === "excellent") {
     itemCondition = "https://schema.org/UsedCondition";
-  } else if (condition === "Good") {
+  } else if (condition === "good") {
     itemCondition = "https://schema.org/UsedCondition";
-  } else if (condition === "Fair") {
+  } else if (condition === "moderate") {
     itemCondition = "https://schema.org/UsedCondition";
   }
 

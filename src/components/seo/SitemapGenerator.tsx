@@ -1,6 +1,7 @@
 
 import { useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { categories } from '@/types/categories';
 
 const generateSitemap = async () => {
   const baseUrl = window.location.origin;
@@ -18,15 +19,8 @@ const generateSitemap = async () => {
     return null;
   }
   
-  // Fetch categories
-  const { data: categories, error: categoriesError } = await supabase
-    .from('categories')
-    .select('id, name, slug');
-    
-  if (categoriesError) {
-    console.error('Error fetching categories for sitemap:', categoriesError);
-    return null;
-  }
+  // Use categories from the imported categories array instead of fetching from DB
+  // since we don't have a categories table in Supabase
   
   // Create XML
   let xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
@@ -45,12 +39,15 @@ const generateSitemap = async () => {
     });
   }
   
-  // Add categories
-  if (categories) {
-    categories.forEach(category => {
-      xml += `  <url>\n    <loc>${baseUrl}/category/${category.slug}</loc>\n    <changefreq>weekly</changefreq>\n    <priority>0.6</priority>\n  </url>\n`;
+  // Add categories from the imported categories array
+  categories.forEach(category => {
+    xml += `  <url>\n    <loc>${baseUrl}/category/${category.id}</loc>\n    <changefreq>weekly</changefreq>\n    <priority>0.6</priority>\n  </url>\n`;
+    
+    // Add subcategories for each category
+    category.subcategories.forEach(subcategory => {
+      xml += `  <url>\n    <loc>${baseUrl}/category/${category.id}/${subcategory.id}</loc>\n    <changefreq>weekly</changefreq>\n    <priority>0.5</priority>\n  </url>\n`;
     });
-  }
+  });
   
   xml += '</urlset>';
   
