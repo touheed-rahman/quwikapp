@@ -39,11 +39,11 @@ const categoryIcons: Record<string, any> = {
   services: Wrench,
 };
 
-// Updated category colors - changed vehicles to indigo and electronics to teal
+// Updated category colors - kept vehicles as indigo and electronics as teal
 const categoryColors: Record<string, string> = {
   mobile: "bg-primary",
-  vehicles: "bg-indigo-500", // Changed from blue-500
-  electronics: "bg-teal-600", // Changed from blue-600
+  vehicles: "bg-indigo-500",
+  electronics: "bg-teal-600",
   furniture: "bg-orange-500", 
   property: "bg-emerald-600",
   jobs: "bg-indigo-500",
@@ -81,7 +81,7 @@ const CategoryFilter = () => {
       <ScrollArea className="w-full rounded-xl border border-primary/10 shadow-md bg-white overflow-hidden">
         <div className="p-4 space-y-4">
           <div className="flex items-center justify-between pb-2">
-            <h3 className="text-lg font-bold text-foreground">Categories</h3>
+            <h3 className="text-lg font-bold text-black">Categories</h3>
             {rows.length > initialRows && (
               <button
                 onClick={() => setShowAll(!showAll)}
@@ -143,7 +143,7 @@ const CategoryFilter = () => {
                         >
                           <Icon className="h-8 w-8 md:h-8 md:w-8 text-white" />
                         </motion.div>
-                        <span className="text-xs md:text-sm font-medium text-center line-clamp-1 text-foreground category-label">
+                        <span className="text-xs md:text-sm font-medium text-center line-clamp-1 text-black category-label">
                           {category.name}
                         </span>
                       </motion.button>

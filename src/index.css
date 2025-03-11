@@ -25,7 +25,7 @@
     --input: 214 32% 91%;
     --ring: 221 83% 53%;
     --radius: 0.75rem;
-    --icon-color: 221 83% 53%; /* Global icon color variable */
+    --icon-color: 222 47% 11%; /* Changed from primary to black/foreground color */
   }
 }
 
@@ -146,27 +146,55 @@
            border border-border/20;
   }
 
-  /* Fixed Admin Panel Tabs - white text on primary background */
+  /* Fixed Admin Panel Tabs - black text on admin tabs */
   .admin-tabs [data-state="active"] {
     @apply bg-primary text-white !important;
   }
-
-  /* Global icon styling for consistency */
-  svg:not([class*="text-"]) {
-    @apply text-primary;
+  
+  /* Inactive Admin Panel Tabs should have black text */
+  .admin-tabs [data-state="inactive"] {
+    @apply text-black !important;
   }
 
-  /* Specific icon overrides for locations where we want consistent treatment */
-  .location-icon svg,
-  .product-icon svg,
-  .navigation-icon svg,
-  .search-icon svg,
-  .filter-icon svg {
-    @apply text-primary;
+  /* Global icon styling - black text instead of primary */
+  svg:not([class*="text-"]) {
+    @apply text-foreground; /* Changed from primary to foreground */
+  }
+
+  /* Specific icon overrides for locations where we want border primary but icon black */
+  .icon-container-border-primary {
+    @apply border border-primary/30 rounded-md p-1;
+  }
+  
+  .icon-container-border-primary svg {
+    @apply text-black;
+  }
+
+  /* Section titles with icons should have black icons */
+  .section-title-with-icon {
+    @apply flex items-center gap-2;
+  }
+  
+  .section-title-with-icon svg {
+    @apply text-black bg-primary/10 p-1.5 rounded-full;
+  }
+
+  /* Featured and Recent sections title area */
+  .section-title-area svg {
+    @apply text-black;
   }
 
   /* Category item labels - ensure visibility */
   .category-item-label {
     @apply text-foreground font-medium mt-2;
+  }
+  
+  /* SellStepOne category grid - ensure text is black */
+  .sell-category-grid button {
+    @apply text-black;
+  }
+  
+  .sell-category-grid button[class*="bg-primary"] {
+    @apply text-white;
   }
 }

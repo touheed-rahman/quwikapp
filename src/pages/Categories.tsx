@@ -43,8 +43,8 @@ const Categories = () => {
           animate="show"
         >
           <motion.div variants={item} className="space-y-2 mt-4">
-            <h1 className="text-2xl md:text-3xl font-bold text-foreground flex items-center gap-2">
-              <Tag className="h-6 w-6 text-primary" />
+            <h1 className="text-2xl md:text-3xl font-bold text-black flex items-center gap-2 section-title-with-icon">
+              <Tag className="h-6 w-6 text-black" />
               Browse Categories
             </h1>
             <p className="text-black font-medium">Find what you're looking for by category</p>

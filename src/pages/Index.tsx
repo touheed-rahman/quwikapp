@@ -89,11 +89,11 @@ const Index = () => {
               className="space-y-4"
               variants={item}
             >
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 section-title-area">
                 <div className="bg-primary/10 p-1.5 rounded-full">
-                  <TrendingUp className="h-5 w-5 text-primary" />
+                  <TrendingUp className="h-5 w-5 text-black" />
                 </div>
-                <h2 className="text-xl font-bold text-foreground/90">Featured Listings</h2>
+                <h2 className="text-xl font-bold text-black">Featured Listings</h2>
               </div>
               
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-4">
@@ -125,11 +125,11 @@ const Index = () => {
             className="space-y-4"
             variants={item}
           >
-            <div className="flex items-center gap-2 mb-4">
+            <div className="flex items-center gap-2 mb-4 section-title-area">
               <div className="bg-primary/10 p-1.5 rounded-full">
-                <Clock className="h-5 w-5 text-primary" />
+                <Clock className="h-5 w-5 text-black" />
               </div>
-              <h2 className="text-xl font-bold text-foreground/90">Recent Listings</h2>
+              <h2 className="text-xl font-bold text-black">Recent Listings</h2>
             </div>
             
             {selectedLocation && (
@@ -139,8 +139,8 @@ const Index = () => {
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.3 }}
               >
-                <MapPin className="h-4 w-4 text-primary" />
-                <span className="font-medium">{selectedLocation.split('|')[0]}</span>
+                <MapPin className="h-4 w-4 text-black" />
+                <span className="font-medium text-black">{selectedLocation.split('|')[0]}</span>
               </motion.div>
             )}
             

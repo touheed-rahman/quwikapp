@@ -63,8 +63,8 @@ const SellFormDetails = ({
     >
       <Card className="bg-white rounded-lg shadow-md border-primary/10 overflow-hidden w-full">
         <div className="p-3 bg-gradient-to-r from-primary/10 to-primary/5 border-b border-primary/10">
-          <h3 className="font-medium text-lg flex items-center text-primary/90">
-            <Check className="w-5 h-5 mr-2 text-primary" />
+          <h3 className="font-medium text-lg flex items-center text-black">
+            <Check className="w-5 h-5 mr-2 text-black" />
             Item Details
           </h3>
         </div>
@@ -101,7 +101,7 @@ const SellFormDetails = ({
           
           <div className="transition-all duration-300">
             <div>
-              <label className="text-sm font-medium mb-1.5 block">
+              <label className="text-sm font-medium mb-1.5 block text-black">
                 Location *
               </label>
               <LocationSelector 
