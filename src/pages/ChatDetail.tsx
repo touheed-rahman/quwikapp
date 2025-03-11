@@ -12,6 +12,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { useOnlineUsers } from "@/hooks/use-online-users";
 import QuickMessageSuggestions from "@/components/chat/QuickMessageSuggestions";
 import ChatTipBox from "@/components/chat/ChatTipBox";
+import { motion } from "framer-motion";
 
 const ChatDetail = () => {
   const { id } = useParams();
@@ -93,7 +94,7 @@ const ChatDetail = () => {
   }, [id, sessionUser, navigate, toast]);
 
   const handleBack = () => {
-    navigate('/chat');
+    navigate('/');
   };
 
   const handleQuickMessage = (message: string) => {
@@ -104,18 +105,28 @@ const ChatDetail = () => {
 
   if (!sessionUser) {
     return (
-      <div className="flex flex-col items-center justify-center h-screen bg-background">
+      <motion.div 
+        className="flex flex-col items-center justify-center h-screen bg-background"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.4 }}
+      >
         <p className="text-lg mb-4">Please sign in to view this chat</p>
         <Button onClick={() => navigate('/profile')}>Sign In</Button>
-      </div>
+      </motion.div>
     );
   }
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-screen bg-background">
-        <Loader2 className="h-8 w-8 animate-spin" />
-      </div>
+      <motion.div 
+        className="flex items-center justify-center h-screen bg-background"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.4 }}
+      >
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </motion.div>
     );
   }
 
@@ -131,7 +142,12 @@ const ChatDetail = () => {
   const isEmptyChat = messages.length === 0;
 
   return (
-    <div className="flex flex-col h-[100dvh] bg-background">
+    <motion.div 
+      className="flex flex-col h-[100dvh] bg-gradient-to-b from-background to-primary/5"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.3 }}
+    >
       <ChatDetailHeader 
         conversationDetails={conversationDetails} 
         onBack={handleBack}
@@ -157,7 +173,7 @@ const ChatDetail = () => {
         disabled={chatDisabled}
         disabledReason={disabledReason}
       />
-    </div>
+    </motion.div>
   );
 };
 

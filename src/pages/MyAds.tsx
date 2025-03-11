@@ -5,12 +5,15 @@ import { useToast } from "@/components/ui/use-toast";
 import Header from "@/components/Header";
 import { supabase } from "@/integrations/supabase/client";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
-import { Loader2 } from "lucide-react";
+import { Loader2, Package } from "lucide-react";
 import StatusTabs from "@/components/my-ads/StatusTabs";
 import ListingGrid from "@/components/my-ads/ListingGrid";
 import { ProductCondition } from "@/types/categories";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import type { RealtimePostgresChangesPayload } from "@supabase/supabase-js";
+import { motion } from "framer-motion";
+import MobileNavigation from "@/components/navigation/MobileNavigation";
+import ChatWindow from "@/components/chat/ChatWindow";
 
 interface Listing {
   id: string;
@@ -30,6 +33,7 @@ const MyAds = () => {
   const navigate = useNavigate();
   const initialTab = searchParams.get('tab') || "approved"; // Default to approved
   const [selectedTab, setSelectedTab] = useState(initialTab);
+  const [isChatOpen, setIsChatOpen] = useState(false);
 
   // Redirect to approved tab if no tab is selected
   useEffect(() => {
@@ -150,38 +154,77 @@ const MyAds = () => {
   const handleListingDeleted = () => {
     refetch();
   };
+  
+  const container = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: { staggerChildren: 0.05 }
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gradient-to-b from-background to-primary/5">
       <Header />
       <main className="container mx-auto px-4 pt-20 pb-24 max-w-7xl">
-        <h1 className="text-2xl font-bold mb-6 text-foreground">My Ads</h1>
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex items-center mb-6"
+        >
+          <Package className="h-5 w-5 text-primary mr-2" />
+          <h1 className="text-2xl font-bold text-foreground">My Ads</h1>
+        </motion.div>
         
         <Tabs defaultValue={selectedTab} onValueChange={setSelectedTab}>
           <StatusTabs selectedTab={selectedTab} />
 
           {isLoading ? (
-            <div className="flex items-center justify-center py-8">
-              <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            </div>
+            <motion.div 
+              className="flex flex-col items-center justify-center py-8"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.3 }}
+            >
+              <Loader2 className="h-10 w-10 animate-spin text-primary mb-4" />
+              <p className="text-muted-foreground">Loading your listings...</p>
+            </motion.div>
           ) : (
-            <TabsContent value={selectedTab} className="mt-6 px-4">
+            <TabsContent value={selectedTab} className="mt-6">
               {listings.length === 0 ? (
-                <p className="text-center text-muted-foreground py-8">
-                  No listings found in this category
-                </p>
+                <motion.div 
+                  className="flex flex-col items-center justify-center py-12 px-4 bg-white/50 backdrop-blur-sm rounded-lg shadow-sm border border-primary/10"
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <Package className="h-16 w-16 text-primary/20 mb-4" />
+                  <h3 className="text-lg font-medium text-center mb-2">No listings found</h3>
+                  <p className="text-center text-muted-foreground max-w-md">
+                    You don't have any {selectedTab} listings yet
+                  </p>
+                </motion.div>
               ) : (
-                <ListingGrid
-                  listings={listings}
-                  onMarkAsSold={selectedTab === 'approved' ? markAsSold : undefined}
-                  showSoldButton={selectedTab === 'approved'}
-                  onListingDeleted={handleListingDeleted}
-                />
+                <motion.div
+                  variants={container}
+                  initial="hidden"
+                  animate="show"
+                >
+                  <ListingGrid
+                    listings={listings}
+                    onMarkAsSold={selectedTab === 'approved' ? markAsSold : undefined}
+                    showSoldButton={selectedTab === 'approved'}
+                    onListingDeleted={handleListingDeleted}
+                  />
+                </motion.div>
               )}
             </TabsContent>
           )}
         </Tabs>
       </main>
+      
+      <MobileNavigation onChatOpen={() => setIsChatOpen(true)} />
+      <ChatWindow isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} />
     </div>
   );
 };

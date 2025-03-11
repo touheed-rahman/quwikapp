@@ -84,8 +84,11 @@ const SellStepOne = ({ onNext }: SellStepOneProps) => {
 
   return (
     <div className="min-h-screen bg-background pb-24">
-      <Header />
-      <div className="container mx-auto px-4 pt-20">
+      <div className="sticky top-0 z-10 bg-background/80 backdrop-blur-md border-b border-primary/10 shadow-sm">
+        <Header />
+      </div>
+      
+      <div className="container mx-auto px-4 pt-6">
         <motion.div 
           className="max-w-3xl mx-auto space-y-6"
           variants={container}
@@ -177,7 +180,7 @@ const SellStepOne = ({ onNext }: SellStepOneProps) => {
                 <Camera className="h-5 w-5 text-primary" />
                 Upload Images
               </h3>
-              <p className="text-sm text-muted-foreground">Add up to 12 photos. First photo will be the cover image.</p>
+              <p className="text-sm text-muted-foreground">Add up to 12 photos to showcase your item.</p>
             </div>
             
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -220,11 +223,6 @@ const SellStepOne = ({ onNext }: SellStepOneProps) => {
                     >
                       <X className="h-4 w-4 text-white" />
                     </button>
-                    {index === 0 && (
-                      <div className="absolute bottom-0 w-full bg-primary/70 text-white text-[10px] font-medium py-1 text-center">
-                        Cover Image
-                      </div>
-                    )}
                   </div>
                 </motion.div>
               ))}

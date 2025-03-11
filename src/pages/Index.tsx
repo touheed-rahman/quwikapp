@@ -11,9 +11,7 @@ import { useLocation } from "@/contexts/LocationContext";
 import { useListings } from "@/hooks/useListings";
 import RecentListings from "@/components/listings/RecentListings";
 import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
-import { ArrowRight, TrendingUp, MapPin, Clock } from "lucide-react";
+import { TrendingUp, MapPin, Clock } from "lucide-react";
 import ProductCard from "@/components/ProductCard";
 import { motion } from "framer-motion";
 
@@ -41,6 +39,19 @@ const Index = () => {
     return "/placeholder.svg";
   };
 
+  const container = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: { staggerChildren: 0.1 }
+    }
+  };
+
+  const item = {
+    hidden: { opacity: 0, y: 20 },
+    show: { opacity: 1, y: 0 }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-primary/5">
       <WelcomeDialog 
@@ -52,18 +63,19 @@ const Index = () => {
       <main className="container mx-auto px-4 pt-16 pb-24">
         <motion.div 
           className="space-y-8"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.4, staggerChildren: 0.1 }}
+          variants={container}
+          initial="hidden"
+          animate="show"
         >
-          <div className="flex flex-col gap-4">
+          <motion.div 
+            variants={item}
+            className="flex flex-col gap-4"
+          >
             <HeroSearch />
-          </div>
+          </motion.div>
           
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
+            variants={item}
           >
             <CategoryFilter />
           </motion.div>
@@ -71,22 +83,11 @@ const Index = () => {
           {featuredListings.length > 0 && (
             <motion.div 
               className="space-y-4"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
+              variants={item}
             >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center">
-                  <TrendingUp className="mr-2 h-5 w-5 text-primary" />
-                  <h2 className="text-xl font-bold">Featured Listings</h2>
-                </div>
-                <Link 
-                  to="/featured-listings" 
-                  className="text-primary flex items-center hover:underline text-sm font-medium group"
-                >
-                  View All
-                  <ArrowRight className="ml-1 h-4 w-4 group-hover:translate-x-1 transition-transform" />
-                </Link>
+              <div className="flex items-center">
+                <TrendingUp className="mr-2 h-5 w-5 text-primary" />
+                <h2 className="text-xl font-bold">Featured Listings</h2>
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-4">
                 {featuredListings.map((listing) => (
@@ -113,9 +114,7 @@ const Index = () => {
           
           <motion.div 
             className="space-y-4"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
+            variants={item}
           >
             <div className="flex items-center mb-4">
               <Clock className="mr-2 h-5 w-5 text-primary" />
@@ -123,10 +122,15 @@ const Index = () => {
             </div>
             
             {selectedLocation && (
-              <div className="inline-flex items-center gap-2 bg-primary/10 rounded-full px-3 py-1.5 text-sm mb-4">
+              <motion.div 
+                className="inline-flex items-center gap-2 bg-primary/10 rounded-full px-3 py-1.5 text-sm mb-4"
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.3 }}
+              >
                 <MapPin className="h-4 w-4 text-primary" />
                 <span className="font-medium">{selectedLocation.split('|')[0]}</span>
-              </div>
+              </motion.div>
             )}
             
             <RecentListings 

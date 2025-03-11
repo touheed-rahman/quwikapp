@@ -41,8 +41,11 @@ const SellStepTwo = memo(({
 
   return (
     <div className="transition-opacity duration-200 bg-gradient-to-b from-background to-primary/5 min-h-screen">
-      <Header />
-      <div className="container max-w-2xl mx-auto px-4 pt-16 pb-24">
+      <div className="sticky top-0 z-10 bg-background/80 backdrop-blur-md border-b border-primary/10 shadow-sm">
+        <Header />
+      </div>
+      
+      <div className="container max-w-2xl mx-auto px-4 pt-6 pb-24">
         <motion.div 
           className="text-center mb-8"
           initial={{ opacity: 0, y: -20 }}

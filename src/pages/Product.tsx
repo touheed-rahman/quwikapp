@@ -16,6 +16,8 @@ import { useProductDetails } from "@/hooks/useProductDetails";
 import { useRelatedProducts } from "@/hooks/useRelatedProducts";
 import { useProductActions } from "@/hooks/useProductActions";
 import { useToast } from "@/components/ui/use-toast";
+import MobileNavigation from "@/components/navigation/MobileNavigation";
+import { motion } from "framer-motion";
 
 interface Seller {
   id: string;
@@ -28,6 +30,7 @@ const ProductPage = () => {
   const navigate = useNavigate();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [session, setSession] = useState<any>(null);
+  const [isChatOpen, setIsChatOpen] = useState(false);
   const { toast } = useToast();
 
   const { data: product, isLoading, isError } = useProductDetails(id);
@@ -89,19 +92,33 @@ const ProductPage = () => {
   const displayLocation = product.location?.split(',')[0] || 'Location not specified';
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gradient-to-b from-background to-primary/5">
       <Header />
       <main className="container mx-auto px-2 sm:px-4 pt-16 pb-20 overflow-x-hidden max-w-full">
-        <div className="grid lg:grid-cols-2 gap-4 lg:gap-8">
-          <div>
+        <motion.div 
+          className="grid lg:grid-cols-2 gap-4 lg:gap-8"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.4 }}
+        >
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5 }}
+          >
             <ImageGallery
               images={product.images}
               currentImageIndex={currentImageIndex}
               setCurrentImageIndex={setCurrentImageIndex}
             />
-          </div>
+          </motion.div>
 
-          <div className="space-y-4 lg:space-y-6">
+          <motion.div 
+            className="space-y-4 lg:space-y-6"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5 }}
+          >
             <ProductInfo
               title={product.title}
               price={product.price}
@@ -125,10 +142,16 @@ const ProductPage = () => {
                 onMakeOffer={() => handleMakeOffer(session)}
               />
             )}
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
 
-        <RelatedProducts products={relatedProducts} />
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3, duration: 0.5 }}
+        >
+          <RelatedProducts products={relatedProducts} />
+        </motion.div>
       </main>
 
       <MakeOfferDialog
@@ -141,6 +164,9 @@ const ProductPage = () => {
           navigate(`/chat/${currentConversationId}`);
         }}
       />
+      
+      <MobileNavigation onChatOpen={() => setIsChatOpen(true)} />
+      <ChatWindow isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} />
     </div>
   );
 };

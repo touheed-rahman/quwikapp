@@ -7,6 +7,7 @@ import { useLocation } from "@/contexts/LocationContext";
 import { useListingForm } from "@/components/sell/useListingForm";
 import { Badge } from "@/components/ui/badge";
 import { motion, AnimatePresence } from "framer-motion";
+import { Progress } from "@/components/ui/progress";
 
 const Sell = () => {
   const [step, setStep] = useState(1);
@@ -29,12 +30,14 @@ const Sell = () => {
 
   const handleStepOneComplete = useCallback((data: any) => {
     setFormData((prevData: any) => ({ ...prevData, ...data }));
+    window.scrollTo(0, 0);
     requestAnimationFrame(() => {
       setStep(2);
     });
   }, [setFormData]);
 
   const handleBack = useCallback(() => {
+    window.scrollTo(0, 0);
     requestAnimationFrame(() => {
       setStep(1);
     });
@@ -51,17 +54,6 @@ const Sell = () => {
     />
   ) : null;
 
-  const renderProgressIndicator = () => (
-    <div className="flex justify-center max-w-md mx-auto mb-6">
-      <div className="w-full bg-neutral-200 rounded-full h-2.5">
-        <div 
-          className="bg-primary h-2.5 rounded-full transition-all duration-500 ease-out"
-          style={{ width: step === 1 ? '50%' : '100%' }}
-        ></div>
-      </div>
-    </div>
-  );
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-primary/5">
       <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-10">
@@ -74,7 +66,16 @@ const Sell = () => {
       </div>
       
       <div className="pt-16 pb-10 px-4">
-        {renderProgressIndicator()}
+        <div className="max-w-md mx-auto mb-6">
+          <Progress 
+            value={step === 1 ? 50 : 100} 
+            className="h-2.5 bg-neutral-200" 
+          />
+          <div className="flex justify-between mt-2 text-xs text-muted-foreground">
+            <span>Select Category</span>
+            <span>Fill Details</span>
+          </div>
+        </div>
         
         <AnimatePresence mode="wait">
           {step === 1 ? (
