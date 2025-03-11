@@ -64,9 +64,9 @@ export function useFeatureRequest(
 
       const orderResult = await createFeatureOrder(orderData);
       
-      if (orderResult) {
+      if (orderResult && orderResult.id) {
         const invoiceUrl = await generateInvoice(
-          { ...orderData, id: orderResult.id },
+          orderResult,
           selectedFeatureOption,
           userDetails
         );

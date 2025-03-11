@@ -14,7 +14,7 @@ export function useOrderManagement() {
         throw new Error('Failed to create order: ' + error.message);
       }
 
-      return data;
+      return data as FeatureOrder;
     } catch (error: any) {
       console.error("Order creation error:", error);
       throw error;
@@ -23,7 +23,7 @@ export function useOrderManagement() {
 
   const updateOrderInvoiceUrl = async (orderId: string, invoiceUrl: string) => {
     try {
-      const { error } = await supabase.rpc(
+      const { data, error } = await supabase.rpc(
         'update_feature_order_invoice',
         { 
           order_id: orderId,
@@ -36,10 +36,10 @@ export function useOrderManagement() {
         throw error;
       }
       
-      return true;
+      return data as FeatureOrder;
     } catch (error) {
       console.error("Update invoice URL error:", error);
-      return false;
+      throw error;
     }
   };
 
