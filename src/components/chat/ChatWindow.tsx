@@ -1,14 +1,12 @@
 
 import { useState, useEffect, useCallback } from "react";
-import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { X } from "lucide-react";
-import { ChatFilters } from "./ChatFilters";
 import { useLocation, useNavigate } from "react-router-dom";
 import ConversationList from "./ConversationList";
 import { useConversations } from "@/hooks/use-conversations";
 import { supabase } from "@/integrations/supabase/client";
 import { ChatHeader } from "./ChatHeader";
+import { ChatFilters } from "./ChatFilters";
 
 interface ChatWindowProps {
   isOpen: boolean;
@@ -50,25 +48,15 @@ const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
     conversations, 
     isLoading, 
     handleDelete,
-    fetchConversations,
     refreshConversations,
-    unreadCounts 
+    unreadCounts,
+    filterUnreadCounts,
+    filterConversations
   } = useConversations(
     filter,
     userId,
     isAuthenticated
   );
-
-  // Calculate unread counts by category
-  const filterUnreadCounts = {
-    all: Object.values(unreadCounts).reduce((sum, count) => sum + count, 0),
-    buying: conversations
-      .filter(c => userId === c.buyer_id)
-      .reduce((sum, conv) => sum + (unreadCounts[conv.id] || 0), 0),
-    selling: conversations
-      .filter(c => userId === c.seller_id)
-      .reduce((sum, conv) => sum + (unreadCounts[conv.id] || 0), 0)
-  };
 
   // Force refresh when chat window opens, filter changes, or auth state changes
   useEffect(() => {
@@ -127,12 +115,7 @@ const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
 
   // Filter conversations based on search term
   const filteredConversations = searchTerm.trim() 
-    ? conversations.filter(conv => 
-        conv.listing?.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        conv.seller?.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        conv.buyer?.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (conv.last_message && conv.last_message.toLowerCase().includes(searchTerm.toLowerCase()))
-      )
+    ? filterConversations(searchTerm)
     : conversations;
 
   console.log("Chat window rendering with", conversations.length, "conversations");
