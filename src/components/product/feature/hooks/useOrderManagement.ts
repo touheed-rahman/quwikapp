@@ -12,6 +12,7 @@ export function useOrderManagement() {
       );
 
       if (error) {
+        console.error('Failed to create order:', error);
         throw new Error('Failed to create order: ' + error.message);
       }
 

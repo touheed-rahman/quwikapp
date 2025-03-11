@@ -23,6 +23,7 @@ CREATE OR REPLACE FUNCTION create_feature_order(order_data jsonb)
 RETURNS jsonb
 LANGUAGE plpgsql
 SECURITY DEFINER
+SET search_path = public
 AS $$
 DECLARE
   new_order_id uuid;
@@ -68,12 +69,14 @@ CREATE OR REPLACE FUNCTION update_feature_order_invoice(order_id uuid, invoice_u
 RETURNS jsonb
 LANGUAGE plpgsql
 SECURITY DEFINER
+SET search_path = public
 AS $$
 DECLARE
   updated_order jsonb;
 BEGIN
     UPDATE feature_orders 
-    SET invoice_url = invoice_url
+    SET invoice_url = invoice_url,
+        updated_at = now()
     WHERE id = order_id;
     
     SELECT row_to_json(o)::jsonb INTO updated_order
@@ -82,3 +85,8 @@ BEGIN
     RETURN updated_order;
 END;
 $$;
+
+-- Grant necessary permissions
+GRANT EXECUTE ON FUNCTION create_feature_order(jsonb) TO authenticated;
+GRANT EXECUTE ON FUNCTION update_feature_order_invoice(uuid, text) TO authenticated;
+GRANT SELECT, INSERT, UPDATE ON feature_orders TO authenticated;
