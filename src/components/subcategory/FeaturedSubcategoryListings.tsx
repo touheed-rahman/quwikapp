@@ -1,18 +1,33 @@
 
+import { useEffect, useState } from "react";
 import { ProductCondition } from "@/types/categories";
 import ProductCard from "@/components/ProductCard";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
-import { Link } from "react-router-dom";
-import { ArrowRight } from "lucide-react";
 
 interface FeaturedSubcategoryListingsProps {
   category: string | undefined;
   subcategory: string | undefined;
 }
 
+interface Listing {
+  id: string;
+  title: string;
+  price: number;
+  location: string;
+  images: string[];
+  created_at: string;
+  condition: ProductCondition;
+  category: string;
+  subcategory: string;
+  status: string;
+  featured: boolean;
+}
+
 const FeaturedSubcategoryListings = ({ category, subcategory }: FeaturedSubcategoryListingsProps) => {
-  // Query for featured products in this subcategory (limit 4)
+  const [randomFeaturedListings, setRandomFeaturedListings] = useState<Listing[]>([]);
+  
+  // Query for featured products in this subcategory (get all, then randomize)
   const { data: featuredListings = [] } = useQuery({
     queryKey: ['featured-subcategory-listings', category, subcategory],
     queryFn: async () => {
@@ -24,8 +39,7 @@ const FeaturedSubcategoryListings = ({ category, subcategory }: FeaturedSubcateg
           .is('deleted_at', null)
           .eq('category', category || '')
           .eq('subcategory', subcategory || '')
-          .eq('featured', true)
-          .limit(4);
+          .eq('featured', true);
 
         if (error) {
           console.error('Error fetching featured listings:', error);
@@ -41,6 +55,18 @@ const FeaturedSubcategoryListings = ({ category, subcategory }: FeaturedSubcateg
     enabled: !!category && !!subcategory
   });
 
+  // Randomize and limit the featured listings
+  useEffect(() => {
+    if (featuredListings.length > 0) {
+      // Shuffle the array
+      const shuffled = [...featuredListings].sort(() => 0.5 - Math.random());
+      // Take only first 4 items
+      setRandomFeaturedListings(shuffled.slice(0, 4));
+    } else {
+      setRandomFeaturedListings([]);
+    }
+  }, [featuredListings]);
+
   const getFirstImageUrl = (images: string[]) => {
     if (images && images.length > 0) {
       return supabase.storage.from('listings').getPublicUrl(images[0]).data.publicUrl;
@@ -54,7 +80,7 @@ const FeaturedSubcategoryListings = ({ category, subcategory }: FeaturedSubcateg
     <div className="mb-8">
       <h2 className="text-xl font-bold mb-4 text-primary">Featured {subcategory}</h2>
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-        {featuredListings.map((listing) => (
+        {randomFeaturedListings.map((listing) => (
           <ProductCard
             key={listing.id}
             id={listing.id}

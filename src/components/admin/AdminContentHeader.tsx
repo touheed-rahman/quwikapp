@@ -3,12 +3,15 @@ import { Card } from "@/components/ui/card";
 import { motion } from "framer-motion";
 import { ArrowUpDown, Filter, UserCheck, Package, ShoppingCart, Users, Star, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 
 interface AdminContentHeaderProps {
   activeTab: string;
 }
 
 const AdminContentHeader = ({ activeTab }: AdminContentHeaderProps) => {
+  const navigate = useNavigate();
+  
   // Choose the appropriate icon based on the active tab
   const getHeaderIcon = () => {
     switch (activeTab) {
@@ -49,7 +52,7 @@ const AdminContentHeader = ({ activeTab }: AdminContentHeaderProps) => {
                 variant="outline" 
                 size="sm" 
                 className="mr-2 bg-primary/5 text-primary hover:bg-primary/10"
-                onClick={() => window.location.href = '/admin'}
+                onClick={() => navigate('/admin')}
               >
                 <ArrowLeft className="h-4 w-4 mr-1" />
                 Back to Dashboard

@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Header from "@/components/Header";
 import CategoryFilter from "@/components/CategoryFilter";
 import HeroSearch from "@/components/HeroSearch";
@@ -15,23 +15,39 @@ import { TrendingUp, MapPin, Clock } from "lucide-react";
 import ProductCard from "@/components/ProductCard";
 import { motion } from "framer-motion";
 import SeoHead from "@/components/seo/SeoHead";
+import { Listing } from "@/hooks/useListings";
 
 const ITEMS_PER_PAGE = 20;
-const FEATURED_ITEMS_LIMIT = 6;
+const FEATURED_ITEMS_LIMIT = 4;
 
 const Index = () => {
   const [showAllProducts, setShowAllProducts] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [showWelcomePopup, setShowWelcomePopup] = useState(true);
+  const [randomFeaturedListings, setRandomFeaturedListings] = useState<Listing[]>([]);
   const { selectedLocation } = useLocation();
   
   const { data: listings = [], isLoading, error } = useListings({
     selectedLocation
   });
 
-  const featuredListings = listings
-    .filter(listing => listing.featured)
-    .slice(0, FEATURED_ITEMS_LIMIT);
+  // Get random featured listings
+  useEffect(() => {
+    if (listings.length > 0) {
+      const featuredItems = listings.filter(listing => listing.featured);
+      
+      // If we have more than the limit, randomly select some
+      if (featuredItems.length > FEATURED_ITEMS_LIMIT) {
+        // Shuffle the featured listings array
+        const shuffled = [...featuredItems].sort(() => 0.5 - Math.random());
+        // Take only the first few items to match our limit
+        setRandomFeaturedListings(shuffled.slice(0, FEATURED_ITEMS_LIMIT));
+      } else {
+        // If we have fewer featured items than the limit, use all of them
+        setRandomFeaturedListings(featuredItems);
+      }
+    }
+  }, [listings]);
 
   const getFirstImageUrl = (images: string[]) => {
     if (images && images.length > 0) {
@@ -80,7 +96,7 @@ const Index = () => {
             <CategoryFilter />
           </motion.div>
           
-          {featuredListings.length > 0 && (
+          {randomFeaturedListings.length > 0 && (
             <motion.div 
               className="space-y-4"
               variants={item}
@@ -92,8 +108,8 @@ const Index = () => {
                 <h2 className="text-xl font-bold text-foreground/90">Featured Listings</h2>
               </div>
               
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-4">
-                {featuredListings.map((listing, index) => (
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                {randomFeaturedListings.map((listing, index) => (
                   <motion.div
                     key={listing.id}
                     initial={{ opacity: 0, y: 15 }}

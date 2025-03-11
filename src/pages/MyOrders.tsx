@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -21,7 +20,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { FileText, Download, ChevronRight, CreditCard, Clock, CheckCircle, AlertTriangle } from "lucide-react";
+import { FileText, Download, CreditCard, Clock, CheckCircle, AlertTriangle } from "lucide-react";
 import { format } from "date-fns";
 
 interface Order {
@@ -53,70 +52,49 @@ const MyOrders = () => {
       const { data: session } = await supabase.auth.getSession();
       
       if (!session.session?.user) {
+        toast({
+          title: "Authentication required",
+          description: "Please login to view your orders",
+          variant: "destructive",
+        });
         return;
       }
       
-      // Fetch mock orders for demo purposes
-      // In a real app, this would be an actual query to your orders table
-      const mockOrders: Order[] = [
-        {
-          id: "ord_001",
-          created_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-          product_id: "prod_001",
-          product_name: "iPhone 13 Pro",
-          amount: 899,
-          payment_status: "completed",
-          invoice_number: "INV-2023-001",
-          seller_id: "seller_001",
-          seller_name: "Tech Store"
-        },
-        {
-          id: "ord_002",
-          created_at: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
-          product_id: "prod_002",
-          product_name: "Samsung Galaxy S22",
-          amount: 799,
-          payment_status: "pending",
-          invoice_number: "INV-2023-002",
-          seller_id: "seller_002",
-          seller_name: "Mobile World"
-        },
-        {
-          id: "ord_003",
-          created_at: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
-          product_id: "prod_003",
-          product_name: "Sony PlayStation 5",
-          amount: 499,
-          payment_status: "failed",
-          invoice_number: "INV-2023-003",
-          seller_id: "seller_003",
-          seller_name: "Game Zone"
-        },
-        {
-          id: "ord_004",
-          created_at: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString(),
-          product_id: "prod_004",
-          product_name: "MacBook Air M2",
-          amount: 1299,
-          payment_status: "completed",
-          invoice_number: "INV-2023-004",
-          seller_id: "seller_004",
-          seller_name: "Apple Store"
-        },
-        {
-          id: "ord_005",
-          created_at: new Date(Date.now() - 20 * 24 * 60 * 60 * 1000).toISOString(),
-          product_id: "prod_005",
-          product_name: "Nike Air Jordan",
-          amount: 189,
-          payment_status: "completed",
-          invoice_number: "INV-2023-005",
-          seller_id: "seller_005",
-          seller_name: "Footwear Plus"
-        }
-      ];
-      
-      setOrders(mockOrders);
+      // Fetch real orders from the database
+      const { data: ordersData, error } = await supabase
+        .from('orders')
+        .select(`
+          id,
+          created_at,
+          product_id,
+          amount,
+          payment_status,
+          invoice_number,
+          seller_id,
+          listings(title),
+          profiles(full_name)
+        `)
+        .eq('buyer_id', session.session.user.id)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        throw error;
+      }
+
+      // Transform the data to match our Order interface
+      const transformedOrders = ordersData.map((order: any) => ({
+        id: order.id,
+        created_at: order.created_at,
+        product_id: order.product_id,
+        product_name: order.listings?.title || "Unknown Product",
+        amount: order.amount,
+        payment_status: order.payment_status || "pending",
+        invoice_number: order.invoice_number || `INV-${order.id.substring(0, 8)}`,
+        seller_id: order.seller_id,
+        seller_name: order.profiles?.full_name || "Unknown Seller"
+      }));
+
+      setOrders(transformedOrders);
     } catch (error: any) {
       console.error("Error fetching orders:", error.message);
       toast({
@@ -124,6 +102,9 @@ const MyOrders = () => {
         description: error.message,
         variant: "destructive",
       });
+      
+      // If no orders exist yet, set empty array
+      setOrders([]);
     } finally {
       setLoading(false);
     }
