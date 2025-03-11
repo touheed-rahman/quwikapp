@@ -38,7 +38,7 @@
 
   /* Content spacing for fixed header */
   main {
-    @apply pt-24; /* Increased space for the fixed navbar */
+    @apply pt-28; /* Increased space for the fixed navbar and product pages */
   }
 
   /* Enhanced text and headings */
@@ -60,12 +60,25 @@
            focus-visible:ring-offset-2 transition-all duration-200 shadow-sm;
   }
 
-  /* Fix hover text colors - ensure icons in primary backgrounds remain visible */
-  svg, path {
-    @apply text-current;
+  /* Fix text colors for elements on colored backgrounds */
+  /* White text on colored backgrounds */
+  [class*="bg-primary"] span,
+  [class*="bg-blue"] span,
+  [class*="bg-green"] span,
+  [class*="bg-red"] span,
+  [class*="bg-orange"] span,
+  [class*="bg-yellow"] span,
+  [class*="bg-teal"] span,
+  [class*="bg-violet"] span,
+  [class*="bg-pink"] span,
+  [class*="bg-indigo"] span,
+  [class*="bg-cyan"] span,
+  [class*="bg-purple"] span,
+  [class*="bg-emerald"] span {
+    @apply text-white;
   }
   
-  /* Fix for icons - ensure they all have black text color */
+  /* White icons on colored backgrounds */
   [class*="bg-primary"] svg,
   [class*="bg-primary"] path,
   [class*="bg-blue"] svg,
@@ -92,36 +105,21 @@
   [class*="bg-purple"] path,
   [class*="bg-emerald"] svg,
   [class*="bg-emerald"] path {
-    @apply text-black;
+    @apply text-white;
   }
 
-  /* Fix button hover colors - always keep text black */
+  /* Default for buttons, links, and interactive elements */
   button, 
   a, 
   [role="button"] {
-    @apply transition-colors duration-200 text-black;
+    @apply transition-colors duration-200;
   }
   
-  /* Styles for primary buttons */
-  .bg-primary,
-  button[class*="bg-primary"], 
-  a[class*="bg-primary"],
-  [role="button"][class*="bg-primary"] {
-    @apply text-black;
-  }
-
-  /* Ensure hover doesn't change text color to white */
+  /* Fix hover text colors to not change on hover */
   button:hover,
   a:hover,
   [role="button"]:hover {
-    @apply text-black;
-  }
-
-  /* Specifically target hover primary elements */
-  button:hover[class*="hover:bg-primary"],
-  a:hover[class*="hover:bg-primary"],
-  [role="button"]:hover[class*="hover:bg-primary"] {
-    @apply text-black;
+    @apply text-current;
   }
 
   /* Enhanced button hover effects */
@@ -134,18 +132,13 @@
     @apply shadow-sm hover:shadow-md transition-all duration-200 bg-card/95 backdrop-blur-sm
            border border-border/20;
   }
-
-  /* Tabs specific fixes */
-  .TabsTrigger[data-state="active"] {
-    @apply text-black;
-  }
 }
 
 /* ... keep existing code (scrollbar styling, command menu enhancements, enhanced transitions, etc.) */
 
-/* Fixed Admin Panel Tabs */
+/* Fixed Admin Panel Tabs - white text on primary background */
 .admin-tabs [data-state="active"] {
-  @apply bg-primary text-black;
+  @apply bg-primary text-white;
 }
 
 /* ... keep existing code (enhanced list items, enhanced interactive elements, etc.) */

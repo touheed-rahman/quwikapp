@@ -13,8 +13,8 @@ const FloatingSellButton = () => {
         size="lg" 
         className="shadow-lg rounded-full px-8 gap-2 bg-primary hover:bg-primary/90"
       >
-        <Plus className="h-5 w-5 text-black" />
-        <span className="text-black">Sell Now</span>
+        <Plus className="h-5 w-5 text-white" />
+        <span className="text-white">Sell Now</span>
       </Button>
     </Link>
   );
