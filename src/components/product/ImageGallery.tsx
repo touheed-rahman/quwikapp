@@ -1,12 +1,11 @@
 
 import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
+import { ChevronLeft, ChevronRight, Share } from "lucide-react";
+import { motion } from "framer-motion";
 import { useToast } from "@/components/ui/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
-import MainImage from "./gallery/MainImage";
-import ImageControls from "./gallery/ImageControls";
-import ImageThumbnails from "./gallery/ImageThumbnails";
-import ImageIndicators from "./gallery/ImageIndicators";
 
 interface ImageGalleryProps {
   images: string[];
@@ -61,7 +60,7 @@ const ImageGallery = ({ images, currentImageIndex, setCurrentImageIndex }: Image
     }
   };
 
-  // Touch handling for swipe
+  // Swipe handlers for mobile
   let touchStartX = 0;
   const handleTouchStart = (e: React.TouchEvent) => {
     touchStartX = e.touches[0].clientX;
@@ -85,6 +84,7 @@ const ImageGallery = ({ images, currentImageIndex, setCurrentImageIndex }: Image
 
   const goToNextImage = () => {
     if (images.length > 1) {
+      // Fixed: Calculate new index directly and pass the number value
       const newIndex = (currentImageIndex + 1) % images.length;
       setCurrentImageIndex(newIndex);
     }
@@ -92,6 +92,7 @@ const ImageGallery = ({ images, currentImageIndex, setCurrentImageIndex }: Image
 
   const goToPrevImage = () => {
     if (images.length > 1) {
+      // Fixed: Calculate new index directly and pass the number value
       const newIndex = (currentImageIndex - 1 + images.length) % images.length;
       setCurrentImageIndex(newIndex);
     }
@@ -109,35 +110,98 @@ const ImageGallery = ({ images, currentImageIndex, setCurrentImageIndex }: Image
     <div className="space-y-4 mt-4">
       <div className="relative rounded-lg overflow-hidden bg-white">
         {/* Main image */}
-        <MainImage 
-          mainImage={mainImage}
-          handleTouchStart={handleTouchStart}
-          handleTouchEnd={handleTouchEnd}
-        />
-        
-        {/* Controls (Share button and navigation arrows) */}
-        <ImageControls 
-          hasMultipleImages={images.length > 1}
-          handleShare={handleShare}
-          goToPrevImage={goToPrevImage}
-          goToNextImage={goToNextImage}
-        />
-        
-        {/* Mobile image indicators */}
-        <ImageIndicators 
-          images={images}
-          currentImageIndex={currentImageIndex}
-          setCurrentImageIndex={setCurrentImageIndex}
-        />
+        <div 
+          className="aspect-square w-full relative"
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
+        >
+          <img
+            src={mainImage || "/placeholder.svg"}
+            alt="Product"
+            className="w-full h-full object-contain"
+            onError={(e) => {
+              (e.target as HTMLImageElement).src = "/placeholder.svg";
+            }}
+          />
+          
+          {/* Share button - Updated with background color */}
+          <Button 
+            onClick={handleShare}
+            size="icon"
+            variant="secondary"
+            className="absolute top-4 right-4 z-10 bg-background/90 backdrop-blur-sm rounded-full shadow-md hover:bg-background/80"
+          >
+            <Share className="h-5 w-5 text-foreground" />
+          </Button>
+
+          {/* Navigation arrows - Updated with background color */}
+          {images.length > 1 && (
+            <>
+              <Button
+                onClick={goToPrevImage}
+                size="icon"
+                variant="secondary"
+                className="absolute top-1/2 left-2 z-10 -translate-y-1/2 bg-background/90 backdrop-blur-sm rounded-full shadow-md hidden md:flex hover:bg-background/80"
+              >
+                <ChevronLeft className="h-5 w-5 text-foreground" />
+              </Button>
+              
+              <Button
+                onClick={goToNextImage}
+                size="icon"
+                variant="secondary"
+                className="absolute top-1/2 right-2 z-10 -translate-y-1/2 bg-background/90 backdrop-blur-sm rounded-full shadow-md hidden md:flex hover:bg-background/80"
+              >
+                <ChevronRight className="h-5 w-5 text-foreground" />
+              </Button>
+            </>
+          )}
+          
+          {/* Image indicator for mobile */}
+          {images.length > 1 && (
+            <div className="absolute bottom-3 left-0 right-0 flex justify-center gap-1.5 md:hidden">
+              {images.map((_, index) => (
+                <button
+                  key={index}
+                  className={`w-2.5 h-2.5 rounded-full ${
+                    currentImageIndex === index ? "bg-primary" : "bg-gray-300"
+                  }`}
+                  onClick={() => setCurrentImageIndex(index)}
+                />
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Thumbnails - only show when multiple images and on desktop */}
       {!isMobile && images.length > 1 && (
-        <ImageThumbnails 
-          thumbnails={thumbnails}
-          currentImageIndex={currentImageIndex}
-          setCurrentImageIndex={setCurrentImageIndex}
-        />
+        <div className="flex overflow-x-auto gap-2 pb-2 hide-scrollbar">
+          {thumbnails.map((thumb, index) => (
+            <motion.button
+              key={index}
+              className={`relative rounded-md overflow-hidden flex-shrink-0 border-2 ${
+                currentImageIndex === index
+                  ? "border-primary"
+                  : "border-transparent"
+              }`}
+              onClick={() => setCurrentImageIndex(index)}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <div className="w-16 h-16 md:w-20 md:h-20">
+                <img
+                  src={thumb}
+                  alt={`Thumbnail ${index + 1}`}
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = "/placeholder.svg";
+                  }}
+                />
+              </div>
+            </motion.button>
+          ))}
+        </div>
       )}
     </div>
   );
