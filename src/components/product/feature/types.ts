@@ -1,6 +1,5 @@
-import { ReactNode } from "react";
 
-export type FeatureIconType = 'home' | 'tag' | 'shopping-bag';
+import { ReactNode } from "react";
 
 export interface FeatureOption {
   id: string;
@@ -8,7 +7,7 @@ export interface FeatureOption {
   description: string;
   price: number;
   originalPrice: number;
-  iconType: FeatureIconType;
+  icon: ReactNode;
 }
 
 export interface UserDetails {
@@ -17,9 +16,8 @@ export interface UserDetails {
   address: string;
 }
 
-export interface FeatureOrder {
-  id?: string;
-  listing_id: string;
+export interface OrderData {
+  product_id: string;
   buyer_id: string;
   seller_id: string;
   amount: number;
@@ -30,9 +28,6 @@ export interface FeatureOrder {
   contact_name: string;
   contact_phone: string;
   contact_address: string;
-  invoice_url?: string;
-  created_at?: string;
-  updated_at?: string;
 }
 
 export interface InvoiceData {

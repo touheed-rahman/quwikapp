@@ -1,91 +1,103 @@
 
+import { Gauge, LayoutGrid, Users, BarChart3, Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
-import { 
-  HomeIcon, 
-  ListIcon, 
-  UserIcon, 
-  AreaChartIcon, 
-  MenuIcon,
-  SparklesIcon
-} from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { useState } from "react";
+import { Badge } from "@/components/ui/badge";
 
 interface AdminMobileMenuProps {
   activeTab: string;
   setActiveTab: (tab: string) => void;
 }
 
-export default function AdminMobileMenu({ activeTab, setActiveTab }: AdminMobileMenuProps) {
+const AdminMobileMenu = ({ activeTab, setActiveTab }: AdminMobileMenuProps) => {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
   const handleTabChange = (tab: string) => {
     setActiveTab(tab);
+    setMobileMenuOpen(false);
   };
 
   return (
-    <Sheet>
-      <SheetTrigger asChild>
-        <Button variant="ghost" size="icon" className="md:hidden">
-          <MenuIcon className="h-5 w-5" />
-          <span className="sr-only">Toggle menu</span>
-        </Button>
-      </SheetTrigger>
-      <SheetContent side="left" className="w-[240px] sm:w-[300px]">
-        <SheetHeader>
-          <SheetTitle>Admin Menu</SheetTitle>
-        </SheetHeader>
-        <div className="flex flex-col gap-2 py-4">
-          <Button
-            variant={activeTab === 'dashboard' ? 'default' : 'ghost'}
-            size="sm"
-            onClick={() => handleTabChange('dashboard')}
-            className="justify-start"
+    <>
+      <Button 
+        variant={mobileMenuOpen ? "default" : "ghost"} 
+        size="icon" 
+        className="md:hidden relative"
+        onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+        aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
+      >
+        {mobileMenuOpen ? (
+          <X className="h-5 w-5" />
+        ) : (
+          <>
+            <Menu className="h-5 w-5" />
+            <Badge className="absolute -top-1 -right-1 bg-primary text-[10px] h-4 w-4 flex items-center justify-center p-0">
+              4
+            </Badge>
+          </>
+        )}
+      </Button>
+      
+      <AnimatePresence>
+        {mobileMenuOpen && (
+          <motion.div 
+            className="fixed top-16 left-0 right-0 bg-white shadow-lg z-40 md:hidden border-b border-primary/10"
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.2 }}
           >
-            <HomeIcon className="h-4 w-4 mr-2" />
-            Dashboard
-          </Button>
-          <Button
-            variant={activeTab === 'listings' ? 'default' : 'ghost'}
-            size="sm"
-            onClick={() => handleTabChange('listings')}
-            className="justify-start"
-          >
-            <ListIcon className="h-4 w-4 mr-2" />
-            Listings
-          </Button>
-          <Button
-            variant={activeTab === 'users' ? 'default' : 'ghost'}
-            size="sm"
-            onClick={() => handleTabChange('users')}
-            className="justify-start"
-          >
-            <UserIcon className="h-4 w-4 mr-2" />
-            Users
-          </Button>
-          <Button
-            variant={activeTab === 'analytics' ? 'default' : 'ghost'}
-            size="sm"
-            onClick={() => handleTabChange('analytics')}
-            className="justify-start"
-          >
-            <AreaChartIcon className="h-4 w-4 mr-2" />
-            Analytics
-          </Button>
-          <Button
-            variant={activeTab === 'features' ? 'default' : 'ghost'}
-            size="sm"
-            onClick={() => handleTabChange('features')}
-            className="justify-start"
-          >
-            <SparklesIcon className="h-4 w-4 mr-2" />
-            Features
-          </Button>
-        </div>
-      </SheetContent>
-    </Sheet>
+            <div className="p-3 space-y-1">
+              <Button 
+                variant={activeTab === 'dashboard' ? "default" : "ghost"} 
+                className="w-full justify-start text-base font-medium rounded-lg h-12"
+                onClick={() => handleTabChange('dashboard')}
+              >
+                <Gauge className="w-5 h-5 mr-3" />
+                Dashboard
+                <div className="ml-auto bg-primary/10 text-primary text-xs font-medium px-2 py-0.5 rounded-full">
+                  Overview
+                </div>
+              </Button>
+              
+              <Button 
+                variant={activeTab === 'listings' ? "default" : "ghost"} 
+                className="w-full justify-start text-base font-medium rounded-lg h-12"
+                onClick={() => handleTabChange('listings')}
+              >
+                <LayoutGrid className="w-5 h-5 mr-3" />
+                Listings
+                <Badge className="ml-auto bg-amber-500/90 hover:bg-amber-500 text-white">12</Badge>
+              </Button>
+              
+              <Button 
+                variant={activeTab === 'users' ? "default" : "ghost"} 
+                className="w-full justify-start text-base font-medium rounded-lg h-12"
+                onClick={() => handleTabChange('users')}
+              >
+                <Users className="w-5 h-5 mr-3" />
+                Users
+                <Badge className="ml-auto bg-green-500/90 hover:bg-green-500 text-white">6</Badge>
+              </Button>
+              
+              <Button 
+                variant={activeTab === 'analytics' ? "default" : "ghost"} 
+                className="w-full justify-start text-base font-medium rounded-lg h-12"
+                onClick={() => handleTabChange('analytics')}
+              >
+                <BarChart3 className="w-5 h-5 mr-3" />
+                Analytics
+                <div className="ml-auto bg-primary/10 text-primary text-xs font-medium px-2 py-0.5 rounded-full">
+                  Reports
+                </div>
+              </Button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
   );
-}
+};
+
+export default AdminMobileMenu;
