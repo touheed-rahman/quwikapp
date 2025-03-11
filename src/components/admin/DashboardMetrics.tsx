@@ -2,7 +2,7 @@
 import { Card } from "@/components/ui/card";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Shield, Users, ListChecks, Clock, Star, XCircle, ArrowUpRight } from "lucide-react";
+import { Shield, Users, ListChecks, Clock, Star, XCircle, ArrowUpRight, TrendingUp } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import { motion } from "framer-motion";
@@ -14,6 +14,7 @@ interface DashboardMetrics {
   totalUsers: number;
   featuredListings: number;
   rejectedListings: number;
+  verifiedSellers?: number;
 }
 
 const DashboardMetrics = () => {
@@ -36,7 +37,8 @@ const DashboardMetrics = () => {
           approvedListings: 0,
           totalUsers: 0,
           featuredListings: 0,
-          rejectedListings: 0
+          rejectedListings: 0,
+          verifiedSellers: 0
         };
       }
 
@@ -46,7 +48,8 @@ const DashboardMetrics = () => {
         approvedListings: 0,
         totalUsers: 0,
         featuredListings: 0,
-        rejectedListings: 0
+        rejectedListings: 0,
+        verifiedSellers: 0
       };
     },
     staleTime: 1000, // Data considered fresh for 1 second
@@ -99,7 +102,13 @@ const DashboardMetrics = () => {
   }, [refetch]);
 
   if (isLoading) {
-    return <div>Loading metrics...</div>;
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 opacity-50">
+        {[...Array(6)].map((_, i) => (
+          <Card key={i} className="p-6 bg-gray-50 animate-pulse h-32"></Card>
+        ))}
+      </div>
+    );
   }
 
   const cards = [
@@ -156,6 +165,15 @@ const DashboardMetrics = () => {
       bgColor: "bg-indigo-50",
       hoverBgColor: "hover:bg-indigo-100",
       onClick: () => navigate('/admin', { state: { filter: 'users' } })
+    },
+    {
+      title: "Verified Sellers",
+      value: metrics?.verifiedSellers || 0,
+      icon: TrendingUp,
+      color: "text-teal-600",
+      bgColor: "bg-teal-50",
+      hoverBgColor: "hover:bg-teal-100",
+      onClick: () => navigate('/admin', { state: { filter: 'verified' } })
     }
   ];
 

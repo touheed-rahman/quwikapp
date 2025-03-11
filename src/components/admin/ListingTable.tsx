@@ -142,7 +142,7 @@ const ListingTable = ({ listings, onStatusUpdate, onFeaturedToggle, onDelete }: 
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="transition-opacity"
+                      className="transition-opacity hover:text-white"
                       onClick={() => onFeaturedToggle(listing.id, !listing.featured)}
                     >
                       {listing.featured ? (
@@ -155,7 +155,7 @@ const ListingTable = ({ listings, onStatusUpdate, onFeaturedToggle, onDelete }: 
                   <TableCell className="text-right">
                     <div className="flex items-center justify-end gap-2">
                       <Link to={`/product/${listing.id}`} target="_blank">
-                        <Button variant="outline" size="sm" className="hover:bg-primary/5">
+                        <Button variant="outline" size="sm" className="hover:bg-primary/5 hover:text-white">
                           <Eye className="h-4 w-4 mr-1" />
                           View
                         </Button>

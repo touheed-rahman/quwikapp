@@ -1,3 +1,4 @@
+
 import { Bell, MessageSquare, User, HelpCircle, ListOrdered } from "lucide-react";
 import { Button } from "./ui/button";
 import { Link } from "react-router-dom";
@@ -95,7 +96,7 @@ const Header = () => {
               <Button 
                 variant="ghost" 
                 size="icon" 
-                className="relative hidden md:flex flex-col items-center justify-center h-16 w-16 gap-0.5"
+                className="relative hidden md:flex flex-col items-center justify-center h-16 w-16 gap-0.5 hover:text-white"
                 onClick={handleNotificationClick}
               >
                 <Bell className="h-5 w-5" />
@@ -113,7 +114,7 @@ const Header = () => {
                   variant="ghost" 
                   size="icon"
                   onClick={() => setIsChatOpen(true)}
-                  className="flex flex-col items-center justify-center h-16 w-16 gap-0.5"
+                  className="flex flex-col items-center justify-center h-16 w-16 gap-0.5 hover:text-white"
                 >
                   <MessageSquare className="h-5 w-5" />
                   <span className="text-[10px]">Chats</span>
@@ -127,13 +128,13 @@ const Header = () => {
                 )}
               </div>
               <Link to="/my-ads" className="hidden md:block">
-                <Button variant="ghost" size="icon" className="flex flex-col items-center justify-center h-16 w-16 gap-0.5">
+                <Button variant="ghost" size="icon" className="flex flex-col items-center justify-center h-16 w-16 gap-0.5 hover:text-white">
                   <ListOrdered className="h-5 w-5" />
                   <span className="text-[10px]">My Ads</span>
                 </Button>
               </Link>
               <Link to="/profile">
-                <Button variant="ghost" size="icon" className="flex flex-col items-center justify-center h-16 w-16 gap-0.5">
+                <Button variant="ghost" size="icon" className="flex flex-col items-center justify-center h-16 w-16 gap-0.5 hover:text-white">
                   <User className="h-5 w-5" />
                   <span className="text-[10px]">Profile</span>
                 </Button>
@@ -142,7 +143,7 @@ const Header = () => {
                 variant="ghost" 
                 size="icon"
                 onClick={() => setIsFeedbackOpen(true)}
-                className="flex flex-col items-center justify-center h-16 w-16 gap-0.5"
+                className="flex flex-col items-center justify-center h-16 w-16 gap-0.5 hover:text-white"
               >
                 <HelpCircle className="h-5 w-5" />
                 <span className="text-[10px]">Help</span>
@@ -157,13 +158,13 @@ const Header = () => {
                 variant="ghost" 
                 size="icon"
                 onClick={() => setIsFeedbackOpen(true)}
-                className="flex flex-col items-center justify-center h-16 w-16 gap-0.5"
+                className="flex flex-col items-center justify-center h-16 w-16 gap-0.5 hover:text-white"
               >
                 <HelpCircle className="h-5 w-5" />
                 <span className="text-[10px]">Help</span>
               </Button>
               <Link to="/profile">
-                <Button>Sign In</Button>
+                <Button className="hover:text-white">Sign In</Button>
               </Link>
             </>
           )}

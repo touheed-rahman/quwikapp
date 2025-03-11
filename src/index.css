@@ -36,6 +36,11 @@
     @apply bg-background text-foreground antialiased;
   }
 
+  /* Content spacing for fixed header */
+  main {
+    @apply pt-20; /* Add space for the fixed navbar */
+  }
+
   /* Enhanced text and headings */
   h1 {
     @apply text-foreground/90 font-bold tracking-tight;
@@ -60,6 +65,11 @@
     @apply hover:shadow-md active:scale-[0.98] transition-all duration-200;
   }
 
+  /* Add hover text effect for all interactive elements */
+  button:hover, a:hover, [role="button"]:hover {
+    @apply text-white; /* Text becomes white on hover */
+  }
+
   /* Card enhancements */
   .card {
     @apply shadow-sm hover:shadow-md transition-all duration-200 bg-card/95 backdrop-blur-sm
@@ -68,11 +78,13 @@
 }
 
 /* Enhanced scrollbar styling */
-.scrollbar-hide::-webkit-scrollbar {
+.scrollbar-hide::-webkit-scrollbar,
+.no-scrollbar::-webkit-scrollbar {
   display: none;
 }
 
-.scrollbar-hide {
+.scrollbar-hide,
+.no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
@@ -142,4 +154,20 @@
 .badge {
   @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium
          transition-colors duration-200;
+}
+
+/* Improved button states */
+button, 
+.button {
+  @apply hover:text-white transition-colors duration-200;
+}
+
+/* Consistent page spacing */
+.page-content {
+  @apply pt-24 pb-16;
+}
+
+/* Fixed height for thumbnails to prevent layout shifts */
+.product-thumbnail {
+  @apply w-20 h-20 object-cover;
 }

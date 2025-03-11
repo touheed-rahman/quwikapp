@@ -60,13 +60,17 @@ const ImageGallery = ({ images, currentImageIndex, setCurrentImageIndex }: Image
 
   const goToNextImage = () => {
     if (images.length > 1) {
-      setCurrentImageIndex((prevIndex) => (prevIndex + 1) % images.length);
+      // Fixed: Don't use a function here, just calculate the next index
+      const nextIndex = (currentImageIndex + 1) % images.length;
+      setCurrentImageIndex(nextIndex);
     }
   };
 
   const goToPrevImage = () => {
     if (images.length > 1) {
-      setCurrentImageIndex((prevIndex) => (prevIndex - 1 + images.length) % images.length);
+      // Fixed: Don't use a function here, just calculate the previous index
+      const prevIndex = (currentImageIndex - 1 + images.length) % images.length;
+      setCurrentImageIndex(prevIndex);
     }
   };
 
@@ -109,7 +113,7 @@ const ImageGallery = ({ images, currentImageIndex, setCurrentImageIndex }: Image
                 onClick={goToPrevImage}
                 size="icon"
                 variant="secondary"
-                className="absolute top-1/2 left-2 z-10 -translate-y-1/2 bg-white/80 backdrop-blur-sm rounded-full shadow-md hidden md:flex"
+                className="absolute top-1/2 left-2 z-10 -translate-y-1/2 bg-white/80 backdrop-blur-sm rounded-full shadow-md hidden md:flex hover:text-white"
               >
                 <ChevronLeft className="h-5 w-5" />
               </Button>
@@ -118,7 +122,7 @@ const ImageGallery = ({ images, currentImageIndex, setCurrentImageIndex }: Image
                 onClick={goToNextImage}
                 size="icon"
                 variant="secondary"
-                className="absolute top-1/2 right-2 z-10 -translate-y-1/2 bg-white/80 backdrop-blur-sm rounded-full shadow-md hidden md:flex"
+                className="absolute top-1/2 right-2 z-10 -translate-y-1/2 bg-white/80 backdrop-blur-sm rounded-full shadow-md hidden md:flex hover:text-white"
               >
                 <ChevronRight className="h-5 w-5" />
               </Button>
@@ -142,9 +146,9 @@ const ImageGallery = ({ images, currentImageIndex, setCurrentImageIndex }: Image
         </div>
       </div>
 
-      {/* Thumbnails - only show when multiple images */}
+      {/* Thumbnails - only show on desktop when multiple images */}
       {images.length > 1 && (
-        <div className="flex overflow-x-auto gap-2 pb-2 hide-scrollbar">
+        <div className="hidden md:flex overflow-x-auto gap-2 pb-2 hide-scrollbar">
           {thumbnails.map((thumb, index) => (
             <motion.button
               key={index}
@@ -157,7 +161,7 @@ const ImageGallery = ({ images, currentImageIndex, setCurrentImageIndex }: Image
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
-              <div className="w-16 h-16 md:w-20 md:h-20">
+              <div className="w-20 h-20">
                 <img
                   src={thumb}
                   alt={`Thumbnail ${index + 1}`}
