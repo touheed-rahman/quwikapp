@@ -76,6 +76,7 @@ export type Database = {
           buyer_id: string
           created_at: string
           deleted: boolean | null
+          deleted_by: string | null
           id: string
           last_message: string | null
           last_message_at: string | null
@@ -87,6 +88,7 @@ export type Database = {
           buyer_id: string
           created_at?: string
           deleted?: boolean | null
+          deleted_by?: string | null
           id?: string
           last_message?: string | null
           last_message_at?: string | null
@@ -98,6 +100,7 @@ export type Database = {
           buyer_id?: string
           created_at?: string
           deleted?: boolean | null
+          deleted_by?: string | null
           id?: string
           last_message?: string | null
           last_message_at?: string | null
