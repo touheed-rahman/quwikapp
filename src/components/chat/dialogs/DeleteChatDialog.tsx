@@ -1,15 +1,17 @@
 
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
-import { Loader2 } from "lucide-react";
+import { Loader2, AlertTriangle } from "lucide-react";
 
 interface DeleteChatDialogProps {
   open: boolean;
@@ -34,43 +36,52 @@ const DeleteChatDialog = ({
   };
 
   return (
-    <Dialog open={open} onOpenChange={(newState) => {
+    <AlertDialog open={open} onOpenChange={(newState) => {
       if (isDeleting) return; // Prevent closing while deleting
       onOpenChange(newState);
     }}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Delete Chat</DialogTitle>
-          <DialogDescription>
-            This will remove this conversation from your chat list. Are you sure you want to continue?
-          </DialogDescription>
-        </DialogHeader>
-        <DialogFooter>
-          <Button 
-            variant="outline" 
-            onClick={() => onOpenChange(false)}
-            disabled={isDeleting}
-          >
-            Cancel
-          </Button>
-          <Button 
-            variant="destructive" 
-            onClick={handleConfirm}
-            disabled={isDeleting}
-          >
-            {isDeleting ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Deleting...
-              </>
-            ) : (
-              "Delete"
-            )}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+      <AlertDialogContent className="max-w-md">
+        <AlertDialogHeader>
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10 mb-2">
+            <AlertTriangle className="h-6 w-6 text-destructive" />
+          </div>
+          <AlertDialogTitle className="text-center text-xl">Delete Chat</AlertDialogTitle>
+          <AlertDialogDescription className="text-center">
+            This will remove this conversation from your chat list. You won't be able to see the messages anymore. This action cannot be undone.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter className="flex flex-col sm:flex-row gap-2 mt-2">
+          <AlertDialogCancel asChild>
+            <Button 
+              variant="outline" 
+              className="w-full sm:w-auto"
+              disabled={isDeleting}
+            >
+              Cancel
+            </Button>
+          </AlertDialogCancel>
+          <AlertDialogAction asChild>
+            <Button 
+              variant="destructive" 
+              onClick={handleConfirm}
+              className="w-full sm:w-auto"
+              disabled={isDeleting}
+            >
+              {isDeleting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Deleting...
+                </>
+              ) : (
+                "Delete"
+              )}
+            </Button>
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   );
 };
 
 export default DeleteChatDialog;
+

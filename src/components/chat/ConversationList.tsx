@@ -77,11 +77,11 @@ const ConversationList = ({
   };
 
   if (isLoading) {
-    return <div className="p-4 text-center text-muted-foreground">Loading...</div>;
+    return <div className="p-4 text-center text-muted-foreground">Loading conversations...</div>;
   }
 
   if (localConversations.length === 0) {
-    return <div className="p-4 text-center text-muted-foreground">No conversations</div>;
+    return <div className="p-4 text-center text-muted-foreground">No conversations yet</div>;
   }
 
   return (

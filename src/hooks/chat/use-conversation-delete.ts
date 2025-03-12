@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom';
 
 export function useConversationDelete(
   userId: string | null,
-  setConversations: React.Dispatch<React.SetStateAction<any[]>>
+  setConversations?: React.Dispatch<React.SetStateAction<any[]>>
 ) {
   const [isDeleting, setIsDeleting] = useState(false);
   const navigate = useNavigate();
@@ -34,8 +34,10 @@ export function useConversationDelete(
 
       console.log('Successfully marked conversation as deleted');
 
-      // Remove the deleted conversation from the state immediately
-      setConversations(prev => prev.filter(conv => conv.id !== conversationId));
+      // If we have a state setter function, remove the deleted conversation 
+      if (setConversations) {
+        setConversations(prev => prev.filter(conv => conv.id !== conversationId));
+      }
       
       toast({
         title: "Chat deleted",
