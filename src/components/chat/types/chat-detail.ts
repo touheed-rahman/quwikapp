@@ -6,6 +6,7 @@ export interface Message {
   created_at: string;
   is_offer?: boolean;
   is_image?: boolean;
+  deleted_at?: string | null;
 }
 
 export interface Listing {
