@@ -21,6 +21,7 @@ interface ChatMainViewProps {
   onBack: () => void;
   onImageUpload: (file: File) => Promise<void>;
   isEmptyChat: boolean;
+  onDeleteChat?: () => void; // Added this prop definition
 }
 
 const ChatMainView = ({
@@ -36,7 +37,8 @@ const ChatMainView = ({
   disabledReason,
   onBack,
   onImageUpload,
-  isEmptyChat
+  isEmptyChat,
+  onDeleteChat
 }: ChatMainViewProps) => {
   const handleQuickMessage = (message: string) => {
     setNewMessage(message);
@@ -56,6 +58,7 @@ const ChatMainView = ({
         onBack={onBack}
         isOnline={isOtherUserOnline}
         sessionUserId={sessionUserId}
+        onDeleteChat={onDeleteChat}
       />
       <div className="flex-1 overflow-y-auto">
         <MessageList messages={messages} sessionUserId={sessionUserId} />
@@ -81,3 +84,4 @@ const ChatMainView = ({
 };
 
 export default ChatMainView;
+
