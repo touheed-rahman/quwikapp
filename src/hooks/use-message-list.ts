@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
@@ -20,7 +21,6 @@ export function useMessageList(conversationId: string | undefined, sessionUserId
           .from('messages')
           .select('*')
           .eq('conversation_id', conversationId)
-          .is('deleted_at', null) // Only fetch non-deleted messages
           .order('created_at', { ascending: true });
 
         if (error) throw error;
@@ -38,7 +38,6 @@ export function useMessageList(conversationId: string | undefined, sessionUserId
 
     fetchMessages();
 
-    // Subscribe to INSERT and UPDATE events
     const channel = supabase
       .channel(`room:${conversationId}`)
       .on(
@@ -50,36 +49,7 @@ export function useMessageList(conversationId: string | undefined, sessionUserId
           filter: `conversation_id=eq.${conversationId}`
         },
         (payload) => {
-          // Add new messages
-          const newMessage = payload.new as Message;
-          if (!newMessage.deleted_at) {
-            setMessages(prev => [...prev, newMessage]);
-          }
-        }
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'messages',
-          filter: `conversation_id=eq.${conversationId}`
-        },
-        (payload) => {
-          // Handle updates (including deletions)
-          const updatedMessage = payload.new as Message;
-          
-          if (updatedMessage.deleted_at) {
-            // If message was marked as deleted, remove it from UI
-            setMessages(prev => prev.filter(msg => msg.id !== updatedMessage.id));
-          } else {
-            // Otherwise update the message
-            setMessages(prev => 
-              prev.map(msg => 
-                msg.id === updatedMessage.id ? updatedMessage : msg
-              )
-            );
-          }
+          setMessages(prev => [...prev, payload.new as Message]);
         }
       )
       .subscribe();
