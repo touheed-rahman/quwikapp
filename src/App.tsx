@@ -11,7 +11,6 @@ import ScrollToTop from "./components/utils/ScrollToTop";
 import ErrorBoundary from "./components/utils/ErrorBoundary";
 import Index from "./pages/Index";
 import Sell from "./pages/Sell";
-import SellQ from "./pages/SellQ"; // Added import for SellQ
 import Product from "./pages/Product";
 import Categories from "./pages/Categories";
 import ChatDetail from "./pages/ChatDetail";
@@ -27,8 +26,8 @@ import React from 'react';
 import CategorySubcategories from "./pages/CategorySubcategories";
 import SellerProfile from "./pages/SellerProfile";
 import MyOrders from "./pages/MyOrders";
-import QFeed from "./pages/QFeed";
 
+// Create a client outside of the component to avoid recreating it on every render
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -88,20 +87,11 @@ const App = () => (
               <Route path="/fresh-recommendations" element={<FreshRecommendations />} />
               <Route path="/recent-listings/:category" element={<RecentSubcategoryListings />} />
               <Route path="/seller/:id" element={<SellerProfile />} />
-              <Route path="/q" element={<QFeed />} />
               <Route
                 path="/sell"
                 element={
                   <PrivateRoute>
                     <Sell />
-                  </PrivateRoute>
-                }
-              />
-              <Route
-                path="/sell/q"
-                element={
-                  <PrivateRoute>
-                    <SellQ />
                   </PrivateRoute>
                 }
               />

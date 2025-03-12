@@ -1,4 +1,3 @@
-
 import { Bell, MessageSquare, User, HelpCircle, ListOrdered } from "lucide-react";
 import { Button } from "./ui/button";
 import { Link } from "react-router-dom";
@@ -109,9 +108,7 @@ const Header = () => {
                   </Badge>
                 )}
               </Button>
-              
-              {/* Chat button moved here - visible on both mobile and desktop */}
-              <div className="relative">
+              <div className="relative hidden md:block">
                 <Button 
                   variant="ghost" 
                   size="icon"
@@ -129,7 +126,6 @@ const Header = () => {
                   </Badge>
                 )}
               </div>
-              
               <Link to="/my-ads" className="hidden md:block">
                 <Button variant="ghost" size="icon" className="flex flex-col items-center justify-center h-16 w-16 gap-0.5">
                   <ListOrdered className="h-5 w-5" />
