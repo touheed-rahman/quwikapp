@@ -23,7 +23,8 @@ export function useConversationDelete(
       const { error } = await supabase
         .from('conversations')
         .update({ 
-          deleted_by: userId 
+          deleted_by: userId,
+          deleted_at: new Date().toISOString()
         })
         .eq('id', conversationId);
         

@@ -16,7 +16,7 @@ import { Loader2, AlertTriangle } from "lucide-react";
 interface DeleteChatDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onConfirm: () => void;
+  onConfirm: () => Promise<void>;
 }
 
 const DeleteChatDialog = ({
@@ -27,9 +27,11 @@ const DeleteChatDialog = ({
   const [isDeleting, setIsDeleting] = useState(false);
 
   const handleConfirm = async () => {
+    if (isDeleting) return;
     setIsDeleting(true);
     try {
       await onConfirm();
+      onOpenChange(false);
     } finally {
       setIsDeleting(false);
     }
@@ -84,4 +86,3 @@ const DeleteChatDialog = ({
 };
 
 export default DeleteChatDialog;
-

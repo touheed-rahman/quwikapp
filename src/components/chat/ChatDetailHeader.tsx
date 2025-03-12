@@ -62,7 +62,7 @@ const ChatDetailHeader = ({
           <DropdownMenuContent align="end">
             <DropdownMenuItem 
               onClick={onDeleteChat}
-              className="text-destructive focus:text-destructive"
+              className="text-destructive focus:text-destructive cursor-pointer"
             >
               <Trash2 className="mr-2 h-4 w-4" />
               Delete chat
