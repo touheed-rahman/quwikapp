@@ -30,8 +30,7 @@ const ChatDetail = () => {
   } = useChat(id);
 
   const { handleDelete } = useConversationDelete(
-    sessionUser?.id || null,
-    () => {} // We don't need to update conversations here
+    sessionUser?.id || null
   );
 
   // Create a wrapper function to handle type conversion
