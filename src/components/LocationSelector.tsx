@@ -1,4 +1,3 @@
-
 import { useState, useCallback, useEffect } from 'react';
 import { MapPin, Loader2, ChevronRight, ArrowLeft } from 'lucide-react';
 import { Button } from "@/components/ui/button";
@@ -362,293 +361,67 @@ const LocationSelector = ({ value, onChange }: { value: string | null, onChange:
     setLoading(true);
     try {
       // Check if the state ID is one of our predefined ones
-      // We'll provide detailed cities for some important states
-      if (stateId === 'in-11') { // Karnataka, India
+      if (stateId === 'in-1') { // Andhra Pradesh, India
         setCities([
-          { id: 'blr', name: 'Bengaluru', state_id: 'in-11', latitude: 12.9716, longitude: 77.5946 },
-          { id: 'mys', name: 'Mysuru', state_id: 'in-11', latitude: 12.2958, longitude: 76.6394 },
-          { id: 'hub', name: 'Hubballi', state_id: 'in-11', latitude: 15.3647, longitude: 75.1240 },
-          { id: 'mng', name: 'Mangaluru', state_id: 'in-11', latitude: 12.9141, longitude: 74.8560 },
-          { id: 'bel', name: 'Belagavi', state_id: 'in-11', latitude: 15.8497, longitude: 74.4977 },
-          { id: 'dvg', name: 'Davangere', state_id: 'in-11', latitude: 14.4644, longitude: 75.9218 },
-          { id: 'gul', name: 'Kalaburagi', state_id: 'in-11', latitude: 17.3297, longitude: 76.8343 },
-          { id: 'tmk', name: 'Tumakuru', state_id: 'in-11', latitude: 13.3379, longitude: 77.1173 },
-          { id: 'shi', name: 'Shivamogga', state_id: 'in-11', latitude: 13.9299, longitude: 75.5681 },
-          { id: 'bidar', name: 'Bidar', state_id: 'in-11', latitude: 17.9104, longitude: 77.5199 }
+          { id: 'vskp', name: 'Visakhapatnam', state_id: 'in-1', latitude: 17.6868, longitude: 83.2185 },
+          { id: 'vjwd', name: 'Vijayawada', state_id: 'in-1', latitude: 16.5062, longitude: 80.6480 },
+          { id: 'gntr', name: 'Guntur', state_id: 'in-1', latitude: 16.3067, longitude: 80.4365 },
+          { id: 'nllr', name: 'Nellore', state_id: 'in-1', latitude: 14.4426, longitude: 79.9865 },
+          { id: 'krnl', name: 'Kurnool', state_id: 'in-1', latitude: 15.8281, longitude: 78.0373 },
+          { id: 'tpti', name: 'Tirupati', state_id: 'in-1', latitude: 13.6288, longitude: 79.4192 },
+          { id: 'kknl', name: 'Kakinada', state_id: 'in-1', latitude: 16.9891, longitude: 82.2475 },
+          { id: 'rjhm', name: 'Rajahmundry', state_id: 'in-1', latitude: 17.0005, longitude: 81.8040 },
+          { id: 'antp', name: 'Anantapur', state_id: 'in-1', latitude: 14.6819, longitude: 77.6006 },
+          { id: 'kndp', name: 'Kadapa', state_id: 'in-1', latitude: 14.4673, longitude: 78.8242 }
         ]);
-      } else if (stateId === 'in-14') { // Maharashtra, India
+      } else if (stateId === 'in-2') { // Arunachal Pradesh, India
         setCities([
-          { id: 'mum', name: 'Mumbai', state_id: 'in-14', latitude: 19.0760, longitude: 72.8777 },
-          { id: 'pun', name: 'Pune', state_id: 'in-14', latitude: 18.5204, longitude: 73.8567 },
-          { id: 'nag', name: 'Nagpur', state_id: 'in-14', latitude: 21.1458, longitude: 79.0882 },
-          { id: 'aur', name: 'Aurangabad', state_id: 'in-14', latitude: 19.8762, longitude: 75.3433 },
-          { id: 'nas', name: 'Nashik', state_id: 'in-14', latitude: 19.9975, longitude: 73.7898 },
-          { id: 'sol', name: 'Solapur', state_id: 'in-14', latitude: 17.6599, longitude: 75.9064 },
-          { id: 'kol', name: 'Kolhapur', state_id: 'in-14', latitude: 16.7050, longitude: 74.2433 },
-          { id: 'ama', name: 'Amravati', state_id: 'in-14', latitude: 20.9374, longitude: 77.7796 },
-          { id: 'nanded', name: 'Nanded', state_id: 'in-14', latitude: 19.1383, longitude: 77.3210 },
-          { id: 'akola', name: 'Akola', state_id: 'in-14', latitude: 20.7002, longitude: 77.0082 }
+          { id: 'itng', name: 'Itanagar', state_id: 'in-2', latitude: 27.0844, longitude: 93.6053 },
+          { id: 'pshg', name: 'Pasighat', state_id: 'in-2', latitude: 28.0678, longitude: 95.3932 },
+          { id: 'nhrg', name: 'Naharlagun', state_id: 'in-2', latitude: 27.1044, longitude: 93.6953 },
+          { id: 'aalo', name: 'Aalo', state_id: 'in-2', latitude: 28.1669, longitude: 94.8022 },
+          { id: 'tezp', name: 'Tezu', state_id: 'in-2', latitude: 27.9212, longitude: 96.1250 },
+          { id: 'bomg', name: 'Bomdila', state_id: 'in-2', latitude: 27.2526, longitude: 92.4148 },
+          { id: 'zngt', name: 'Ziro', state_id: 'in-2', latitude: 27.5878, longitude: 93.8301 },
+          { id: 'rkgn', name: 'Roing', state_id: 'in-2', latitude: 28.1445, longitude: 95.8416 },
+          { id: 'alkn', name: 'Along', state_id: 'in-2', latitude: 28.1693, longitude: 94.7667 },
+          { id: 'binh', name: 'Bhalukpong', state_id: 'in-2', latitude: 27.0169, longitude: 92.6503 }
         ]);
-      } else if (stateId === 'in-23') { // Tamil Nadu, India
+      } else if (stateId === 'in-3') { // Assam, India
         setCities([
-          { id: 'chn', name: 'Chennai', state_id: 'in-23', latitude: 13.0827, longitude: 80.2707 },
-          { id: 'cbe', name: 'Coimbatore', state_id: 'in-23', latitude: 11.0168, longitude: 76.9558 },
-          { id: 'mdu', name: 'Madurai', state_id: 'in-23', latitude: 9.9252, longitude: 78.1198 },
-          { id: 'tri', name: 'Tiruchirappalli', state_id: 'in-23', latitude: 10.7905, longitude: 78.7047 },
-          { id: 'slm', name: 'Salem', state_id: 'in-23', latitude: 11.6643, longitude: 78.1460 },
-          { id: 'erode', name: 'Erode', state_id: 'in-23', latitude: 11.3410, longitude: 77.7172 },
-          { id: 'vellore', name: 'Vellore', state_id: 'in-23', latitude: 12.9165, longitude: 79.1325 },
-          { id: 'thoothukudi', name: 'Thoothukudi', state_id: 'in-23', latitude: 8.7642, longitude: 78.1348 },
-          { id: 'tirunelveli', name: 'Tirunelveli', state_id: 'in-23', latitude: 8.7139, longitude: 77.7567 },
-          { id: 'tiruppur', name: 'Tiruppur', state_id: 'in-23', latitude: 11.1085, longitude: 77.3411 }
+          { id: 'guwt', name: 'Guwahati', state_id: 'in-3', latitude: 26.1445, longitude: 91.7362 },
+          { id: 'slch', name: 'Silchar', state_id: 'in-3', latitude: 24.8333, longitude: 92.7789 },
+          { id: 'diby', name: 'Dibrugarh', state_id: 'in-3', latitude: 27.4728, longitude: 94.9120 },
+          { id: 'jrht', name: 'Jorhat', state_id: 'in-3', latitude: 26.7509, longitude: 94.2037 },
+          { id: 'nagn', name: 'Nagaon', state_id: 'in-3', latitude: 26.3452, longitude: 92.6840 },
+          { id: 'tinx', name: 'Tinsukia', state_id: 'in-3', latitude: 27.4922, longitude: 95.3468 },
+          { id: 'tezn', name: 'Tezpur', state_id: 'in-3', latitude: 26.6528, longitude: 92.8050 },
+          { id: 'barp', name: 'Barpeta', state_id: 'in-3', latitude: 26.3175, longitude: 91.0047 },
+          { id: 'gola', name: 'Golaghat', state_id: 'in-3', latitude: 26.5128, longitude: 93.9701 },
+          { id: 'kokj', name: 'Kokrajhar', state_id: 'in-3', latitude: 26.4010, longitude: 90.2714 }
         ]);
-      } else if (stateId === 'in-24') { // Telangana, India
+      } else if (stateId === 'in-4') { // Bihar, India
         setCities([
-          { id: 'hyd', name: 'Hyderabad', state_id: 'in-24', latitude: 17.3850, longitude: 78.4867 },
-          { id: 'wgl', name: 'Warangal', state_id: 'in-24', latitude: 18.0000, longitude: 79.5833 },
-          { id: 'niz', name: 'Nizamabad', state_id: 'in-24', latitude: 18.6725, longitude: 78.0940 },
-          { id: 'krmn', name: 'Karimnagar', state_id: 'in-24', latitude: 18.4392, longitude: 79.1286 },
-          { id: 'khm', name: 'Khammam', state_id: 'in-24', latitude: 17.2473, longitude: 80.1514 },
-          { id: 'secbad', name: 'Secunderabad', state_id: 'in-24', latitude: 17.4399, longitude: 78.4983 },
-          { id: 'adil', name: 'Adilabad', state_id: 'in-24', latitude: 19.6640, longitude: 78.5320 },
-          { id: 'nalgonda', name: 'Nalgonda', state_id: 'in-24', latitude: 17.0574, longitude: 79.2687 },
-          { id: 'siddipet', name: 'Siddipet', state_id: 'in-24', latitude: 18.1018, longitude: 78.8525 },
-          { id: 'mahabub', name: 'Mahbubnagar', state_id: 'in-24', latitude: 16.7375, longitude: 77.9853 }
+          { id: 'patn', name: 'Patna', state_id: 'in-4', latitude: 25.5941, longitude: 85.1376 },
+          { id: 'gaya', name: 'Gaya', state_id: 'in-4', latitude: 24.7914, longitude: 85.0002 },
+          { id: 'muzf', name: 'Muzaffarpur', state_id: 'in-4', latitude: 26.1209, longitude: 85.3647 },
+          { id: 'bhag', name: 'Bhagalpur', state_id: 'in-4', latitude: 25.2425, longitude: 87.0079 },
+          { id: 'darb', name: 'Darbhanga', state_id: 'in-4', latitude: 26.1542, longitude: 85.8918 },
+          { id: 'purx', name: 'Purnia', state_id: 'in-4', latitude: 25.7771, longitude: 87.4753 },
+          { id: 'arar', name: 'Arrah', state_id: 'in-4', latitude: 25.5561, longitude: 84.6602 },
+          { id: 'begu', name: 'Begusarai', state_id: 'in-4', latitude: 25.4182, longitude: 86.1272 },
+          { id: 'kati', name: 'Katihar', state_id: 'in-4', latitude: 25.5574, longitude: 87.5694 },
+          { id: 'chhm', name: 'Chhapra', state_id: 'in-4', latitude: 25.7825, longitude: 84.7549 }
         ]);
-      } else if (stateId === 'us-5') { // California, US
+      } else if (stateId === 'in-5') { // Chhattisgarh, India
         setCities([
-          { id: 'la', name: 'Los Angeles', state_id: 'us-5', latitude: 34.0522, longitude: -118.2437 },
-          { id: 'sf', name: 'San Francisco', state_id: 'us-5', latitude: 37.7749, longitude: -122.4194 },
-          { id: 'sd', name: 'San Diego', state_id: 'us-5', latitude: 32.7157, longitude: -117.1611 },
-          { id: 'sj', name: 'San Jose', state_id: 'us-5', latitude: 37.3382, longitude: -121.8863 },
-          { id: 'fres', name: 'Fresno', state_id: 'us-5', latitude: 36.7378, longitude: -119.7871 },
-          { id: 'sac', name: 'Sacramento', state_id: 'us-5', latitude: 38.5816, longitude: -121.4944 },
-          { id: 'lb', name: 'Long Beach', state_id: 'us-5', latitude: 33.7701, longitude: -118.1937 },
-          { id: 'oak', name: 'Oakland', state_id: 'us-5', latitude: 37.8044, longitude: -122.2712 },
-          { id: 'bak', name: 'Bakersfield', state_id: 'us-5', latitude: 35.3733, longitude: -119.0187 },
-          { id: 'ana', name: 'Anaheim', state_id: 'us-5', latitude: 33.8366, longitude: -117.9143 }
-        ]);
-      } else if (stateId === 'us-32') { // New York, US
-        setCities([
-          { id: 'nyc', name: 'New York City', state_id: 'us-32', latitude: 40.7128, longitude: -74.0060 },
-          { id: 'buf', name: 'Buffalo', state_id: 'us-32', latitude: 42.8864, longitude: -78.8784 },
-          { id: 'roc', name: 'Rochester', state_id: 'us-32', latitude: 43.1566, longitude: -77.6088 },
-          { id: 'yonk', name: 'Yonkers', state_id: 'us-32', latitude: 40.9312, longitude: -73.8987 },
-          { id: 'syr', name: 'Syracuse', state_id: 'us-32', latitude: 43.0481, longitude: -76.1474 },
-          { id: 'alb', name: 'Albany', state_id: 'us-32', latitude: 42.6526, longitude: -73.7562 },
-          { id: 'nfalls', name: 'Niagara Falls', state_id: 'us-32', latitude: 43.0962, longitude: -79.0377 },
-          { id: 'utica', name: 'Utica', state_id: 'us-32', latitude: 43.1009, longitude: -75.2327 },
-          { id: 'bing', name: 'Binghamton', state_id: 'us-32', latitude: 42.0987, longitude: -75.9180 },
-          { id: 'white', name: 'White Plains', state_id: 'us-32', latitude: 41.0340, longitude: -73.7629 }
-        ]);
-      } else if (stateId === 'us-43') { // Texas, US
-        setCities([
-          { id: 'hou', name: 'Houston', state_id: 'us-43', latitude: 29.7604, longitude: -95.3698 },
-          { id: 'san', name: 'San Antonio', state_id: 'us-43', latitude: 29.4241, longitude: -98.4936 },
-          { id: 'dal', name: 'Dallas', state_id: 'us-43', latitude: 32.7767, longitude: -96.7970 },
-          { id: 'aus', name: 'Austin', state_id: 'us-43', latitude: 30.2672, longitude: -97.7431 },
-          { id: 'ftw', name: 'Fort Worth', state_id: 'us-43', latitude: 32.7555, longitude: -97.3308 },
-          { id: 'elp', name: 'El Paso', state_id: 'us-43', latitude: 31.7619, longitude: -106.4850 },
-          { id: 'arlng', name: 'Arlington', state_id: 'us-43', latitude: 32.7357, longitude: -97.1081 },
-          { id: 'corp', name: 'Corpus Christi', state_id: 'us-43', latitude: 27.8006, longitude: -97.3964 },
-          { id: 'plano', name: 'Plano', state_id: 'us-43', latitude: 33.0198, longitude: -96.6989 },
-          { id: 'lub', name: 'Lubbock', state_id: 'us-43', latitude: 33.5779, longitude: -101.8552 }
-        ]);
-      } else if (stateId === 'uk-1') { // England, UK
-        setCities([
-          { id: 'lon', name: 'London', state_id: 'uk-1', latitude: 51.5074, longitude: -0.1278 },
-          { id: 'birm', name: 'Birmingham', state_id: 'uk-1', latitude: 52.4862, longitude: -1.8904 },
-          { id: 'man', name: 'Manchester', state_id: 'uk-1', latitude: 53.4808, longitude: -2.2426 },
-          { id: 'liv', name: 'Liverpool', state_id: 'uk-1', latitude: 53.4084, longitude: -2.9916 },
-          { id: 'bris', name: 'Bristol', state_id: 'uk-1', latitude: 51.4545, longitude: -2.5879 },
-          { id: 'shef', name: 'Sheffield', state_id: 'uk-1', latitude: 53.3811, longitude: -1.4701 },
-          { id: 'leeds', name: 'Leeds', state_id: 'uk-1', latitude: 53.8008, longitude: -1.5491 },
-          { id: 'newc', name: 'Newcastle', state_id: 'uk-1', latitude: 54.9783, longitude: -1.6178 },
-          { id: 'nott', name: 'Nottingham', state_id: 'uk-1', latitude: 52.9548, longitude: -1.1581 },
-          { id: 'soton', name: 'Southampton', state_id: 'uk-1', latitude: 50.9097, longitude: -1.4044 }
-        ]);
-      } else if (stateId === 'jp-13') { // Tokyo, Japan
-        setCities([
-          { id: 'shinjuku', name: 'Shinjuku', state_id: 'jp-13', latitude: 35.6938, longitude: 139.7034 },
-          { id: 'shibuya', name: 'Shibuya', state_id: 'jp-13', latitude: 35.6580, longitude: 139.7016 },
-          { id: 'minato', name: 'Minato', state_id: 'jp-13', latitude: 35.6581, longitude: 139.7511 },
-          { id: 'chiyoda', name: 'Chiyoda', state_id: 'jp-13', latitude: 35.6938, longitude: 139.7534 },
-          { id: 'toshima', name: 'Toshima', state_id: 'jp-13', latitude: 35.7333, longitude: 139.7167 },
-          { id: 'bunkyo', name: 'Bunkyo', state_id: 'jp-13', latitude: 35.7167, longitude: 139.7500 },
-          { id: 'ota', name: 'Ota', state_id: 'jp-13', latitude: 35.5667, longitude: 139.7167 },
-          { id: 'setagaya', name: 'Setagaya', state_id: 'jp-13', latitude: 35.6464, longitude: 139.6533 },
-          { id: 'edogawa', name: 'Edogawa', state_id: 'jp-13', latitude: 35.7000, longitude: 139.8800 },
-          { id: 'nerima', name: 'Nerima', state_id: 'jp-13', latitude: 35.7333, longitude: 139.6500 }
-        ]);
-      } else {
-        // For other states or countries, provide generic city data
-        const cities: City[] = [];
-        for (let i = 1; i <= 5; i++) {
-          cities.push({
-            id: `${stateId}-city-${i}`,
-            name: `Major City ${i}`,
-            state_id: stateId,
-            latitude: Math.random() * 180 - 90,
-            longitude: Math.random() * 360 - 180
-          });
-        }
-        setCities(cities);
-      }
-    } catch (error) {
-      console.error('Error loading cities:', error);
-      toast({
-        title: "Error",
-        description: "Could not load cities. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  }, [toast]);
-
-  const handleCountrySelect = useCallback((country: Country) => {
-    setSelectedCountry(country);
-    loadStates(country.id);
-    setSelectedState(null);
-    setCities([]);
-  }, [loadStates]);
-
-  const handleStateSelect = useCallback(async (state: State) => {
-    setSelectedState(state);
-    await loadCities(state.id);
-  }, [loadCities]);
-
-  const handleCitySelect = useCallback((city: City) => {
-    if (!selectedState || !selectedCountry) return;
-    
-    const locationString = `${city.name}|${selectedState.name}|${selectedCountry.name}|${city.latitude}|${city.longitude}|${city.id}`;
-    onChange(locationString);
-    setOpen(false);
-    setCities([]);
-    setSelectedState(null);
-    setSelectedCountry(null);
-  }, [selectedState, selectedCountry, onChange]);
-
-  return (
-    <Popover open={open} onOpenChange={(isOpen) => {
-      setOpen(isOpen);
-      if (isOpen) {
-        loadCountries();
-      }
-    }}>
-      <PopoverTrigger asChild>
-        <Button
-          variant="outline"
-          role="combobox"
-          aria-expanded={open}
-          className="w-full justify-between text-muted-foreground hover:text-foreground ring-offset-background"
-        >
-          <div className="flex items-center gap-2 truncate">
-            <MapPin className="h-4 w-4 shrink-0 text-primary" />
-            <span className="truncate">{value ? getLocationName(value) : "Select location"}</span>
-          </div>
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent 
-        className="w-[300px] p-0" 
-        align="start"
-      >
-        <Command>
-          <CommandList className="max-h-[300px] overflow-y-auto">
-            {loading ? (
-              <CommandEmpty>
-                <Loader2 className="h-4 w-4 animate-spin mx-auto" />
-                <p className="text-sm text-muted-foreground text-center mt-2">
-                  Loading...
-                </p>
-              </CommandEmpty>
-            ) : selectedState ? (
-              <>
-                <div className="p-2">
-                  <Button
-                    variant="ghost"
-                    className="w-full justify-start font-normal hover:bg-primary hover:text-white"
-                    onClick={() => {
-                      setSelectedState(null);
-                      setCities([]);
-                      if (selectedCountry) loadStates(selectedCountry.id);
-                    }}
-                  >
-                    <ArrowLeft className="mr-2 h-4 w-4" />
-                    Back to States
-                  </Button>
-                </div>
-                <ScrollArea className="h-[200px]">
-                  <div className="py-2">
-                    {cities.map((city) => (
-                      <div
-                        key={city.id}
-                        className="px-2 py-1.5 cursor-pointer hover:bg-primary hover:text-white"
-                        onClick={() => handleCitySelect(city)}
-                      >
-                        {city.name}
-                      </div>
-                    ))}
-                    {cities.length === 0 && !loading && (
-                      <div className="px-2 py-4 text-center text-sm text-muted-foreground">
-                        No cities found
-                      </div>
-                    )}
-                  </div>
-                </ScrollArea>
-              </>
-            ) : selectedCountry ? (
-              <>
-                <div className="p-2">
-                  <Button
-                    variant="ghost"
-                    className="w-full justify-start font-normal hover:bg-primary hover:text-white"
-                    onClick={() => {
-                      setSelectedCountry(null);
-                      setStates([]);
-                      loadCountries();
-                    }}
-                  >
-                    <ArrowLeft className="mr-2 h-4 w-4" />
-                    Back to Countries
-                  </Button>
-                </div>
-                <ScrollArea className="h-[200px]">
-                  <div className="py-2">
-                    {states.map((state) => (
-                      <div
-                        key={state.id}
-                        className="px-2 py-1.5 cursor-pointer hover:bg-primary hover:text-white flex items-center justify-between"
-                        onClick={() => handleStateSelect(state)}
-                      >
-                        <span>{state.name}</span>
-                        <ChevronRight className="h-4 w-4" />
-                      </div>
-                    ))}
-                  </div>
-                </ScrollArea>
-              </>
-            ) : (
-              <ScrollArea className="h-[200px]">
-                <div className="py-2">
-                  {countries.map((country) => (
-                    <div
-                      key={country.id}
-                      className="px-2 py-1.5 cursor-pointer hover:bg-primary hover:text-white flex items-center justify-between"
-                      onClick={() => handleCountrySelect(country)}
-                    >
-                      <span>{country.name}</span>
-                      <ChevronRight className="h-4 w-4" />
-                    </div>
-                  ))}
-                </div>
-              </ScrollArea>
-            )}
-          </CommandList>
-        </Command>
-      </PopoverContent>
-    </Popover>
-  );
-};
-
-export default LocationSelector;
+          { id: 'raip', name: 'Raipur', state_id: 'in-5', latitude: 21.2514, longitude: 81.6296 },
+          { id: 'bilx', name: 'Bilaspur', state_id: 'in-5', latitude: 22.0797, longitude: 82.1409 },
+          { id: 'bhix', name: 'Bhilai', state_id: 'in-5', latitude: 21.2090, longitude: 81.4285 },
+          { id: 'korb', name: 'Korba', state_id: 'in-5', latitude: 22.3595, longitude: 82.7501 },
+          { id: 'raig', name: 'Raigarh', state_id: 'in-5', latitude: 21.8974, longitude: 83.3997 },
+          { id: 'jgdp', name: 'Jagdalpur', state_id: 'in-5', latitude: 19.0777, longitude: 82.0347 },
+          { id: 'ambi', name: 'Ambikapur', state_id: 'in-5', latitude: 23.1200, longitude: 83.1950 },
+          { id: 'durg', name: 'Durg', state_id: 'in-5', latitude: 21.1812, longitude: 81.2849 },
+          { id: 'rajna', name: 'Rajnandgaon', state_id: 'in-5', latitude: 21.0972, longitude: 81.0338 },
+          { id: 'dhmx', name: 'Dhamtari', state_id: 'in-5', latitude: 20.7070, longitude: 81.5
