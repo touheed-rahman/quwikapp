@@ -4,13 +4,13 @@ import { MapPin, Loader2, ChevronRight, ArrowLeft } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Command, CommandEmpty, CommandList } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Location, Country, State, City } from './location/types';
+import { LocationSelectorProps, Country, State, City } from './location/types';
 import { useToast } from './ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 
 type SelectionLevel = 'country' | 'state' | 'city';
 
-const LocationSelector = ({ value, onChange }: { value: string | null, onChange: (value: string | null) => void }) => {
+const LocationSelector = ({ value, onChange }: LocationSelectorProps) => {
   const [open, setOpen] = useState(false);
   const [selectionLevel, setSelectionLevel] = useState<SelectionLevel>('country');
   const [countries, setCountries] = useState<Country[]>([]);
@@ -30,13 +30,21 @@ const LocationSelector = ({ value, onChange }: { value: string | null, onChange:
   const loadCountries = useCallback(async () => {
     setLoading(true);
     try {
-      const { data: countries, error } = await supabase
+      const { data, error } = await supabase
         .from('countries')
-        .select('*')
+        .select('id, name, code')
         .order('name');
 
       if (error) throw error;
-      setCountries(countries || []);
+      
+      // Ensure we're setting data that matches the Country type
+      const typedCountries: Country[] = data?.map(country => ({
+        id: country.id,
+        name: country.name,
+        code: country.code
+      })) || [];
+      
+      setCountries(typedCountries);
     } catch (error) {
       console.error('Error loading countries:', error);
       toast({
@@ -52,14 +60,22 @@ const LocationSelector = ({ value, onChange }: { value: string | null, onChange:
   const loadStates = useCallback(async (countryCode: string) => {
     setLoading(true);
     try {
-      const { data: states, error } = await supabase
+      const { data, error } = await supabase
         .from('states')
-        .select('*')
+        .select('id, name, country_code')
         .eq('country_code', countryCode)
         .order('name');
 
       if (error) throw error;
-      setStates(states || []);
+      
+      // Ensure we're setting data that matches the State type
+      const typedStates: State[] = data?.map(state => ({
+        id: state.id,
+        name: state.name,
+        country_code: state.country_code
+      })) || [];
+      
+      setStates(typedStates);
     } catch (error) {
       console.error('Error loading states:', error);
       toast({
@@ -75,18 +91,27 @@ const LocationSelector = ({ value, onChange }: { value: string | null, onChange:
   const loadCities = useCallback(async (stateId: string) => {
     setLoading(true);
     try {
-      const { data: cities, error } = await supabase
+      const { data, error } = await supabase
         .from('cities')
-        .select('*')
+        .select('id, name, state_id, latitude, longitude')
         .eq('state_id', stateId)
         .order('name');
 
       if (error) throw error;
 
       // Filter out duplicates that might exist in the database
-      const uniqueCities = cities?.filter((city, index, self) => 
+      // and ensure we're setting data that matches the City type
+      const typedCities: City[] = data?.map(city => ({
+        id: city.id,
+        name: city.name,
+        state_id: city.state_id,
+        latitude: city.latitude || 0,
+        longitude: city.longitude || 0
+      })) || [];
+      
+      const uniqueCities = typedCities.filter((city, index, self) => 
         index === self.findIndex(c => c.name === city.name)
-      ) || [];
+      );
 
       setCities(uniqueCities);
     } catch (error) {
