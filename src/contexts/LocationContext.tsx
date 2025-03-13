@@ -22,6 +22,9 @@ interface CityDetails {
   longitude: number;
   states: {
     name: string;
+    countries: {
+      name: string;
+    };
   };
 }
 
@@ -76,15 +79,16 @@ export const LocationProvider = ({ children }: { children: React.ReactNode }) =>
         if (locationPref?.city_id) {
           const { data: cityDetails, error: cityError } = await supabase
             .from('cities')
-            .select('*, states(name)')
+            .select('*, states(name, countries(name))')
             .eq('id', locationPref.city_id)
             .single();
 
           if (cityError) throw cityError;
 
           if (cityDetails) {
-            const details = cityDetails as CityDetails;
-            const locationString = `${details.name}|${details.states.name}|${details.latitude}|${details.longitude}|${details.id}`;
+            const details = cityDetails as unknown as CityDetails;
+            const countryName = details.states.countries?.name || '';
+            const locationString = `${details.name}|${details.states.name}|${details.latitude}|${details.longitude}|${details.id}|${countryName}`;
             setLocationState(locationString);
           }
         }

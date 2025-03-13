@@ -4,30 +4,58 @@ import { MapPin, Loader2, ChevronRight, ArrowLeft } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Command, CommandEmpty, CommandList } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Location, State, City } from './location/types';
+import { Location, Country, State, City } from './location/types';
 import { useToast } from './ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 
+type SelectionLevel = 'country' | 'state' | 'city';
+
 const LocationSelector = ({ value, onChange }: { value: string | null, onChange: (value: string | null) => void }) => {
   const [open, setOpen] = useState(false);
+  const [selectionLevel, setSelectionLevel] = useState<SelectionLevel>('country');
+  const [countries, setCountries] = useState<Country[]>([]);
   const [states, setStates] = useState<State[]>([]);
   const [cities, setCities] = useState<City[]>([]);
+  const [selectedCountry, setSelectedCountry] = useState<Country | null>(null);
   const [selectedState, setSelectedState] = useState<State | null>(null);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
   const getLocationName = useCallback((locationString: string) => {
     if (!locationString) return '';
-    const [city, state] = locationString.split('|');
-    return `${city}, ${state}`;
+    const [city, state, lat, lng, cityId, countryName] = locationString.split('|');
+    return countryName ? `${city}, ${state}, ${countryName}` : `${city}, ${state}`;
   }, []);
 
-  const loadStates = useCallback(async () => {
+  const loadCountries = useCallback(async () => {
+    setLoading(true);
+    try {
+      const { data: countries, error } = await supabase
+        .from('countries')
+        .select('*')
+        .order('name');
+
+      if (error) throw error;
+      setCountries(countries || []);
+    } catch (error) {
+      console.error('Error loading countries:', error);
+      toast({
+        title: "Error",
+        description: "Could not load countries. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  }, [toast]);
+
+  const loadStates = useCallback(async (countryCode: string) => {
     setLoading(true);
     try {
       const { data: states, error } = await supabase
         .from('states')
         .select('*')
+        .eq('country_code', countryCode)
         .order('name');
 
       if (error) throw error;
@@ -73,28 +101,59 @@ const LocationSelector = ({ value, onChange }: { value: string | null, onChange:
     }
   }, [toast]);
 
+  const handleCountrySelect = useCallback(async (country: Country) => {
+    setSelectedCountry(country);
+    setSelectionLevel('state');
+    await loadStates(country.code);
+  }, [loadStates]);
+
   const handleStateSelect = useCallback(async (state: State) => {
     setSelectedState(state);
+    setSelectionLevel('city');
     await loadCities(state.id);
   }, [loadCities]);
 
   const handleCitySelect = useCallback((city: City) => {
-    if (!selectedState) return;
+    if (!selectedState || !selectedCountry) return;
     
-    const locationString = `${city.name}|${selectedState.name}|${city.latitude}|${city.longitude}|${city.id}`;
+    const locationString = `${city.name}|${selectedState.name}|${city.latitude}|${city.longitude}|${city.id}|${selectedCountry.name}`;
     onChange(locationString);
     setOpen(false);
+    resetSelections();
+  }, [selectedState, selectedCountry, onChange]);
+
+  const resetSelections = useCallback(() => {
+    setSelectionLevel('country');
     setCities([]);
+    setStates([]);
     setSelectedState(null);
-  }, [selectedState, onChange]);
+    setSelectedCountry(null);
+  }, []);
+
+  const goBack = useCallback(() => {
+    if (selectionLevel === 'city') {
+      setSelectionLevel('state');
+      setCities([]);
+      setSelectedState(null);
+      if (selectedCountry) {
+        loadStates(selectedCountry.code);
+      }
+    } else if (selectionLevel === 'state') {
+      setSelectionLevel('country');
+      setStates([]);
+      setSelectedCountry(null);
+      loadCountries();
+    }
+  }, [selectionLevel, selectedCountry, loadStates, loadCountries]);
 
   // Load previously selected location details if needed
   useEffect(() => {
     if (value && value.includes('|')) {
-      const [cityName, stateName, lat, lng, cityId] = value.split('|');
-      if (cityName && stateName && cityId) {
-        // You could potentially load the selected state here
-        // for now we'll just rely on the formatted display
+      const parts = value.split('|');
+      if (parts.length >= 5) {
+        // Previously selected location exists
+        // We could potentially preload the specific country, state, city here
+        // For now, we'll just rely on the formatted display
       }
     }
   }, [value]);
@@ -103,7 +162,8 @@ const LocationSelector = ({ value, onChange }: { value: string | null, onChange:
     <Popover open={open} onOpenChange={(isOpen) => {
       setOpen(isOpen);
       if (isOpen) {
-        loadStates();
+        resetSelections();
+        loadCountries();
       }
     }}>
       <PopoverTrigger asChild>
@@ -132,17 +192,54 @@ const LocationSelector = ({ value, onChange }: { value: string | null, onChange:
                   Loading...
                 </p>
               </CommandEmpty>
-            ) : selectedState ? (
+            ) : selectionLevel === 'country' ? (
+              // Country selection
+              <div className="py-2">
+                {countries.map((country) => (
+                  <div
+                    key={country.id}
+                    className="px-2 py-1.5 cursor-pointer hover:bg-primary hover:text-white flex items-center justify-between"
+                    onClick={() => handleCountrySelect(country)}
+                  >
+                    <span>{country.name}</span>
+                    <ChevronRight className="h-4 w-4" />
+                  </div>
+                ))}
+              </div>
+            ) : selectionLevel === 'state' ? (
+              // State selection
               <>
                 <div className="p-2">
                   <Button
                     variant="ghost"
                     className="w-full justify-start font-normal hover:bg-primary hover:text-white"
-                    onClick={() => {
-                      setSelectedState(null);
-                      setCities([]);
-                      loadStates();
-                    }}
+                    onClick={goBack}
+                  >
+                    <ArrowLeft className="mr-2 h-4 w-4" />
+                    Back to Countries
+                  </Button>
+                </div>
+                <div className="py-2">
+                  {states.map((state) => (
+                    <div
+                      key={state.id}
+                      className="px-2 py-1.5 cursor-pointer hover:bg-primary hover:text-white flex items-center justify-between"
+                      onClick={() => handleStateSelect(state)}
+                    >
+                      <span>{state.name}</span>
+                      <ChevronRight className="h-4 w-4" />
+                    </div>
+                  ))}
+                </div>
+              </>
+            ) : (
+              // City selection
+              <>
+                <div className="p-2">
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-start font-normal hover:bg-primary hover:text-white"
+                    onClick={goBack}
                   >
                     <ArrowLeft className="mr-2 h-4 w-4" />
                     Back to States
@@ -160,19 +257,6 @@ const LocationSelector = ({ value, onChange }: { value: string | null, onChange:
                   ))}
                 </div>
               </>
-            ) : (
-              <div className="py-2">
-                {states.map((state) => (
-                  <div
-                    key={state.id}
-                    className="px-2 py-1.5 cursor-pointer hover:bg-primary hover:text-white flex items-center justify-between"
-                    onClick={() => handleStateSelect(state)}
-                  >
-                    <span>{state.name}</span>
-                    <ChevronRight className="h-4 w-4" />
-                  </div>
-                ))}
-              </div>
             )}
           </CommandList>
         </Command>

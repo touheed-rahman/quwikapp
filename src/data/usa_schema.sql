@@ -1,5 +1,5 @@
 
--- Schema for USA Locations
+-- Schema for Countries, States, and Cities
 
 -- Create country table if not exists
 CREATE TABLE IF NOT EXISTS countries (
@@ -32,11 +32,6 @@ CREATE TABLE IF NOT EXISTS cities (
   UNIQUE(name, state_id)
 );
 
--- Insert default country
-INSERT INTO countries (name, code)
-VALUES ('United States', 'US')
-ON CONFLICT (code) DO NOTHING;
-
 -- Create trigger to update the updated_at timestamp
 CREATE OR REPLACE FUNCTION update_modified_column()
 RETURNS TRIGGER AS $$
@@ -45,6 +40,10 @@ BEGIN
    RETURN NEW;
 END;
 $$ language 'plpgsql';
+
+CREATE TRIGGER update_countries_modtime
+BEFORE UPDATE ON countries
+FOR EACH ROW EXECUTE FUNCTION update_modified_column();
 
 CREATE TRIGGER update_states_modtime
 BEFORE UPDATE ON states
