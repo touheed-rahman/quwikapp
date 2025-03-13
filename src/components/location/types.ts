@@ -13,16 +13,9 @@ export interface LocationSelectorProps {
   onChange: (location: string | null) => void;
 }
 
-export interface Country {
-  id: string;
-  name: string;
-  code: string;
-}
-
 export interface State {
   id: string;
   name: string;
-  country_code: string;
 }
 
 export interface City {
