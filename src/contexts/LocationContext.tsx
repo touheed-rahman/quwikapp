@@ -38,7 +38,8 @@ export const LocationProvider = ({ children }: { children: React.ReactNode }) =>
       if (!user) return;
 
       if (location) {
-        const cityId = location.split('|')[4];
+        const parts = location.split('|');
+        const cityId = parts[5] || parts[4]; // Support both old and new format
         
         const { error } = await supabase
           .from('user_location_preferences')
@@ -84,7 +85,8 @@ export const LocationProvider = ({ children }: { children: React.ReactNode }) =>
 
           if (cityDetails) {
             const details = cityDetails as CityDetails;
-            const locationString = `${details.name}|${details.states.name}|${details.latitude}|${details.longitude}|${details.id}`;
+            // Check if we need to update to the new format with country
+            const locationString = `${details.name}|${details.states.name}|India|${details.latitude}|${details.longitude}|${details.id}`;
             setLocationState(locationString);
           }
         }
