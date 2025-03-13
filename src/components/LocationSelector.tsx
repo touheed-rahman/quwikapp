@@ -1,5 +1,5 @@
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { MapPin, Loader2, ChevronRight, ArrowLeft } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Command, CommandEmpty, CommandList } from "@/components/ui/command";
@@ -55,12 +55,12 @@ const LocationSelector = ({ value, onChange }: { value: string | null, onChange:
 
       if (error) throw error;
 
-      // Filter out Bangalore if Bengaluru exists
-      const filteredCities = cities?.filter(city => 
-        city.name !== 'Bangalore' || !cities.some(c => c.name === 'Bengaluru')
+      // Filter out duplicates that might exist in the database
+      const uniqueCities = cities?.filter((city, index, self) => 
+        index === self.findIndex(c => c.name === city.name)
       ) || [];
 
-      setCities(filteredCities);
+      setCities(uniqueCities);
     } catch (error) {
       console.error('Error loading cities:', error);
       toast({
@@ -87,6 +87,17 @@ const LocationSelector = ({ value, onChange }: { value: string | null, onChange:
     setCities([]);
     setSelectedState(null);
   }, [selectedState, onChange]);
+
+  // Load previously selected location details if needed
+  useEffect(() => {
+    if (value && value.includes('|')) {
+      const [cityName, stateName, lat, lng, cityId] = value.split('|');
+      if (cityName && stateName && cityId) {
+        // You could potentially load the selected state here
+        // for now we'll just rely on the formatted display
+      }
+    }
+  }, [value]);
 
   return (
     <Popover open={open} onOpenChange={(isOpen) => {
