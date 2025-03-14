@@ -413,7 +413,9 @@ const LocationSelector = ({ value, onChange }: { value: string | null, onChange:
           { id: 'arar', name: 'Arrah', state_id: 'in-4', latitude: 25.5561, longitude: 84.6602 },
           { id: 'begu', name: 'Begusarai', state_id: 'in-4', latitude: 25.4182, longitude: 86.1272 },
           { id: 'kati', name: 'Katihar', state_id: 'in-4', latitude: 25.5574, longitude: 87.5694 },
-          { id: 'chhm', name: 'Chhapra', state_id: 'in-4', latitude: 25.7825, longitude: 84.7549 }
+          { id: 'chhm', name: 'Chhapra', state_id: 'in-4', latitude: 25.7825, longitude: 84.7549 },
+          { id: 'moti', name: 'Motihari', state_id: 'in-4', latitude: 26.6529, longitude: 84.9139 },
+          { id: 'sasn', name: 'Sasaram', state_id: 'in-4', latitude: 24.9539, longitude: 84.0114 }
         ]);
       } else if (stateId === 'in-5') { // Chhattisgarh, India
         setCities([
@@ -424,6 +426,4 @@ const LocationSelector = ({ value, onChange }: { value: string | null, onChange:
           { id: 'raig', name: 'Raigarh', state_id: 'in-5', latitude: 21.8974, longitude: 83.3997 },
           { id: 'jgdp', name: 'Jagdalpur', state_id: 'in-5', latitude: 19.0777, longitude: 82.0347 },
           { id: 'ambi', name: 'Ambikapur', state_id: 'in-5', latitude: 23.1200, longitude: 83.1950 },
-          { id: 'durg', name: 'Durg', state_id: 'in-5', latitude: 21.1812, longitude: 81.2849 },
-          { id: 'rajna', name: 'Rajnandgaon', state_id: 'in-5', latitude: 21.0972, longitude: 81.0338 },
-          { id: 'dhmx', name: 'Dhamtari', state_id: 'in-5', latitude: 20.7070, longitude: 81.548
+          { id: 'dmtr', name: 'Dongargarh', state_id: 'in-5', latitude: 21.1875, longitude: 80.7500 },
