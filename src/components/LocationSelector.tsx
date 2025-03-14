@@ -426,4 +426,4 @@ const LocationSelector = ({ value, onChange }: { value: string | null, onChange:
           { id: 'ambi', name: 'Ambikapur', state_id: 'in-5', latitude: 23.1200, longitude: 83.1950 },
           { id: 'durg', name: 'Durg', state_id: 'in-5', latitude: 21.1812, longitude: 81.2849 },
           { id: 'rajna', name: 'Rajnandgaon', state_id: 'in-5', latitude: 21.0972, longitude: 81.0338 },
-          { id: 'dhmx', name: 'Dhamtari', state_id: 'in-5', latitude: 20.7070, longitude: 81.
+          { id: 'dhmx', name: 'Dhamtari', state_id: 'in-5', latitude: 20.7070, longitude: 81.548
