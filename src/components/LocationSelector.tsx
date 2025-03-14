@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { MapPin, Loader2, ChevronRight, ArrowLeft } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Command, CommandEmpty, CommandList } from "@/components/ui/command";
@@ -16,6 +16,7 @@ const LocationSelector = ({ value, onChange }: { value: string | null, onChange:
   const [selectedCountry, setSelectedCountry] = useState<Country | null>(null);
   const [selectedState, setSelectedState] = useState<State | null>(null);
   const [loading, setLoading] = useState(false);
+  const scrollRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
   const getLocationName = useCallback((locationString: string) => {
@@ -357,6 +358,11 @@ const LocationSelector = ({ value, onChange }: { value: string | null, onChange:
   const loadCities = useCallback(async (stateId: string) => {
     setLoading(true);
     try {
+      // Scroll to top when loading new cities
+      if (scrollRef.current) {
+        scrollRef.current.scrollTop = 0;
+      }
+      
       if (stateId === 'in-1') { // Andhra Pradesh, India
         setCities([
           { id: 'vskp', name: 'Visakhapatnam', state_id: 'in-1', latitude: 17.6868, longitude: 83.2185 },
@@ -420,242 +426,4 @@ const LocationSelector = ({ value, onChange }: { value: string | null, onChange:
           { id: 'ambi', name: 'Ambikapur', state_id: 'in-5', latitude: 23.1200, longitude: 83.1950 },
           { id: 'durg', name: 'Durg', state_id: 'in-5', latitude: 21.1812, longitude: 81.2849 },
           { id: 'rajna', name: 'Rajnandgaon', state_id: 'in-5', latitude: 21.0972, longitude: 81.0338 },
-          { id: 'dhmx', name: 'Dhamtari', state_id: 'in-5', latitude: 20.7070, longitude: 81.5480 }
-        ]);
-      } else if (stateId === 'us-5') { // California, USA
-        setCities([
-          { id: 'la', name: 'Los Angeles', state_id: 'us-5', latitude: 34.0522, longitude: -118.2437 },
-          { id: 'sf', name: 'San Francisco', state_id: 'us-5', latitude: 37.7749, longitude: -122.4194 },
-          { id: 'sj', name: 'San Jose', state_id: 'us-5', latitude: 37.3382, longitude: -121.8863 },
-          { id: 'sd', name: 'San Diego', state_id: 'us-5', latitude: 32.7157, longitude: -117.1611 },
-          { id: 'fr', name: 'Fresno', state_id: 'us-5', latitude: 36.7378, longitude: -119.7871 },
-          { id: 'sa', name: 'Sacramento', state_id: 'us-5', latitude: 38.5816, longitude: -121.4944 },
-          { id: 'lb', name: 'Long Beach', state_id: 'us-5', latitude: 33.7701, longitude: -118.1937 },
-          { id: 'ok', name: 'Oakland', state_id: 'us-5', latitude: 37.8044, longitude: -122.2711 },
-          { id: 'bk', name: 'Berkeley', state_id: 'us-5', latitude: 37.8716, longitude: -122.2727 },
-          { id: 'sb', name: 'Santa Barbara', state_id: 'us-5', latitude: 34.4208, longitude: -119.6982 }
-        ]);
-      } else if (stateId === 'us-32') { // New York, USA
-        setCities([
-          { id: 'nyc', name: 'New York City', state_id: 'us-32', latitude: 40.7128, longitude: -74.0060 },
-          { id: 'buf', name: 'Buffalo', state_id: 'us-32', latitude: 42.8864, longitude: -78.8784 },
-          { id: 'roc', name: 'Rochester', state_id: 'us-32', latitude: 43.1566, longitude: -77.6088 },
-          { id: 'syr', name: 'Syracuse', state_id: 'us-32', latitude: 43.0481, longitude: -76.1474 },
-          { id: 'alb', name: 'Albany', state_id: 'us-32', latitude: 42.6526, longitude: -73.7562 },
-          { id: 'yon', name: 'Yonkers', state_id: 'us-32', latitude: 40.9312, longitude: -73.8988 },
-          { id: 'nfa', name: 'Niagara Falls', state_id: 'us-32', latitude: 43.0962, longitude: -79.0377 },
-          { id: 'new', name: 'New Rochelle', state_id: 'us-32', latitude: 40.9115, longitude: -73.7826 },
-          { id: 'ith', name: 'Ithaca', state_id: 'us-32', latitude: 42.4440, longitude: -76.5019 },
-          { id: 'srs', name: 'Saratoga Springs', state_id: 'us-32', latitude: 43.0831, longitude: -73.7846 }
-        ]);
-      } else if (stateId === 'uk-1') { // England, UK
-        setCities([
-          { id: 'ldn', name: 'London', state_id: 'uk-1', latitude: 51.5074, longitude: -0.1278 },
-          { id: 'mnc', name: 'Manchester', state_id: 'uk-1', latitude: 53.4808, longitude: -2.2426 },
-          { id: 'brm', name: 'Birmingham', state_id: 'uk-1', latitude: 52.4800, longitude: -1.8982 },
-          { id: 'liv', name: 'Liverpool', state_id: 'uk-1', latitude: 53.4084, longitude: -2.9916 },
-          { id: 'brs', name: 'Bristol', state_id: 'uk-1', latitude: 51.4545, longitude: -2.5879 },
-          { id: 'ldd', name: 'Leeds', state_id: 'uk-1', latitude: 53.8008, longitude: -1.5491 },
-          { id: 'ncl', name: 'Newcastle', state_id: 'uk-1', latitude: 54.9783, longitude: -1.6174 },
-          { id: 'shf', name: 'Sheffield', state_id: 'uk-1', latitude: 53.3811, longitude: -1.4701 },
-          { id: 'ntn', name: 'Nottingham', state_id: 'uk-1', latitude: 52.9548, longitude: -1.1581 },
-          { id: 'cam', name: 'Cambridge', state_id: 'uk-1', latitude: 52.2053, longitude: 0.1218 }
-        ]);
-      } else {
-        setCities([
-          { id: `${stateId}-1`, name: 'Major City 1', state_id: stateId, latitude: 0, longitude: 0 },
-          { id: `${stateId}-2`, name: 'Major City 2', state_id: stateId, latitude: 0, longitude: 0 },
-          { id: `${stateId}-3`, name: 'Major City 3', state_id: stateId, latitude: 0, longitude: 0 },
-          { id: `${stateId}-4`, name: 'Major City 4', state_id: stateId, latitude: 0, longitude: 0 },
-          { id: `${stateId}-5`, name: 'Major City 5', state_id: stateId, latitude: 0, longitude: 0 }
-        ]);
-      }
-    } catch (error) {
-      console.error('Error loading cities:', error);
-      toast({
-        title: "Error",
-        description: "Could not load cities. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  }, [toast]);
-
-  useEffect(() => {
-    loadCountries();
-  }, [loadCountries]);
-
-  const selectCountry = useCallback((country: Country) => {
-    setSelectedCountry(country);
-    setSelectedState(null);
-    setCities([]);
-    loadStates(country.id);
-  }, [loadStates]);
-
-  const selectState = useCallback((state: State) => {
-    setSelectedState(state);
-    loadCities(state.id);
-  }, [loadCities]);
-
-  const selectCity = useCallback((city: City) => {
-    const country = selectedCountry?.name || '';
-    const state = selectedState?.name || '';
-    const locationString = `${city.name}|${state}|${country}`;
-    onChange(locationString);
-    setOpen(false);
-  }, [onChange, selectedCountry, selectedState]);
-
-  const clearLocation = useCallback(() => {
-    onChange(null);
-  }, [onChange]);
-
-  return (
-    <div className="relative w-full">
-      <Popover open={open} onOpenChange={setOpen}>
-        <PopoverTrigger asChild>
-          <Button
-            variant="outline"
-            role="combobox"
-            aria-expanded={open}
-            className="w-full justify-between"
-          >
-            {value ? (
-              <span>{getLocationName(value)}</span>
-            ) : (
-              <span className="text-muted-foreground">Select location</span>
-            )}
-            <MapPin className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent className="w-full p-0" style={{ width: '300px' }}>
-          {selectedState ? (
-            <Command>
-              <div className="flex items-center border-b p-2">
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  className="h-8 gap-1"
-                  onClick={() => setSelectedState(null)}
-                >
-                  <ArrowLeft className="h-4 w-4" />
-                  Back
-                </Button>
-                <div className="ml-2 text-sm">Select a city in {selectedState.name}</div>
-              </div>
-              <CommandList>
-                <ScrollArea className="h-[200px]">
-                  {loading ? (
-                    <div className="flex items-center justify-center p-4">
-                      <Loader2 className="h-6 w-6 animate-spin text-primary" />
-                    </div>
-                  ) : (
-                    cities.length > 0 ? (
-                      cities.map((city) => (
-                        <div
-                          key={city.id}
-                          className="flex cursor-pointer items-center p-2 hover:bg-accent"
-                          onClick={() => selectCity(city)}
-                        >
-                          <div className="flex-1">
-                            <div className="font-medium">{city.name}</div>
-                          </div>
-                          <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                        </div>
-                      ))
-                    ) : (
-                      <CommandEmpty>No cities found.</CommandEmpty>
-                    )
-                  )}
-                </ScrollArea>
-              </CommandList>
-            </Command>
-          ) : selectedCountry ? (
-            <Command>
-              <div className="flex items-center border-b p-2">
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  className="h-8 gap-1"
-                  onClick={() => setSelectedCountry(null)}
-                >
-                  <ArrowLeft className="h-4 w-4" />
-                  Back
-                </Button>
-                <div className="ml-2 text-sm">Select a state in {selectedCountry.name}</div>
-              </div>
-              <CommandList>
-                <ScrollArea className="h-[200px]">
-                  {loading ? (
-                    <div className="flex items-center justify-center p-4">
-                      <Loader2 className="h-6 w-6 animate-spin text-primary" />
-                    </div>
-                  ) : (
-                    states.length > 0 ? (
-                      states.map((state) => (
-                        <div
-                          key={state.id}
-                          className="flex cursor-pointer items-center p-2 hover:bg-accent"
-                          onClick={() => selectState(state)}
-                        >
-                          <div className="flex-1">
-                            <div className="font-medium">{state.name}</div>
-                          </div>
-                          <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                        </div>
-                      ))
-                    ) : (
-                      <CommandEmpty>No states found.</CommandEmpty>
-                    )
-                  )}
-                </ScrollArea>
-              </CommandList>
-            </Command>
-          ) : (
-            <Command>
-              <div className="p-2 text-sm border-b">Select a country</div>
-              <CommandList>
-                <ScrollArea className="h-[200px]">
-                  {loading ? (
-                    <div className="flex items-center justify-center p-4">
-                      <Loader2 className="h-6 w-6 animate-spin text-primary" />
-                    </div>
-                  ) : (
-                    countries.length > 0 ? (
-                      countries.map((country) => (
-                        <div
-                          key={country.id}
-                          className="flex cursor-pointer items-center p-2 hover:bg-accent"
-                          onClick={() => selectCountry(country)}
-                        >
-                          <div className="flex-1">
-                            <div className="font-medium">{country.name}</div>
-                          </div>
-                          <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                        </div>
-                      ))
-                    ) : (
-                      <CommandEmpty>No countries found.</CommandEmpty>
-                    )
-                  )}
-                </ScrollArea>
-              </CommandList>
-            </Command>
-          )}
-        </PopoverContent>
-      </Popover>
-      {value && (
-        <Button
-          variant="ghost"
-          size="sm"
-          className="absolute right-8 top-0 h-full"
-          onClick={clearLocation}
-        >
-          Clear
-        </Button>
-      )}
-    </div>
-  );
-};
-
-export default LocationSelector;
+          { id: 'dhmx', name: 'Dhamtari', state_id: 'in-5', latitude: 20.7070, longitude: 81.
