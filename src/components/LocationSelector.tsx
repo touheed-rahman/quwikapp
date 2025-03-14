@@ -374,7 +374,9 @@ const LocationSelector = ({ value, onChange }: { value: string | null, onChange:
           { id: 'kknl', name: 'Kakinada', state_id: 'in-1', latitude: 16.9891, longitude: 82.2475 },
           { id: 'rjhm', name: 'Rajahmundry', state_id: 'in-1', latitude: 17.0005, longitude: 81.8040 },
           { id: 'antp', name: 'Anantapur', state_id: 'in-1', latitude: 14.6819, longitude: 77.6006 },
-          { id: 'kndp', name: 'Kadapa', state_id: 'in-1', latitude: 14.4673, longitude: 78.8242 }
+          { id: 'kndp', name: 'Kadapa', state_id: 'in-1', latitude: 14.4673, longitude: 78.8242 },
+          { id: 'ongl', name: 'Ongole', state_id: 'in-1', latitude: 15.5057, longitude: 80.0499 },
+          { id: 'ctr', name: 'Chittoor', state_id: 'in-1', latitude: 13.2155, longitude: 79.1000 }
         ]);
       } else if (stateId === 'in-2') { // Arunachal Pradesh, India
         setCities([
@@ -425,5 +427,3 @@ const LocationSelector = ({ value, onChange }: { value: string | null, onChange:
           { id: 'korb', name: 'Korba', state_id: 'in-5', latitude: 22.3595, longitude: 82.7501 },
           { id: 'raig', name: 'Raigarh', state_id: 'in-5', latitude: 21.8974, longitude: 83.3997 },
           { id: 'jgdp', name: 'Jagdalpur', state_id: 'in-5', latitude: 19.0777, longitude: 82.0347 },
-          { id: 'ambi', name: 'Ambikapur', state_id: 'in-5', latitude: 23.1200, longitude: 83.1950 },
-          { id: 'dmtr', name: 'Dongargarh', state_id: 'in-5', latitude: 21.1875, longitude: 80.7500 },
