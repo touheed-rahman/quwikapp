@@ -8,6 +8,11 @@ import { chhattisgarhCities } from './india/chhattisgarh-cities';
 import { goaCities } from './india/goa-cities';
 import { gujaratCities } from './india/gujarat-cities';
 import { haryanaCities } from './india/haryana-cities';
+import { karnatakaCities } from './india/karnataka-cities';
+import { keralaCities } from './india/kerala-cities';
+import { maharashtraCities } from './india/maharashtra-cities';
+import { tamilNaduCities } from './india/tamil-nadu-cities';
+import { telanganaCities } from './india/telangana-cities';
 import { californiaCities } from './usa/california-cities';
 import { texasCities } from './usa/texas-cities';
 import { newYorkCities } from './usa/new-york-cities';
@@ -28,6 +33,11 @@ export const getCitiesByState = (stateId: string): City[] => {
     case 'in-6': return goaCities;
     case 'in-7': return gujaratCities;
     case 'in-8': return haryanaCities;
+    case 'in-11': return karnatakaCities;
+    case 'in-12': return keralaCities;
+    case 'in-14': return maharashtraCities;
+    case 'in-23': return tamilNaduCities;
+    case 'in-24': return telanganaCities;
     
     // US states
     case 'us-5': return californiaCities;
