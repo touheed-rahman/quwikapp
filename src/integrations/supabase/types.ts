@@ -33,21 +33,6 @@ export type Database = {
         }
         Relationships: []
       }
-      categories: {
-        Row: {
-          id: string
-          name: string
-        }
-        Insert: {
-          id?: string
-          name: string
-        }
-        Update: {
-          id?: string
-          name?: string
-        }
-        Relationships: []
-      }
       cities: {
         Row: {
           created_at: string
@@ -545,38 +530,6 @@ export type Database = {
         }
         Relationships: []
       }
-      product_videos: {
-        Row: {
-          created_at: string
-          id: string
-          listing_id: string
-          user_id: string
-          video_url: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          listing_id: string
-          user_id: string
-          video_url: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          listing_id?: string
-          user_id?: string
-          video_url?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "product_videos_listing_id_fkey"
-            columns: ["listing_id"]
-            isOneToOne: false
-            referencedRelation: "listings"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -778,32 +731,6 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
-      }
-      subcategories: {
-        Row: {
-          category_id: string
-          id: string
-          name: string
-        }
-        Insert: {
-          category_id: string
-          id?: string
-          name: string
-        }
-        Update: {
-          category_id?: string
-          id?: string
-          name?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "subcategories_category_id_fkey"
-            columns: ["category_id"]
-            isOneToOne: false
-            referencedRelation: "categories"
-            referencedColumns: ["id"]
-          },
-        ]
       }
       system_notifications: {
         Row: {
