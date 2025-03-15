@@ -6,8 +6,6 @@ export interface Location {
   state_id: string;
   latitude: number;
   longitude: number;
-  country?: string;
-  country_id?: string;
 }
 
 export interface LocationSelectorProps {
@@ -18,7 +16,6 @@ export interface LocationSelectorProps {
 export interface State {
   id: string;
   name: string;
-  country_id?: string;
 }
 
 export interface City {
@@ -27,10 +24,4 @@ export interface City {
   state_id: string;
   latitude: number;
   longitude: number;
-}
-
-export interface Country {
-  id: string;
-  name: string;
-  code?: string;
 }
