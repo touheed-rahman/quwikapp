@@ -1,3 +1,4 @@
+
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Check } from "lucide-react";
@@ -113,9 +114,8 @@ export const ConversationItem = ({
               {formatDate(conversation.last_message_at)}
             </span>
           </div>
-          <p className="text-sm font-medium text-primary/90 mt-1 truncate">
+          <p className="text-sm font-medium text-primary/90 mt-1 truncate max-w-[90%]">
             {conversation.listing.title}
-            {conversation.listing.price && ` - ₹${conversation.listing.price}`}
           </p>
           <p className={cn(
             "text-sm text-muted-foreground truncate mt-1", 
