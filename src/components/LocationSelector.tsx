@@ -11,6 +11,7 @@ import { ScrollArea } from './ui/scroll-area';
 import { countries } from './location/data/countries';
 import { getStatesByCountry } from './location/data/states';
 import { getCitiesByState } from './location/data/cities';
+import { countryCurrencies } from './location/data/currencies';
 
 const LocationSelector = ({ value, onChange }: { value: string | null, onChange: (value: string | null) => void }) => {
   const [open, setOpen] = useState(false);
@@ -103,6 +104,31 @@ const LocationSelector = ({ value, onChange }: { value: string | null, onChange:
     }
   }, [open, loadCountries]);
 
+  // Parse the current location value if it exists
+  useEffect(() => {
+    if (value && open) {
+      const parts = value.split('|');
+      if (parts.length >= 3) {
+        const [cityName, stateName, countryName] = parts;
+        
+        // Find the country by name
+        const country = countries.find(c => c.name === countryName);
+        if (country) {
+          setSelectedCountry(country);
+          const statesList = getStatesByCountry(country.id);
+          setStates(statesList);
+          
+          // Find the state by name
+          const state = statesList.find(s => s.name === stateName);
+          if (state) {
+            setSelectedState(state);
+            loadCities(state.id);
+          }
+        }
+      }
+    }
+  }, [value, open]);
+
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
@@ -158,6 +184,11 @@ const LocationSelector = ({ value, onChange }: { value: string | null, onChange:
                               {country.code && (
                                 <span className="ml-2 text-xs bg-muted text-muted-foreground px-1.5 py-0.5 rounded">
                                   {country.code}
+                                </span>
+                              )}
+                              {countryCurrencies[country.id] && (
+                                <span className="ml-auto text-xs bg-primary/10 text-primary px-1.5 py-0.5 rounded">
+                                  {countryCurrencies[country.id].symbol} {countryCurrencies[country.id].code}
                                 </span>
                               )}
                             </div>
@@ -248,13 +279,16 @@ const LocationSelector = ({ value, onChange }: { value: string | null, onChange:
                               key={city.id}
                               className="flex items-center px-4 py-2 hover:bg-accent cursor-pointer"
                               onClick={() => {
-                                const locationValue = `${city.name}|${selectedState.name}|${selectedCountry.name}`;
+                                const locationValue = `${city.name}|${selectedState.name}|${selectedCountry.name}|${city.latitude}|${city.longitude}|${city.id}`;
                                 onChange(locationValue);
                                 setOpen(false);
                                 reset();
                               }}
                             >
                               <span>{city.name}</span>
+                              <span className="ml-2 text-xs text-muted-foreground">
+                                {city.latitude.toFixed(2)}, {city.longitude.toFixed(2)}
+                              </span>
                             </div>
                           ))}
                         </div>

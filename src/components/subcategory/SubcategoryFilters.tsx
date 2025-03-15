@@ -18,6 +18,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { useState, useEffect } from "react";
+import { useCurrency } from "@/contexts/CurrencyContext";
 
 interface SubcategoryFiltersProps {
   searchQuery: string;
@@ -53,6 +54,7 @@ const SubcategoryFilters = ({
   setDatePosted = () => {},
 }: SubcategoryFiltersProps) => {
   const [localPriceRange, setLocalPriceRange] = useState<[number, number]>(priceRange);
+  const { currency, formatPrice } = useCurrency();
   
   // Update local price range when the props change
   useEffect(() => {
@@ -144,7 +146,7 @@ const SubcategoryFilters = ({
                 <div className="flex justify-between mb-2">
                   <Label className="text-sm">Price Range</Label>
                   <div className="text-sm">
-                    ₹{localPriceRange[0].toLocaleString()} - ₹{localPriceRange[1].toLocaleString()}
+                    {formatPrice(localPriceRange[0])} - {formatPrice(localPriceRange[1])}
                   </div>
                 </div>
                 <Slider
