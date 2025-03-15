@@ -1,4 +1,3 @@
-
 import { City } from '../../types';
 import { andhraPradeshCities } from './india/andhra-pradesh-cities';
 import { arunachalPradeshCities } from './india/arunachal-pradesh-cities';
@@ -53,13 +52,70 @@ export const getCitiesByState = (stateId: string): City[] => {
     case 'ca-9': return ontarioCities;
     case 'ca-11': return quebecCities;
     
+    // Default cases for all other regions, using realistic city names
     default:
+      // Check country code from state ID
+      const countryCode = stateId.split('-')[0];
+      
+      // China
+      if (countryCode === '9') {
+        if (stateId === '9-1') { // Beijing
+          return [
+            { id: `${stateId}-city1`, name: 'Beijing', state_id: stateId, latitude: 39.9042, longitude: 116.4074 },
+            { id: `${stateId}-city2`, name: 'Tongzhou', state_id: stateId, latitude: 39.9054, longitude: 116.6561 },
+            { id: `${stateId}-city3`, name: 'Daxing', state_id: stateId, latitude: 39.7270, longitude: 116.3385 }
+          ];
+        } else if (stateId === '9-2') { // Shanghai
+          return [
+            { id: `${stateId}-city1`, name: 'Shanghai', state_id: stateId, latitude: 31.2304, longitude: 121.4737 },
+            { id: `${stateId}-city2`, name: 'Pudong', state_id: stateId, latitude: 31.2231, longitude: 121.5397 },
+            { id: `${stateId}-city3`, name: 'Jiading', state_id: stateId, latitude: 31.3838, longitude: 121.2426 }
+          ];
+        } else if (stateId === '9-3') { // Guangdong
+          return [
+            { id: `${stateId}-city1`, name: 'Guangzhou', state_id: stateId, latitude: 23.1291, longitude: 113.2644 },
+            { id: `${stateId}-city2`, name: 'Shenzhen', state_id: stateId, latitude: 22.5431, longitude: 114.0579 },
+            { id: `${stateId}-city3`, name: 'Dongguan', state_id: stateId, latitude: 23.0489, longitude: 113.7447 }
+          ];
+        }
+      }
+      
+      // Brazil
+      else if (countryCode === '10') {
+        if (stateId === '10-1') { // São Paulo
+          return [
+            { id: `${stateId}-city1`, name: 'São Paulo', state_id: stateId, latitude: -23.5505, longitude: -46.6333 },
+            { id: `${stateId}-city2`, name: 'Campinas', state_id: stateId, latitude: -22.9071, longitude: -47.0632 },
+            { id: `${stateId}-city3`, name: 'Santos', state_id: stateId, latitude: -23.9618, longitude: -46.3322 }
+          ];
+        } else if (stateId === '10-2') { // Rio de Janeiro
+          return [
+            { id: `${stateId}-city1`, name: 'Rio de Janeiro', state_id: stateId, latitude: -22.9068, longitude: -43.1729 },
+            { id: `${stateId}-city2`, name: 'Niterói', state_id: stateId, latitude: -22.8832, longitude: -43.1036 },
+            { id: `${stateId}-city3`, name: 'Petrópolis', state_id: stateId, latitude: -22.5126, longitude: -43.1778 }
+          ];
+        }
+      }
+      
+      // Other countries - generate more specific city names based on the region
+      const stateIdParts = stateId.split('-');
+      const regionId = stateIdParts[1] ? parseInt(stateIdParts[1]) : 0;
+      
+      // Get region type (North, South, etc.) based on region ID
+      let regionType = '';
+      if (regionId === 1) regionType = 'Capital';
+      else if (regionId === 2) regionType = 'Northern';
+      else if (regionId === 3) regionType = 'Southern';
+      else if (regionId === 4) regionType = 'Eastern';
+      else if (regionId === 5) regionType = 'Western';
+      else regionType = 'Central';
+      
       return [
-        { id: `${stateId}-city1`, name: 'Major City 1', state_id: stateId, latitude: 0, longitude: 0 },
-        { id: `${stateId}-city2`, name: 'Major City 2', state_id: stateId, latitude: 0, longitude: 0 },
-        { id: `${stateId}-city3`, name: 'Major City 3', state_id: stateId, latitude: 0, longitude: 0 },
-        { id: `${stateId}-city4`, name: 'Major City 4', state_id: stateId, latitude: 0, longitude: 0 },
-        { id: `${stateId}-city5`, name: 'Major City 5', state_id: stateId, latitude: 0, longitude: 0 },
+        { id: `${stateId}-city1`, name: `${regionType} Capital`, state_id: stateId, latitude: 0, longitude: 0 },
+        { id: `${stateId}-city2`, name: `${regionType} Port City`, state_id: stateId, latitude: 0, longitude: 0 },
+        { id: `${stateId}-city3`, name: `${regionType} Valley`, state_id: stateId, latitude: 0, longitude: 0 },
+        { id: `${stateId}-city4`, name: `${regionType} Heights`, state_id: stateId, latitude: 0, longitude: 0 },
+        { id: `${stateId}-city5`, name: `${regionType} Junction`, state_id: stateId, latitude: 0, longitude: 0 },
       ];
   }
 };
