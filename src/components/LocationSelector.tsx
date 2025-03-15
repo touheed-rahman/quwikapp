@@ -138,15 +138,21 @@ const LocationSelector = ({ value, onChange }: { value: string | null, onChange:
                   </Button>
                 </div>
                 <div className="py-2">
-                  {cities.map((city) => (
-                    <div
-                      key={city.id}
-                      className="px-2 py-1.5 cursor-pointer hover:bg-primary hover:text-white"
-                      onClick={() => handleCitySelect(city)}
-                    >
-                      {city.name}
+                  {cities.length > 0 ? (
+                    cities.map((city) => (
+                      <div
+                        key={city.id}
+                        className="px-2 py-1.5 cursor-pointer hover:bg-primary hover:text-white"
+                        onClick={() => handleCitySelect(city)}
+                      >
+                        {city.name}
+                      </div>
+                    ))
+                  ) : (
+                    <div className="px-2 py-4 text-center text-muted-foreground">
+                      No cities found for this state
                     </div>
-                  ))}
+                  )}
                 </div>
               </>
             ) : (

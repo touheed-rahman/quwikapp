@@ -5,8 +5,6 @@ import { useNavigate } from "react-router-dom";
 import type { Conversation } from "./types/conversation";
 import { useState, useEffect } from "react";
 import DeleteChatDialog from "./dialogs/DeleteChatDialog";
-import { Button } from "@/components/ui/button";
-import { Trash2 } from "lucide-react";
 
 interface ConversationListProps {
   conversations: Conversation[];
@@ -46,8 +44,7 @@ const ConversationList = ({
     onSelectConversation(conversation.id);
   };
 
-  const confirmDelete = (conversation: Conversation, e: React.MouseEvent) => {
-    e.stopPropagation();
+  const handleDeleteRequest = (conversation: Conversation) => {
     setSelectedConversation(conversation);
     setDeleteDialogOpen(true);
   };
@@ -88,25 +85,14 @@ const ConversationList = ({
     <>
       <ScrollArea className="flex-1">
         {localConversations.map((conversation) => (
-          <div key={conversation.id} className="group relative">
-            <ConversationItem
-              conversation={conversation}
-              onClick={() => handleConversationClick(conversation)}
-              userId={userId}
-              unreadCount={unreadCounts[conversation.id] || 0}
-            />
-            <div className="absolute right-2 top-1/2 -translate-y-1/2">
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
-                onClick={(e) => confirmDelete(conversation, e)}
-                disabled={isDeleting && selectedConversation?.id === conversation.id}
-              >
-                <Trash2 className="h-4 w-4 text-destructive" />
-              </Button>
-            </div>
-          </div>
+          <ConversationItem
+            key={conversation.id}
+            conversation={conversation}
+            onClick={() => handleConversationClick(conversation)}
+            userId={userId}
+            unreadCount={unreadCounts[conversation.id] || 0}
+            onDelete={() => handleDeleteRequest(conversation)}
+          />
         ))}
       </ScrollArea>
 
