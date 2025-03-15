@@ -23,14 +23,12 @@ const LocationSelector = ({ value, onChange }: { value: string | null, onChange:
   const scrollRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
-  const getLocationName = useCallback((locationString: string) => {
+  // Only show the city name in the selector, not the full location string
+  const getDisplayLocationName = useCallback((locationString: string) => {
     if (!locationString) return '';
     const parts = locationString.split('|');
-    if (parts.length >= 3) {
-      const [city, state, country] = parts;
-      return country ? `${city}, ${state}, ${country}` : `${city}, ${state}`;
-    }
-    return locationString;
+    // Return just the city name (first part of the location string)
+    return parts[0] || locationString;
   }, []);
   
   const loadCountries = useCallback(async () => {
@@ -113,9 +111,9 @@ const LocationSelector = ({ value, onChange }: { value: string | null, onChange:
           className="w-full justify-between h-auto min-h-10 py-2"
         >
           {value ? (
-            <span className="flex items-start gap-2 text-left">
-              <MapPin className="h-4 w-4 shrink-0 mt-0.5" />
-              <span>{getLocationName(value)}</span>
+            <span className="flex items-center gap-2 text-left">
+              <MapPin className="h-4 w-4 shrink-0" />
+              <span className="truncate">{getDisplayLocationName(value)}</span>
             </span>
           ) : (
             <span className="flex items-center gap-2 text-muted-foreground">
@@ -148,13 +146,13 @@ const LocationSelector = ({ value, onChange }: { value: string | null, onChange:
                           {countriesList.map((country) => (
                             <div
                               key={country.id}
-                              className="flex items-center px-4 py-2 hover:bg-accent cursor-pointer"
+                              className="flex items-center px-4 py-3 hover:bg-accent cursor-pointer"
                               onClick={() => {
                                 setSelectedCountry(country);
                                 loadStates(country.id);
                               }}
                             >
-                              <span>{country.name}</span>
+                              <span className="font-medium">{country.name}</span>
                               {country.code && (
                                 <span className="ml-2 text-xs bg-muted text-muted-foreground px-1.5 py-0.5 rounded">
                                   {country.code}
@@ -180,7 +178,7 @@ const LocationSelector = ({ value, onChange }: { value: string | null, onChange:
                   <ArrowLeft className="h-4 w-4" />
                 </Button>
                 <h3 className="text-sm font-medium">
-                  {selectedCountry.name}: Select State/Region
+                  {selectedCountry.name}: Select Region
                 </h3>
               </div>
               <CommandList>
@@ -192,13 +190,13 @@ const LocationSelector = ({ value, onChange }: { value: string | null, onChange:
                   ) : (
                     <>
                       {states.length === 0 ? (
-                        <CommandEmpty>No states found.</CommandEmpty>
+                        <CommandEmpty>No regions found.</CommandEmpty>
                       ) : (
                         <div className="py-2">
                           {states.map((state) => (
                             <div
                               key={state.id}
-                              className="flex items-center px-4 py-2 hover:bg-accent cursor-pointer"
+                              className="flex items-center px-4 py-3 hover:bg-accent cursor-pointer"
                               onClick={() => {
                                 setSelectedState(state);
                                 loadCities(state.id);
@@ -246,15 +244,17 @@ const LocationSelector = ({ value, onChange }: { value: string | null, onChange:
                           {cities.map((city) => (
                             <div
                               key={city.id}
-                              className="flex items-center px-4 py-2 hover:bg-accent cursor-pointer"
+                              className="flex items-center px-4 py-3 hover:bg-accent cursor-pointer transition-colors"
                               onClick={() => {
+                                // Still store the full location string with city, state and country
+                                // But UI will only display the city name
                                 const locationValue = `${city.name}|${selectedState.name}|${selectedCountry.name}`;
                                 onChange(locationValue);
                                 setOpen(false);
                                 reset();
                               }}
                             >
-                              <span>{city.name}</span>
+                              <span className="font-medium">{city.name}</span>
                             </div>
                           ))}
                         </div>

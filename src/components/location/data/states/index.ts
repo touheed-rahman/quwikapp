@@ -29,11 +29,14 @@ export const getStatesByCountry = (countryId: string): State[] => {
       return japanStates;
     case '9': // China
       return [
-        { id: `${countryId}-1`, name: 'Beijing' },
-        { id: `${countryId}-2`, name: 'Shanghai' },
-        { id: `${countryId}-3`, name: 'Guangdong' },
-        { id: `${countryId}-4`, name: 'Sichuan' },
-        { id: `${countryId}-5`, name: 'Zhejiang' }
+        { id: `${countryId}-1`, name: 'Beijing Municipality' },
+        { id: `${countryId}-2`, name: 'Shanghai Municipality' },
+        { id: `${countryId}-3`, name: 'Guangdong Province' },
+        { id: `${countryId}-4`, name: 'Sichuan Province' },
+        { id: `${countryId}-5`, name: 'Zhejiang Province' },
+        { id: `${countryId}-6`, name: 'Jiangsu Province' },
+        { id: `${countryId}-7`, name: 'Henan Province' },
+        { id: `${countryId}-8`, name: 'Shandong Province' }
       ];
     case '10': // Brazil
       return [
@@ -41,7 +44,10 @@ export const getStatesByCountry = (countryId: string): State[] => {
         { id: `${countryId}-2`, name: 'Rio de Janeiro' },
         { id: `${countryId}-3`, name: 'Minas Gerais' },
         { id: `${countryId}-4`, name: 'Bahia' },
-        { id: `${countryId}-5`, name: 'Rio Grande do Sul' }
+        { id: `${countryId}-5`, name: 'Rio Grande do Sul' },
+        { id: `${countryId}-6`, name: 'Paraná' },
+        { id: `${countryId}-7`, name: 'Pernambuco' },
+        { id: `${countryId}-8`, name: 'Ceará' }
       ];
     case '11': // Mexico
       return [
@@ -49,7 +55,10 @@ export const getStatesByCountry = (countryId: string): State[] => {
         { id: `${countryId}-2`, name: 'Jalisco' },
         { id: `${countryId}-3`, name: 'Nuevo León' },
         { id: `${countryId}-4`, name: 'Puebla' },
-        { id: `${countryId}-5`, name: 'Veracruz' }
+        { id: `${countryId}-5`, name: 'Veracruz' },
+        { id: `${countryId}-6`, name: 'Guanajuato' },
+        { id: `${countryId}-7`, name: 'Chihuahua' },
+        { id: `${countryId}-8`, name: 'Baja California' }
       ];
     case '12': // Italy
       return [
@@ -57,7 +66,10 @@ export const getStatesByCountry = (countryId: string): State[] => {
         { id: `${countryId}-2`, name: 'Lazio' },
         { id: `${countryId}-3`, name: 'Campania' },
         { id: `${countryId}-4`, name: 'Sicily' },
-        { id: `${countryId}-5`, name: 'Veneto' }
+        { id: `${countryId}-5`, name: 'Veneto' },
+        { id: `${countryId}-6`, name: 'Piedmont' },
+        { id: `${countryId}-7`, name: 'Emilia-Romagna' },
+        { id: `${countryId}-8`, name: 'Tuscany' }
       ];
     case '13': // Spain
       return [
@@ -65,16 +77,22 @@ export const getStatesByCountry = (countryId: string): State[] => {
         { id: `${countryId}-2`, name: 'Catalonia' },
         { id: `${countryId}-3`, name: 'Andalusia' },
         { id: `${countryId}-4`, name: 'Valencia' },
-        { id: `${countryId}-5`, name: 'Galicia' }
+        { id: `${countryId}-5`, name: 'Galicia' },
+        { id: `${countryId}-6`, name: 'Basque Country' },
+        { id: `${countryId}-7`, name: 'Castile and León' },
+        { id: `${countryId}-8`, name: 'Canary Islands' }
       ];
     default:
-      // For other countries, provide generic but realistic regions
+      // For other countries, provide realistic regions
       return [
-        { id: `${countryId}-1`, name: 'Capital Region' },
-        { id: `${countryId}-2`, name: 'Northern Region' },
-        { id: `${countryId}-3`, name: 'Southern Region' },
-        { id: `${countryId}-4`, name: 'Eastern Region' },
-        { id: `${countryId}-5`, name: 'Western Region' }
+        { id: `${countryId}-1`, name: 'North Region' },
+        { id: `${countryId}-2`, name: 'South Region' },
+        { id: `${countryId}-3`, name: 'East Region' },
+        { id: `${countryId}-4`, name: 'West Region' },
+        { id: `${countryId}-5`, name: 'Central Region' },
+        { id: `${countryId}-6`, name: 'Capital Region' },
+        { id: `${countryId}-7`, name: 'Coastal Region' },
+        { id: `${countryId}-8`, name: 'Mountain Region' }
       ];
   }
 };
