@@ -37,7 +37,7 @@ const TabView: React.FC<TabViewProps> = ({
   );
 
   return (
-    <Card className="w-full mb-8 p-6 border border-border/30 shadow-sm">
+    <Card className="w-full mb-5 p-4 border border-border/30 shadow-sm">
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
@@ -45,10 +45,10 @@ const TabView: React.FC<TabViewProps> = ({
         className="w-full"
       >
         <Tabs defaultValue="classified" className="w-full">
-          <TabsList className="grid grid-cols-2 w-full max-w-md mx-auto mb-6 rounded-full h-14 p-1 bg-muted">
+          <TabsList className="grid grid-cols-2 w-full max-w-md mx-auto mb-4 rounded-full h-12 p-1 bg-muted">
             <TabsTrigger 
               value="classified" 
-              className="rounded-full flex items-center gap-2 text-base font-medium h-12 data-[state=active]:bg-background data-[state=active]:shadow"
+              className="rounded-full flex items-center gap-2 text-base font-medium h-10 data-[state=active]:bg-background data-[state=active]:shadow"
             >
               <ShoppingBag className="h-5 w-5" />
               <span>Classified</span>
@@ -56,14 +56,14 @@ const TabView: React.FC<TabViewProps> = ({
             
             <TabsTrigger 
               value="services" 
-              className="rounded-full flex items-center gap-2 text-base font-medium h-12 data-[state=active]:bg-background data-[state=active]:shadow"
+              className="rounded-full flex items-center gap-2 text-base font-medium h-10 data-[state=active]:bg-background data-[state=active]:shadow"
             >
               <Newspaper className="h-5 w-5" />
               <span>Service Now</span>
             </TabsTrigger>
           </TabsList>
           
-          <TabsContent value="classified" className="mt-6">
+          <TabsContent value="classified" className="mt-3">
             <RecentListings
               listings={classifiedListings}
               isLoading={isLoading}
@@ -75,9 +75,9 @@ const TabView: React.FC<TabViewProps> = ({
             />
           </TabsContent>
           
-          <TabsContent value="services" className="mt-6">
+          <TabsContent value="services" className="mt-3">
             {serviceListings.length === 0 && !isLoading ? (
-              <div className="text-center py-12 space-y-3">
+              <div className="text-center py-8 space-y-3">
                 <div className="text-lg font-medium">No services found</div>
                 <p className="text-sm text-muted-foreground">
                   There are no service listings available yet.

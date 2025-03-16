@@ -75,14 +75,14 @@ const Index = () => {
       />
 
       <Header />
-      <main className="container mx-auto px-4 pt-6 pb-24">
+      <main className="container mx-auto px-4 pt-20 pb-24">
         <motion.div 
-          className="space-y-8"
+          className="space-y-6"
           variants={container}
           initial="hidden"
           animate="show"
         >
-          {/* TabView positioned below navbar */}
+          {/* TabView positioned directly below navbar */}
           <motion.div 
             variants={item}
             className="mt-4"
