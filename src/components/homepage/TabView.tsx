@@ -5,6 +5,7 @@ import { Newspaper, ShoppingBag } from "lucide-react";
 import RecentListings from "@/components/listings/RecentListings";
 import { Listing } from "@/hooks/useListings";
 import { motion } from "framer-motion";
+import { Card } from "@/components/ui/card";
 
 interface TabViewProps {
   listings: Listing[];
@@ -25,7 +26,7 @@ const TabView: React.FC<TabViewProps> = ({
   getFirstImageUrl,
   itemsPerPage,
 }) => {
-  // Filter listings for services (you can adjust this filter based on your needs)
+  // Filter listings for services
   const serviceListings = listings.filter(listing => 
     listing.category === "Services" || listing.subcategory.toLowerCase().includes("service")
   );
@@ -36,54 +37,35 @@ const TabView: React.FC<TabViewProps> = ({
   );
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4 }}
-      className="w-full"
-    >
-      <Tabs defaultValue="classified" className="w-full">
-        <TabsList className="grid grid-cols-2 w-full max-w-md mx-auto mb-4 rounded-full h-12 p-1 bg-muted">
-          <TabsTrigger 
-            value="classified" 
-            className="rounded-full flex items-center gap-2 data-[state=active]:bg-background"
-          >
-            <ShoppingBag className="h-4 w-4" />
-            <span>Classified</span>
-          </TabsTrigger>
+    <Card className="w-full mb-8 p-6 border border-border/30 shadow-sm">
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+        className="w-full"
+      >
+        <Tabs defaultValue="classified" className="w-full">
+          <TabsList className="grid grid-cols-2 w-full max-w-md mx-auto mb-6 rounded-full h-14 p-1 bg-muted">
+            <TabsTrigger 
+              value="classified" 
+              className="rounded-full flex items-center gap-2 text-base font-medium h-12 data-[state=active]:bg-background data-[state=active]:shadow"
+            >
+              <ShoppingBag className="h-5 w-5" />
+              <span>Classified</span>
+            </TabsTrigger>
+            
+            <TabsTrigger 
+              value="services" 
+              className="rounded-full flex items-center gap-2 text-base font-medium h-12 data-[state=active]:bg-background data-[state=active]:shadow"
+            >
+              <Newspaper className="h-5 w-5" />
+              <span>Service Now</span>
+            </TabsTrigger>
+          </TabsList>
           
-          <TabsTrigger 
-            value="services" 
-            className="rounded-full flex items-center gap-2 data-[state=active]:bg-background"
-          >
-            <Newspaper className="h-4 w-4" />
-            <span>Service Now</span>
-          </TabsTrigger>
-        </TabsList>
-        
-        <TabsContent value="classified" className="mt-4">
-          <RecentListings
-            listings={classifiedListings}
-            isLoading={isLoading}
-            error={error}
-            showAllProducts={showAllProducts}
-            setShowAllProducts={setShowAllProducts}
-            getFirstImageUrl={getFirstImageUrl}
-            itemsPerPage={itemsPerPage}
-          />
-        </TabsContent>
-        
-        <TabsContent value="services" className="mt-4">
-          {serviceListings.length === 0 && !isLoading ? (
-            <div className="text-center py-12 space-y-3">
-              <div className="text-lg font-medium">No services found</div>
-              <p className="text-sm text-muted-foreground">
-                There are no service listings available yet.
-              </p>
-            </div>
-          ) : (
+          <TabsContent value="classified" className="mt-6">
             <RecentListings
-              listings={serviceListings}
+              listings={classifiedListings}
               isLoading={isLoading}
               error={error}
               showAllProducts={showAllProducts}
@@ -91,10 +73,31 @@ const TabView: React.FC<TabViewProps> = ({
               getFirstImageUrl={getFirstImageUrl}
               itemsPerPage={itemsPerPage}
             />
-          )}
-        </TabsContent>
-      </Tabs>
-    </motion.div>
+          </TabsContent>
+          
+          <TabsContent value="services" className="mt-6">
+            {serviceListings.length === 0 && !isLoading ? (
+              <div className="text-center py-12 space-y-3">
+                <div className="text-lg font-medium">No services found</div>
+                <p className="text-sm text-muted-foreground">
+                  There are no service listings available yet.
+                </p>
+              </div>
+            ) : (
+              <RecentListings
+                listings={serviceListings}
+                isLoading={isLoading}
+                error={error}
+                showAllProducts={showAllProducts}
+                setShowAllProducts={setShowAllProducts}
+                getFirstImageUrl={getFirstImageUrl}
+                itemsPerPage={itemsPerPage}
+              />
+            )}
+          </TabsContent>
+        </Tabs>
+      </motion.div>
+    </Card>
   );
 };
 

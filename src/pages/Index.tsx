@@ -75,13 +75,29 @@ const Index = () => {
       />
 
       <Header />
-      <main className="container mx-auto px-4 pt-16 pb-24">
+      <main className="container mx-auto px-4 pt-6 pb-24">
         <motion.div 
           className="space-y-8"
           variants={container}
           initial="hidden"
           animate="show"
         >
+          {/* TabView positioned below navbar */}
+          <motion.div 
+            variants={item}
+            className="mt-4"
+          >
+            <TabView 
+              listings={listings.filter(listing => !listing.featured)}
+              isLoading={isLoading}
+              error={error as Error}
+              showAllProducts={showAllProducts}
+              setShowAllProducts={setShowAllProducts}
+              getFirstImageUrl={getFirstImageUrl}
+              itemsPerPage={ITEMS_PER_PAGE}
+            />
+          </motion.div>
+          
           <motion.div 
             variants={item}
             className="flex flex-col gap-4"
@@ -152,17 +168,6 @@ const Index = () => {
                 <span className="font-medium">{selectedLocation.split('|')[0]}</span>
               </motion.div>
             )}
-            
-            {/* Replace the RecentListings component with TabView */}
-            <TabView 
-              listings={listings.filter(listing => !listing.featured)}
-              isLoading={isLoading}
-              error={error as Error}
-              showAllProducts={showAllProducts}
-              setShowAllProducts={setShowAllProducts}
-              getFirstImageUrl={getFirstImageUrl}
-              itemsPerPage={ITEMS_PER_PAGE}
-            />
           </motion.div>
         </motion.div>
 
