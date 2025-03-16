@@ -4,9 +4,9 @@ import { MapPin, Loader2, ChevronRight, ArrowLeft } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Command, CommandEmpty, CommandList } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Location, State, City } from './location/types';
 import { useToast } from './ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { Location, State, City } from './location/types';
 
 const LocationSelector = ({ value, onChange }: { value: string | null, onChange: (value: string | null) => void }) => {
   const [open, setOpen] = useState(false);
@@ -18,8 +18,8 @@ const LocationSelector = ({ value, onChange }: { value: string | null, onChange:
 
   const getLocationName = useCallback((locationString: string) => {
     if (!locationString) return '';
-    const [city, state] = locationString.split('|');
-    return `${city}, ${state}`;
+    // Only show the city name
+    return locationString.split('|')[0];
   }, []);
 
   const loadStates = useCallback(async () => {
@@ -100,11 +100,11 @@ const LocationSelector = ({ value, onChange }: { value: string | null, onChange:
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className="w-full justify-between text-muted-foreground hover:text-foreground ring-offset-background"
+          className="w-full justify-between transition-colors hover:text-foreground ring-offset-background"
         >
           <div className="flex items-center gap-2 truncate">
             <MapPin className="h-4 w-4 shrink-0 text-primary" />
-            <span className="truncate">{value ? getLocationName(value) : "Select location"}</span>
+            <span className="truncate text-foreground">{value ? getLocationName(value) : "Select location"}</span>
           </div>
         </Button>
       </PopoverTrigger>
@@ -138,15 +138,21 @@ const LocationSelector = ({ value, onChange }: { value: string | null, onChange:
                   </Button>
                 </div>
                 <div className="py-2">
-                  {cities.map((city) => (
-                    <div
-                      key={city.id}
-                      className="px-2 py-1.5 cursor-pointer hover:bg-primary hover:text-white"
-                      onClick={() => handleCitySelect(city)}
-                    >
-                      {city.name}
+                  {cities.length > 0 ? (
+                    cities.map((city) => (
+                      <div
+                        key={city.id}
+                        className="px-2 py-1.5 cursor-pointer hover:bg-primary hover:text-white"
+                        onClick={() => handleCitySelect(city)}
+                      >
+                        {city.name}
+                      </div>
+                    ))
+                  ) : (
+                    <div className="px-2 py-4 text-center text-muted-foreground">
+                      No cities found for this state
                     </div>
-                  ))}
+                  )}
                 </div>
               </>
             ) : (

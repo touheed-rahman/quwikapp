@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import Header from "@/components/Header";
 import CategoryFilter from "@/components/CategoryFilter";
@@ -8,7 +9,7 @@ import FloatingSellButton from "@/components/navigation/FloatingSellButton";
 import WelcomeDialog from "@/components/dialogs/WelcomeDialog";
 import { useLocation } from "@/contexts/LocationContext";
 import { useListings } from "@/hooks/useListings";
-import TabView from "@/components/homepage/TabView";
+import RecentListings from "@/components/listings/RecentListings";
 import { supabase } from "@/integrations/supabase/client";
 import { TrendingUp, MapPin, Clock } from "lucide-react";
 import ProductCard from "@/components/ProductCard";
@@ -30,12 +31,15 @@ const Index = () => {
     selectedLocation
   });
 
+  // Get random featured listings
   useEffect(() => {
     if (listings.length > 0) {
       const featuredItems = listings.filter(listing => listing.featured);
       
+      // Always shuffle the featured listings array
       const shuffled = [...featuredItems].sort(() => 0.5 - Math.random());
       
+      // Take only the first 4 items regardless of how many featured items we have
       setRandomFeaturedListings(shuffled.slice(0, FEATURED_ITEMS_LIMIT));
     } else {
       setRandomFeaturedListings([]);
@@ -71,28 +75,13 @@ const Index = () => {
       />
 
       <Header />
-      <main className="container mx-auto px-4 pt-20 pb-24">
+      <main className="container mx-auto px-4 pt-16 pb-24">
         <motion.div 
-          className="space-y-6"
+          className="space-y-8"
           variants={container}
           initial="hidden"
           animate="show"
         >
-          <motion.div 
-            variants={item}
-            className="mt-4"
-          >
-            <TabView 
-              listings={listings.filter(listing => !listing.featured)}
-              isLoading={isLoading}
-              error={error as Error}
-              showAllProducts={showAllProducts}
-              setShowAllProducts={setShowAllProducts}
-              getFirstImageUrl={getFirstImageUrl}
-              itemsPerPage={ITEMS_PER_PAGE}
-            />
-          </motion.div>
-          
           <motion.div 
             variants={item}
             className="flex flex-col gap-4"
@@ -163,6 +152,16 @@ const Index = () => {
                 <span className="font-medium">{selectedLocation.split('|')[0]}</span>
               </motion.div>
             )}
+            
+            <RecentListings 
+              listings={listings.filter(listing => !listing.featured)}
+              isLoading={isLoading}
+              error={error as Error}
+              showAllProducts={showAllProducts}
+              setShowAllProducts={setShowAllProducts}
+              getFirstImageUrl={getFirstImageUrl}
+              itemsPerPage={ITEMS_PER_PAGE}
+            />
           </motion.div>
         </motion.div>
 
