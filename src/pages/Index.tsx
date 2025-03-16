@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import Header from "@/components/Header";
 import CategoryFilter from "@/components/CategoryFilter";
@@ -31,15 +30,12 @@ const Index = () => {
     selectedLocation
   });
 
-  // Get random featured listings
   useEffect(() => {
     if (listings.length > 0) {
       const featuredItems = listings.filter(listing => listing.featured);
       
-      // Always shuffle the featured listings array
       const shuffled = [...featuredItems].sort(() => 0.5 - Math.random());
       
-      // Take only the first 4 items regardless of how many featured items we have
       setRandomFeaturedListings(shuffled.slice(0, FEATURED_ITEMS_LIMIT));
     } else {
       setRandomFeaturedListings([]);
@@ -82,7 +78,6 @@ const Index = () => {
           initial="hidden"
           animate="show"
         >
-          {/* TabView positioned directly below navbar */}
           <motion.div 
             variants={item}
             className="mt-4"

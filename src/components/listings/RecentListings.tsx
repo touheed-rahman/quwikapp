@@ -48,24 +48,6 @@ const RecentListings = ({
 
   return (
     <section className="space-y-6">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div className="flex items-center gap-2">
-          {cityName && (
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <MapPin className="h-4 w-4" />
-              <span>Showing listings in {cityName}</span>
-            </div>
-          )}
-        </div>
-        <Link 
-          to="/fresh-recommendations" 
-          className="text-primary flex items-center hover:underline text-sm font-medium"
-        >
-          View All Recommendations
-          <ArrowRight className="ml-1 h-4 w-4" />
-        </Link>
-      </div>
-      
       {isLoading ? (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
           {[...Array(8)].map((_, i) => (
@@ -118,8 +100,8 @@ const RecentListings = ({
             ))}
           </div>
           
-          {!showAllProducts && listings.length > itemsPerPage && (
-            <div className="flex justify-center mt-8">
+          <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mt-6">
+            {!showAllProducts && listings.length > itemsPerPage && (
               <Button
                 onClick={() => setShowAllProducts(true)}
                 variant="outline"
@@ -128,8 +110,16 @@ const RecentListings = ({
                 Load More
                 <ChevronDown className="h-4 w-4" />
               </Button>
-            </div>
-          )}
+            )}
+            
+            <Link 
+              to="/fresh-recommendations" 
+              className="text-primary flex items-center hover:underline text-sm font-medium"
+            >
+              View All Recommendations
+              <ArrowRight className="ml-1 h-4 w-4" />
+            </Link>
+          </div>
         </div>
       )}
     </section>
