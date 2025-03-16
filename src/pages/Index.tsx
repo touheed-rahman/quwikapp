@@ -9,7 +9,7 @@ import FloatingSellButton from "@/components/navigation/FloatingSellButton";
 import WelcomeDialog from "@/components/dialogs/WelcomeDialog";
 import { useLocation } from "@/contexts/LocationContext";
 import { useListings } from "@/hooks/useListings";
-import RecentListings from "@/components/listings/RecentListings";
+import TabView from "@/components/homepage/TabView";
 import { supabase } from "@/integrations/supabase/client";
 import { TrendingUp, MapPin, Clock } from "lucide-react";
 import ProductCard from "@/components/ProductCard";
@@ -153,7 +153,8 @@ const Index = () => {
               </motion.div>
             )}
             
-            <RecentListings 
+            {/* Replace the RecentListings component with TabView */}
+            <TabView 
               listings={listings.filter(listing => !listing.featured)}
               isLoading={isLoading}
               error={error as Error}
