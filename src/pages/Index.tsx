@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import Header from "@/components/Header";
 import CategoryFilter from "@/components/CategoryFilter";
@@ -16,9 +15,8 @@ import ProductCard from "@/components/ProductCard";
 import { motion } from "framer-motion";
 import SeoHead from "@/components/seo/SeoHead";
 import { Listing } from "@/hooks/useListings";
-import TabView from "@/components/TabView";
 import ServiceView from "@/components/services/ServiceView";
-import { Tabs, TabsContent } from "@/components/ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const ITEMS_PER_PAGE = 20;
 const FEATURED_ITEMS_LIMIT = 4;
@@ -34,15 +32,12 @@ const Index = () => {
     selectedLocation
   });
 
-  // Get random featured listings
   useEffect(() => {
     if (listings.length > 0) {
       const featuredItems = listings.filter(listing => listing.featured);
       
-      // Always shuffle the featured listings array
       const shuffled = [...featuredItems].sort(() => 0.5 - Math.random());
       
-      // Take only the first 4 items regardless of how many featured items we have
       setRandomFeaturedListings(shuffled.slice(0, FEATURED_ITEMS_LIMIT));
     } else {
       setRandomFeaturedListings([]);
