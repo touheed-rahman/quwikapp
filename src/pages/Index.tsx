@@ -27,6 +27,7 @@ const Index = () => {
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [showWelcomePopup, setShowWelcomePopup] = useState(true);
   const [randomFeaturedListings, setRandomFeaturedListings] = useState<Listing[]>([]);
+  const [activeTab, setActiveTab] = useState("classified");
   const { selectedLocation } = useLocation();
   
   const { data: listings = [], isLoading, error } = useListings({
@@ -166,23 +167,40 @@ const Index = () => {
 
       <Header />
       <main className="container mx-auto px-4 pt-16 pb-24">
-        <Tabs defaultValue="classified" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 mb-6">
-            <TabsTrigger value="classified" className="font-medium">
+        <Tabs 
+          defaultValue="classified" 
+          className="w-full"
+          onValueChange={(value) => setActiveTab(value)}
+        >
+          <TabsList className="grid w-full grid-cols-2 mb-6 p-1 rounded-full bg-muted/80 backdrop-blur-sm border border-primary/10">
+            <TabsTrigger 
+              value="classified" 
+              className="rounded-full py-3 data-[state=active]:bg-primary data-[state=active]:text-white transition-all duration-300 font-semibold"
+            >
               Quwik Classified
             </TabsTrigger>
-            <TabsTrigger value="services" className="font-medium">
+            <TabsTrigger 
+              value="services" 
+              className="rounded-full py-3 data-[state=active]:bg-primary data-[state=active]:text-white transition-all duration-300 font-semibold"
+            >
               Service Now
             </TabsTrigger>
           </TabsList>
           
-          <TabsContent value="classified">
-            <ClassifiedView />
-          </TabsContent>
-          
-          <TabsContent value="services">
-            <ServiceView />
-          </TabsContent>
+          <motion.div
+            key={activeTab}
+            initial={{ opacity: 0, x: activeTab === "classified" ? -20 : 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <TabsContent value="classified" className="mt-0">
+              <ClassifiedView />
+            </TabsContent>
+            
+            <TabsContent value="services" className="mt-0">
+              <ServiceView />
+            </TabsContent>
+          </motion.div>
         </Tabs>
 
         <MobileNavigation onChatOpen={() => setIsChatOpen(true)} />
