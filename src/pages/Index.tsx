@@ -16,6 +16,9 @@ import ProductCard from "@/components/ProductCard";
 import { motion } from "framer-motion";
 import SeoHead from "@/components/seo/SeoHead";
 import { Listing } from "@/hooks/useListings";
+import TabView from "@/components/TabView";
+import ServiceView from "@/components/services/ServiceView";
+import { Tabs, TabsContent } from "@/components/ui/tabs";
 
 const ITEMS_PER_PAGE = 20;
 const FEATURED_ITEMS_LIMIT = 4;
@@ -66,6 +69,97 @@ const Index = () => {
     show: { opacity: 1, y: 0, transition: { duration: 0.4 } }
   };
 
+  const ClassifiedView = () => (
+    <motion.div 
+      className="space-y-8"
+      variants={container}
+      initial="hidden"
+      animate="show"
+    >
+      <motion.div 
+        variants={item}
+        className="flex flex-col gap-4"
+      >
+        <HeroSearch />
+      </motion.div>
+      
+      <motion.div variants={item}>
+        <CategoryFilter />
+      </motion.div>
+      
+      {randomFeaturedListings.length > 0 && (
+        <motion.div 
+          className="space-y-4"
+          variants={item}
+        >
+          <div className="flex items-center gap-2">
+            <div className="bg-primary/10 p-1.5 rounded-full">
+              <TrendingUp className="h-5 w-5 text-primary" />
+            </div>
+            <h2 className="text-xl font-bold text-foreground/90">Featured Listings</h2>
+          </div>
+          
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+            {randomFeaturedListings.map((listing, index) => (
+              <motion.div
+                key={listing.id}
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.1, duration: 0.3 }}
+                whileHover={{ y: -5, transition: { duration: 0.2 } }}
+              >
+                <ProductCard
+                  id={listing.id}
+                  title={listing.title}
+                  price={listing.price}
+                  location={listing.location || "Location not specified"}
+                  image={getFirstImageUrl(listing.images)}
+                  date={new Date(listing.created_at).toLocaleDateString()}
+                  condition={listing.condition}
+                  featured={listing.featured}
+                />
+              </motion.div>
+            ))}
+          </div>
+        </motion.div>
+      )}
+      
+      <motion.div 
+        className="space-y-4"
+        variants={item}
+      >
+        <div className="flex items-center gap-2 mb-4">
+          <div className="bg-primary/10 p-1.5 rounded-full">
+            <Clock className="h-5 w-5 text-primary" />
+          </div>
+          <h2 className="text-xl font-bold text-foreground/90">Recent Listings</h2>
+        </div>
+        
+        {selectedLocation && (
+          <motion.div 
+            className="inline-flex items-center gap-2 bg-muted rounded-full px-3 py-1.5 text-sm mb-4"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.3 }}
+          >
+            <MapPin className="h-4 w-4 text-primary" />
+            <span className="font-medium">{selectedLocation.split('|')[0]}</span>
+          </motion.div>
+        )}
+        
+        <RecentListings 
+          listings={listings.filter(listing => !listing.featured)}
+          isLoading={isLoading}
+          error={error as Error}
+          showAllProducts={showAllProducts}
+          setShowAllProducts={setShowAllProducts}
+          getFirstImageUrl={getFirstImageUrl}
+          itemsPerPage={ITEMS_PER_PAGE}
+        />
+      </motion.div>
+    </motion.div>
+  );
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-background via-background to-primary/5">
       <SeoHead />
@@ -76,94 +170,24 @@ const Index = () => {
 
       <Header />
       <main className="container mx-auto px-4 pt-16 pb-24">
-        <motion.div 
-          className="space-y-8"
-          variants={container}
-          initial="hidden"
-          animate="show"
-        >
-          <motion.div 
-            variants={item}
-            className="flex flex-col gap-4"
-          >
-            <HeroSearch />
-          </motion.div>
+        <Tabs defaultValue="classified" className="w-full">
+          <TabsList className="grid w-full grid-cols-2 mb-6">
+            <TabsTrigger value="classified" className="font-medium">
+              Quwik Classified
+            </TabsTrigger>
+            <TabsTrigger value="services" className="font-medium">
+              Service Now
+            </TabsTrigger>
+          </TabsList>
           
-          <motion.div variants={item}>
-            <CategoryFilter />
-          </motion.div>
+          <TabsContent value="classified">
+            <ClassifiedView />
+          </TabsContent>
           
-          {randomFeaturedListings.length > 0 && (
-            <motion.div 
-              className="space-y-4"
-              variants={item}
-            >
-              <div className="flex items-center gap-2">
-                <div className="bg-primary/10 p-1.5 rounded-full">
-                  <TrendingUp className="h-5 w-5 text-primary" />
-                </div>
-                <h2 className="text-xl font-bold text-foreground/90">Featured Listings</h2>
-              </div>
-              
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-                {randomFeaturedListings.map((listing, index) => (
-                  <motion.div
-                    key={listing.id}
-                    initial={{ opacity: 0, y: 15 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.1, duration: 0.3 }}
-                    whileHover={{ y: -5, transition: { duration: 0.2 } }}
-                  >
-                    <ProductCard
-                      id={listing.id}
-                      title={listing.title}
-                      price={listing.price}
-                      location={listing.location || "Location not specified"}
-                      image={getFirstImageUrl(listing.images)}
-                      date={new Date(listing.created_at).toLocaleDateString()}
-                      condition={listing.condition}
-                      featured={listing.featured}
-                    />
-                  </motion.div>
-                ))}
-              </div>
-            </motion.div>
-          )}
-          
-          <motion.div 
-            className="space-y-4"
-            variants={item}
-          >
-            <div className="flex items-center gap-2 mb-4">
-              <div className="bg-primary/10 p-1.5 rounded-full">
-                <Clock className="h-5 w-5 text-primary" />
-              </div>
-              <h2 className="text-xl font-bold text-foreground/90">Recent Listings</h2>
-            </div>
-            
-            {selectedLocation && (
-              <motion.div 
-                className="inline-flex items-center gap-2 bg-muted rounded-full px-3 py-1.5 text-sm mb-4"
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.3 }}
-              >
-                <MapPin className="h-4 w-4 text-primary" />
-                <span className="font-medium">{selectedLocation.split('|')[0]}</span>
-              </motion.div>
-            )}
-            
-            <RecentListings 
-              listings={listings.filter(listing => !listing.featured)}
-              isLoading={isLoading}
-              error={error as Error}
-              showAllProducts={showAllProducts}
-              setShowAllProducts={setShowAllProducts}
-              getFirstImageUrl={getFirstImageUrl}
-              itemsPerPage={ITEMS_PER_PAGE}
-            />
-          </motion.div>
-        </motion.div>
+          <TabsContent value="services">
+            <ServiceView />
+          </TabsContent>
+        </Tabs>
 
         <MobileNavigation onChatOpen={() => setIsChatOpen(true)} />
         <FloatingSellButton />
