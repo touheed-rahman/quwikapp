@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import Header from "@/components/Header";
 import CategoryFilter from "@/components/CategoryFilter";
@@ -172,18 +171,30 @@ const Index = () => {
           className="w-full"
           onValueChange={(value) => setActiveTab(value)}
         >
-          <TabsList className="grid w-full grid-cols-2 mb-6 p-1 rounded-full bg-muted/80 backdrop-blur-sm border border-primary/10">
+          <TabsList className="grid w-full grid-cols-2 mb-8 p-1.5 rounded-full bg-muted/80 backdrop-blur-sm border border-primary/10 shadow-sm shadow-primary/5">
             <TabsTrigger 
               value="classified" 
-              className="rounded-full py-3 data-[state=active]:bg-primary data-[state=active]:text-white transition-all duration-300 font-semibold"
+              className="rounded-full py-3.5 px-4 data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-300 font-semibold relative overflow-hidden"
             >
-              Quwik Classified
+              <span className="relative z-10">Quwik Classified</span>
+              <motion.div 
+                className="absolute inset-0 bg-gradient-to-r from-primary to-primary/90 rounded-full"
+                initial={{ x: "-100%" }}
+                animate={{ x: activeTab === "classified" ? 0 : "-100%" }}
+                transition={{ duration: 0.3 }}
+              />
             </TabsTrigger>
             <TabsTrigger 
               value="services" 
-              className="rounded-full py-3 data-[state=active]:bg-primary data-[state=active]:text-white transition-all duration-300 font-semibold"
+              className="rounded-full py-3.5 px-4 data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-300 font-semibold relative overflow-hidden"
             >
-              Service Now
+              <span className="relative z-10">Service Now</span>
+              <motion.div 
+                className="absolute inset-0 bg-gradient-to-r from-primary to-primary/90 rounded-full"
+                initial={{ x: "100%" }}
+                animate={{ x: activeTab === "services" ? 0 : "100%" }}
+                transition={{ duration: 0.3 }}
+              />
             </TabsTrigger>
           </TabsList>
           
@@ -192,6 +203,7 @@ const Index = () => {
             initial={{ opacity: 0, x: activeTab === "classified" ? -20 : 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.3 }}
+            className="overflow-hidden"
           >
             <TabsContent value="classified" className="mt-0">
               <ClassifiedView />
