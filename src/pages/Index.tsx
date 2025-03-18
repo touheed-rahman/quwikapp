@@ -39,6 +39,9 @@ const Index = () => {
     }
   }, [listings]);
 
+  // Only show the bottom navigation and floating sell button in the classified view
+  const showBottomNav = activeTab === "classified";
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-background via-background to-primary/5">
       <SeoHead />
@@ -105,8 +108,12 @@ const Index = () => {
           </motion.div>
         </Tabs>
 
-        <MobileNavigation onChatOpen={() => setIsChatOpen(true)} />
-        <FloatingSellButton />
+        {showBottomNav && (
+          <>
+            <MobileNavigation onChatOpen={() => setIsChatOpen(true)} />
+            <FloatingSellButton />
+          </>
+        )}
         <ChatWindow isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} />
       </main>
     </div>

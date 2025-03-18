@@ -47,7 +47,7 @@ const ServiceCategories = ({
             <Button 
               variant="ghost" 
               size="sm" 
-              className="text-muted-foreground flex items-center gap-1"
+              className="text-muted-foreground flex items-center gap-1 hover:bg-primary/10 hover:text-primary transition-colors"
               onClick={() => onSelectCategory("")}
             >
               <span>←</span> Back to all services
@@ -63,17 +63,22 @@ const ServiceCategories = ({
             {serviceCategories.find(c => c.id === selectedCategory)?.subservices.map((subservice) => (
               <motion.div 
                 key={subservice.id} 
-                whileHover={{ scale: 1.03 }} 
+                whileHover={{ scale: 1.03, boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)" }} 
                 whileTap={{ scale: 0.98 }}
                 className="h-full"
               >
                 <Card 
-                  className="h-full overflow-hidden border cursor-pointer transition-all duration-300 hover:shadow-md hover:border-primary/30"
+                  className="h-full overflow-hidden border cursor-pointer transition-all duration-300 hover:shadow-md hover:border-primary/30 group"
                   onClick={() => onSelectSubservice(subservice.id, subservice.name)}
                 >
-                  <CardContent className="p-4 text-center flex flex-col items-center justify-center h-full">
-                    <h3 className="font-medium text-lg mt-3">{subservice.name}</h3>
-                    <p className="text-muted-foreground text-sm mt-1">Professional service at your doorstep</p>
+                  <CardContent className="p-6 text-center flex flex-col items-center justify-center h-full">
+                    <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-3 group-hover:bg-primary/20 transition-colors">
+                      {serviceCategories.find(c => c.id === selectedCategory)?.icon({ 
+                        className: "h-6 w-6 text-primary" 
+                      })}
+                    </div>
+                    <h3 className="font-medium text-lg mb-2">{subservice.name}</h3>
+                    <p className="text-muted-foreground text-sm">Professional service at your doorstep</p>
                   </CardContent>
                 </Card>
               </motion.div>
@@ -88,15 +93,15 @@ const ServiceCategories = ({
               return (
                 <motion.div 
                   key={category.id} 
-                  whileHover={{ scale: 1.03 }} 
+                  whileHover={{ scale: 1.05, boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1)" }} 
                   whileTap={{ scale: 0.98 }}
                   className="h-full"
                 >
                   <Card 
-                    className="h-full overflow-hidden border-2 border-transparent hover:border-primary/20 cursor-pointer transition-all duration-300 hover:shadow-lg"
+                    className="h-full overflow-hidden border-2 border-transparent hover:border-primary/20 cursor-pointer transition-all duration-300 hover:shadow-lg group"
                     onClick={() => onSelectCategory(category.id)}
                   >
-                    <div className={`bg-gradient-to-br ${category.color} p-6 flex items-center justify-center`}>
+                    <div className={`bg-gradient-to-br ${category.color} p-6 flex items-center justify-center group-hover:saturate-150 transition-all`}>
                       <IconComponent className="h-12 w-12 text-primary" />
                     </div>
                     <CardContent className="p-4 text-center">
