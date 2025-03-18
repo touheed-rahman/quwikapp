@@ -50,7 +50,7 @@ const ServiceView = () => {
     toast({
       title: "Service Booked Successfully!",
       description: `Your ${data.serviceType} service has been scheduled for ${format(data.date, "PPP")} at ${data.time}.`,
-      variant: "success",
+      variant: "default",
     });
     setBookingStep(0);
     setSelectedCategory(null);

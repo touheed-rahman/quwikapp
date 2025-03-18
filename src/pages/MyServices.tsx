@@ -89,7 +89,7 @@ const ServiceBookingCard = ({ booking }: { booking: any }) => {
                 booking.status === "upcoming"
                   ? "default"
                   : booking.status === "completed"
-                  ? "success"
+                  ? "secondary"
                   : "destructive"
               }
             >
