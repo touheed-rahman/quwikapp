@@ -1,6 +1,6 @@
 
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import { Home, MessageSquare, Tool, ListOrdered, Heart } from "lucide-react";
+import { Home, MessageSquare, Wrench, ListOrdered, Heart } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -95,7 +95,7 @@ const MobileNavigation = ({ onChatOpen }: MobileNavigationProps) => {
             }
           }}
         >
-          <Tool className="h-6 w-6 text-white" />
+          <Wrench className="h-6 w-6 text-white" />
         </div>
         <span className="text-xs mt-1">Services</span>
       </div>

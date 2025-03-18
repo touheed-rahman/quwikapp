@@ -1,5 +1,5 @@
 
-import { Home, Tool, Calendar, User, Settings } from "lucide-react";
+import { Home, Wrench, Calendar, User, Settings } from "lucide-react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -37,7 +37,7 @@ const ServiceNavigation = () => {
     >
       <div className="grid grid-cols-5 gap-1">
         <NavItem icon={Home} label="Home" href="/" active />
-        <NavItem icon={Tool} label="Services" href="/services" />
+        <NavItem icon={Wrench} label="Services" href="/services" />
         <NavItem icon={Calendar} label="My Bookings" href="/my-bookings" />
         <NavItem icon={User} label="Profile" href="/profile" />
         <NavItem icon={Settings} label="Settings" href="/settings" />
