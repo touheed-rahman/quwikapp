@@ -1,10 +1,9 @@
 
 import { Link, useNavigate } from "react-router-dom";
-import { Home, MessageSquare, Wrench, ListOrdered, Heart } from "lucide-react";
+import { Home, MessageSquare, Plus, ListOrdered, Heart } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/components/ui/use-toast";
 
 interface MobileNavigationProps {
   onChatOpen: () => void;
@@ -13,23 +12,6 @@ interface MobileNavigationProps {
 const MobileNavigation = ({ onChatOpen }: MobileNavigationProps) => {
   const [unreadCount, setUnreadCount] = useState(0);
   const navigate = useNavigate();
-  const { toast } = useToast();
-
-  const handleServicesClick = () => {
-    navigate('/');
-    // Simulating tab change to Services in Index page
-    setTimeout(() => {
-      const servicesTab = document.querySelector('[value="services"]');
-      if (servicesTab) {
-        (servicesTab as HTMLElement).click();
-      } else {
-        toast({
-          title: "Services View",
-          description: "Switching to Services tab",
-        });
-      }
-    }, 100);
-  };
 
   useEffect(() => {
     const getSession = async () => {
@@ -101,18 +83,18 @@ const MobileNavigation = ({ onChatOpen }: MobileNavigationProps) => {
           </Badge>
         )}
       </div>
-      <button
-        onClick={handleServicesClick}
+      <Link
+        to="/sell"
         className="flex flex-col items-center -mt-8"
       >
         <div className="bg-primary rounded-full p-4 shadow-lg">
-          <Wrench className="h-6 w-6 text-white" />
+          <Plus className="h-6 w-6 text-white" />
         </div>
-        <span className="text-xs mt-1">Services</span>
-      </button>
-      <Link to="/my-services" className="flex flex-col items-center gap-1">
+        <span className="text-xs mt-1">Sell Now</span>
+      </Link>
+      <Link to="/my-ads" className="flex flex-col items-center gap-1">
         <ListOrdered className="h-6 w-6 text-muted-foreground hover:text-primary transition-colors" />
-        <span className="text-xs hover:text-primary transition-colors">My Services</span>
+        <span className="text-xs hover:text-primary transition-colors">My Ads</span>
       </Link>
       <Link to="/wishlist" className="flex flex-col items-center gap-1">
         <Heart className="h-6 w-6 text-muted-foreground hover:text-primary transition-colors" />

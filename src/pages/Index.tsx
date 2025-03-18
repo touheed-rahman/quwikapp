@@ -49,7 +49,7 @@ const Index = () => {
 
       <Header />
 
-      <main className="container mx-auto px-4 pt-32 pb-24"> {/* Increased top padding for better spacing */}
+      <main className="container mx-auto px-4 pt-24 pb-24">
         <Tabs 
           defaultValue="classified" 
           className="w-full"
@@ -105,12 +105,8 @@ const Index = () => {
           </motion.div>
         </Tabs>
 
-        {activeTab === "classified" && (
-          <MobileNavigation onChatOpen={() => setIsChatOpen(true)} />
-        )}
-        {activeTab === "classified" && (
-          <FloatingSellButton />
-        )}
+        <MobileNavigation onChatOpen={() => setIsChatOpen(true)} />
+        <FloatingSellButton />
         <ChatWindow isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} />
       </main>
     </div>
