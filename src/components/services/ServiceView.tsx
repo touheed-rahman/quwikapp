@@ -11,6 +11,8 @@ import ServiceCategories from "@/components/services/ServiceCategories";
 import ServiceBookingForm from "@/components/services/ServiceBookingForm";
 import HowItWorks from "@/components/services/HowItWorks";
 import ServiceGuarantee from "@/components/services/ServiceGuarantee";
+import PopularServices from "@/components/services/PopularServices";
+import PromoBanner from "@/components/services/PromoBanner";
 import { formSchema, FormValues } from "@/types/serviceTypes";
 import { format } from "date-fns";
 
@@ -47,6 +49,7 @@ const ServiceView = () => {
     toast({
       title: "Service Booked Successfully!",
       description: `Your ${data.serviceType} service has been scheduled for ${format(data.date, "PPP")} at ${data.time}.`,
+      variant: "default",
     });
     setBookingStep(0);
     setSelectedCategory(null);
@@ -90,7 +93,7 @@ const ServiceView = () => {
       animate="show"
     >
       <motion.div 
-        className="bg-gradient-to-r from-primary/10 via-primary/5 to-primary/10 backdrop-blur-sm rounded-xl p-6 border border-primary/20 shadow-lg"
+        className="bg-gradient-to-r from-primary/10 via-primary/5 to-primary/10 backdrop-blur-sm rounded-xl p-6 md:p-8 border border-primary/20 shadow-lg"
         variants={item}
       >
         <motion.div className="text-center mb-6">
@@ -123,12 +126,18 @@ const ServiceView = () => {
       </motion.div>
 
       {bookingStep === 0 ? (
-        <ServiceCategories 
-          searchQuery={searchQuery}
-          onSelectCategory={handleCategorySelect}
-          onSelectSubservice={handleSubserviceSelect}
-          selectedCategory={selectedCategory}
-        />
+        <>
+          {!selectedCategory && <PromoBanner />}
+          
+          <ServiceCategories 
+            searchQuery={searchQuery}
+            onSelectCategory={handleCategorySelect}
+            onSelectSubservice={handleSubserviceSelect}
+            selectedCategory={selectedCategory}
+          />
+          
+          {!selectedCategory && <PopularServices />}
+        </>
       ) : (
         <ServiceBookingForm
           form={form}
