@@ -1,6 +1,6 @@
 
-import { Link, useNavigate, useLocation } from "react-router-dom";
-import { Home, MessageSquare, Wrench, ListOrdered, Heart } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { Home, MessageSquare, Plus, ListOrdered, Heart } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -12,8 +12,6 @@ interface MobileNavigationProps {
 const MobileNavigation = ({ onChatOpen }: MobileNavigationProps) => {
   const [unreadCount, setUnreadCount] = useState(0);
   const navigate = useNavigate();
-  const location = useLocation();
-  const isServicesTab = location.pathname === "/" && location.hash === "#services";
 
   useEffect(() => {
     const getSession = async () => {
@@ -85,27 +83,22 @@ const MobileNavigation = ({ onChatOpen }: MobileNavigationProps) => {
           </Badge>
         )}
       </div>
-      <div className="flex flex-col items-center -mt-8">
-        <div 
-          className="bg-primary rounded-full p-4 shadow-lg cursor-pointer"
-          onClick={() => {
-            const servicesTab = document.querySelector('[data-value="services"]') as HTMLElement;
-            if (servicesTab) {
-              servicesTab.click();
-            }
-          }}
-        >
-          <Wrench className="h-6 w-6 text-white" />
+      <Link
+        to="/sell"
+        className="flex flex-col items-center -mt-8"
+      >
+        <div className="bg-primary rounded-full p-4 shadow-lg">
+          <Plus className="h-6 w-6 text-white" />
         </div>
-        <span className="text-xs mt-1">Services</span>
-      </div>
-      <Link to="/my-services" className="flex flex-col items-center gap-1">
-        <ListOrdered className="h-6 w-6 text-muted-foreground hover:text-primary transition-colors" />
-        <span className="text-xs hover:text-primary transition-colors">My Services</span>
+        <span className="text-xs mt-1">Sell Now</span>
       </Link>
-      <Link to="/profile" className="flex flex-col items-center gap-1">
+      <Link to="/my-ads" className="flex flex-col items-center gap-1">
+        <ListOrdered className="h-6 w-6 text-muted-foreground hover:text-primary transition-colors" />
+        <span className="text-xs hover:text-primary transition-colors">My Ads</span>
+      </Link>
+      <Link to="/wishlist" className="flex flex-col items-center gap-1">
         <Heart className="h-6 w-6 text-muted-foreground hover:text-primary transition-colors" />
-        <span className="text-xs hover:text-primary transition-colors">Profile</span>
+        <span className="text-xs hover:text-primary transition-colors">Wishlist</span>
       </Link>
     </div>
   );

@@ -26,7 +26,6 @@ import React from 'react';
 import CategorySubcategories from "./pages/CategorySubcategories";
 import SellerProfile from "./pages/SellerProfile";
 import MyOrders from "./pages/MyOrders";
-import MyServices from "./pages/MyServices";
 
 // Create a client outside of the component to avoid recreating it on every render
 const queryClient = new QueryClient({
@@ -93,14 +92,6 @@ const App = () => (
                 element={
                   <PrivateRoute>
                     <Sell />
-                  </PrivateRoute>
-                }
-              />
-              <Route
-                path="/my-services"
-                element={
-                  <PrivateRoute>
-                    <MyServices />
                   </PrivateRoute>
                 }
               />
