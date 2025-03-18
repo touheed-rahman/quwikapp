@@ -11,6 +11,9 @@ import ServiceCategories from "@/components/services/ServiceCategories";
 import ServiceBookingForm from "@/components/services/ServiceBookingForm";
 import HowItWorks from "@/components/services/HowItWorks";
 import ServiceGuarantee from "@/components/services/ServiceGuarantee";
+import ServiceNavigation from "@/components/services/ServiceNavigation";
+import ServiceFeatures from "@/components/services/ServiceFeatures";
+import ServiceTestimonials from "@/components/services/ServiceTestimonials";
 import { formSchema, FormValues } from "@/types/serviceTypes";
 import { format } from "date-fns";
 
@@ -47,7 +50,6 @@ const ServiceView = () => {
     toast({
       title: "Service Booked Successfully!",
       description: `Your ${data.serviceType} service has been scheduled for ${format(data.date, "PPP")} at ${data.time}.`,
-      variant: "success",
     });
     setBookingStep(0);
     setSelectedCategory(null);
@@ -90,6 +92,9 @@ const ServiceView = () => {
       initial="hidden"
       animate="show"
     >
+      {/* Service-specific navigation */}
+      <ServiceNavigation />
+      
       <motion.div className="flex flex-col md:flex-row gap-4 items-center" variants={item}>
         <div className="w-full md:w-1/2">
           <LocationSelector 
@@ -139,7 +144,9 @@ const ServiceView = () => {
       {bookingStep === 0 && !selectedCategory && (
         <>
           <HowItWorks />
+          <ServiceFeatures />
           <ServiceGuarantee />
+          <ServiceTestimonials />
         </>
       )}
     </motion.div>

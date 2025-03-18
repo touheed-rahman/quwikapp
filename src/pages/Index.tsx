@@ -49,7 +49,7 @@ const Index = () => {
 
       <Header />
 
-      <main className="container mx-auto px-4 pt-24 pb-24">
+      <main className="container mx-auto px-4 pt-28 pb-24">
         <Tabs 
           defaultValue="classified" 
           className="w-full"
