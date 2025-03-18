@@ -11,6 +11,9 @@ import ServiceCategories from "@/components/services/ServiceCategories";
 import ServiceBookingForm from "@/components/services/ServiceBookingForm";
 import HowItWorks from "@/components/services/HowItWorks";
 import ServiceGuarantee from "@/components/services/ServiceGuarantee";
+import ServiceNavigation from "@/components/services/ServiceNavigation";
+import ServiceFeatures from "@/components/services/ServiceFeatures";
+import ServiceTestimonials from "@/components/services/ServiceTestimonials";
 import { formSchema, FormValues } from "@/types/serviceTypes";
 import { format } from "date-fns";
 
@@ -85,37 +88,42 @@ const ServiceView = () => {
 
   return (
     <motion.div 
-      className="space-y-8"
+      className="space-y-8 pt-4" // Added padding top
       variants={container}
       initial="hidden"
       animate="show"
     >
-      <motion.div className="flex flex-col md:flex-row gap-4 items-center" variants={item}>
-        <div className="w-full md:w-1/2">
-          <LocationSelector 
-            value={selectedLocation} 
-            onChange={setSelectedLocation} 
-          />
-        </div>
-        <div className="w-full md:w-1/2 relative">
-          <Input
-            type="text"
-            placeholder="Search for services..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10 pr-4 h-12 w-full border-primary/20 rounded-lg"
-          />
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-primary" />
-        </div>
-      </motion.div>
+      <motion.div 
+        className="rounded-xl bg-gradient-to-r from-primary/10 via-primary/5 to-transparent p-6 border border-primary/10 shadow-sm"
+        variants={item}
+      >
+        <motion.div className="flex flex-col md:flex-row gap-4 items-center" variants={item}>
+          <div className="w-full md:w-1/2">
+            <LocationSelector 
+              value={selectedLocation} 
+              onChange={setSelectedLocation} 
+            />
+          </div>
+          <div className="w-full md:w-1/2 relative">
+            <Input
+              type="text"
+              placeholder="Search for services..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10 pr-4 h-12 w-full border-primary/20 rounded-lg"
+            />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-primary" />
+          </div>
+        </motion.div>
 
-      <motion.div variants={item} className="text-center mb-8">
-        <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-primary via-primary/80 to-primary/60 text-transparent bg-clip-text inline-block mb-3">
-          Professional Services at Your Doorstep
-        </h1>
-        <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-          Book reliable professionals for all your needs with just a few clicks
-        </p>
+        <motion.div variants={item} className="text-center mt-6 mb-4">
+          <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-primary via-primary/80 to-primary/60 text-transparent bg-clip-text inline-block mb-3">
+            Professional Services at Your Doorstep
+          </h1>
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+            Book reliable professionals for all your needs with just a few clicks
+          </p>
+        </motion.div>
       </motion.div>
 
       {bookingStep === 0 ? (
@@ -139,9 +147,13 @@ const ServiceView = () => {
       {bookingStep === 0 && !selectedCategory && (
         <>
           <HowItWorks />
+          <ServiceFeatures />
+          <ServiceTestimonials />
           <ServiceGuarantee />
         </>
       )}
+      
+      <ServiceNavigation />
     </motion.div>
   );
 };
