@@ -5,7 +5,10 @@ import { ServiceLead } from "@/types/serviceTypes";
 
 const fetchServiceLeads = async () => {
   try {
-    const { data, error } = await supabase.rpc('get_service_leads');
+    const { data, error } = await supabase
+      .from('service_leads')
+      .select('*')
+      .order('created_at', { ascending: false });
     
     if (error) {
       console.error("Error fetching service leads:", error);
@@ -27,10 +30,12 @@ const updateServiceLeadStatus = async ({
   status: "Pending" | "In Progress" | "Completed" | "Cancelled" 
 }) => {
   try {
-    const { data, error } = await supabase.rpc('update_service_lead_status', {
-      p_lead_id: leadId,
-      p_status: status
-    });
+    const { data, error } = await supabase
+      .from('service_leads')
+      .update({ status })
+      .eq('id', leadId)
+      .select()
+      .single();
     
     if (error) {
       console.error("Error updating service lead status:", error);

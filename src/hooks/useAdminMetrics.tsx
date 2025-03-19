@@ -19,7 +19,9 @@ export function useAdminMetrics() {
     queryKey: ['admin-metrics'],
     queryFn: async () => {
       const { data, error } = await supabase
-        .rpc('get_dashboard_metrics') as { 
+        .from('dashboard_metrics')
+        .select('*')
+        .single() as { 
           data: DashboardMetrics | null; 
           error: Error | null 
         };
@@ -49,7 +51,8 @@ export function useAdminMetrics() {
       
       // Fetch service leads count
       const { count: serviceLeadsCount, error: serviceLeadsError } = await supabase
-        .rpc('count_service_leads');
+        .from('service_leads')
+        .select('count', { count: 'exact', head: true });
       
       const serviceLeads = serviceLeadsError ? 0 : (serviceLeadsCount || 0);
 

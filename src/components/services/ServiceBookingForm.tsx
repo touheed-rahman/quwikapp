@@ -66,20 +66,23 @@ const ServiceBookingForm = ({
       // Get the category name
       const categoryName = categoryDetails?.name || "";
       
-      // Insert into database using PostgreSQL syntax via Supabase RPC
-      const { data: leadData, error } = await supabase.rpc('create_service_lead', {
-        p_customer_name: data.name,
-        p_phone: data.phone,
-        p_service_category: categoryName,
-        p_service_type: selectedSubserviceName,
-        p_description: data.description,
-        p_address: data.address,
-        p_appointment_date: format(data.date, "yyyy-MM-dd"),
-        p_appointment_time: data.time,
-        p_status: "Pending",
-        p_urgent: data.urgent,
-        p_amount: estimatedAmount
-      });
+      // Insert into service_leads table
+      const { data: leadData, error } = await supabase
+        .from('service_leads')
+        .insert({
+          customer_name: data.name,
+          phone: data.phone,
+          service_category: categoryName,
+          service_type: selectedSubserviceName,
+          description: data.description,
+          address: data.address,
+          appointment_date: format(data.date, "yyyy-MM-dd"),
+          appointment_time: data.time,
+          status: "Pending",
+          urgent: data.urgent,
+          amount: estimatedAmount
+        })
+        .select();
         
       if (error) {
         console.error("Error creating service lead:", error);
