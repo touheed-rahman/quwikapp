@@ -1,7 +1,7 @@
 
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { Shield, Users, ListChecks, Clock, Star, XCircle, BellRing, ArrowLeft } from "lucide-react";
+import { Shield, Users, ListChecks, Clock, Star, XCircle, BellRing, ArrowLeft, Tool } from "lucide-react";
 import MetricCard from "./MetricCard";
 import { useAdminMetrics } from "@/hooks/useAdminMetrics";
 import { Button } from "@/components/ui/button"; 
@@ -57,6 +57,15 @@ const DashboardMetrics = () => {
       bgColor: "bg-purple-50",
       hoverBgColor: "hover:bg-purple-100",
       onClick: () => navigate('/admin', { state: { filter: 'featured' } })
+    },
+    {
+      title: "Service Now Leads",
+      value: metrics?.serviceLeads || 0,
+      icon: Tool,
+      color: "text-teal-600",
+      bgColor: "bg-teal-50",
+      hoverBgColor: "hover:bg-teal-100",
+      onClick: () => navigate('/admin', { state: { filter: 'service-leads' } })
     },
     {
       title: "Featured Requests",

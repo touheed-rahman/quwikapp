@@ -11,6 +11,7 @@ export interface DashboardMetrics {
   featuredListings: number;
   rejectedListings: number;
   featuredRequests: number;
+  serviceLeads: number;
 }
 
 export function useAdminMetrics() {
@@ -32,7 +33,8 @@ export function useAdminMetrics() {
           totalUsers: 0,
           featuredListings: 0,
           rejectedListings: 0,
-          featuredRequests: 0
+          featuredRequests: 0,
+          serviceLeads: 0
         };
       }
 
@@ -44,6 +46,9 @@ export function useAdminMetrics() {
         .single();
 
       const featuredRequests = featuredError ? 0 : (featuredRequestsData?.count || 0);
+      
+      // Get service leads count (mock data for now)
+      const serviceLeads = 24; // Placeholder value for demo purposes
 
       return {
         ...(data || {
@@ -54,7 +59,8 @@ export function useAdminMetrics() {
           featuredListings: 0,
           rejectedListings: 0
         }),
-        featuredRequests
+        featuredRequests,
+        serviceLeads
       };
     },
     staleTime: 1000, // Data considered fresh for 1 second
