@@ -1,9 +1,8 @@
 
 import { motion } from "framer-motion";
-import { Smartphone, WashingMachine, Zap, PaintBucket, Calendar, Sparkles, ArrowRight } from "lucide-react";
+import { Smartphone, WashingMachine, Zap, PaintBucket, Calendar, Sparkles } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { servicePricing } from "@/types/serviceTypes";
 
 type PopularServicesProps = {
@@ -76,21 +75,6 @@ const PopularServices = ({ onSelectService }: PopularServicesProps) => {
     }
   ];
 
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: { 
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1
-      }
-    }
-  };
-
-  const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0 }
-  };
-
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -100,22 +84,16 @@ const PopularServices = ({ onSelectService }: PopularServicesProps) => {
     >
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-2">
         <div>
-          <h2 className="text-2xl font-bold bg-gradient-to-r from-primary to-purple-600 text-transparent bg-clip-text">Popular Services</h2>
+          <h2 className="text-2xl font-bold text-slate-900">Popular Services</h2>
           <p className="text-muted-foreground">Our most booked services with great ratings</p>
         </div>
         <Badge variant="outline" className="bg-primary/5 text-primary">Starting at ₹{Math.min(...Object.values(servicePricing.home))}</Badge>
       </div>
 
-      <motion.div 
-        className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4"
-        variants={containerVariants}
-        initial="hidden"
-        animate="visible"
-      >
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
         {services.map((service) => (
           <motion.div
             key={service.id}
-            variants={itemVariants}
             whileHover={{ y: -5, scale: 1.02 }}
             className="cursor-pointer"
             onClick={() => onSelectService(service.id, service.name)}
@@ -132,18 +110,11 @@ const PopularServices = ({ onSelectService }: PopularServicesProps) => {
               <CardContent className="p-3 text-center">
                 <h3 className="font-medium text-sm text-slate-900 mb-1 line-clamp-2">{service.name}</h3>
                 <p className="text-primary font-semibold text-sm">From ₹{service.price}</p>
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  className="w-full mt-2 text-xs text-primary hover:bg-primary/10 opacity-0 group-hover:opacity-100 transition-opacity"
-                >
-                  Book Now <ArrowRight className="h-3 w-3 ml-1" />
-                </Button>
               </CardContent>
             </Card>
           </motion.div>
         ))}
-      </motion.div>
+      </div>
     </motion.div>
   );
 };

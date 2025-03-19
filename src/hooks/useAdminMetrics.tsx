@@ -18,11 +18,13 @@ export function useAdminMetrics() {
   const { data: metrics, isLoading, refetch } = useQuery<DashboardMetrics>({
     queryKey: ['admin-metrics'],
     queryFn: async () => {
-      // Fetch base metrics from the dashboard_metrics view
       const { data, error } = await supabase
         .from('dashboard_metrics')
         .select('*')
-        .single();
+        .single() as { 
+          data: DashboardMetrics | null; 
+          error: Error | null 
+        };
 
       if (error) {
         console.error('Error fetching metrics:', error);
@@ -50,7 +52,7 @@ export function useAdminMetrics() {
       // Fetch service leads count
       const { count: serviceLeadsCount, error: serviceLeadsError } = await supabase
         .from('service_leads')
-        .select('*', { count: 'exact', head: true });
+        .select('count', { count: 'exact', head: true });
       
       const serviceLeads = serviceLeadsError ? 0 : (serviceLeadsCount || 0);
 
@@ -105,18 +107,6 @@ export function useAdminMetrics() {
         },
         () => {
           console.log('Profiles changed, triggering debounced refetch...');
-          debouncedRefetch();
-        }
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'service_leads'
-        },
-        () => {
-          console.log('Service leads changed, triggering debounced refetch...');
           debouncedRefetch();
         }
       )

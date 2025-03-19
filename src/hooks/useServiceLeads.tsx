@@ -2,11 +2,8 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { ServiceLead } from "@/types/serviceTypes";
-import { Database } from "@/integrations/supabase/types";
 
-type ServiceLeadRow = Database["public"]["Tables"]["service_leads"]["Row"];
-
-const fetchServiceLeads = async (): Promise<ServiceLead[]> => {
+const fetchServiceLeads = async () => {
   try {
     const { data, error } = await supabase
       .from('service_leads')
@@ -18,7 +15,7 @@ const fetchServiceLeads = async (): Promise<ServiceLead[]> => {
       throw new Error(error.message);
     }
     
-    return (data || []) as ServiceLead[];
+    return data as ServiceLead[];
   } catch (error) {
     console.error("Error in fetchServiceLeads:", error);
     return [];
@@ -45,7 +42,7 @@ const updateServiceLeadStatus = async ({
       throw new Error(error.message);
     }
     
-    return data as ServiceLeadRow;
+    return data;
   } catch (error) {
     console.error("Error in updateServiceLeadStatus:", error);
     throw error;
@@ -80,37 +77,5 @@ export function useUpdateServiceLeadStatus() {
   return {
     updateStatus: mutate,
     isUpdating: isPending,
-  };
-}
-
-export function useCreateServiceLead() {
-  const queryClient = useQueryClient();
-  
-  const createServiceLead = async (leadData: Omit<ServiceLead, 'id' | 'created_at' | 'updated_at'>) => {
-    const { data, error } = await supabase
-      .from('service_leads')
-      .insert(leadData)
-      .select()
-      .single();
-      
-    if (error) {
-      console.error("Error creating service lead:", error);
-      throw new Error(error.message);
-    }
-    
-    return data as ServiceLeadRow;
-  };
-  
-  const { mutate, isPending } = useMutation({
-    mutationFn: createServiceLead,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['service-leads'] });
-      queryClient.invalidateQueries({ queryKey: ['admin-metrics'] });
-    },
-  });
-  
-  return {
-    createLead: mutate,
-    isCreating: isPending,
   };
 }
