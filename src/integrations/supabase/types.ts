@@ -734,6 +734,57 @@ export type Database = {
         }
         Relationships: []
       }
+      service_leads: {
+        Row: {
+          address: string
+          amount: number | null
+          appointment_date: string
+          appointment_time: string
+          created_at: string
+          customer_name: string
+          description: string | null
+          id: string
+          phone: string
+          service_category: string
+          service_type: string
+          status: string
+          updated_at: string
+          urgent: boolean | null
+        }
+        Insert: {
+          address: string
+          amount?: number | null
+          appointment_date: string
+          appointment_time: string
+          created_at?: string
+          customer_name: string
+          description?: string | null
+          id?: string
+          phone: string
+          service_category: string
+          service_type: string
+          status?: string
+          updated_at?: string
+          urgent?: boolean | null
+        }
+        Update: {
+          address?: string
+          amount?: number | null
+          appointment_date?: string
+          appointment_time?: string
+          created_at?: string
+          customer_name?: string
+          description?: string | null
+          id?: string
+          phone?: string
+          service_category?: string
+          service_type?: string
+          status?: string
+          updated_at?: string
+          urgent?: boolean | null
+        }
+        Relationships: []
+      }
       spatial_ref_sys: {
         Row: {
           auth_name: string | null
@@ -962,6 +1013,18 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      dashboard_metrics: {
+        Row: {
+          approved_listings: number | null
+          featured_listings: number | null
+          featured_requests: number | null
+          pending_listings: number | null
+          rejected_listings: number | null
+          total_listings: number | null
+          total_users: number | null
+        }
+        Relationships: []
       }
       deleted_listings_stats: {
         Row: {
