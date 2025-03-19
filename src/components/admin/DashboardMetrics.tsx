@@ -1,7 +1,7 @@
 
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { Shield, Users, ListChecks, Clock, Star, XCircle, BellRing, ArrowLeft, Tool } from "lucide-react";
+import { Shield, Users, ListChecks, Clock, Star, XCircle, BellRing, ArrowLeft, Wrench } from "lucide-react";
 import MetricCard from "./MetricCard";
 import { useAdminMetrics } from "@/hooks/useAdminMetrics";
 import { Button } from "@/components/ui/button"; 
@@ -61,7 +61,7 @@ const DashboardMetrics = () => {
     {
       title: "Service Now Leads",
       value: metrics?.serviceLeads || 0,
-      icon: Tool,
+      icon: Wrench,
       color: "text-teal-600",
       bgColor: "bg-teal-50",
       hoverBgColor: "hover:bg-teal-100",
