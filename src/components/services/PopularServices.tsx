@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { Smartphone, WashingMachine, Zap, PaintBucket, Calendar, Sparkles } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { servicePricing } from "@/types/serviceTypes";
 
 type PopularServicesProps = {
   onSelectService: (id: string, name: string) => void;
@@ -11,64 +12,64 @@ type PopularServicesProps = {
 const PopularServices = ({ onSelectService }: PopularServicesProps) => {
   const services = [
     {
-      id: "ac-repair",
+      id: "electronic-ac_service",
       name: "AC Repair & Service",
-      price: 499,
+      price: servicePricing.electronic.ac_service,
       icon: Zap,
-      category: "appliance-service",
+      category: "electronic",
       color: "from-blue-50 to-blue-100",
       iconColor: "text-blue-600",
       badge: "Most Popular",
       badgeColor: "bg-blue-100 text-blue-800"
     },
     {
-      id: "mobile-repair",
+      id: "mobile-mobile_repair",
       name: "Mobile Screen Repair",
-      price: 799,
+      price: servicePricing.mobile.screen_replacement,
       icon: Smartphone,
-      category: "mobile-repairs",
+      category: "mobile",
       color: "from-purple-50 to-purple-100",
       iconColor: "text-purple-600",
       badge: "Fast Service",
       badgeColor: "bg-purple-100 text-purple-800"
     },
     {
-      id: "washing-machine",
+      id: "electronic-washing_machine",
       name: "Washing Machine Repair",
-      price: 399,
+      price: servicePricing.electronic.washing_machine,
       icon: WashingMachine,
-      category: "appliance-service",
+      category: "electronic",
       color: "from-teal-50 to-teal-100",
       iconColor: "text-teal-600"
     },
     {
       id: "home-painting",
       name: "Home Painting",
-      price: 1999,
+      price: servicePricing.home.painting,
       icon: PaintBucket,
-      category: "home-services",
+      category: "home",
       color: "from-amber-50 to-amber-100",
       iconColor: "text-amber-600",
       badge: "New",
       badgeColor: "bg-amber-100 text-amber-800"
     },
     {
-      id: "appliance-service",
+      id: "electronic-ac_service",
       name: "Annual Appliance Service",
-      price: 1299,
+      price: servicePricing.electronic.ac_service,
       icon: Calendar,
-      category: "appliance-service",
+      category: "electronic",
       color: "from-green-50 to-green-100",
       iconColor: "text-green-600",
       badge: "20% Off",
       badgeColor: "bg-green-100 text-green-800"
     },
     {
-      id: "premium-cleaning",
+      id: "cleaning-home_cleaning",
       name: "Premium Home Cleaning",
-      price: 599,
+      price: servicePricing.cleaning.home_cleaning,
       icon: Sparkles,
-      category: "home-services",
+      category: "cleaning",
       color: "from-indigo-50 to-indigo-100",
       iconColor: "text-indigo-600"
     }
@@ -86,7 +87,7 @@ const PopularServices = ({ onSelectService }: PopularServicesProps) => {
           <h2 className="text-2xl font-bold text-slate-900">Popular Services</h2>
           <p className="text-muted-foreground">Our most booked services with great ratings</p>
         </div>
-        <Badge variant="outline" className="bg-primary/5 text-primary">Starting at ₹299</Badge>
+        <Badge variant="outline" className="bg-primary/5 text-primary">Starting at ₹{Math.min(...Object.values(servicePricing.home))}</Badge>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">

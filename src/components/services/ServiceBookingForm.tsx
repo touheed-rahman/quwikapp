@@ -1,45 +1,117 @@
 
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { z } from "zod";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { Badge } from "@/components/ui/badge";
-import { UseFormReturn } from "react-hook-form";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
-import { FormValues } from "@/types/serviceTypes";
+import { useToast } from "@/components/ui/use-toast";
+import { formSchema, FormValues } from "@/types/serviceTypes";
 import { serviceCategories } from "@/data/serviceCategories";
 import { CalendarDays, Clock, IndianRupee, CheckCircle2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 type ServiceBookingFormProps = {
-  form: UseFormReturn<FormValues>;
-  selectedCategory: string | null;
-  selectedSubservice: string | null;
+  categoryId: string;
+  subserviceId: string | null;
   selectedSubserviceName: string;
   onBack: () => void;
-  onSubmit: (data: FormValues) => void;
   timeSlots: string[];
   estimatedAmount: number;
 };
 
 const ServiceBookingForm = ({
-  form,
-  selectedCategory,
-  selectedSubservice,
+  categoryId,
+  subserviceId,
   selectedSubserviceName,
   onBack,
-  onSubmit,
   timeSlots,
   estimatedAmount
 }: ServiceBookingFormProps) => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { toast } = useToast();
   
   // Get the category details
-  const categoryDetails = serviceCategories.find(c => c.id === selectedCategory);
+  const categoryDetails = serviceCategories.find(c => c.id === categoryId);
+  
+  const form = useForm<FormValues>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      serviceCategory: categoryId || "",
+      serviceType: selectedSubserviceName || "",
+      description: "",
+      date: undefined,
+      time: "",
+      address: "",
+      name: "",
+      phone: "",
+      urgent: false,
+    }
+  });
+
+  const onSubmit = async (data: FormValues) => {
+    setIsSubmitting(true);
+    
+    try {
+      // Get the category name
+      const categoryName = categoryDetails?.name || "";
+      
+      // Insert into database using PostgreSQL syntax via Supabase RPC
+      const { data: leadData, error } = await supabase.rpc('create_service_lead', {
+        p_customer_name: data.name,
+        p_phone: data.phone,
+        p_service_category: categoryName,
+        p_service_type: selectedSubserviceName,
+        p_description: data.description,
+        p_address: data.address,
+        p_appointment_date: format(data.date, "yyyy-MM-dd"),
+        p_appointment_time: data.time,
+        p_status: "Pending",
+        p_urgent: data.urgent,
+        p_amount: estimatedAmount
+      });
+        
+      if (error) {
+        console.error("Error creating service lead:", error);
+        toast({
+          title: "Something went wrong",
+          description: "Unable to submit your service request. Please try again.",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      toast({
+        title: "Service Booked Successfully!",
+        description: `Your ${selectedSubserviceName} service has been scheduled for ${format(data.date, "PPP")} at ${data.time}.`,
+        variant: "default",
+      });
+      
+      // Reset form
+      form.reset();
+      onBack();
+      
+    } catch (error) {
+      console.error("Error in service booking:", error);
+      toast({
+        title: "Booking Failed",
+        description: "There was an error processing your request. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
   
   return (
     <motion.div
@@ -197,9 +269,8 @@ const ServiceBookingForm = ({
                               <FormLabel>Preferred Time</FormLabel>
                               <Select onValueChange={field.onChange} defaultValue={field.value}>
                                 <FormControl>
-                                  <SelectTrigger className="flex justify-between items-center">
+                                  <SelectTrigger>
                                     <SelectValue placeholder="Select time slot" />
-                                    <Clock className="h-4 w-4 ml-2 opacity-50" />
                                   </SelectTrigger>
                                 </FormControl>
                                 <SelectContent>
@@ -244,8 +315,9 @@ const ServiceBookingForm = ({
                       type="submit" 
                       size="lg"
                       className="bg-primary hover:bg-primary/90 text-white px-8"
+                      disabled={isSubmitting}
                     >
-                      Schedule Service
+                      {isSubmitting ? "Scheduling..." : "Schedule Service"}
                     </Button>
                   </div>
                 </form>

@@ -49,8 +49,7 @@ export function useAdminMetrics() {
       
       // Fetch service leads count
       const { count: serviceLeadsCount, error: serviceLeadsError } = await supabase
-        .from('service_leads')
-        .select('*', { count: 'exact', head: true });
+        .rpc('count_service_leads');
       
       const serviceLeads = serviceLeadsError ? 0 : (serviceLeadsCount || 0);
 
@@ -105,18 +104,6 @@ export function useAdminMetrics() {
         },
         () => {
           console.log('Profiles changed, triggering debounced refetch...');
-          debouncedRefetch();
-        }
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'service_leads'
-        },
-        () => {
-          console.log('Service leads changed, triggering debounced refetch...');
           debouncedRefetch();
         }
       )
