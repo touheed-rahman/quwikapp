@@ -1,174 +1,117 @@
 
 import { motion } from "framer-motion";
-import { 
-  Smartphone, 
-  WashingMachine, 
-  Wrench, 
-  Tv, 
-  Zap, 
-  RotateCcw, 
-  IndianRupee, 
-  ArrowRight,
-  Paintbrush,
-  Droplet,
-  Thermometer,
-  Cpu
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Smartphone, WashingMachine, Zap, PaintBucket, Calendar, Sparkles } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
-const PopularServices = () => {
+type PopularServicesProps = {
+  onSelectService: (id: string, name: string) => void;
+};
+
+const PopularServices = ({ onSelectService }: PopularServicesProps) => {
   const services = [
     {
-      id: 1,
-      icon: <Smartphone className="h-10 w-10 text-primary" />,
-      title: "Mobile Repair",
-      description: "Screen replacement, battery changes & more",
-      price: "299",
+      id: "ac-repair",
+      name: "AC Repair & Service",
+      price: 499,
+      icon: Zap,
+      category: "appliance-service",
+      color: "from-blue-50 to-blue-100",
+      iconColor: "text-blue-600",
       badge: "Most Popular",
-      color: "from-blue-500/10 to-blue-500/30",
-      features: ["Screen Replacement", "Battery Service", "Water Damage Repair"]
+      badgeColor: "bg-blue-100 text-blue-800"
     },
     {
-      id: 2,
-      icon: <WashingMachine className="h-10 w-10 text-primary" />,
-      title: "Appliance Service",
-      description: "AC, refrigerator, washing machine repairs",
-      price: "399",
-      badge: "Best Value",
-      color: "from-amber-500/10 to-amber-500/30",
-      features: ["AC Servicing", "Refrigerator Repair", "Washing Machine Repair"]
+      id: "mobile-repair",
+      name: "Mobile Screen Repair",
+      price: 799,
+      icon: Smartphone,
+      category: "mobile-repairs",
+      color: "from-purple-50 to-purple-100",
+      iconColor: "text-purple-600",
+      badge: "Fast Service",
+      badgeColor: "bg-purple-100 text-purple-800"
     },
     {
-      id: 3,
-      icon: <Wrench className="h-10 w-10 text-primary" />,
-      title: "Home Services",
-      description: "Plumbing, electrical & carpentry work",
-      price: "349",
-      badge: "Quick Service",
-      color: "from-green-500/10 to-green-500/30",
-      features: ["Plumbing Work", "Electrical Repairs", "Furniture Assembly"]
+      id: "washing-machine",
+      name: "Washing Machine Repair",
+      price: 399,
+      icon: WashingMachine,
+      category: "appliance-service",
+      color: "from-teal-50 to-teal-100",
+      iconColor: "text-teal-600"
     },
     {
-      id: 4,
-      icon: <Tv className="h-10 w-10 text-primary" />,
-      title: "TV Repair",
-      description: "All brands, all problems fixed at home",
-      price: "449",
-      badge: "Same Day",
-      color: "from-purple-500/10 to-purple-500/30",
-      features: ["Display Issues", "Sound Problems", "Smart TV Setup"]
+      id: "home-painting",
+      name: "Home Painting",
+      price: 1999,
+      icon: PaintBucket,
+      category: "home-services",
+      color: "from-amber-50 to-amber-100",
+      iconColor: "text-amber-600",
+      badge: "New",
+      badgeColor: "bg-amber-100 text-amber-800"
     },
     {
-      id: 5,
-      icon: <Paintbrush className="h-10 w-10 text-primary" />,
-      title: "Home Painting",
-      description: "Professional painting services for your home",
-      price: "799",
-      badge: "Premium Service",
-      color: "from-pink-500/10 to-pink-500/30",
-      features: ["Interior Painting", "Exterior Painting", "Waterproofing"]
+      id: "appliance-service",
+      name: "Annual Appliance Service",
+      price: 1299,
+      icon: Calendar,
+      category: "appliance-service",
+      color: "from-green-50 to-green-100",
+      iconColor: "text-green-600",
+      badge: "20% Off",
+      badgeColor: "bg-green-100 text-green-800"
     },
     {
-      id: 6,
-      icon: <Droplet className="h-10 w-10 text-primary" />,
-      title: "Water Purifier",
-      description: "RO, UV water purifier service and repair",
-      price: "349",
-      badge: "Highly Rated",
-      color: "from-cyan-500/10 to-cyan-500/30",
-      features: ["RO Servicing", "Filter Replacement", "New Installation"]
-    },
-    {
-      id: 7,
-      icon: <Thermometer className="h-10 w-10 text-primary" />,
-      title: "AC Services",
-      description: "Installation, service & repair for all brands",
-      price: "499",
-      badge: "Summer Special",
-      color: "from-teal-500/10 to-teal-500/30",
-      features: ["AC Installation", "Gas Refilling", "Deep Cleaning"]
-    },
-    {
-      id: 8,
-      icon: <Cpu className="h-10 w-10 text-primary" />,
-      title: "Computer Repair",
-      description: "PC, laptop repair & data recovery services",
-      price: "399",
-      badge: "Tech Support",
-      color: "from-indigo-500/10 to-indigo-500/30",
-      features: ["Virus Removal", "Hardware Upgrade", "Data Recovery"]
+      id: "premium-cleaning",
+      name: "Premium Home Cleaning",
+      price: 599,
+      icon: Sparkles,
+      category: "home-services",
+      color: "from-indigo-50 to-indigo-100",
+      iconColor: "text-indigo-600"
     }
   ];
 
   return (
     <motion.div
-      className="my-12"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
+      className="space-y-6"
     >
-      <div className="flex flex-col md:flex-row justify-between items-center mb-8">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-2">
         <div>
-          <h2 className="text-2xl font-bold bg-gradient-to-r from-primary/90 to-primary/70 text-transparent bg-clip-text">
-            Popular Services
-          </h2>
-          <p className="text-muted-foreground mt-2">
-            Most requested services by our customers
-          </p>
+          <h2 className="text-2xl font-bold text-slate-900">Popular Services</h2>
+          <p className="text-muted-foreground">Our most booked services with great ratings</p>
         </div>
-        <Button variant="outline" className="mt-4 md:mt-0 border-primary/20 text-primary">
-          View All Services <ArrowRight className="ml-2 h-4 w-4" />
-        </Button>
+        <Badge variant="outline" className="bg-primary/5 text-primary">Starting at ₹299</Badge>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
         {services.map((service) => (
-          <Card 
+          <motion.div
             key={service.id}
-            className="hover:shadow-xl transition-all duration-300 group cursor-pointer overflow-hidden border border-primary/10"
+            whileHover={{ y: -5, scale: 1.02 }}
+            className="cursor-pointer"
+            onClick={() => onSelectService(service.id, service.name)}
           >
-            <div className={`h-2 bg-gradient-to-r ${service.color}`}></div>
-            <CardContent className="p-6 relative">
-              <Badge className="absolute top-2 right-2 bg-primary/10 text-primary hover:bg-primary/20">
-                {service.badge}
-              </Badge>
-              
-              <div className="mb-4 mt-4 flex items-center">
-                <div className="p-3 rounded-full bg-primary/10 group-hover:bg-primary/20 transition-colors">
-                  {service.icon}
-                </div>
-                <div className="ml-4">
-                  <h3 className="text-lg font-semibold">{service.title}</h3>
-                </div>
+            <Card className="overflow-hidden h-full border-transparent hover:border-primary/20 transition-all duration-300 group">
+              <div className={`bg-gradient-to-br ${service.color} p-4 relative`}>
+                {service.badge && (
+                  <Badge className={`absolute top-1 right-1 text-xs ${service.badgeColor}`}>
+                    {service.badge}
+                  </Badge>
+                )}
+                <service.icon className={`h-10 w-10 ${service.iconColor} mx-auto group-hover:scale-110 transition-transform duration-300`} />
               </div>
-              
-              <p className="text-muted-foreground mb-4">{service.description}</p>
-              
-              <ul className="mb-4 space-y-1.5 text-sm">
-                {service.features.map((feature, idx) => (
-                  <li key={idx} className="flex items-start">
-                    <svg className="h-4 w-4 text-green-500 mr-2 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
-                    </svg>
-                    {feature}
-                  </li>
-                ))}
-              </ul>
-              
-              <div className="flex justify-between items-center pt-2 mt-auto border-t border-gray-100">
-                <div className="flex items-center">
-                  <IndianRupee className="h-4 w-4 text-primary mr-1" />
-                  <span className="font-bold text-lg">{service.price}</span>
-                  <span className="text-muted-foreground text-sm ml-1">onwards</span>
-                </div>
-                <Button size="sm" className="bg-primary/10 text-primary hover:bg-primary/20 rounded-full w-8 h-8 p-0">
-                  <ArrowRight className="h-4 w-4" />
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+              <CardContent className="p-3 text-center">
+                <h3 className="font-medium text-sm text-slate-900 mb-1 line-clamp-2">{service.name}</h3>
+                <p className="text-primary font-semibold text-sm">From ₹{service.price}</p>
+              </CardContent>
+            </Card>
+          </motion.div>
         ))}
       </div>
     </motion.div>

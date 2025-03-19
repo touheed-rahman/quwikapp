@@ -16,3 +16,20 @@ export const formSchema = z.object({
 });
 
 export type FormValues = z.infer<typeof formSchema>;
+
+// Service Lead Types
+export interface ServiceLead {
+  id: string;
+  customer_name: string;
+  phone: string;
+  service_category: string;
+  service_type: string;
+  description: string;
+  address: string;
+  appointment_date: string;
+  appointment_time: string;
+  status: "Pending" | "In Progress" | "Completed" | "Cancelled";
+  amount: number;
+  urgent: boolean;
+  created_at: string;
+}

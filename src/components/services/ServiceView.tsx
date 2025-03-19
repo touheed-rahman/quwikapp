@@ -15,6 +15,8 @@ import PopularServices from "@/components/services/PopularServices";
 import PromoBanner from "@/components/services/PromoBanner";
 import { formSchema, FormValues } from "@/types/serviceTypes";
 import { format } from "date-fns";
+import { supabase } from "@/integrations/supabase/client";
+import { serviceCategories } from "@/data/serviceCategories";
 
 const timeSlots = [
   "08:00 AM - 10:00 AM",
@@ -30,12 +32,15 @@ const ServiceView = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedSubservice, setSelectedSubservice] = useState<string | null>(null);
+  const [selectedSubserviceName, setSelectedSubserviceName] = useState<string>("");
   const [bookingStep, setBookingStep] = useState<number>(0);
   const { toast } = useToast();
   
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
+      serviceCategory: "",
+      serviceType: "",
       description: "",
       address: "",
       name: "",
@@ -44,17 +49,94 @@ const ServiceView = () => {
     }
   });
 
-  const onSubmit = (data: FormValues) => {
+  const onSubmit = async (data: FormValues) => {
     console.log("Form submitted:", data);
-    toast({
-      title: "Service Booked Successfully!",
-      description: `Your ${data.serviceType} service has been scheduled for ${format(data.date, "PPP")} at ${data.time}.`,
-      variant: "default",
-    });
-    setBookingStep(0);
-    setSelectedCategory(null);
-    setSelectedSubservice(null);
-    form.reset();
+    
+    try {
+      // Get the category and subservice names
+      const category = serviceCategories.find(c => c.id === selectedCategory);
+      const categoryName = category?.name || "";
+      
+      // Create service lead in the database
+      const { data: leadData, error } = await supabase
+        .from('service_leads')
+        .insert([
+          {
+            customer_name: data.name,
+            phone: data.phone,
+            service_category: categoryName,
+            service_type: selectedSubserviceName,
+            description: data.description,
+            address: data.address,
+            appointment_date: format(data.date, "yyyy-MM-dd"),
+            appointment_time: data.time,
+            status: "Pending",
+            urgent: data.urgent,
+            amount: getEstimatedAmount(selectedCategory, selectedSubservice)
+          }
+        ])
+        .select();
+        
+      if (error) {
+        console.error("Error creating service lead:", error);
+        toast({
+          title: "Something went wrong",
+          description: "Unable to submit your service request. Please try again.",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      toast({
+        title: "Service Booked Successfully!",
+        description: `Your ${data.serviceType} service has been scheduled for ${format(data.date, "PPP")} at ${data.time}.`,
+        variant: "default",
+      });
+      
+      // Reset form and state
+      setBookingStep(0);
+      setSelectedCategory(null);
+      setSelectedSubservice(null);
+      setSelectedSubserviceName("");
+      form.reset();
+      
+    } catch (error) {
+      console.error("Error in service booking:", error);
+      toast({
+        title: "Booking Failed",
+        description: "There was an error processing your request. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Helper function to get estimated amount based on service type
+  const getEstimatedAmount = (categoryId: string | null, subserviceId: string | null) => {
+    if (!categoryId || !subserviceId) return 499; // Default amount
+    
+    // These would ideally come from a pricing database
+    const pricingMap: Record<string, Record<string, number>> = {
+      "mobile-repairs": {
+        "screen-replacement": 1299,
+        "battery-replacement": 599,
+        "water-damage": 1499,
+        "software-issues": 499
+      },
+      "appliance-service": {
+        "ac-repair": 899,
+        "refrigerator-repair": 799,
+        "washing-machine": 699,
+        "microwave-repair": 599
+      },
+      "home-services": {
+        "plumbing": 499,
+        "electrical": 599,
+        "carpentry": 799,
+        "painting": 1999
+      }
+    };
+    
+    return pricingMap[categoryId]?.[subserviceId] || 499;
   };
 
   const handleCategorySelect = (categoryId: string) => {
@@ -63,11 +145,13 @@ const ServiceView = () => {
     
     // Reset subservice selection when changing category
     setSelectedSubservice(null);
+    setSelectedSubserviceName("");
     form.setValue("serviceType", "");
   };
 
   const handleSubserviceSelect = (subserviceId: string, subserviceName: string) => {
     setSelectedSubservice(subserviceId);
+    setSelectedSubserviceName(subserviceName);
     form.setValue("serviceType", subserviceName);
     setTimeout(() => setBookingStep(1), 300);
   };
@@ -136,16 +220,18 @@ const ServiceView = () => {
             selectedCategory={selectedCategory}
           />
           
-          {!selectedCategory && <PopularServices />}
+          {!selectedCategory && <PopularServices onSelectService={handleSubserviceSelect} />}
         </>
       ) : (
         <ServiceBookingForm
           form={form}
           selectedCategory={selectedCategory}
           selectedSubservice={selectedSubservice}
+          selectedSubserviceName={selectedSubserviceName}
           onBack={() => setBookingStep(0)}
           onSubmit={onSubmit}
           timeSlots={timeSlots}
+          estimatedAmount={getEstimatedAmount(selectedCategory, selectedSubservice)}
         />
       )}
 

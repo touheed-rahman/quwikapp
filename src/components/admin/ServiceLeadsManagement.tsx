@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { 
   Smartphone, 
@@ -16,7 +16,8 @@ import {
   Clock,
   CheckCircle,
   AlertCircle,
-  Tag
+  Tag,
+  MapPin
 } from "lucide-react";
 import {
   Table,
@@ -43,110 +44,144 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/components/ui/use-toast";
 
-// Mock service lead data for demo
-const serviceLeadsData = [
-  {
-    id: "SL-001",
-    customer: "Rahul Sharma",
-    phone: "+91 98765 43210",
-    service: "Mobile Repair",
-    subservice: "Screen Replacement",
-    date: "2023-08-15",
-    time: "10:00 AM - 12:00 PM",
-    status: "Completed",
-    amount: 799,
-    urgent: false,
-    icon: Smartphone,
-    address: "123 ABC Colony, Sector 42, Gurgaon"
-  },
-  {
-    id: "SL-002",
-    customer: "Priya Patel",
-    phone: "+91 87654 32109",
-    service: "Appliance Service",
-    subservice: "AC Repair",
-    date: "2023-08-16",
-    time: "02:00 PM - 04:00 PM",
-    status: "Pending",
-    amount: 1299,
-    urgent: true,
-    icon: WashingMachine,
-    address: "456 XYZ Society, Andheri East, Mumbai"
-  },
-  {
-    id: "SL-003",
-    customer: "Vikram Singh",
-    phone: "+91 76543 21098",
-    service: "Home Services",
-    subservice: "Plumbing Work",
-    date: "2023-08-17",
-    time: "09:00 AM - 11:00 AM",
-    status: "In Progress",
-    amount: 499,
-    urgent: false,
-    icon: Wrench,
-    address: "789 PQR Apartments, Koramangala, Bangalore"
-  },
-  {
-    id: "SL-004",
-    customer: "Neha Gupta",
-    phone: "+91 65432 10987",
-    service: "TV Repair",
-    subservice: "Display Issues",
-    date: "2023-08-18",
-    time: "04:00 PM - 06:00 PM",
-    status: "Completed",
-    amount: 1499,
-    urgent: false,
-    icon: Tv,
-    address: "321 LMN Heights, Salt Lake, Kolkata"
-  },
-  {
-    id: "SL-005",
-    customer: "Arjun Reddy",
-    phone: "+91 54321 09876",
-    service: "Appliance Service",
-    subservice: "Refrigerator Repair",
-    date: "2023-08-19",
-    time: "11:00 AM - 01:00 PM",
-    status: "Cancelled",
-    amount: 899,
-    urgent: true,
-    icon: WashingMachine,
-    address: "654 RST Villas, Banjara Hills, Hyderabad"
-  },
-  {
-    id: "SL-006",
-    customer: "Sneha Desai",
-    phone: "+91 43210 98765",
-    service: "Mobile Repair",
-    subservice: "Battery Replacement",
-    date: "2023-08-20",
-    time: "01:00 PM - 03:00 PM",
-    status: "Pending",
-    amount: 599,
-    urgent: false,
-    icon: Smartphone,
-    address: "987 UVW Residency, Aundh, Pune"
+interface ServiceLead {
+  id: string;
+  customer_name: string;
+  phone: string;
+  service_category: string;
+  service_type: string;
+  description: string;
+  address: string;
+  appointment_date: string;
+  appointment_time: string;
+  status: "Pending" | "In Progress" | "Completed" | "Cancelled";
+  amount: number;
+  urgent: boolean;
+  created_at: string;
+}
+
+const getServiceIcon = (category: string) => {
+  switch (category.toLowerCase()) {
+    case "mobile repairs":
+      return Smartphone;
+    case "appliance service":
+      return WashingMachine;
+    case "home services":
+      return Wrench;
+    case "tv repair":
+      return Tv;
+    default:
+      return Wrench;
   }
-];
+};
 
 const ServiceLeadsManagement = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [serviceFilter, setServiceFilter] = useState("all");
-  const [selectedLead, setSelectedLead] = useState<any>(null);
+  const [selectedLead, setSelectedLead] = useState<ServiceLead | null>(null);
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
+  const [leads, setLeads] = useState<ServiceLead[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const { toast } = useToast();
+  
+  // Fetch service leads
+  useEffect(() => {
+    const fetchLeads = async () => {
+      try {
+        setIsLoading(true);
+        // Query service leads table
+        const { data, error } = await supabase
+          .from('service_leads')
+          .select('*')
+          .order('created_at', { ascending: false });
+          
+        if (error) {
+          console.error("Error fetching service leads:", error);
+          return;
+        }
+        
+        setLeads(data as ServiceLead[]);
+      } catch (err) {
+        console.error("Failed to fetch service leads:", err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchLeads();
+    
+    // Set up real-time subscription
+    const subscription = supabase
+      .channel('service_leads_changes')
+      .on('postgres_changes', { 
+        event: '*', 
+        schema: 'public', 
+        table: 'service_leads' 
+      }, (payload) => {
+        console.log('Change received!', payload);
+        fetchLeads();
+      })
+      .subscribe();
+      
+    return () => {
+      supabase.removeChannel(subscription);
+    };
+  }, []);
+  
+  // Update status of a service lead
+  const updateLeadStatus = async (id: string, newStatus: string) => {
+    try {
+      const { error } = await supabase
+        .from('service_leads')
+        .update({ status: newStatus })
+        .eq('id', id);
+        
+      if (error) {
+        console.error("Error updating lead status:", error);
+        toast({
+          title: "Update Failed",
+          description: "Failed to update service status. Please try again.",
+          variant: "destructive"
+        });
+        return;
+      }
+      
+      toast({
+        title: "Status Updated",
+        description: `Service lead status changed to ${newStatus}`,
+      });
+      
+      // Update local state
+      if (selectedLead && selectedLead.id === id) {
+        setSelectedLead({
+          ...selectedLead,
+          status: newStatus as "Pending" | "In Progress" | "Completed" | "Cancelled"
+        });
+      }
+      
+      setLeads(leads.map(lead => 
+        lead.id === id 
+          ? { ...lead, status: newStatus as "Pending" | "In Progress" | "Completed" | "Cancelled" } 
+          : lead
+      ));
+      
+    } catch (err) {
+      console.error("Failed to update lead status:", err);
+    }
+  };
   
   // Filter leads based on search, status and service
-  const filteredLeads = serviceLeadsData.filter(lead => {
-    const matchesSearch = lead.customer.toLowerCase().includes(searchQuery.toLowerCase()) || 
+  const filteredLeads = leads.filter(lead => {
+    const matchesSearch = lead.customer_name.toLowerCase().includes(searchQuery.toLowerCase()) || 
                          lead.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          lead.phone.includes(searchQuery);
     
     const matchesStatus = statusFilter === "all" || lead.status.toLowerCase() === statusFilter.toLowerCase();
-    const matchesService = serviceFilter === "all" || lead.service.toLowerCase() === serviceFilter.toLowerCase();
+    const matchesService = serviceFilter === "all" || lead.service_category.toLowerCase() === serviceFilter.toLowerCase();
     
     return matchesSearch && matchesStatus && matchesService;
   });
@@ -154,9 +189,9 @@ const ServiceLeadsManagement = () => {
   // Sort leads by date
   const sortedLeads = [...filteredLeads].sort((a, b) => {
     if (sortOrder === "asc") {
-      return new Date(a.date).getTime() - new Date(b.date).getTime();
+      return new Date(a.appointment_date).getTime() - new Date(b.appointment_date).getTime();
     } else {
-      return new Date(b.date).getTime() - new Date(a.date).getTime();
+      return new Date(b.appointment_date).getTime() - new Date(a.appointment_date).getTime();
     }
   });
 
@@ -175,13 +210,16 @@ const ServiceLeadsManagement = () => {
     }
   };
 
-  const handleLeadClick = (lead: any) => {
+  const handleLeadClick = (lead: ServiceLead) => {
     setSelectedLead(lead);
   };
 
   const handleSortToggle = () => {
     setSortOrder(sortOrder === "asc" ? "desc" : "asc");
   };
+
+  // Get unique service categories for filtering
+  const serviceCategories = Array.from(new Set(leads.map(lead => lead.service_category.toLowerCase())));
 
   return (
     <div className="space-y-6">
@@ -217,10 +255,11 @@ const ServiceLeadsManagement = () => {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Services</SelectItem>
-                <SelectItem value="mobile repair">Mobile Repair</SelectItem>
-                <SelectItem value="appliance service">Appliance Service</SelectItem>
-                <SelectItem value="home services">Home Services</SelectItem>
-                <SelectItem value="tv repair">TV Repair</SelectItem>
+                {serviceCategories.map(category => (
+                  <SelectItem key={category} value={category}>
+                    {category.charAt(0).toUpperCase() + category.slice(1)}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
@@ -263,38 +302,50 @@ const ServiceLeadsManagement = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {sortedLeads.length > 0 ? (
-                  sortedLeads.map((lead) => (
-                    <TableRow 
-                      key={lead.id} 
-                      className={`cursor-pointer hover:bg-muted/50 ${selectedLead?.id === lead.id ? 'bg-primary/5' : ''}`}
-                      onClick={() => handleLeadClick(lead)}
-                    >
-                      <TableCell className="font-medium">{lead.id}</TableCell>
-                      <TableCell>{lead.customer}</TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <div className="bg-primary/10 p-1 rounded">
-                            <lead.icon className="h-4 w-4 text-primary" />
+                {isLoading ? (
+                  <TableRow>
+                    <TableCell colSpan={6} className="h-24 text-center">
+                      <div className="flex justify-center items-center h-full">
+                        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+                        <span className="ml-2">Loading service leads...</span>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ) : sortedLeads.length > 0 ? (
+                  sortedLeads.map((lead) => {
+                    const IconComponent = getServiceIcon(lead.service_category);
+                    return (
+                      <TableRow 
+                        key={lead.id} 
+                        className={`cursor-pointer hover:bg-muted/50 ${selectedLead?.id === lead.id ? 'bg-primary/5' : ''}`}
+                        onClick={() => handleLeadClick(lead)}
+                      >
+                        <TableCell className="font-medium">{lead.id}</TableCell>
+                        <TableCell>{lead.customer_name}</TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <div className="bg-primary/10 p-1 rounded">
+                              <IconComponent className="h-4 w-4 text-primary" />
+                            </div>
+                            {lead.service_type}
+                            {lead.urgent && (
+                              <Badge variant="outline" className="bg-red-50 text-red-600 text-xs border-red-200">
+                                Urgent
+                              </Badge>
+                            )}
                           </div>
-                          {lead.service}
-                          {lead.urgent && (
-                            <Badge variant="outline" className="bg-red-50 text-red-600 text-xs border-red-200">
-                              Urgent
-                            </Badge>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex flex-col text-sm">
-                          <span>{new Date(lead.date).toLocaleDateString()}</span>
-                          <span className="text-muted-foreground">{lead.time}</span>
-                        </div>
-                      </TableCell>
-                      <TableCell>{getStatusBadge(lead.status)}</TableCell>
-                      <TableCell className="text-right">₹{lead.amount}</TableCell>
-                    </TableRow>
-                  ))
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex flex-col text-sm">
+                            <span>{new Date(lead.appointment_date).toLocaleDateString()}</span>
+                            <span className="text-muted-foreground">{lead.appointment_time}</span>
+                          </div>
+                        </TableCell>
+                        <TableCell>{getStatusBadge(lead.status)}</TableCell>
+                        <TableCell className="text-right">₹{lead.amount}</TableCell>
+                      </TableRow>
+                    );
+                  })
                 ) : (
                   <TableRow>
                     <TableCell colSpan={6} className="h-24 text-center">
@@ -319,10 +370,10 @@ const ServiceLeadsManagement = () => {
                   <div className="flex justify-between items-start">
                     <div>
                       <Badge className="mb-2">{selectedLead.id}</Badge>
-                      <CardTitle>{selectedLead.customer}</CardTitle>
+                      <CardTitle>{selectedLead.customer_name}</CardTitle>
                     </div>
                     <div className="bg-primary/10 p-2 rounded-full">
-                      <selectedLead.icon className="h-6 w-6 text-primary" />
+                      {getServiceIcon(selectedLead.service_category)({ className: "h-6 w-6 text-primary" })}
                     </div>
                   </div>
                 </CardHeader>
@@ -340,12 +391,17 @@ const ServiceLeadsManagement = () => {
                       <Wrench className="h-5 w-5 text-muted-foreground mt-0.5" />
                       <div>
                         <p className="text-sm font-medium">Service Details</p>
-                        <p className="text-sm text-muted-foreground">{selectedLead.service} - {selectedLead.subservice}</p>
+                        <p className="text-sm text-muted-foreground">{selectedLead.service_category} - {selectedLead.service_type}</p>
+                        {selectedLead.description && (
+                          <div className="mt-1 p-2 bg-muted/50 rounded text-xs">
+                            {selectedLead.description}
+                          </div>
+                        )}
                       </div>
                     </div>
                     
                     <div className="flex items-start gap-3">
-                      <User className="h-5 w-5 text-muted-foreground mt-0.5" />
+                      <MapPin className="h-5 w-5 text-muted-foreground mt-0.5" />
                       <div>
                         <p className="text-sm font-medium">Service Address</p>
                         <p className="text-sm text-muted-foreground">{selectedLead.address}</p>
@@ -357,7 +413,7 @@ const ServiceLeadsManagement = () => {
                       <div>
                         <p className="text-sm font-medium">Appointment</p>
                         <p className="text-sm text-muted-foreground">
-                          {new Date(selectedLead.date).toLocaleDateString()} • {selectedLead.time}
+                          {new Date(selectedLead.appointment_date).toLocaleDateString()} • {selectedLead.appointment_time}
                         </p>
                       </div>
                     </div>
@@ -378,6 +434,7 @@ const ServiceLeadsManagement = () => {
                         variant="outline" 
                         size="sm" 
                         className={`flex-1 ${selectedLead.status === "Pending" ? "bg-yellow-50 text-yellow-800 border-yellow-200" : ""}`}
+                        onClick={() => updateLeadStatus(selectedLead.id, "Pending")}
                       >
                         <Clock className="h-4 w-4 mr-2" />
                         Pending
@@ -386,6 +443,7 @@ const ServiceLeadsManagement = () => {
                         variant="outline" 
                         size="sm" 
                         className={`flex-1 ${selectedLead.status === "In Progress" ? "bg-blue-50 text-blue-800 border-blue-200" : ""}`}
+                        onClick={() => updateLeadStatus(selectedLead.id, "In Progress")}
                       >
                         <div className="h-4 w-4 mr-2 animate-spin rounded-full border-2 border-blue-600 border-t-transparent" />
                         In Progress
@@ -394,6 +452,7 @@ const ServiceLeadsManagement = () => {
                         variant="outline" 
                         size="sm" 
                         className={`flex-1 ${selectedLead.status === "Completed" ? "bg-green-50 text-green-800 border-green-200" : ""}`}
+                        onClick={() => updateLeadStatus(selectedLead.id, "Completed")}
                       >
                         <CheckCircle className="h-4 w-4 mr-2" />
                         Completed
@@ -405,6 +464,7 @@ const ServiceLeadsManagement = () => {
                         variant="outline" 
                         size="sm" 
                         className={`w-full ${selectedLead.status === "Cancelled" ? "bg-red-50 text-red-800 border-red-200" : ""}`}
+                        onClick={() => updateLeadStatus(selectedLead.id, "Cancelled")}
                       >
                         <AlertCircle className="h-4 w-4 mr-2" />
                         Cancel

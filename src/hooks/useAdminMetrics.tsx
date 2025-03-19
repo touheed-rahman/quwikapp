@@ -47,8 +47,12 @@ export function useAdminMetrics() {
 
       const featuredRequests = featuredError ? 0 : (featuredRequestsData?.count || 0);
       
-      // Get service leads count (mock data for now)
-      const serviceLeads = 24; // Placeholder value for demo purposes
+      // Fetch service leads count
+      const { count: serviceLeadsCount, error: serviceLeadsError } = await supabase
+        .from('service_leads')
+        .select('*', { count: 'exact', head: true });
+      
+      const serviceLeads = serviceLeadsError ? 0 : (serviceLeadsCount || 0);
 
       return {
         ...(data || {
@@ -101,6 +105,18 @@ export function useAdminMetrics() {
         },
         () => {
           console.log('Profiles changed, triggering debounced refetch...');
+          debouncedRefetch();
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'service_leads'
+        },
+        () => {
+          console.log('Service leads changed, triggering debounced refetch...');
           debouncedRefetch();
         }
       )
