@@ -7,7 +7,8 @@ import { Badge } from "@/components/ui/badge";
 import { serviceCategories } from "@/data/serviceCategories";
 import { servicePricing } from "@/types/serviceTypes";
 import ServiceBookingForm from "@/components/services/ServiceBookingForm";
-import { ArrowLeftIcon } from "lucide-react";
+import { ArrowLeft, ArrowRight } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 type ServiceSubcategoryViewProps = {
   categoryId: string;
@@ -18,6 +19,7 @@ const ServiceSubcategoryView = ({ categoryId, onBack }: ServiceSubcategoryViewPr
   const [selectedSubservice, setSelectedSubservice] = useState<string | null>(null);
   const [selectedSubserviceName, setSelectedSubserviceName] = useState<string>("");
   const [bookingStep, setBookingStep] = useState<number>(0);
+  const navigate = useNavigate();
   
   const categoryDetails = serviceCategories.find(c => c.id === categoryId);
   
@@ -31,9 +33,8 @@ const ServiceSubcategoryView = ({ categoryId, onBack }: ServiceSubcategoryViewPr
   }
   
   const handleSubserviceSelect = (subserviceId: string, subserviceName: string) => {
-    setSelectedSubservice(subserviceId);
-    setSelectedSubserviceName(subserviceName);
-    setBookingStep(1);
+    // Navigate to the individual service page
+    navigate(`/services/${categoryId}/${subserviceId}`);
   };
 
   const handleBackToSubservices = () => {
@@ -73,7 +74,7 @@ const ServiceSubcategoryView = ({ categoryId, onBack }: ServiceSubcategoryViewPr
               className="text-muted-foreground flex items-center gap-1 hover:bg-primary/10 hover:text-primary transition-colors"
               onClick={onBack}
             >
-              <ArrowLeftIcon className="h-4 w-4 mr-1" /> Back to all services
+              <ArrowLeft className="h-4 w-4 mr-1" /> Back to all services
             </Button>
             <Badge variant="outline" className="bg-primary/5 text-primary">
               {categoryDetails.name}
@@ -110,6 +111,9 @@ const ServiceSubcategoryView = ({ categoryId, onBack }: ServiceSubcategoryViewPr
                           <span className="text-xs text-muted-foreground">Starting at</span>
                           <span className="text-primary font-semibold">₹{pricing}</span>
                         </div>
+                        <Button className="w-full mt-3 text-xs" size="sm">
+                          View Details <ArrowRight className="ml-1 h-3 w-3" />
+                        </Button>
                       </CardContent>
                     </Card>
                   </motion.div>

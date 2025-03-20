@@ -20,6 +20,7 @@ import { formSchema, FormValues } from "@/types/serviceTypes";
 import { serviceCategories } from "@/data/serviceCategories";
 import { CalendarDays, Clock, IndianRupee, CheckCircle2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useNavigate } from "react-router-dom";
 
 type ServiceBookingFormProps = {
   categoryId: string;
@@ -40,6 +41,7 @@ const ServiceBookingForm = ({
 }: ServiceBookingFormProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
+  const navigate = useNavigate();
   
   // Get the category details
   const categoryDetails = serviceCategories.find(c => c.id === categoryId);
@@ -102,7 +104,11 @@ const ServiceBookingForm = ({
       
       // Reset form
       form.reset();
-      onBack();
+      
+      // Navigate to thank you or home page
+      setTimeout(() => {
+        navigate("/"); // Or to a thank you page
+      }, 2000);
       
     } catch (error) {
       console.error("Error in service booking:", error);

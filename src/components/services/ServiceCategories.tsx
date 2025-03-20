@@ -4,6 +4,7 @@ import { AlertCircle } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { serviceCategories } from "@/data/serviceCategories";
+import { Link } from "react-router-dom";
 
 type ServiceCategoriesProps = {
   searchQuery: string;

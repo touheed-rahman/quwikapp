@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Search, Filter } from "lucide-react";
@@ -15,8 +14,10 @@ import PopularServices from "@/components/services/PopularServices";
 import PromoBanner from "@/components/services/PromoBanner";
 import ServiceSubcategoryView from "@/components/services/ServiceSubcategoryView";
 import { serviceCategories } from "@/data/serviceCategories";
+import { useNavigate } from "react-router-dom";
 
 const ServiceView = () => {
+  const navigate = useNavigate();
   const [selectedLocation, setSelectedLocation] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
@@ -70,10 +71,12 @@ const ServiceView = () => {
   };
 
   const handlePopularServiceSelect = (serviceId: string, serviceName: string) => {
-    // Extract the category from the service ID
-    const category = serviceId.split('-')[0];
+    // Extract the category and service ID from the combined serviceId
+    const [category, service] = serviceId.split('-');
     saveToRecentlyViewed(serviceId, serviceName);
-    setSelectedCategory(category);
+    
+    // Navigate to the service detail page
+    navigate(`/services/${category}/${service}`);
   };
 
   const handleBackToCategories = () => {
