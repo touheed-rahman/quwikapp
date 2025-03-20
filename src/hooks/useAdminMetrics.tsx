@@ -18,26 +18,14 @@ export function useAdminMetrics() {
   const { data: metrics, isLoading, refetch } = useQuery<DashboardMetrics>({
     queryKey: ['admin-metrics'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      // Get the metrics from the view
+      const { data: viewData, error: viewError } = await supabase
         .from('dashboard_metrics')
         .select('*')
-        .single() as { 
-          data: DashboardMetrics | null; 
-          error: Error | null 
-        };
+        .single();
 
-      if (error) {
-        console.error('Error fetching metrics:', error);
-        return {
-          totalListings: 0,
-          pendingListings: 0,
-          approvedListings: 0,
-          totalUsers: 0,
-          featuredListings: 0,
-          rejectedListings: 0,
-          featuredRequests: 0,
-          serviceLeads: 0
-        };
+      if (viewError) {
+        console.error('Error fetching metrics from view:', viewError);
       }
 
       // Fetch featuredRequests separately
@@ -56,15 +44,14 @@ export function useAdminMetrics() {
       
       const serviceLeads = serviceLeadsError ? 0 : (serviceLeadsCount || 0);
 
+      // Map the database column names to our interface property names
       return {
-        ...(data || {
-          totalListings: 0,
-          pendingListings: 0,
-          approvedListings: 0,
-          totalUsers: 0,
-          featuredListings: 0,
-          rejectedListings: 0
-        }),
+        totalListings: viewData?.total_listings || 0,
+        pendingListings: viewData?.pending_listings || 0,
+        approvedListings: viewData?.approved_listings || 0,
+        totalUsers: viewData?.total_users || 0,
+        featuredListings: viewData?.featured_listings || 0,
+        rejectedListings: viewData?.rejected_listings || 0,
         featuredRequests,
         serviceLeads
       };
@@ -107,6 +94,18 @@ export function useAdminMetrics() {
         },
         () => {
           console.log('Profiles changed, triggering debounced refetch...');
+          debouncedRefetch();
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'service_leads'
+        },
+        () => {
+          console.log('Service leads changed, triggering debounced refetch...');
           debouncedRefetch();
         }
       )

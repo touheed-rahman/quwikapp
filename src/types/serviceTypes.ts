@@ -1,3 +1,4 @@
+
 import { z } from "zod";
 
 export const formSchema = z.object({
@@ -28,9 +29,10 @@ export interface ServiceLead {
   appointment_date: string;
   appointment_time: string;
   status: "Pending" | "In Progress" | "Completed" | "Cancelled";
-  amount: number;
+  amount: number | null;
   urgent: boolean;
   created_at: string;
+  updated_at?: string;
 }
 
 // Service pricing for different service types (keeping prices 50 Rs lower than competitors)

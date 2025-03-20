@@ -78,7 +78,7 @@ const ServiceBookingForm = ({
           address: data.address,
           appointment_date: format(data.date, "yyyy-MM-dd"),
           appointment_time: data.time,
-          status: "Pending",
+          status: "Pending" as const,
           urgent: data.urgent,
           amount: estimatedAmount
         })

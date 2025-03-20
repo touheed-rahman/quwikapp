@@ -1,13 +1,13 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { serviceCategories } from "@/data/serviceCategories";
 import { servicePricing } from "@/types/serviceTypes";
 import ServiceBookingForm from "@/components/services/ServiceBookingForm";
+import { ArrowLeftIcon } from "lucide-react";
 
 type ServiceSubcategoryViewProps = {
   categoryId: string;
@@ -73,7 +73,7 @@ const ServiceSubcategoryView = ({ categoryId, onBack }: ServiceSubcategoryViewPr
               className="text-muted-foreground flex items-center gap-1 hover:bg-primary/10 hover:text-primary transition-colors"
               onClick={onBack}
             >
-              <span>←</span> Back to all services
+              <ArrowLeftIcon className="h-4 w-4 mr-1" /> Back to all services
             </Button>
             <Badge variant="outline" className="bg-primary/5 text-primary">
               {categoryDetails.name}

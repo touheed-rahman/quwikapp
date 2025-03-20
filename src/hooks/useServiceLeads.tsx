@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { ServiceLead } from "@/types/serviceTypes";
 
-const fetchServiceLeads = async () => {
+const fetchServiceLeads = async (): Promise<ServiceLead[]> => {
   try {
     const { data, error } = await supabase
       .from('service_leads')
@@ -42,7 +42,7 @@ const updateServiceLeadStatus = async ({
       throw new Error(error.message);
     }
     
-    return data;
+    return data as ServiceLead;
   } catch (error) {
     console.error("Error in updateServiceLeadStatus:", error);
     throw error;

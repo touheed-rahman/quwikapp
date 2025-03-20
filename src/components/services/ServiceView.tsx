@@ -45,6 +45,11 @@ const ServiceView = () => {
     setSelectedCategory(null);
   };
 
+  // Define a handler function for LocationSelector
+  const handleLocationChange = (value: string) => {
+    setSelectedLocation(value);
+  };
+
   return (
     <motion.div 
       className="space-y-8"
@@ -69,7 +74,7 @@ const ServiceView = () => {
           <div className="w-full md:w-1/2">
             <LocationSelector 
               value={selectedLocation} 
-              onChange={setSelectedLocation} 
+              onChange={handleLocationChange} 
             />
           </div>
           <div className="w-full md:w-1/2 relative">
