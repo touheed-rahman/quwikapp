@@ -7,8 +7,10 @@ import { Badge } from "@/components/ui/badge";
 import { serviceCategories } from "@/data/serviceCategories";
 import { servicePricing } from "@/types/serviceTypes";
 import ServiceBookingForm from "@/components/services/ServiceBookingForm";
-import { ArrowLeft, ArrowRight } from "lucide-react";
+import { ArrowLeft, ArrowRight, Star, Clock, Calendar, Shield } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { Separator } from "@/components/ui/separator";
+import { useToast } from "@/components/ui/use-toast";
 
 type ServiceSubcategoryViewProps = {
   categoryId: string;
@@ -20,6 +22,7 @@ const ServiceSubcategoryView = ({ categoryId, onBack }: ServiceSubcategoryViewPr
   const [selectedSubserviceName, setSelectedSubserviceName] = useState<string>("");
   const [bookingStep, setBookingStep] = useState<number>(0);
   const navigate = useNavigate();
+  const { toast } = useToast();
   
   const categoryDetails = serviceCategories.find(c => c.id === categoryId);
   
@@ -67,7 +70,7 @@ const ServiceSubcategoryView = ({ categoryId, onBack }: ServiceSubcategoryViewPr
     >
       {bookingStep === 0 ? (
         <>
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between flex-wrap gap-2">
             <Button 
               variant="ghost" 
               size="sm" 
@@ -82,12 +85,19 @@ const ServiceSubcategoryView = ({ categoryId, onBack }: ServiceSubcategoryViewPr
           </div>
           
           <div className="space-y-4">
-            <h2 className="text-2xl font-semibold mb-4">{categoryDetails.name} Services</h2>
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+              <h2 className="text-2xl font-semibold">{categoryDetails.name} Services</h2>
+              <div className="flex items-center gap-2">
+                <Star className="h-4 w-4 text-yellow-500" />
+                <span className="text-sm font-medium">4.8 average rating</span>
+              </div>
+            </div>
             <p className="text-muted-foreground">Select a specific service to book a professional</p>
           
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-6">
               {categoryDetails.subservices.map((subservice) => {
                 const pricing = getEstimatedAmount(subservice.id);
+                const IconComponent = categoryDetails.icon;
                 
                 return (
                   <motion.div 
@@ -101,19 +111,30 @@ const ServiceSubcategoryView = ({ categoryId, onBack }: ServiceSubcategoryViewPr
                       onClick={() => handleSubserviceSelect(subservice.id, subservice.name)}
                     >
                       <div className={`bg-gradient-to-br ${categoryDetails.color} p-4 aspect-[3/2] flex items-center justify-center`}>
-                        {categoryDetails.icon({ 
-                          className: "h-12 w-12 text-primary group-hover:scale-110 transition-transform" 
-                        })}
+                        {IconComponent && <IconComponent className="h-12 w-12 text-primary group-hover:scale-110 transition-transform" />}
                       </div>
                       <CardContent className="p-4">
                         <h3 className="font-medium text-base mb-2">{subservice.name}</h3>
-                        <div className="flex justify-between items-center">
-                          <span className="text-xs text-muted-foreground">Starting at</span>
-                          <span className="text-primary font-semibold">₹{pricing}</span>
+                        <Separator className="my-2 bg-primary/10" />
+                        <div className="flex flex-col gap-2">
+                          <div className="flex justify-between items-center">
+                            <span className="text-xs text-muted-foreground">Starting at</span>
+                            <span className="text-primary font-semibold">₹{pricing}</span>
+                          </div>
+                          <div className="flex justify-between items-center text-xs text-muted-foreground">
+                            <div className="flex items-center gap-1">
+                              <Clock className="h-3 w-3" />
+                              <span>1-2 hrs</span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <Star className="h-3 w-3 text-yellow-500" />
+                              <span>4.8 (120+)</span>
+                            </div>
+                          </div>
+                          <Button className="w-full mt-2 text-xs" size="sm">
+                            View Details <ArrowRight className="ml-1 h-3 w-3" />
+                          </Button>
                         </div>
-                        <Button className="w-full mt-3 text-xs" size="sm">
-                          View Details <ArrowRight className="ml-1 h-3 w-3" />
-                        </Button>
                       </CardContent>
                     </Card>
                   </motion.div>

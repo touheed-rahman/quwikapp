@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { serviceCategories } from "@/data/serviceCategories";
 import { Link } from "react-router-dom";
+import { Separator } from "@/components/ui/separator";
 
 type ServiceCategoriesProps = {
   searchQuery: string;
@@ -33,9 +34,14 @@ const ServiceCategories = ({
       transition={{ duration: 0.5 }}
       className="space-y-8"
     >
-      <h2 className="text-2xl font-semibold">Explore Service Categories</h2>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+        <h2 className="text-2xl font-semibold">Explore Service Categories</h2>
+        <Badge variant="outline" className="px-3 py-1.5 bg-primary/5 self-start sm:self-auto">
+          {filteredServices.length} categories available
+        </Badge>
+      </div>
       
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
         {filteredServices.map((category) => {
           const IconComponent = category.icon;
           return (
@@ -50,10 +56,11 @@ const ServiceCategories = ({
                 onClick={() => onSelectCategory(category.id)}
               >
                 <div className={`bg-gradient-to-br ${category.color} p-6 flex items-center justify-center group-hover:saturate-150 transition-all`}>
-                  <IconComponent className="h-10 w-10 text-primary" />
+                  {IconComponent && <IconComponent className="h-10 w-10 text-primary" />}
                 </div>
                 <CardContent className="p-4 text-center">
                   <h3 className="font-medium text-base">{category.name}</h3>
+                  <Separator className="my-2 bg-primary/10" />
                   <div className="flex items-center justify-center mt-2">
                     <Badge variant="outline" className="bg-primary/5 text-xs px-2 py-0.5">
                       {category.subservices.length} services
@@ -67,7 +74,7 @@ const ServiceCategories = ({
       </div>
       
       {filteredServices.length === 0 && (
-        <div className="text-center py-10">
+        <div className="text-center py-10 bg-slate-50 rounded-lg border">
           <AlertCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
           <h3 className="text-lg font-medium">No services found</h3>
           <p className="text-muted-foreground">Try a different search term</p>

@@ -2,7 +2,7 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { ArrowLeft, Calendar, Clock, CheckCircle2, Star, ShieldCheck } from "lucide-react";
+import { ArrowLeft, Calendar, Clock, CheckCircle2, Star, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -11,20 +11,27 @@ import Header from "@/components/Header";
 import ServiceBookingForm from "@/components/services/ServiceBookingForm";
 import { serviceCategories } from "@/data/serviceCategories";
 import { servicePricing } from "@/types/serviceTypes";
+import { useToast } from "@/components/ui/use-toast";
 
 const ServiceDetail = () => {
-  const { categoryId, serviceId } = useParams();
+  const { categoryId, serviceId } = useParams<{ categoryId: string; serviceId: string }>();
   const navigate = useNavigate();
   const [showBookingForm, setShowBookingForm] = useState(false);
+  const { toast } = useToast();
   
   const category = serviceCategories.find(c => c.id === categoryId);
   const service = category?.subservices.find(s => s.id === serviceId);
   
   useEffect(() => {
     if (!category || !service) {
+      toast({
+        title: "Service not found",
+        description: "The requested service could not be found.",
+        variant: "destructive"
+      });
       navigate("/");
     }
-  }, [category, service, navigate]);
+  }, [category, service, navigate, toast]);
   
   if (!category || !service) {
     return null;
@@ -57,7 +64,7 @@ const ServiceDetail = () => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="container max-w-7xl py-6 space-y-8"
+        className="container max-w-7xl py-6 px-4 space-y-8"
       >
         {showBookingForm ? (
           <ServiceBookingForm
@@ -85,7 +92,7 @@ const ServiceDetail = () => {
               <div className="md:col-span-2 space-y-6">
                 <div className="flex flex-col md:flex-row md:items-center gap-4 md:gap-6">
                   <div className={`bg-gradient-to-br ${category.color} p-6 w-20 h-20 rounded-lg flex items-center justify-center flex-shrink-0`}>
-                    <IconComponent className="h-10 w-10 text-primary" />
+                    {IconComponent && <IconComponent className="h-10 w-10 text-primary" />}
                   </div>
                   <div>
                     <Badge variant="outline" className="mb-2 bg-primary/5">
@@ -139,7 +146,7 @@ const ServiceDetail = () => {
                     
                     <Separator />
                     
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                       <div className="flex flex-col items-center text-center p-4 bg-primary/5 rounded-lg">
                         <Calendar className="h-6 w-6 text-primary mb-2" />
                         <h4 className="font-medium">Availability</h4>
@@ -151,7 +158,7 @@ const ServiceDetail = () => {
                         <p className="text-sm text-muted-foreground">1-2 hours typical</p>
                       </div>
                       <div className="flex flex-col items-center text-center p-4 bg-primary/5 rounded-lg">
-                        <ShieldCheck className="h-6 w-6 text-primary mb-2" />
+                        <Shield className="h-6 w-6 text-primary mb-2" />
                         <h4 className="font-medium">Warranty</h4>
                         <p className="text-sm text-muted-foreground">30-day service guarantee</p>
                       </div>

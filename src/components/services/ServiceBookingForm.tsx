@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
@@ -18,7 +18,7 @@ import { cn } from "@/lib/utils";
 import { useToast } from "@/components/ui/use-toast";
 import { formSchema, FormValues } from "@/types/serviceTypes";
 import { serviceCategories } from "@/data/serviceCategories";
-import { CalendarDays, Clock, IndianRupee, CheckCircle2 } from "lucide-react";
+import { CalendarDays, Clock, IndianRupee, CheckCircle2, ArrowLeft, Shield } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 
@@ -133,10 +133,10 @@ const ServiceBookingForm = ({
         <Button 
           variant="ghost" 
           size="sm" 
-          className="text-muted-foreground"
+          className="text-muted-foreground flex items-center gap-1"
           onClick={onBack}
         >
-          <span className="mr-1">←</span> Back to services
+          <ArrowLeft className="h-4 w-4 mr-1" /> Back to services
         </Button>
       </div>
 
@@ -145,7 +145,7 @@ const ServiceBookingForm = ({
           <Card className="border shadow-md overflow-hidden">
             <CardHeader className="bg-gradient-to-r from-primary/10 to-primary/5 border-b">
               <div className="flex items-center gap-3">
-                {categoryDetails && categoryDetails.icon({ 
+                {categoryDetails && categoryDetails.icon && React.createElement(categoryDetails.icon, { 
                   className: "h-6 w-6 text-primary" 
                 })}
                 <div>
@@ -158,7 +158,7 @@ const ServiceBookingForm = ({
                 </div>
               </div>
             </CardHeader>
-            <CardContent className="p-6">
+            <CardContent className="p-4 sm:p-6">
               <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -323,7 +323,7 @@ const ServiceBookingForm = ({
                     <Button 
                       type="submit" 
                       size="lg"
-                      className="bg-primary hover:bg-primary/90 text-white px-8"
+                      className="bg-primary hover:bg-primary/90 text-white px-8 w-full md:w-auto"
                       disabled={isSubmitting}
                     >
                       {isSubmitting ? "Scheduling..." : "Schedule Service"}
@@ -341,7 +341,7 @@ const ServiceBookingForm = ({
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
           >
-            <Card>
+            <Card className="sticky top-6">
               <CardHeader className="pb-2">
                 <CardTitle className="text-lg">Service Summary</CardTitle>
               </CardHeader>
@@ -349,7 +349,7 @@ const ServiceBookingForm = ({
                 <div className="space-y-4">
                   <div className="flex items-start gap-3 pb-3 border-b">
                     <div className="bg-primary/10 p-2 rounded-full">
-                      {categoryDetails && categoryDetails.icon({ 
+                      {categoryDetails && categoryDetails.icon && React.createElement(categoryDetails.icon, { 
                         className: "h-5 w-5 text-primary" 
                       })}
                     </div>
