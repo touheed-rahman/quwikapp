@@ -48,7 +48,7 @@ const ServiceBookingForm = ({
     resolver: zodResolver(formSchema),
     defaultValues: {
       serviceCategory: categoryId || "",
-      serviceType: selectedSubserviceName || "",
+      serviceType: subserviceId || "", // Using the subserviceId as the value
       description: "",
       date: undefined,
       time: "",
@@ -78,7 +78,7 @@ const ServiceBookingForm = ({
           address: data.address,
           appointment_date: format(data.date, "yyyy-MM-dd"),
           appointment_time: data.time,
-          status: "Pending" as const,
+          status: "Pending" as "Pending" | "In Progress" | "Completed" | "Cancelled",
           urgent: data.urgent,
           amount: estimatedAmount
         })

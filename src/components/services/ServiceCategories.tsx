@@ -32,9 +32,9 @@ const ServiceCategories = ({
       transition={{ duration: 0.5 }}
       className="space-y-8"
     >
-      <h2 className="text-2xl font-semibold">Service Categories</h2>
+      <h2 className="text-2xl font-semibold">Explore Service Categories</h2>
       
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
         {filteredServices.map((category) => {
           const IconComponent = category.icon;
           return (
@@ -49,13 +49,15 @@ const ServiceCategories = ({
                 onClick={() => onSelectCategory(category.id)}
               >
                 <div className={`bg-gradient-to-br ${category.color} p-6 flex items-center justify-center group-hover:saturate-150 transition-all`}>
-                  <IconComponent className="h-12 w-12 text-primary" />
+                  <IconComponent className="h-10 w-10 text-primary" />
                 </div>
                 <CardContent className="p-4 text-center">
-                  <h3 className="font-medium text-lg">{category.name}</h3>
-                  <p className="text-muted-foreground text-sm mt-1">
-                    {category.subservices.length} services available
-                  </p>
+                  <h3 className="font-medium text-base">{category.name}</h3>
+                  <div className="flex items-center justify-center mt-2">
+                    <Badge variant="outline" className="bg-primary/5 text-xs px-2 py-0.5">
+                      {category.subservices.length} services
+                    </Badge>
+                  </div>
                 </CardContent>
               </Card>
             </motion.div>
