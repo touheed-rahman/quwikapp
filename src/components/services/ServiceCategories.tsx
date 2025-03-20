@@ -4,8 +4,8 @@ import { AlertCircle } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { serviceCategories } from "@/data/serviceCategories";
-import { Link } from "react-router-dom";
 import { Separator } from "@/components/ui/separator";
+import { useNavigate } from "react-router-dom";
 
 type ServiceCategoriesProps = {
   searchQuery: string;
@@ -18,6 +18,7 @@ const ServiceCategories = ({
   onSelectCategory,
   selectedCategory 
 }: ServiceCategoriesProps) => {
+  const navigate = useNavigate();
 
   // Filter services based on search query
   const filteredServices = searchQuery 
@@ -26,6 +27,11 @@ const ServiceCategories = ({
         category.subservices.some(sub => sub.name.toLowerCase().includes(searchQuery.toLowerCase()))
       )
     : serviceCategories;
+
+  const handleCategoryClick = (categoryId: string) => {
+    onSelectCategory(categoryId);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   return (
     <motion.div 
@@ -41,7 +47,7 @@ const ServiceCategories = ({
         </Badge>
       </div>
       
-      <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 xs:grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
         {filteredServices.map((category) => {
           const IconComponent = category.icon;
           return (
@@ -53,9 +59,9 @@ const ServiceCategories = ({
             >
               <Card 
                 className="h-full overflow-hidden border-2 border-transparent hover:border-primary/20 cursor-pointer transition-all duration-300 hover:shadow-lg group"
-                onClick={() => onSelectCategory(category.id)}
+                onClick={() => handleCategoryClick(category.id)}
               >
-                <div className={`bg-gradient-to-br ${category.color} p-6 flex items-center justify-center group-hover:saturate-150 transition-all`}>
+                <div className={`bg-gradient-to-br ${category.color} p-4 flex items-center justify-center group-hover:saturate-150 transition-all`}>
                   {IconComponent && <IconComponent className="h-10 w-10 text-primary" />}
                 </div>
                 <CardContent className="p-4 text-center">

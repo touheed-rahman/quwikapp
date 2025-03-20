@@ -31,6 +31,9 @@ const ServiceDetail = () => {
       });
       navigate("/");
     }
+
+    // Scroll to top when component mounts
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [category, service, navigate, toast]);
   
   if (!category || !service) {
@@ -51,10 +54,12 @@ const ServiceDetail = () => {
   
   const handleBack = () => {
     navigate(-1);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
   
   const handleBookService = () => {
     setShowBookingForm(true);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
   
   return (
@@ -67,21 +72,37 @@ const ServiceDetail = () => {
         className="container max-w-7xl py-6 px-4 space-y-8"
       >
         {showBookingForm ? (
-          <ServiceBookingForm
-            categoryId={categoryId}
-            subserviceId={serviceId}
-            selectedSubserviceName={service.name}
-            onBack={() => setShowBookingForm(false)}
-            timeSlots={timeSlots}
-            estimatedAmount={price}
-          />
+          <>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="mb-4 flex items-center gap-1"
+              onClick={() => {
+                setShowBookingForm(false);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+            >
+              <ArrowLeft className="h-4 w-4 mr-1" /> Back to service details
+            </Button>
+            <ServiceBookingForm
+              categoryId={categoryId}
+              subserviceId={serviceId}
+              selectedSubserviceName={service.name}
+              onBack={() => {
+                setShowBookingForm(false);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+              timeSlots={timeSlots}
+              estimatedAmount={price}
+            />
+          </>
         ) : (
           <>
             <div className="flex items-center gap-2">
               <Button 
-                variant="ghost" 
+                variant="outline" 
                 size="sm" 
-                className="text-muted-foreground"
+                className="text-muted-foreground flex items-center gap-1 hover:bg-primary/10 hover:text-primary transition-colors"
                 onClick={handleBack}
               >
                 <ArrowLeft className="h-4 w-4 mr-1" /> Back

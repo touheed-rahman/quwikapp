@@ -108,6 +108,7 @@ const ServiceBookingForm = ({
       // Navigate to thank you or home page
       setTimeout(() => {
         navigate("/"); // Or to a thank you page
+        window.scrollTo({ top: 0, behavior: 'smooth' });
       }, 2000);
       
     } catch (error) {
@@ -131,9 +132,9 @@ const ServiceBookingForm = ({
     >
       <div className="flex items-center gap-2 mb-2">
         <Button 
-          variant="ghost" 
+          variant="outline" 
           size="sm" 
-          className="text-muted-foreground flex items-center gap-1"
+          className="text-muted-foreground flex items-center gap-1 hover:bg-primary/10 hover:text-primary transition-colors"
           onClick={onBack}
         >
           <ArrowLeft className="h-4 w-4 mr-1" /> Back to services

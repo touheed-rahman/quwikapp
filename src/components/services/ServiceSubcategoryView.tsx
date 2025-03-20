@@ -38,12 +38,14 @@ const ServiceSubcategoryView = ({ categoryId, onBack }: ServiceSubcategoryViewPr
   const handleSubserviceSelect = (subserviceId: string, subserviceName: string) => {
     // Navigate to the individual service page
     navigate(`/services/${categoryId}/${subserviceId}`);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleBackToSubservices = () => {
     setSelectedSubservice(null);
     setSelectedSubserviceName("");
     setBookingStep(0);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
   
   // Get pricing for selected service
@@ -72,7 +74,7 @@ const ServiceSubcategoryView = ({ categoryId, onBack }: ServiceSubcategoryViewPr
         <>
           <div className="flex items-center justify-between flex-wrap gap-2">
             <Button 
-              variant="ghost" 
+              variant="outline" 
               size="sm" 
               className="text-muted-foreground flex items-center gap-1 hover:bg-primary/10 hover:text-primary transition-colors"
               onClick={onBack}
