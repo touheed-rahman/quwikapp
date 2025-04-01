@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { serviceCategories } from "@/data/serviceCategories";
 import { servicePricing } from "@/types/serviceTypes";
 import ServiceBookingForm from "@/components/services/ServiceBookingForm";
-import { ArrowLeft, ArrowRight, Star, Clock, Calendar, Shield, Users, Zap, Award, CheckCircle } from "lucide-react";
+import { ArrowLeft, ArrowRight, Star, Clock, Calendar, Shield, Users, Zap, Award, CheckCircle, Heart } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/components/ui/use-toast";
@@ -22,6 +22,7 @@ const ServiceSubcategoryView = ({ categoryId, onBack }: ServiceSubcategoryViewPr
   const [selectedSubservice, setSelectedSubservice] = useState<string | null>(null);
   const [selectedSubserviceName, setSelectedSubserviceName] = useState<string>("");
   const [bookingStep, setBookingStep] = useState<number>(0);
+  const [favoriteServices, setFavoriteServices] = useState<string[]>([]);
   const navigate = useNavigate();
   const { toast } = useToast();
   const isMobile = useIsMobile();
@@ -58,6 +59,20 @@ const ServiceSubcategoryView = ({ categoryId, onBack }: ServiceSubcategoryViewPr
   const getEstimatedAmount = (subserviceId: string | null) => {
     if (!subserviceId || !categoryId) return 349; // Default
     return servicePricing[categoryId]?.[subserviceId] || 349;
+  };
+  
+  const toggleFavorite = (serviceId: string) => {
+    setFavoriteServices(prev => 
+      prev.includes(serviceId) 
+        ? prev.filter(id => id !== serviceId)
+        : [...prev, serviceId]
+    );
+    
+    toast({
+      title: favoriteServices.includes(serviceId) ? "Removed from favorites" : "Added to favorites",
+      description: "Your preferences have been updated",
+      duration: 2000,
+    });
   };
   
   const timeSlots = [
@@ -103,7 +118,7 @@ const ServiceSubcategoryView = ({ categoryId, onBack }: ServiceSubcategoryViewPr
     >
       {bookingStep === 0 ? (
         <>
-          <div className="sticky top-16 z-10 bg-white/80 backdrop-blur-md py-3 px-4 -mx-4 border-b">
+          <div className="sticky top-16 z-10 bg-white/90 backdrop-blur-md py-3 px-4 -mx-4 border-b shadow-sm">
             <div className="flex items-center justify-between flex-wrap gap-2 max-w-7xl mx-auto">
               <Button 
                 variant="outline" 
@@ -121,7 +136,7 @@ const ServiceSubcategoryView = ({ categoryId, onBack }: ServiceSubcategoryViewPr
           
           <div className="space-y-4 pt-2">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
-              <h2 className="text-2xl font-semibold bg-gradient-to-r from-slate-900 to-slate-700 text-transparent bg-clip-text">
+              <h2 className="text-2xl font-semibold bg-gradient-to-r from-primary to-primary/70 text-transparent bg-clip-text">
                 {categoryDetails.name} Services
               </h2>
               <div className="flex items-center gap-2 bg-yellow-50 px-3 py-1 rounded-full border border-yellow-200">
@@ -140,6 +155,7 @@ const ServiceSubcategoryView = ({ categoryId, onBack }: ServiceSubcategoryViewPr
               {categoryDetails.subservices.map((subservice, index) => {
                 const pricing = getEstimatedAmount(subservice.id);
                 const IconComponent = categoryDetails.icon;
+                const isFavorite = favoriteServices.includes(subservice.id);
                 // Randomly select 1-2 benefits for this service
                 const randomBenefits = [...benefitsList]
                   .sort(() => 0.5 - Math.random())
@@ -154,32 +170,53 @@ const ServiceSubcategoryView = ({ categoryId, onBack }: ServiceSubcategoryViewPr
                     className="h-full"
                   >
                     <Card 
-                      className="h-full overflow-hidden border cursor-pointer transition-all duration-300 hover:shadow-lg hover:border-primary/30 group"
-                      onClick={() => handleSubserviceSelect(subservice.id, subservice.name)}
+                      className="h-full overflow-hidden border cursor-pointer transition-all duration-300 hover:shadow-lg hover:border-primary/30 group relative"
                     >
-                      <div className="p-6 pb-4 text-center relative">
-                        <div className={`inline-flex items-center justify-center rounded-full p-3 mb-4 ${categoryDetails.color}`}>
-                          {IconComponent && <IconComponent className="h-8 w-8 text-primary group-hover:scale-110 transition-transform" />}
-                        </div>
-                        
-                        {index % 4 === 0 && (
-                          <div className="absolute top-3 right-3">
-                            <Badge variant="default" className="bg-green-500 text-white text-xs">Popular</Badge>
+                      <div className="absolute top-2 right-2 z-10">
+                        <button 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toggleFavorite(subservice.id);
+                          }}
+                          className="p-1.5 bg-white/80 backdrop-blur-sm rounded-full shadow-sm hover:bg-white transition-colors"
+                        >
+                          <Heart 
+                            className={`h-4 w-4 ${isFavorite ? 'text-red-500 fill-red-500' : 'text-gray-400'}`} 
+                          />
+                        </button>
+                      </div>
+                      
+                      <div 
+                        className={`p-6 pb-4 text-center relative overflow-hidden ${categoryDetails.color}`}
+                        onClick={() => handleSubserviceSelect(subservice.id, subservice.name)}
+                      >
+                        <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/5"></div>
+                        <div className="relative z-10">
+                          <div className="inline-flex items-center justify-center rounded-full p-3 mb-4 bg-white/90 shadow-md group-hover:shadow-lg transition-all">
+                            {IconComponent && <IconComponent className="h-8 w-8 text-primary group-hover:scale-110 transition-transform" />}
                           </div>
-                        )}
-                        
-                        <h3 className="font-semibold text-lg mb-2">{subservice.name}</h3>
-                        <div className="flex items-center justify-center gap-3 text-muted-foreground text-sm mb-4">
-                          {randomBenefits.map((benefit, i) => (
-                            <div key={i} className="flex items-center gap-1">
-                              <benefit.icon className="h-3.5 w-3.5" />
-                              <span>{benefit.text}</span>
+                          
+                          {index % 4 === 0 && (
+                            <div className="absolute -top-1 -right-1">
+                              <Badge variant="default" className="bg-gradient-to-r from-green-500 to-emerald-600 text-white text-xs shadow-sm">
+                                Popular
+                              </Badge>
                             </div>
-                          ))}
+                          )}
+                          
+                          <h3 className="font-semibold text-lg mb-2">{subservice.name}</h3>
+                          <div className="flex items-center justify-center gap-3 text-muted-foreground text-sm mb-4">
+                            {randomBenefits.map((benefit, i) => (
+                              <div key={i} className="flex items-center gap-1">
+                                <benefit.icon className="h-3.5 w-3.5" />
+                                <span>{benefit.text}</span>
+                              </div>
+                            ))}
+                          </div>
                         </div>
                       </div>
                       
-                      <div className="bg-slate-50 p-4">
+                      <div className="bg-slate-50 p-4" onClick={() => handleSubserviceSelect(subservice.id, subservice.name)}>
                         <div className="flex justify-between items-center mb-3">
                           <div className="flex items-center gap-1 text-sm text-muted-foreground">
                             <Clock className="h-3.5 w-3.5" />
@@ -197,7 +234,10 @@ const ServiceSubcategoryView = ({ categoryId, onBack }: ServiceSubcategoryViewPr
                             <div className="text-xs text-muted-foreground mb-0.5">Starting from</div>
                             <div className="text-primary font-bold text-xl">₹{pricing}</div>
                           </div>
-                          <Button className="bg-primary/90 hover:bg-primary" size="sm">
+                          <Button 
+                            className="bg-primary hover:bg-primary/90 text-white" 
+                            size="sm"
+                          >
                             View Details <ArrowRight className="ml-1 h-3.5 w-3.5" />
                           </Button>
                         </div>

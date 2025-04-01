@@ -59,7 +59,7 @@ const ServiceCategories = ({
       className="space-y-6"
     >
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-        <h2 className="text-2xl font-semibold bg-gradient-to-r from-slate-900 to-slate-700 text-transparent bg-clip-text">
+        <h2 className="text-2xl font-semibold bg-gradient-to-r from-primary to-primary/70 text-transparent bg-clip-text">
           Explore Service Categories
         </h2>
         <Badge variant="outline" className="px-3 py-1.5 bg-primary/5 self-start sm:self-auto">
@@ -68,7 +68,7 @@ const ServiceCategories = ({
       </div>
       
       <motion.div 
-        className="grid grid-cols-2 xs:grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4"
+        className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4"
         variants={container}
         initial="hidden"
         animate="show"

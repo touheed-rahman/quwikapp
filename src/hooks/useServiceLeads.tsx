@@ -69,8 +69,28 @@ const deleteServiceLead = async (leadId: string) => {
   }
 };
 
+const createServiceLead = async (leadData: Omit<ServiceLead, 'id' | 'created_at'>) => {
+  try {
+    const { data, error } = await supabase
+      .from('service_leads')
+      .insert([leadData])
+      .select()
+      .single();
+    
+    if (error) {
+      console.error("Error creating service lead:", error);
+      throw new Error(error.message);
+    }
+    
+    return data as ServiceLead;
+  } catch (error) {
+    console.error("Error in createServiceLead:", error);
+    throw error;
+  }
+};
+
 export function useServiceLeads() {
-  const { data, isLoading, error } = useQuery({
+  const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['service-leads'],
     queryFn: fetchServiceLeads,
     refetchOnWindowFocus: false,
@@ -80,6 +100,7 @@ export function useServiceLeads() {
     leads: data || [],
     isLoading,
     error,
+    refetch
   };
 }
 
@@ -89,15 +110,15 @@ export function useUpdateServiceLeadStatus() {
   
   const { mutate, isPending } = useMutation({
     mutationFn: updateServiceLeadStatus,
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['service-leads'] });
       queryClient.invalidateQueries({ queryKey: ['admin-metrics'] });
       toast({
         title: "Status Updated",
-        description: "The service lead status has been updated successfully.",
+        description: `Service request status updated to ${data.status}`,
       });
     },
-    onError: (error) => {
+    onError: (error: Error) => {
       toast({
         title: "Update Failed",
         description: `Failed to update status: ${error.message}`,
@@ -126,7 +147,7 @@ export function useDeleteServiceLead() {
         description: "The service lead has been deleted successfully.",
       });
     },
-    onError: (error) => {
+    onError: (error: Error) => {
       toast({
         title: "Delete Failed",
         description: `Failed to delete lead: ${error.message}`,
@@ -138,5 +159,34 @@ export function useDeleteServiceLead() {
   return {
     deleteLead: mutate,
     isDeleting: isPending,
+  };
+}
+
+export function useCreateServiceLead() {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+  
+  const { mutate, isPending } = useMutation({
+    mutationFn: createServiceLead,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['service-leads'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-metrics'] });
+      toast({
+        title: "Service Request Created",
+        description: "Your service request has been submitted successfully!",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Submission Failed",
+        description: `Failed to submit service request: ${error.message}`,
+        variant: "destructive",
+      });
+    }
+  });
+  
+  return {
+    createLead: mutate,
+    isCreating: isPending,
   };
 }

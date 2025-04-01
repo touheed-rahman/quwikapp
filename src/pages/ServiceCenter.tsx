@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,14 +14,33 @@ import { useToast } from "@/components/ui/use-toast";
 import Header from "@/components/Header";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Bell, Calendar as CalendarIcon, Check, ChevronDown, ClipboardList, Clock, DollarSign, Home, MapPin, Phone, RefreshCw, Shield, Star, ThumbsUp, Wrench, User, X } from "lucide-react";
+import { 
+  Bell, Calendar as CalendarIcon, Check, ChevronDown, ClipboardList, Clock, 
+  DollarSign, Home, MapPin, Phone, RefreshCw, Shield, Star, ThumbsUp, 
+  Wrench, User, X, Mail, Lock, Building, Briefcase, Tag, Smartphone, Info
+} from "lucide-react";
+import { useServiceLeads, useUpdateServiceLeadStatus } from "@/hooks/useServiceLeads";
+import { format } from "date-fns";
 
 const ServiceCenter = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [authTab, setAuthTab] = useState("login");
-  const [serviceRequests, setServiceRequests] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loginLoading, setLoginLoading] = useState(false);
+  const [signupLoading, setSignupLoading] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
+  const [authFormData, setAuthFormData] = useState({
+    email: '',
+    password: '',
+    fullName: '',
+    businessName: '',
+    providerType: 'individual',
+    services: 'cleaning',
+    phone: '',
+    confirmPassword: ''
+  });
+  
+  const { leads, isLoading } = useServiceLeads();
+  const { updateStatus, isUpdating } = useUpdateServiceLeadStatus();
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -31,264 +50,425 @@ const ServiceCenter = () => {
       const { data } = await supabase.auth.getSession();
       if (data.session) {
         setIsAuthenticated(true);
-        fetchServiceLeads();
-      } else {
-        setLoading(false);
       }
     };
 
     checkAuth();
+    
+    // Set up auth state listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (session) {
+          setIsAuthenticated(true);
+        } else {
+          setIsAuthenticated(false);
+        }
+      }
+    );
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
-  const fetchServiceLeads = async () => {
-    try {
-      setLoading(true);
-      // In a real app, we would fetch service leads assigned to this provider
-      // For demo, we'll use the service_leads table
-      const { data, error } = await supabase
-        .from('service_leads')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      setServiceRequests(data || []);
-    } catch (error) {
-      console.error('Error fetching service leads:', error);
-      toast({
-        variant: "destructive",
-        title: "Error fetching service requests",
-        description: "Please try again later."
-      });
-    } finally {
-      setLoading(false);
-    }
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { id, value } = e.target;
+    setAuthFormData(prev => ({ ...prev, [id]: value }));
+  };
+  
+  const handleSelectChange = (name: string, value: string) => {
+    setAuthFormData(prev => ({ ...prev, [name]: value }));
   };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Implement login functionality
-    // This is a placeholder - you'll need to implement actual authentication
+    setLoginLoading(true);
+    
     try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: authFormData.email,
+        password: authFormData.password,
+      });
+
+      if (error) throw error;
+      
       toast({
         title: "Login successful",
         description: "Welcome to Service Center Dashboard"
       });
-      setIsAuthenticated(true);
-      fetchServiceLeads();
-    } catch (error) {
+    } catch (error: any) {
       toast({
         variant: "destructive",
         title: "Login failed",
-        description: "Please check your credentials and try again."
+        description: error.message || "Please check your credentials and try again."
       });
+    } finally {
+      setLoginLoading(false);
     }
   };
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Implement signup functionality
-    toast({
-      title: "Account created successfully",
-      description: "Please verify your email to complete registration"
-    });
-    setAuthTab("login");
-  };
-
-  const handleStatusUpdate = async (id: string, status: string) => {
+    setSignupLoading(true);
+    
+    // Password validation
+    if (authFormData.password !== authFormData.confirmPassword) {
+      toast({
+        variant: "destructive",
+        title: "Passwords do not match",
+        description: "Please make sure your passwords match."
+      });
+      setSignupLoading(false);
+      return;
+    }
+    
+    if (authFormData.password.length < 6) {
+      toast({
+        variant: "destructive",
+        title: "Password too short",
+        description: "Password must be at least 6 characters long."
+      });
+      setSignupLoading(false);
+      return;
+    }
+    
     try {
-      const { error } = await supabase
-        .from('service_leads')
-        .update({ status })
-        .eq('id', id);
+      // Sign up with Supabase
+      const { data, error } = await supabase.auth.signUp({
+        email: authFormData.email,
+        password: authFormData.password,
+        options: {
+          data: {
+            full_name: authFormData.fullName,
+            business_name: authFormData.businessName,
+            provider_type: authFormData.providerType,
+            services: authFormData.services,
+            phone: authFormData.phone,
+          }
+        }
+      });
 
       if (error) throw error;
       
       toast({
-        title: "Status updated",
-        description: `Service request status updated to ${status}`
+        title: "Account created successfully",
+        description: "Please verify your email to complete registration"
       });
-      
-      // Refresh service leads
-      fetchServiceLeads();
-    } catch (error) {
-      console.error('Error updating status:', error);
+      setAuthTab("login");
+    } catch (error: any) {
       toast({
         variant: "destructive",
-        title: "Error updating status",
-        description: "Please try again later."
+        title: "Sign up failed",
+        description: error.message || "An error occurred during sign up."
+      });
+    } finally {
+      setSignupLoading(false);
+    }
+  };
+
+  const handleStatusUpdate = async (id: string, status: string) => {
+    updateStatus({ leadId: id, status: status as any });
+  };
+  
+  const handleSignOut = async () => {
+    try {
+      await supabase.auth.signOut();
+      toast({
+        title: "Signed out successfully",
+        description: "You have been logged out of your account."
+      });
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Error signing out",
+        description: error.message || "An error occurred while signing out."
       });
     }
   };
 
   const renderAuthForm = () => (
-    <Card className="w-full max-w-md mx-auto">
-      <CardHeader>
-        <CardTitle className="text-2xl">Service Provider Portal</CardTitle>
-        <CardDescription>
-          {authTab === "login" 
-            ? "Sign in to your service provider account" 
-            : "Create a new service provider account"}
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <Tabs value={authTab} onValueChange={setAuthTab}>
-          <TabsList className="grid w-full grid-cols-2 mb-6">
-            <TabsTrigger value="login">Login</TabsTrigger>
-            <TabsTrigger value="signup">Sign Up</TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="login">
-            <form onSubmit={handleLogin} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input id="email" type="email" placeholder="your@email.com" required />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
-                <Input id="password" type="password" required />
-              </div>
-              <Button type="submit" className="w-full">Login</Button>
-            </form>
-          </TabsContent>
-          
-          <TabsContent value="signup">
-            <form onSubmit={handleSignup} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="fullName">Full Name</Label>
-                <Input id="fullName" placeholder="John Doe" required />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="businessName">Business Name</Label>
-                <Input id="businessName" placeholder="Your Service Business" required />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="providerType">Provider Type</Label>
-                <Select defaultValue="individual">
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select provider type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="individual">Individual Professional</SelectItem>
-                    <SelectItem value="authorized">Authorized Service Center</SelectItem>
-                    <SelectItem value="company">Service Company</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="services">Services Offered</Label>
-                <Select defaultValue="cleaning">
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select service category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="cleaning">Home Cleaning</SelectItem>
-                    <SelectItem value="plumbing">Plumbing</SelectItem>
-                    <SelectItem value="electrical">Electrical</SelectItem>
-                    <SelectItem value="appliance">Appliance Repair</SelectItem>
-                    <SelectItem value="multiple">Multiple Services</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="phone">Phone Number</Label>
-                <Input id="phone" placeholder="+91 9876543210" required />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input id="email" type="email" placeholder="your@email.com" required />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
-                <Input id="password" type="password" required />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="confirmPassword">Confirm Password</Label>
-                <Input id="confirmPassword" type="password" required />
-              </div>
-              <Button type="submit" className="w-full">Create Account</Button>
-            </form>
-          </TabsContent>
-        </Tabs>
-      </CardContent>
-    </Card>
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+    >
+      <Card className="w-full max-w-md mx-auto shadow-lg border-primary/10">
+        <CardHeader className="space-y-1">
+          <CardTitle className="text-2xl text-center">Service Provider Portal</CardTitle>
+          <CardDescription className="text-center">
+            {authTab === "login" 
+              ? "Sign in to your service provider account" 
+              : "Create a new service provider account"}
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Tabs value={authTab} onValueChange={setAuthTab} className="w-full">
+            <TabsList className="grid w-full grid-cols-2 mb-6">
+              <TabsTrigger value="login">Login</TabsTrigger>
+              <TabsTrigger value="signup">Sign Up</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="login">
+              <form onSubmit={handleLogin} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="email" className="flex items-center gap-2">
+                    <Mail className="h-4 w-4 text-muted-foreground" />
+                    Email
+                  </Label>
+                  <Input 
+                    id="email" 
+                    type="email" 
+                    placeholder="your@email.com" 
+                    autoComplete="email"
+                    value={authFormData.email}
+                    onChange={handleInputChange}
+                    required 
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="password" className="flex items-center gap-2">
+                    <Lock className="h-4 w-4 text-muted-foreground" />
+                    Password
+                  </Label>
+                  <Input 
+                    id="password" 
+                    type="password"
+                    autoComplete="current-password"
+                    value={authFormData.password}
+                    onChange={handleInputChange}
+                    required 
+                  />
+                </div>
+                <Button type="submit" className="w-full" disabled={loginLoading}>
+                  {loginLoading ? "Logging in..." : "Login"}
+                </Button>
+              </form>
+            </TabsContent>
+            
+            <TabsContent value="signup">
+              <form onSubmit={handleSignup} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="fullName" className="flex items-center gap-2">
+                    <User className="h-4 w-4 text-muted-foreground" />
+                    Full Name
+                  </Label>
+                  <Input 
+                    id="fullName" 
+                    placeholder="John Doe" 
+                    value={authFormData.fullName}
+                    onChange={handleInputChange}
+                    required 
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="businessName" className="flex items-center gap-2">
+                    <Building className="h-4 w-4 text-muted-foreground" />
+                    Business Name
+                  </Label>
+                  <Input 
+                    id="businessName" 
+                    placeholder="Your Service Business" 
+                    value={authFormData.businessName}
+                    onChange={handleInputChange}
+                    required 
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="providerType" className="flex items-center gap-2">
+                    <Briefcase className="h-4 w-4 text-muted-foreground" />
+                    Provider Type
+                  </Label>
+                  <Select 
+                    value={authFormData.providerType}
+                    onValueChange={(value) => handleSelectChange('providerType', value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select provider type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="individual">Individual Professional</SelectItem>
+                      <SelectItem value="authorized">Authorized Service Center</SelectItem>
+                      <SelectItem value="company">Service Company</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="services" className="flex items-center gap-2">
+                    <Tag className="h-4 w-4 text-muted-foreground" />
+                    Services Offered
+                  </Label>
+                  <Select 
+                    value={authFormData.services}
+                    onValueChange={(value) => handleSelectChange('services', value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select service category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="cleaning">Home Cleaning</SelectItem>
+                      <SelectItem value="plumbing">Plumbing</SelectItem>
+                      <SelectItem value="electrical">Electrical</SelectItem>
+                      <SelectItem value="appliance">Appliance Repair</SelectItem>
+                      <SelectItem value="multiple">Multiple Services</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="phone" className="flex items-center gap-2">
+                    <Smartphone className="h-4 w-4 text-muted-foreground" />
+                    Phone Number
+                  </Label>
+                  <Input 
+                    id="phone" 
+                    placeholder="+91 9876543210" 
+                    value={authFormData.phone}
+                    onChange={handleInputChange}
+                    required 
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="email" className="flex items-center gap-2">
+                    <Mail className="h-4 w-4 text-muted-foreground" />
+                    Email
+                  </Label>
+                  <Input 
+                    id="email" 
+                    type="email" 
+                    placeholder="your@email.com" 
+                    value={authFormData.email}
+                    onChange={handleInputChange}
+                    required 
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="password" className="flex items-center gap-2">
+                    <Lock className="h-4 w-4 text-muted-foreground" />
+                    Password
+                  </Label>
+                  <Input 
+                    id="password" 
+                    type="password" 
+                    value={authFormData.password}
+                    onChange={handleInputChange}
+                    required 
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="confirmPassword" className="flex items-center gap-2">
+                    <Lock className="h-4 w-4 text-muted-foreground" />
+                    Confirm Password
+                  </Label>
+                  <Input 
+                    id="confirmPassword" 
+                    type="password" 
+                    value={authFormData.confirmPassword}
+                    onChange={handleInputChange}
+                    required 
+                  />
+                </div>
+                <Button type="submit" className="w-full" disabled={signupLoading}>
+                  {signupLoading ? "Creating Account..." : "Create Account"}
+                </Button>
+              </form>
+            </TabsContent>
+          </Tabs>
+        </CardContent>
+        <CardFooter className="flex justify-center border-t p-4">
+          <Button variant="link" onClick={() => navigate("/")}>
+            Return to Home
+          </Button>
+        </CardFooter>
+      </Card>
+    </motion.div>
   );
 
   const renderDashboard = () => (
-    <div className="space-y-6">
-      <div className="flex flex-col md:flex-row justify-between gap-4">
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      className="space-y-6"
+    >
+      <div className="flex flex-col md:flex-row justify-between items-center gap-4 bg-gradient-to-r from-primary/5 to-primary/10 p-4 rounded-lg shadow-sm">
         <div>
-          <h2 className="text-3xl font-bold">Service Provider Dashboard</h2>
+          <h2 className="text-3xl font-bold text-primary">Service Provider Dashboard</h2>
           <p className="text-muted-foreground">Manage your service requests and bookings</p>
         </div>
         <div className="flex flex-wrap gap-3">
-          <Button variant="outline" className="flex items-center gap-2" onClick={fetchServiceLeads}>
+          <Button variant="outline" className="flex items-center gap-2 bg-white shadow-sm" onClick={() => window.location.reload()}>
             <RefreshCw className="h-4 w-4" /> Refresh
           </Button>
           <Button className="flex items-center gap-2">
             <Wrench className="h-4 w-4" /> Add New Service
           </Button>
-          <Button variant="outline" className="relative">
+          <Button variant="outline" className="relative bg-white shadow-sm">
             <Bell className="h-4 w-4" />
             <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
               3
             </span>
           </Button>
+          <Button variant="outline" className="bg-white shadow-sm" onClick={handleSignOut}>
+            <User className="h-4 w-4 mr-1" /> Sign Out
+          </Button>
         </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card>
+        <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
           <CardHeader className="pb-2">
-            <CardTitle className="text-lg flex items-center gap-2">
+            <CardTitle className="text-lg flex items-center gap-2 text-blue-700">
               <ClipboardList className="h-5 w-5 text-blue-500" />
               Pending Requests
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold">
-              {serviceRequests.filter(req => req.status === 'Pending').length}
+            <div className="text-3xl font-bold text-blue-700">
+              {leads.filter(req => req.status === 'Pending').length}
             </div>
-            <p className="text-muted-foreground text-sm">New service requests waiting for action</p>
+            <p className="text-blue-600/70 text-sm">New service requests waiting for action</p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="bg-gradient-to-br from-amber-50 to-amber-100 border-amber-200">
           <CardHeader className="pb-2">
-            <CardTitle className="text-lg flex items-center gap-2">
+            <CardTitle className="text-lg flex items-center gap-2 text-amber-700">
               <Clock className="h-5 w-5 text-amber-500" />
               In Progress
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold">
-              {serviceRequests.filter(req => req.status === 'In Progress').length}
+            <div className="text-3xl font-bold text-amber-700">
+              {leads.filter(req => req.status === 'In Progress').length}
             </div>
-            <p className="text-muted-foreground text-sm">Services currently being provided</p>
+            <p className="text-amber-600/70 text-sm">Services currently being provided</p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200">
           <CardHeader className="pb-2">
-            <CardTitle className="text-lg flex items-center gap-2">
+            <CardTitle className="text-lg flex items-center gap-2 text-green-700">
               <Check className="h-5 w-5 text-green-500" />
               Completed
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold">
-              {serviceRequests.filter(req => req.status === 'Completed').length}
+            <div className="text-3xl font-bold text-green-700">
+              {leads.filter(req => req.status === 'Completed').length}
             </div>
-            <p className="text-muted-foreground text-sm">Successfully completed service requests</p>
+            <p className="text-green-600/70 text-sm">Successfully completed service requests</p>
           </CardContent>
         </Card>
       </div>
 
-      <Card>
-        <CardHeader>
+      <Card className="shadow-md border-primary/10">
+        <CardHeader className="bg-primary/5">
           <CardTitle className="flex items-center justify-between">
-            <span>Service Requests</span>
+            <span className="flex items-center gap-2">
+              <ClipboardList className="h-5 w-5 text-primary" />
+              Service Requests
+            </span>
             <div className="flex items-center gap-2">
-              <Label htmlFor="statusFilter">Filter by:</Label>
+              <Label htmlFor="statusFilter" className="text-sm font-normal">Filter by:</Label>
               <Select defaultValue="all">
-                <SelectTrigger className="w-[180px]">
+                <SelectTrigger className="w-[180px] bg-white text-sm h-9">
                   <SelectValue placeholder="All Statuses" />
                 </SelectTrigger>
                 <SelectContent>
@@ -302,13 +482,13 @@ const ServiceCenter = () => {
             </div>
           </CardTitle>
         </CardHeader>
-        <CardContent>
-          {loading ? (
+        <CardContent className="p-4">
+          {isLoading ? (
             <div className="text-center py-10">
               <RefreshCw className="h-10 w-10 animate-spin text-primary mx-auto mb-4" />
               <p>Loading service requests...</p>
             </div>
-          ) : serviceRequests.length === 0 ? (
+          ) : leads.length === 0 ? (
             <div className="text-center py-10 bg-muted/20 rounded-lg">
               <ClipboardList className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
               <h3 className="text-lg font-semibold">No service requests found</h3>
@@ -316,8 +496,14 @@ const ServiceCenter = () => {
             </div>
           ) : (
             <div className="space-y-4">
-              {serviceRequests.map((request) => (
-                <div key={request.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
+              {leads.map((request) => (
+                <motion.div 
+                  key={request.id} 
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3 }}
+                  className="border rounded-lg p-4 hover:shadow-md transition-shadow bg-white"
+                >
                   <div className="flex justify-between items-start">
                     <div>
                       <div className="flex items-center gap-2 mb-2">
@@ -344,7 +530,7 @@ const ServiceCenter = () => {
                     </div>
                     <div className="text-right">
                       <p className="text-sm text-muted-foreground">
-                        {new Date(request.created_at).toLocaleDateString()}
+                        {format(new Date(request.created_at), 'dd MMM yyyy')}
                       </p>
                       {request.amount && (
                         <p className="font-bold text-primary">₹{request.amount}</p>
@@ -356,7 +542,7 @@ const ServiceCenter = () => {
                     <div className="space-y-1">
                       <div className="flex items-center gap-1 text-sm">
                         <User className="h-4 w-4 text-muted-foreground" />
-                        <span>{request.customer_name}</span>
+                        <span className="font-medium">{request.customer_name}</span>
                       </div>
                       <div className="flex items-center gap-1 text-sm">
                         <Phone className="h-4 w-4 text-muted-foreground" />
@@ -370,12 +556,18 @@ const ServiceCenter = () => {
                     <div className="space-y-1">
                       <div className="flex items-center gap-1 text-sm">
                         <CalendarIcon className="h-4 w-4 text-muted-foreground" />
-                        <span>{new Date(request.appointment_date).toLocaleDateString()}</span>
+                        <span>{format(new Date(request.appointment_date), 'dd MMM yyyy')}</span>
                       </div>
                       <div className="flex items-center gap-1 text-sm">
                         <Clock className="h-4 w-4 text-muted-foreground" />
                         <span>{request.appointment_time}</span>
                       </div>
+                      {request.payment_method && (
+                        <div className="flex items-center gap-1 text-sm">
+                          <DollarSign className="h-4 w-4 text-muted-foreground" />
+                          <span>{request.payment_method}</span>
+                        </div>
+                      )}
                     </div>
                   </div>
                   
@@ -389,6 +581,7 @@ const ServiceCenter = () => {
                           variant="outline" 
                           className="text-red-600 hover:text-red-700 hover:bg-red-50"
                           onClick={() => handleStatusUpdate(request.id, 'Cancelled')}
+                          disabled={isUpdating}
                         >
                           <X className="h-4 w-4 mr-1" /> Reject
                         </Button>
@@ -396,6 +589,7 @@ const ServiceCenter = () => {
                           size="sm" 
                           className="bg-green-600 hover:bg-green-700"
                           onClick={() => handleStatusUpdate(request.id, 'In Progress')}
+                          disabled={isUpdating}
                         >
                           <Check className="h-4 w-4 mr-1" /> Accept
                         </Button>
@@ -405,6 +599,7 @@ const ServiceCenter = () => {
                       <Button 
                         size="sm" 
                         onClick={() => handleStatusUpdate(request.id, 'Completed')}
+                        disabled={isUpdating}
                       >
                         <ThumbsUp className="h-4 w-4 mr-1" /> Mark Complete
                       </Button>
@@ -413,7 +608,7 @@ const ServiceCenter = () => {
                       View Details
                     </Button>
                   </div>
-                </div>
+                </motion.div>
               ))}
             </div>
           )}
@@ -421,50 +616,65 @@ const ServiceCenter = () => {
       </Card>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="md:col-span-2">
-          <CardHeader>
-            <CardTitle>Upcoming Appointments</CardTitle>
+        <Card className="md:col-span-2 border-primary/10 shadow-md">
+          <CardHeader className="bg-primary/5">
+            <CardTitle className="flex items-center gap-2">
+              <CalendarIcon className="h-5 w-5 text-primary" />
+              Upcoming Appointments
+            </CardTitle>
           </CardHeader>
-          <CardContent>
-            <Calendar
-              mode="single"
-              selected={selectedDate}
-              onSelect={setSelectedDate}
-              className="rounded-md border mx-auto"
-            />
-            
-            <div className="mt-4 space-y-2">
-              {serviceRequests.filter(req => 
-                req.status === 'In Progress' && 
-                new Date(req.appointment_date).toDateString() === (selectedDate?.toDateString() || '')
-              ).map(appointment => (
-                <div key={appointment.id} className="flex p-2 border rounded-lg hover:bg-muted/10">
-                  <div className="font-medium w-24">{appointment.appointment_time}</div>
-                  <div className="flex-1">
-                    <div className="font-medium">{appointment.service_type}</div>
-                    <div className="text-sm text-muted-foreground">{appointment.customer_name}</div>
-                  </div>
-                  <Button variant="ghost" size="sm">View</Button>
-                </div>
-              ))}
+          <CardContent className="p-4">
+            <div className="flex flex-col md:flex-row gap-4">
+              <div className="md:w-1/2">
+                <Calendar
+                  mode="single"
+                  selected={selectedDate}
+                  onSelect={setSelectedDate}
+                  className="rounded-md border mx-auto"
+                />
+              </div>
               
-              {serviceRequests.filter(req => 
-                req.status === 'In Progress' && 
-                new Date(req.appointment_date).toDateString() === (selectedDate?.toDateString() || '')
-              ).length === 0 && (
-                <div className="text-center py-6 text-muted-foreground">
-                  No appointments scheduled for this day
-                </div>
-              )}
+              <div className="md:w-1/2 space-y-2">
+                <h3 className="font-medium text-primary flex items-center gap-2 mb-3">
+                  <Clock className="h-4 w-4" />
+                  {selectedDate ? format(selectedDate, 'EEEE, MMMM d, yyyy') : 'Select a date'}
+                </h3>
+                
+                {leads.filter(req => 
+                  req.status === 'In Progress' && 
+                  new Date(req.appointment_date).toDateString() === (selectedDate?.toDateString() || '')
+                ).map(appointment => (
+                  <div key={appointment.id} className="flex p-3 border rounded-lg hover:bg-primary/5 transition-colors">
+                    <div className="font-medium w-24 text-primary">{appointment.appointment_time}</div>
+                    <div className="flex-1">
+                      <div className="font-medium">{appointment.service_type}</div>
+                      <div className="text-sm text-muted-foreground">{appointment.customer_name}</div>
+                    </div>
+                    <Button variant="ghost" size="sm">View</Button>
+                  </div>
+                ))}
+                
+                {leads.filter(req => 
+                  req.status === 'In Progress' && 
+                  new Date(req.appointment_date).toDateString() === (selectedDate?.toDateString() || '')
+                ).length === 0 && (
+                  <div className="text-center py-6 text-muted-foreground bg-slate-50 rounded-lg border border-dashed">
+                    No appointments scheduled for this day
+                  </div>
+                )}
+              </div>
             </div>
           </CardContent>
         </Card>
         
-        <Card>
-          <CardHeader>
-            <CardTitle>Performance Stats</CardTitle>
+        <Card className="border-primary/10 shadow-md">
+          <CardHeader className="bg-primary/5">
+            <CardTitle className="flex items-center gap-2">
+              <Star className="h-5 w-5 text-primary" />
+              Performance Stats
+            </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-4 p-4">
             <div className="flex justify-between items-center border-b pb-2">
               <div className="flex items-center gap-2">
                 <Star className="h-5 w-5 text-yellow-500" />
@@ -500,11 +710,11 @@ const ServiceCenter = () => {
               </div>
               <div className="font-bold">42</div>
             </div>
-            <Button variant="outline" className="w-full mt-4">View Full Report</Button>
+            <Button variant="default" className="w-full mt-4">View Full Report</Button>
           </CardContent>
         </Card>
       </div>
-    </div>
+    </motion.div>
   );
 
   return (
