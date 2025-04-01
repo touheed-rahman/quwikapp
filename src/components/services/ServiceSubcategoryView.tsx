@@ -2,14 +2,13 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { serviceCategories } from "@/data/serviceCategories";
 import { servicePricing } from "@/types/serviceTypes";
 import ServiceBookingForm from "@/components/services/ServiceBookingForm";
-import { ArrowLeft, ArrowRight, Star, Clock, Calendar, Shield, Users, Zap, Award, CheckCircle, Heart } from "lucide-react";
+import { ArrowLeft, Star, Clock, Shield, Users, Zap, CheckCircle, Heart } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/components/ui/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
 
@@ -61,51 +60,33 @@ const ServiceSubcategoryView = ({ categoryId, onBack }: ServiceSubcategoryViewPr
     return servicePricing[categoryId]?.[subserviceId] || 349;
   };
   
-  const toggleFavorite = (serviceId: string) => {
-    setFavoriteServices(prev => 
-      prev.includes(serviceId) 
-        ? prev.filter(id => id !== serviceId)
-        : [...prev, serviceId]
-    );
+  const toggleFavorite = (e: React.MouseEvent, serviceId: string) => {
+    e.stopPropagation();
     
-    toast({
-      title: favoriteServices.includes(serviceId) ? "Removed from favorites" : "Added to favorites",
-      description: "Your preferences have been updated",
-      duration: 2000,
+    setFavoriteServices(prev => {
+      if (prev.includes(serviceId)) {
+        toast({
+          title: "Removed from favorites",
+          description: "Service removed from your favorites",
+          duration: 1500,
+        });
+        return prev.filter(id => id !== serviceId);
+      } else {
+        toast({
+          title: "Added to favorites",
+          description: "Service added to your favorites",
+          duration: 1500,
+        });
+        return [...prev, serviceId];
+      }
     });
   };
   
-  const timeSlots = [
-    "08:00 AM - 10:00 AM",
-    "10:00 AM - 12:00 PM", 
-    "12:00 PM - 02:00 PM", 
-    "02:00 PM - 04:00 PM", 
-    "04:00 PM - 06:00 PM", 
-    "06:00 PM - 08:00 PM"
-  ];
-
-  // Animation variants
-  const container = {
-    hidden: { opacity: 0 },
-    show: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1
-      }
-    }
-  };
-
-  const item = {
-    hidden: { opacity: 0, y: 20 },
-    show: { opacity: 1, y: 0 }
-  };
-
   // Random benefits for services - will be assigned to each card
   const benefitsList = [
     { icon: Shield, text: "Warranty" },
     { icon: Users, text: "Verified Pros" },
     { icon: Zap, text: "Quick Service" },
-    { icon: Award, text: "Best Price" },
     { icon: CheckCircle, text: "Satisfaction" }
   ];
 
@@ -126,7 +107,7 @@ const ServiceSubcategoryView = ({ categoryId, onBack }: ServiceSubcategoryViewPr
                 className="text-muted-foreground flex items-center gap-1 hover:bg-primary/10 hover:text-primary transition-colors"
                 onClick={onBack}
               >
-                <ArrowLeft className="h-4 w-4 mr-1" /> Back to all services
+                <ArrowLeft className="h-4 w-4 mr-1" /> Back
               </Button>
               <Badge variant="outline" className="bg-primary/5 text-primary">
                 {categoryDetails.name}
@@ -146,17 +127,13 @@ const ServiceSubcategoryView = ({ categoryId, onBack }: ServiceSubcategoryViewPr
             </div>
             <p className="text-muted-foreground">Select a specific service to book a professional</p>
           
-            <motion.div 
-              className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-4 mt-6"
-              variants={container}
-              initial="hidden"
-              animate="show"
-            >
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
               {categoryDetails.subservices.map((subservice, index) => {
                 const pricing = getEstimatedAmount(subservice.id);
                 const IconComponent = categoryDetails.icon;
                 const isFavorite = favoriteServices.includes(subservice.id);
-                // Randomly select 1-2 benefits for this service
+                
+                // Randomly select 2 benefits for this service
                 const randomBenefits = [...benefitsList]
                   .sort(() => 0.5 - Math.random())
                   .slice(0, 2);
@@ -164,7 +141,6 @@ const ServiceSubcategoryView = ({ categoryId, onBack }: ServiceSubcategoryViewPr
                 return (
                   <motion.div 
                     key={subservice.id} 
-                    variants={item}
                     whileHover={{ y: -5, scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     className="h-full"
@@ -172,73 +148,72 @@ const ServiceSubcategoryView = ({ categoryId, onBack }: ServiceSubcategoryViewPr
                     <Card 
                       className="h-full overflow-hidden border cursor-pointer transition-all duration-300 hover:shadow-lg hover:border-primary/30 group relative"
                     >
-                      <div className="absolute top-2 right-2 z-10">
-                        <button 
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            toggleFavorite(subservice.id);
-                          }}
-                          className="p-1.5 bg-white/80 backdrop-blur-sm rounded-full shadow-sm hover:bg-white transition-colors"
-                        >
-                          <Heart 
-                            className={`h-4 w-4 ${isFavorite ? 'text-red-500 fill-red-500' : 'text-gray-400'}`} 
-                          />
-                        </button>
-                      </div>
+                      <button 
+                        className="absolute top-3 right-3 z-10 p-1.5 bg-white/80 backdrop-blur-sm rounded-full shadow-sm hover:bg-white transition-colors"
+                        onClick={(e) => toggleFavorite(e, subservice.id)}
+                      >
+                        <Heart 
+                          className={`h-4 w-4 ${isFavorite ? 'text-red-500 fill-red-500' : 'text-gray-400'}`} 
+                        />
+                      </button>
                       
                       <div 
-                        className={`p-6 pb-4 text-center relative overflow-hidden ${categoryDetails.color}`}
+                        className={`p-5 text-center relative overflow-hidden ${categoryDetails.color}`}
                         onClick={() => handleSubserviceSelect(subservice.id, subservice.name)}
                       >
                         <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/5"></div>
                         <div className="relative z-10">
+                          {index % 4 === 0 && (
+                            <Badge variant="default" className="mb-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white text-xs shadow-sm">
+                              Popular
+                            </Badge>
+                          )}
+                          
                           <div className="inline-flex items-center justify-center rounded-full p-3 mb-4 bg-white/90 shadow-md group-hover:shadow-lg transition-all">
                             {IconComponent && <IconComponent className="h-8 w-8 text-primary group-hover:scale-110 transition-transform" />}
                           </div>
                           
-                          {index % 4 === 0 && (
-                            <div className="absolute -top-1 -right-1">
-                              <Badge variant="default" className="bg-gradient-to-r from-green-500 to-emerald-600 text-white text-xs shadow-sm">
-                                Popular
-                              </Badge>
-                            </div>
-                          )}
-                          
-                          <h3 className="font-semibold text-lg mb-2">{subservice.name}</h3>
-                          <div className="flex items-center justify-center gap-3 text-muted-foreground text-sm mb-4">
-                            {randomBenefits.map((benefit, i) => (
-                              <div key={i} className="flex items-center gap-1">
-                                <benefit.icon className="h-3.5 w-3.5" />
-                                <span>{benefit.text}</span>
-                              </div>
-                            ))}
-                          </div>
+                          <h3 className="font-semibold text-lg">{subservice.name}</h3>
                         </div>
                       </div>
                       
-                      <div className="bg-slate-50 p-4" onClick={() => handleSubserviceSelect(subservice.id, subservice.name)}>
-                        <div className="flex justify-between items-center mb-3">
-                          <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                      <div 
+                        className="p-4 space-y-3"
+                        onClick={() => handleSubserviceSelect(subservice.id, subservice.name)}
+                      >
+                        <div className="flex flex-wrap items-center justify-center gap-3 text-muted-foreground text-sm">
+                          {randomBenefits.map((benefit, i) => (
+                            <div key={i} className="flex items-center gap-1">
+                              <benefit.icon className="h-3.5 w-3.5" />
+                              <span>{benefit.text}</span>
+                            </div>
+                          ))}
+                        </div>
+                        
+                        <div className="flex items-center justify-between text-sm">
+                          <div className="flex items-center gap-1 text-muted-foreground">
                             <Clock className="h-3.5 w-3.5" />
                             <span>1-2 hrs</span>
                           </div>
-                          <div className="flex items-center gap-1 text-sm">
+                          
+                          <div className="flex items-center gap-1">
                             <Star className="h-3.5 w-3.5 text-yellow-500 fill-yellow-500" />
                             <span className="font-medium">4.8</span>
                             <span className="text-muted-foreground">(120+)</span>
                           </div>
                         </div>
                         
-                        <div className="flex items-center justify-between">
+                        <div className="flex items-center justify-between pt-2">
                           <div>
-                            <div className="text-xs text-muted-foreground mb-0.5">Starting from</div>
+                            <div className="text-xs text-muted-foreground">Starting from</div>
                             <div className="text-primary font-bold text-xl">₹{pricing}</div>
                           </div>
+                          
                           <Button 
-                            className="bg-primary hover:bg-primary/90 text-white" 
                             size="sm"
+                            className="bg-primary hover:bg-primary/90 text-white"
                           >
-                            View Details <ArrowRight className="ml-1 h-3.5 w-3.5" />
+                            Book Now
                           </Button>
                         </div>
                       </div>
@@ -246,7 +221,7 @@ const ServiceSubcategoryView = ({ categoryId, onBack }: ServiceSubcategoryViewPr
                   </motion.div>
                 );
               })}
-            </motion.div>
+            </div>
           </div>
         </>
       ) : (
@@ -255,7 +230,7 @@ const ServiceSubcategoryView = ({ categoryId, onBack }: ServiceSubcategoryViewPr
           categoryId={categoryId}
           selectedSubserviceName={selectedSubserviceName}
           onBack={handleBackToSubservices}
-          timeSlots={timeSlots}
+          timeSlots={[]}
           estimatedAmount={getEstimatedAmount(selectedSubservice)}
         />
       )}
