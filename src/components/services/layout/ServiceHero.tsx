@@ -64,8 +64,7 @@ const ServiceHero = ({
           </div>
           <LocationSelector 
             value={selectedLocation || ""} 
-            onChange={onLocationChange} 
-            className="pl-10 shadow-inner border-primary/20 focus-within:border-primary/50 transition-all"
+            onChange={onLocationChange}
           />
         </div>
         <div className="w-full md:w-1/2 relative">

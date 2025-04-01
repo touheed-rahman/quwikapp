@@ -132,7 +132,7 @@ const ServiceSubcategoryView = ({ categoryId, onBack }: ServiceSubcategoryViewPr
             <p className="text-muted-foreground">Select a specific service to book a professional</p>
           
             <motion.div 
-              className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mt-6"
+              className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-4 mt-6"
               variants={container}
               initial="hidden"
               animate="show"

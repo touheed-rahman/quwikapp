@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import Header from "@/components/Header";
 import ServiceBookingForm from "@/components/services/ServiceBookingForm";
+import ServiceConnector from "@/components/services/ServiceConnector";
 import { serviceCategories } from "@/data/serviceCategories";
 import { servicePricing } from "@/types/serviceTypes";
 import { useToast } from "@/components/ui/use-toast";
@@ -246,6 +247,11 @@ const ServiceDetail = () => {
                     </Button>
                   </CardContent>
                 </Card>
+                
+                <ServiceConnector 
+                  serviceId={serviceId || ""}
+                  serviceName={service.name}
+                />
               </div>
               
               <div className="space-y-6">
@@ -302,12 +308,16 @@ const ServiceDetail = () => {
                 <Card>
                   <CardHeader className="pb-2">
                     <CardTitle className="text-base">
-                      Still have questions?
+                      Are you a service provider?
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <Button variant="outline" className="w-full">
-                      Contact Support
+                    <Button 
+                      variant="outline" 
+                      className="w-full"
+                      onClick={() => navigate('/service-center')}
+                    >
+                      Go to Service Center
                     </Button>
                   </CardContent>
                 </Card>

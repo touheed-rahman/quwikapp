@@ -56,7 +56,7 @@ const ServiceCategories = ({
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
-      className="space-y-8"
+      className="space-y-6"
     >
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
         <h2 className="text-2xl font-semibold bg-gradient-to-r from-slate-900 to-slate-700 text-transparent bg-clip-text">
