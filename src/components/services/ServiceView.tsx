@@ -3,6 +3,16 @@ import { useState, useEffect } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { useNavigate } from "react-router-dom";
 import { serviceCategories } from "@/data/serviceCategories";
+import { Menu } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 
 // Layout components
 import ServiceLayout from "@/components/services/layout/ServiceLayout";
@@ -17,6 +27,7 @@ import PromoBanner from "@/components/services/PromoBanner";
 import HowItWorks from "@/components/services/HowItWorks";
 import ServiceGuarantee from "@/components/services/ServiceGuarantee";
 import RecentlyViewedServices from "@/components/services/RecentlyViewedServices";
+import ServiceRequestsMenu from "@/components/services/ServiceRequestsMenu";
 
 const ServiceView = () => {
   const navigate = useNavigate();
@@ -83,46 +94,69 @@ const ServiceView = () => {
   };
 
   return (
-    <ServiceLayout>
-      <ServiceHero 
-        searchQuery={searchQuery}
-        setSearchQuery={setSearchQuery}
-        selectedLocation={selectedLocation}
-        onLocationChange={handleLocationChange}
-      />
+    <div className="relative">
+      {/* Top Menu Button for Service Requests */}
+      <div className="sticky top-16 z-30 flex justify-end px-4 py-2 bg-white/80 backdrop-blur-md border-b">
+        <Sheet>
+          <SheetTrigger asChild>
+            <Button variant="outline" size="sm" className="gap-2">
+              <Menu className="h-4 w-4" />
+              <span className="sr-only sm:not-sr-only">Service Requests</span>
+            </Button>
+          </SheetTrigger>
+          <SheetContent>
+            <SheetHeader>
+              <SheetTitle>Service Requests</SheetTitle>
+              <SheetDescription>
+                View and manage your service requests
+              </SheetDescription>
+            </SheetHeader>
+            <ServiceRequestsMenu />
+          </SheetContent>
+        </Sheet>
+      </div>
 
-      {selectedCategory ? (
-        <ServiceSubcategoryView 
-          categoryId={selectedCategory}
-          onBack={handleBackToCategories}
+      <ServiceLayout>
+        <ServiceHero 
+          searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery}
+          selectedLocation={selectedLocation}
+          onLocationChange={handleLocationChange}
         />
-      ) : (
-        <>
-          <ServiceFilterBar 
-            activeFilter={activeFilter} 
-            onFilterChange={handleFilterChange} 
+
+        {selectedCategory ? (
+          <ServiceSubcategoryView 
+            categoryId={selectedCategory}
+            onBack={handleBackToCategories}
           />
-          
-          <PromoBanner />
-          
-          <ServiceCategories 
-            searchQuery={searchQuery}
-            onSelectCategory={handleCategorySelect}
-            selectedCategory={null}
-          />
-          
-          <PopularServices onSelectService={handlePopularServiceSelect} />
-          
-          <RecentlyViewedServices 
-            recentlyViewed={recentlyViewed}
-            onSelectRecent={handleCategorySelect}
-          />
-          
-          <HowItWorks />
-          <ServiceGuarantee />
-        </>
-      )}
-    </ServiceLayout>
+        ) : (
+          <>
+            <ServiceFilterBar 
+              activeFilter={activeFilter} 
+              onFilterChange={handleFilterChange} 
+            />
+            
+            <PromoBanner />
+            
+            <ServiceCategories 
+              searchQuery={searchQuery}
+              onSelectCategory={handleCategorySelect}
+              selectedCategory={null}
+            />
+            
+            <PopularServices onSelectService={handlePopularServiceSelect} />
+            
+            <RecentlyViewedServices 
+              recentlyViewed={recentlyViewed}
+              onSelectRecent={handleCategorySelect}
+            />
+            
+            <HowItWorks />
+            <ServiceGuarantee />
+          </>
+        )}
+      </ServiceLayout>
+    </div>
   );
 };
 
