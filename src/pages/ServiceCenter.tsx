@@ -14,7 +14,7 @@ import { useToast } from "@/components/ui/use-toast";
 import Header from "@/components/Header";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Bell, Calendar as CalendarIcon, Check, ChevronDown, ClipboardList, Clock, DollarSign, Home, MapPin, Phone, RefreshCw, Shield, Star, ThumbsUp, Tool, User, X } from "lucide-react";
+import { Bell, Calendar as CalendarIcon, Check, ChevronDown, ClipboardList, Clock, DollarSign, Home, MapPin, Phone, RefreshCw, Shield, Star, ThumbsUp, Wrench, User, X } from "lucide-react";
 
 const ServiceCenter = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -225,7 +225,7 @@ const ServiceCenter = () => {
             <RefreshCw className="h-4 w-4" /> Refresh
           </Button>
           <Button className="flex items-center gap-2">
-            <Tool className="h-4 w-4" /> Add New Service
+            <Wrench className="h-4 w-4" /> Add New Service
           </Button>
           <Button variant="outline" className="relative">
             <Bell className="h-4 w-4" />
