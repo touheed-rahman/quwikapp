@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { useNavigate } from "react-router-dom";
 import { serviceCategories } from "@/data/serviceCategories";
-import { Menu } from "lucide-react";
+import { Clipboard, BellRing } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -13,6 +13,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { Badge } from "@/components/ui/badge";
 
 // Layout components
 import ServiceLayout from "@/components/services/layout/ServiceLayout";
@@ -36,6 +37,7 @@ const ServiceView = () => {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [activeFilter, setActiveFilter] = useState<string>("all");
   const { toast } = useToast();
+  const [requestCount, setRequestCount] = useState(0);
 
   // State to track recently viewed services
   const [recentlyViewed, setRecentlyViewed] = useState<{id: string, name: string}[]>([]);
@@ -48,6 +50,16 @@ const ServiceView = () => {
         setRecentlyViewed(JSON.parse(storedRecent));
       } catch (e) {
         console.error("Error parsing recent services", e);
+      }
+    }
+    
+    // Get service request count from local storage
+    const requests = localStorage.getItem('serviceRequests');
+    if (requests) {
+      try {
+        setRequestCount(JSON.parse(requests).length);
+      } catch (e) {
+        console.error("Error parsing service requests", e);
       }
     }
   }, []);
@@ -99,14 +111,22 @@ const ServiceView = () => {
       <div className="sticky top-16 z-30 flex justify-end px-4 py-2 bg-white/80 backdrop-blur-md border-b">
         <Sheet>
           <SheetTrigger asChild>
-            <Button variant="outline" size="sm" className="gap-2">
-              <Menu className="h-4 w-4" />
-              <span className="sr-only sm:not-sr-only">Service Requests</span>
+            <Button variant="outline" size="sm" className="gap-2 relative bg-gradient-to-r from-primary/5 to-primary/10 hover:bg-primary/10 border-primary/20">
+              <Clipboard className="h-4 w-4 text-primary" />
+              <span className="sr-only sm:not-sr-only text-primary/90">My Requests</span>
+              {requestCount > 0 && (
+                <Badge className="absolute -top-2 -right-2 bg-red-500 text-white text-xs px-1.5 min-w-5 h-5 flex items-center justify-center">
+                  {requestCount}
+                </Badge>
+              )}
             </Button>
           </SheetTrigger>
           <SheetContent>
             <SheetHeader>
-              <SheetTitle>Service Requests</SheetTitle>
+              <SheetTitle className="flex items-center gap-2">
+                <BellRing className="h-5 w-5 text-primary" />
+                Service Requests
+              </SheetTitle>
               <SheetDescription>
                 View and manage your service requests
               </SheetDescription>

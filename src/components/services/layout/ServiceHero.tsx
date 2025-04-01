@@ -25,21 +25,21 @@ const ServiceHero = ({
 }: ServiceHeroProps) => {
   return (
     <motion.div 
-      className="bg-gradient-to-r from-primary/15 via-primary/10 to-primary/15 backdrop-blur-sm rounded-xl p-6 md:p-8 border border-primary/20 shadow-lg"
+      className="bg-gradient-to-r from-primary/15 via-primary/10 to-primary/15 backdrop-blur-sm rounded-xl p-4 md:p-6 lg:p-8 border border-primary/20 shadow-lg"
       variants={item}
     >
       <motion.div 
-        className="text-center mb-6"
+        className="text-center mb-4 md:mb-6"
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2, duration: 0.5 }}
       >
         <div className="relative inline-block mb-2">
-          <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-primary via-primary/80 to-primary/60 text-transparent bg-clip-text inline-block">
+          <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-primary via-primary/80 to-primary/60 text-transparent bg-clip-text inline-block">
             Professional Services
           </h1>
           <motion.div 
-            className="absolute -right-8 -top-6"
+            className="absolute -right-8 -top-6 hidden sm:block"
             initial={{ rotate: -10, scale: 0.9 }}
             animate={{ rotate: 0, scale: 1 }}
             transition={{ delay: 0.6, duration: 0.5 }}
@@ -47,40 +47,40 @@ const ServiceHero = ({
             <Sparkles className="h-6 w-6 text-yellow-400" />
           </motion.div>
         </div>
-        <p className="text-lg text-muted-foreground max-w-2xl mx-auto animate-fade-up">
+        <p className="text-sm md:text-base lg:text-lg text-muted-foreground max-w-2xl mx-auto animate-fade-up">
           Book verified professionals for all your home and office needs
         </p>
       </motion.div>
 
       <motion.div 
-        className="flex flex-col md:flex-row gap-4 items-center bg-background/50 backdrop-blur-sm p-3 rounded-lg border border-primary/10 shadow-sm"
+        className="flex flex-col md:flex-row gap-3 items-center bg-background/50 backdrop-blur-sm p-3 rounded-lg border border-primary/10 shadow-sm"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3, duration: 0.5 }}
       >
-        <div className="w-full md:w-1/2 relative">
+        <div className="w-full relative">
           <div className="absolute left-3 top-1/2 -translate-y-1/2 text-primary/70">
-            <MapPin className="h-5 w-5" />
+            <MapPin className="h-4 w-4 md:h-5 md:w-5" />
           </div>
           <LocationSelector 
             value={selectedLocation || ""} 
             onChange={onLocationChange}
           />
         </div>
-        <div className="w-full md:w-1/2 relative">
+        <div className="w-full relative">
           <Input
             type="text"
             placeholder="Search for services..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10 pr-4 h-12 w-full border-primary/20 shadow-inner rounded-lg focus:ring-primary focus:border-primary/50 transition-all"
+            className="pl-10 pr-4 h-10 md:h-12 w-full border-primary/20 shadow-inner rounded-lg focus:ring-primary focus:border-primary/50 transition-all"
           />
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-primary/70" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 md:h-5 md:w-5 text-primary/70" />
         </div>
       </motion.div>
       
       <motion.div 
-        className="mt-4 text-center text-sm text-muted-foreground"
+        className="mt-3 md:mt-4 text-center text-xs md:text-sm text-muted-foreground"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.7 }}

@@ -90,20 +90,20 @@ const ServiceCategories = ({
                 className="h-full overflow-hidden border-2 border-transparent hover:border-primary/20 cursor-pointer transition-all duration-300 hover:shadow-xl group bg-white relative"
                 onClick={() => handleCategoryClick(category.id)}
               >
-                <div className={`${category.color} p-6 flex items-center justify-center group-hover:saturate-150 transition-all overflow-hidden relative`}>
+                <div className={`${category.color} p-4 sm:p-6 flex items-center justify-center group-hover:saturate-150 transition-all overflow-hidden relative`}>
                   <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                   {IconComponent && (
                     <div className="relative z-10 transform group-hover:scale-110 transition-all duration-300">
-                      <IconComponent className="h-10 w-10 text-primary drop-shadow-md" />
+                      <IconComponent className="h-8 w-8 sm:h-10 sm:w-10 text-primary drop-shadow-md" />
                     </div>
                   )}
                 </div>
-                <CardContent className="p-4 text-center relative z-10">
-                  <h3 className="font-medium text-base">{category.name}</h3>
+                <CardContent className="p-3 sm:p-4 text-center relative z-10">
+                  <h3 className="font-medium text-sm sm:text-base">{category.name}</h3>
                   <Separator className="my-2 bg-primary/10" />
-                  <div className="flex items-center justify-center mt-2 gap-2">
-                    <Badge variant="outline" className="bg-primary/5 text-xs px-2 py-0.5">
-                      {category.subservices.length} services
+                  <div className="flex items-center justify-center mt-2 gap-2 flex-wrap">
+                    <Badge variant="outline" className="bg-primary/5 text-xs px-1.5 py-0.5 sm:px-2">
+                      {category.subservices.length}
                     </Badge>
                     <div className="flex items-center text-xs text-yellow-500">
                       <Star className="h-3 w-3 fill-yellow-500 mr-0.5" />

@@ -100,33 +100,37 @@ const LocationSelector = ({ value, onChange }: { value: string | null, onChange:
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className="w-full justify-between text-muted-foreground hover:text-foreground ring-offset-background"
+          className="w-full justify-between text-sm text-muted-foreground hover:text-foreground px-3 py-1.5 h-10 md:h-12 ring-offset-background shadow-sm"
         >
-          <div className="flex items-center gap-2 truncate">
+          <div className="flex items-center gap-1.5 truncate">
             <MapPin className="h-4 w-4 shrink-0 text-primary" />
-            <span className="truncate">{value ? getLocationName(value) : "Select location"}</span>
+            <span className="truncate font-medium">{value ? getLocationName(value) : "Select location"}</span>
           </div>
+          <ChevronRight className={`h-4 w-4 shrink-0 opacity-50 transition-transform duration-200 ${open ? 'rotate-90' : ''}`} />
         </Button>
       </PopoverTrigger>
       <PopoverContent 
-        className="w-[300px] p-0" 
+        className="w-[calc(100vw-32px)] max-w-[300px] p-0 shadow-lg border-primary/10" 
         align="start"
       >
         <Command>
-          <CommandList className="max-h-[300px] overflow-y-auto">
+          <CommandList className="max-h-[60vh] overflow-y-auto">
             {loading ? (
               <CommandEmpty>
-                <Loader2 className="h-4 w-4 animate-spin mx-auto" />
-                <p className="text-sm text-muted-foreground text-center mt-2">
-                  Loading...
-                </p>
+                <div className="flex flex-col items-center justify-center py-6">
+                  <Loader2 className="h-5 w-5 animate-spin text-primary" />
+                  <p className="text-sm text-muted-foreground text-center mt-2">
+                    Loading...
+                  </p>
+                </div>
               </CommandEmpty>
             ) : selectedState ? (
               <>
-                <div className="p-2">
+                <div className="sticky top-0 p-2 bg-white/90 backdrop-blur-sm z-10 border-b">
                   <Button
                     variant="ghost"
-                    className="w-full justify-start font-normal hover:bg-primary hover:text-white"
+                    size="sm"
+                    className="w-full justify-start font-normal hover:bg-primary/10 text-primary"
                     onClick={() => {
                       setSelectedState(null);
                       setCities([]);
@@ -137,30 +141,42 @@ const LocationSelector = ({ value, onChange }: { value: string | null, onChange:
                     Back to States
                   </Button>
                 </div>
-                <div className="py-2">
-                  {cities.map((city) => (
-                    <div
-                      key={city.id}
-                      className="px-2 py-1.5 cursor-pointer hover:bg-primary hover:text-white"
-                      onClick={() => handleCitySelect(city)}
-                    >
-                      {city.name}
+                <div className="py-1">
+                  {cities.length === 0 ? (
+                    <div className="text-center py-6 text-sm text-muted-foreground">
+                      No cities found for this state
                     </div>
-                  ))}
+                  ) : (
+                    cities.map((city) => (
+                      <div
+                        key={city.id}
+                        className="px-3 py-2 cursor-pointer hover:bg-primary/10 hover:text-primary transition-colors rounded-sm mx-1 my-0.5"
+                        onClick={() => handleCitySelect(city)}
+                      >
+                        {city.name}
+                      </div>
+                    ))
+                  )}
                 </div>
               </>
             ) : (
-              <div className="py-2">
-                {states.map((state) => (
-                  <div
-                    key={state.id}
-                    className="px-2 py-1.5 cursor-pointer hover:bg-primary hover:text-white flex items-center justify-between"
-                    onClick={() => handleStateSelect(state)}
-                  >
-                    <span>{state.name}</span>
-                    <ChevronRight className="h-4 w-4" />
+              <div className="py-1">
+                {states.length === 0 ? (
+                  <div className="text-center py-6 text-sm text-muted-foreground">
+                    No states found
                   </div>
-                ))}
+                ) : (
+                  states.map((state) => (
+                    <div
+                      key={state.id}
+                      className="px-3 py-2 cursor-pointer hover:bg-primary/10 hover:text-primary transition-colors flex items-center justify-between rounded-sm mx-1 my-0.5"
+                      onClick={() => handleStateSelect(state)}
+                    >
+                      <span>{state.name}</span>
+                      <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                    </div>
+                  ))
+                )}
               </div>
             )}
           </CommandList>

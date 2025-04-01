@@ -33,6 +33,7 @@ export interface ServiceLead {
   urgent: boolean;
   created_at: string;
   updated_at?: string;
+  payment_method?: string;
 }
 
 // Service pricing for different service types (keeping prices 50 Rs lower than competitors)
