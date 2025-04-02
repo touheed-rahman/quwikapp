@@ -27,11 +27,10 @@ export const useSession = () => {
                 .single();
               
               if (data) {
-                // Check if data has a role property
-                if (data.role) {
+                // Check for role in different potential fields
+                if (data.role !== undefined) {
                   setUserRole(data.role);
-                } else if (data.user_type) {
-                  // Fallback to user_type if role doesn't exist
+                } else if (data.user_type !== undefined) {
                   setUserRole(data.user_type);
                 }
               }
@@ -61,16 +60,15 @@ export const useSession = () => {
           .single()
           .then(({ data }) => {
             if (data) {
-              // Check if data has a role property
-              if (data.role) {
+              // Check for role in different potential fields
+              if (data.role !== undefined) {
                 setUserRole(data.role);
-              } else if (data.user_type) {
-                // Fallback to user_type if role doesn't exist
+              } else if (data.user_type !== undefined) {
                 setUserRole(data.user_type);
               }
             }
           })
-          .catch(err => console.error("Error fetching user profile:", err));
+          .catch(error => console.error("Error fetching user profile:", error));
       }
       
       setLoading(false);
@@ -103,3 +101,6 @@ export const useSession = () => {
     userRole
   };
 };
+
+// Also export with the name that use-chat.ts is expecting
+export const useSessionUser = useSession;
