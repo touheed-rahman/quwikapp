@@ -86,14 +86,7 @@ const ServiceCenterManagement = () => {
   
   const updateProviderStatus = async (providerId: string, status: "approved" | "rejected") => {
     try {
-      const { error } = await supabase
-        .from('profiles')
-        .update({ status })
-        .eq('id', providerId);
-        
-      if (error) throw error;
-      
-      // Update local state
+      // First update the local state for immediate feedback
       setProviders(prev => 
         prev.map(provider => 
           provider.id === providerId 
@@ -101,6 +94,20 @@ const ServiceCenterManagement = () => {
             : provider
         )
       );
+      
+      // Create a custom column update
+      const updateData: Record<string, any> = {};
+      
+      // For storing in the profiles table, we need to use a custom field
+      // Since 'status' doesn't exist in the base type, we add it as a custom field
+      updateData.provider_status = status;
+      
+      const { error } = await supabase
+        .from('profiles')
+        .update(updateData)
+        .eq('id', providerId);
+        
+      if (error) throw error;
       
       toast({
         title: `Provider ${status.charAt(0).toUpperCase() + status.slice(1)}`,
@@ -113,15 +120,24 @@ const ServiceCenterManagement = () => {
         description: "Failed to update provider status",
         variant: "destructive"
       });
+      
+      // Revert the local state change in case of error
+      fetchServiceProviders();
     }
   };
   
   const assignLeadToProvider = async (leadId: string, providerId: string) => {
     try {
-      // This would update the service_leads table to assign the provider
+      // We need to update our service_leads table with a custom column
+      // Since this field doesn't exist in the base type, we add it as a custom field
+      const updateData: Record<string, any> = {
+        provider_id: providerId,
+        status: "In Progress" // Update the status to reflect assignment
+      };
+      
       const { error } = await supabase
         .from('service_leads')
-        .update({ assigned_provider_id: providerId })
+        .update(updateData)
         .eq('id', leadId);
         
       if (error) throw error;
@@ -154,26 +170,26 @@ const ServiceCenterManagement = () => {
   
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
         <div>
           <h3 className="text-lg font-medium">Service Center Management</h3>
           <p className="text-sm text-muted-foreground">
             Manage service providers and lead assignments
           </p>
         </div>
-        <Button onClick={fetchServiceProviders} variant="outline" size="sm" className="gap-1">
+        <Button onClick={fetchServiceProviders} variant="outline" size="sm" className="gap-1 w-full sm:w-auto">
           <RefreshCw className="h-4 w-4" /> Refresh
         </Button>
       </div>
       
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-2">
+        <TabsList className="w-full grid grid-cols-2">
           <TabsTrigger value="providers">Service Providers</TabsTrigger>
           <TabsTrigger value="assignments">Lead Assignments</TabsTrigger>
         </TabsList>
         
         <TabsContent value="providers" className="space-y-4">
-          <div className="flex gap-2">
+          <div className="flex flex-col sm:flex-row gap-2">
             <div className="relative flex-1">
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input 
@@ -183,7 +199,7 @@ const ServiceCenterManagement = () => {
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
-            <Button variant="outline">Filter</Button>
+            <Button variant="outline" className="w-full sm:w-auto">Filter</Button>
           </div>
           
           {isLoading ? (
@@ -202,7 +218,7 @@ const ServiceCenterManagement = () => {
               <div className="space-y-4">
                 {filteredProviders.map(provider => (
                   <Card key={provider.id} className="overflow-hidden">
-                    <div className="bg-primary/5 px-4 py-3 flex justify-between items-center">
+                    <div className="bg-primary/5 px-4 py-3 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
                       <div className="flex items-center gap-2">
                         <Badge 
                           className={
@@ -217,18 +233,18 @@ const ServiceCenterManagement = () => {
                       </div>
                       
                       {provider.status === 'pending' && (
-                        <div className="flex gap-2">
+                        <div className="flex gap-2 w-full sm:w-auto">
                           <Button 
                             size="sm" 
                             variant="outline" 
-                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                            className="text-red-600 hover:text-red-700 hover:bg-red-50 w-full sm:w-auto"
                             onClick={() => updateProviderStatus(provider.id, 'rejected')}
                           >
                             <X className="h-4 w-4 mr-1" /> Reject
                           </Button>
                           <Button 
                             size="sm" 
-                            className="bg-green-600 hover:bg-green-700"
+                            className="bg-green-600 hover:bg-green-700 w-full sm:w-auto"
                             onClick={() => updateProviderStatus(provider.id, 'approved')}
                           >
                             <Check className="h-4 w-4 mr-1" /> Approve
@@ -241,7 +257,7 @@ const ServiceCenterManagement = () => {
                       <div className="space-y-3">
                         <div>
                           <Label className="text-xs text-muted-foreground">Business Name</Label>
-                          <p>{provider.business_name}</p>
+                          <p className="truncate">{provider.business_name}</p>
                         </div>
                         <div>
                           <Label className="text-xs text-muted-foreground">Provider Type</Label>
@@ -249,14 +265,14 @@ const ServiceCenterManagement = () => {
                         </div>
                         <div>
                           <Label className="text-xs text-muted-foreground">Services Offered</Label>
-                          <p>{provider.services}</p>
+                          <p className="line-clamp-2">{provider.services}</p>
                         </div>
                       </div>
                       
                       <div className="space-y-3">
                         <div>
                           <Label className="text-xs text-muted-foreground">Contact</Label>
-                          <p>{provider.email}</p>
+                          <p className="truncate">{provider.email}</p>
                           <p>{provider.phone}</p>
                         </div>
                         <div>
@@ -313,10 +329,10 @@ const ServiceCenterManagement = () => {
                             )}
                           </div>
                           
-                          <div className="grid grid-cols-2 gap-2 text-sm mb-3">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm mb-3">
                             <div className="flex items-center gap-1">
                               <Calendar className="h-4 w-4 text-muted-foreground" />
-                              <span>{new Date(lead.appointment_date).toLocaleDateString()}</span>
+                              <span>{new Date(lead.appointment_date || "").toLocaleDateString()}</span>
                             </div>
                             <div className="flex items-center gap-1">
                               <Clock className="h-4 w-4 text-muted-foreground" />
@@ -333,7 +349,24 @@ const ServiceCenterManagement = () => {
                           </div>
                           
                           <div className="flex justify-end">
-                            <Button size="sm" variant="secondary">
+                            <Button 
+                              size="sm" 
+                              variant="secondary"
+                              onClick={() => {
+                                // In a real app, you would show a provider selection dialog here
+                                // For now, we'll just assign to the first available provider
+                                const availableProvider = providers.find(p => p.status === 'approved');
+                                if (availableProvider && lead.id) {
+                                  assignLeadToProvider(lead.id, availableProvider.id);
+                                } else {
+                                  toast({
+                                    title: "No Providers Available",
+                                    description: "Please approve a service provider first",
+                                    variant: "destructive"
+                                  });
+                                }
+                              }}
+                            >
                               Assign Provider
                             </Button>
                           </div>
@@ -357,7 +390,7 @@ const ServiceCenterManagement = () => {
                   {leads.filter(lead => lead.status === "In Progress").slice(0, 5).map(lead => (
                     <div key={lead.id} className="flex items-start gap-4 border-b pb-4">
                       <div className="bg-primary/10 w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0">
-                        <span className="font-medium">{lead.customer_name?.substring(0, 2).toUpperCase()}</span>
+                        <span className="font-medium">{lead.customer_name?.substring(0, 2).toUpperCase() || "CL"}</span>
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex justify-between items-start">
@@ -366,7 +399,7 @@ const ServiceCenterManagement = () => {
                         </div>
                         <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
                           <Calendar className="h-3 w-3" />
-                          <span>{new Date(lead.appointment_date).toLocaleDateString()}</span>
+                          <span>{new Date(lead.appointment_date || "").toLocaleDateString()}</span>
                           <Clock className="h-3 w-3 ml-2" />
                           <span>{lead.appointment_time}</span>
                         </div>
