@@ -7,6 +7,7 @@ export const useSession = () => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [userRole, setUserRole] = useState<string | null>(null);
 
   useEffect(() => {
     // Set up the auth state listener first
@@ -14,6 +15,28 @@ export const useSession = () => {
       (event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
+        
+        if (session?.user) {
+          // Check if user is a service provider
+          setTimeout(async () => {
+            try {
+              const { data, error } = await supabase
+                .from('user_profiles')
+                .select('user_role')
+                .eq('user_id', session.user.id)
+                .single();
+              
+              if (data && !error) {
+                setUserRole(data.user_role);
+              }
+            } catch (err) {
+              console.error("Error fetching user role:", err);
+            }
+          }, 0);
+        } else {
+          setUserRole(null);
+        }
+        
         setLoading(false);
       }
     );
@@ -22,6 +45,22 @@ export const useSession = () => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
+      
+      if (session?.user) {
+        // Check if user is a service provider
+        supabase
+          .from('user_profiles')
+          .select('user_role')
+          .eq('user_id', session.user.id)
+          .single()
+          .then(({ data, error }) => {
+            if (data && !error) {
+              setUserRole(data.user_role);
+            }
+          })
+          .catch(err => console.error("Error fetching user role:", err));
+      }
+      
       setLoading(false);
     });
 
@@ -38,11 +77,17 @@ export const useSession = () => {
     }
   };
 
+  const isServiceProvider = () => {
+    return userRole === 'service_provider' || userRole === 'service_admin';
+  };
+
   return {
     user,
     session,
     loading,
     signOut,
     isAuthenticated: !!session?.user,
+    isServiceProvider,
+    userRole
   };
 };

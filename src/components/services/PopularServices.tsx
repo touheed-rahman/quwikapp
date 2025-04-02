@@ -114,13 +114,13 @@ const PopularServices = ({ onSelectService }: PopularServicesProps) => {
         {services.map((service) => (
           <motion.div
             key={service.id}
-            whileHover={{ y: -5, scale: 1.02 }}
+            whileHover={{ y: -5 }}
             className="cursor-pointer h-full"
+            onClick={() => onSelectService(service.id, service.name)}
           >
-            <Card className="overflow-hidden h-full border-transparent hover:border-primary/20 transition-all duration-300 shadow-sm hover:shadow-md">
+            <Card className="overflow-hidden h-full border-transparent hover:border-primary/20 transition-all duration-300 shadow-sm hover:shadow-md flex flex-col">
               <div 
                 className={`relative bg-gradient-to-br ${service.color} p-5`}
-                onClick={() => onSelectService(service.id, service.name)}
               >
                 {service.badge && (
                   <Badge className={`absolute top-2 left-2 text-xs ${service.badgeColor}`}>
@@ -138,11 +138,11 @@ const PopularServices = ({ onSelectService }: PopularServicesProps) => {
                 </button>
                 
                 <div className="flex justify-center">
-                  <service.icon className={`h-16 w-16 ${service.iconColor} mx-auto group-hover:scale-110 transition-transform duration-300`} />
+                  <service.icon className={`h-16 w-16 ${service.iconColor} mx-auto transition-transform duration-300`} />
                 </div>
               </div>
               
-              <CardContent className="p-4 space-y-3" onClick={() => onSelectService(service.id, service.name)}>
+              <CardContent className="p-4 space-y-3 flex-grow flex flex-col">
                 <h3 className="font-medium text-base text-center text-slate-900">{service.name}</h3>
                 
                 <div className="flex items-center justify-between text-sm">
@@ -158,7 +158,7 @@ const PopularServices = ({ onSelectService }: PopularServicesProps) => {
                   </div>
                 </div>
                 
-                <div className="flex items-center justify-between pt-2">
+                <div className="flex items-center justify-between pt-2 mt-auto">
                   <div>
                     <div className="text-xs text-muted-foreground">Starting from</div>
                     <div className="text-primary font-bold text-lg">₹{service.price}</div>
@@ -167,7 +167,7 @@ const PopularServices = ({ onSelectService }: PopularServicesProps) => {
                   <Button 
                     variant="outline" 
                     size="sm"
-                    className="border-primary/20 hover:bg-primary/10 hover:text-primary"
+                    className="border-primary/20 hover:bg-primary/10 hover:text-primary whitespace-nowrap"
                   >
                     Book Now
                   </Button>

@@ -97,7 +97,6 @@ const ServiceHero = ({
             <LocationSelector 
               value={selectedLocation || ""} 
               onChange={onLocationChange}
-              className="pl-10 pr-4 h-12 w-full border-0 focus-visible:ring-1 focus-visible:ring-primary/30 shadow-none bg-transparent"
             />
           </div>
           
