@@ -20,17 +20,23 @@ export const useSession = () => {
           // Check if user is a service provider
           setTimeout(async () => {
             try {
-              const { data, error } = await supabase
+              const { data } = await supabase
                 .from('profiles')
-                .select('role')
+                .select('*')
                 .eq('id', session.user.id)
                 .single();
               
-              if (data && !error) {
-                setUserRole(data.role);
+              if (data) {
+                // Check if data has a role property
+                if (data.role) {
+                  setUserRole(data.role);
+                } else if (data.user_type) {
+                  // Fallback to user_type if role doesn't exist
+                  setUserRole(data.user_type);
+                }
               }
             } catch (err) {
-              console.error("Error fetching user role:", err);
+              console.error("Error fetching user profile:", err);
             }
           }, 0);
         } else {
@@ -50,15 +56,21 @@ export const useSession = () => {
         // Check if user is a service provider
         supabase
           .from('profiles')
-          .select('role')
+          .select('*')
           .eq('id', session.user.id)
           .single()
-          .then(({ data, error }) => {
-            if (data && !error) {
-              setUserRole(data.role);
+          .then(({ data }) => {
+            if (data) {
+              // Check if data has a role property
+              if (data.role) {
+                setUserRole(data.role);
+              } else if (data.user_type) {
+                // Fallback to user_type if role doesn't exist
+                setUserRole(data.user_type);
+              }
             }
           })
-          .catch(err => console.error("Error fetching user role:", err));
+          .catch(err => console.error("Error fetching user profile:", err));
       }
       
       setLoading(false);

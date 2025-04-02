@@ -94,7 +94,6 @@ const ServiceHero = ({
             <LocationSelector 
               value={selectedLocation || ""} 
               onChange={onLocationChange}
-              className="pl-9 pr-4 h-12 w-full border-none focus:ring-primary focus:border-primary/50 transition-all"
             />
             <div className="absolute left-3 top-1/2 -translate-y-1/2 text-primary/70">
               <MapPin className="h-4 w-4 md:h-5 md:w-5" />

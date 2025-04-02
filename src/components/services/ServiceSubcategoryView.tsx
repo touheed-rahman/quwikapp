@@ -71,25 +71,25 @@ const ServiceSubcategoryView = ({ categoryId, onBack }: SubcategoryViewProps) =>
               key={subcat.id}
               className="overflow-hidden border-transparent hover:border-primary/20 transition-all duration-300 shadow-sm hover:shadow-md"
             >
-              <div className="relative h-32 sm:h-40 bg-gradient-to-br from-primary/5 to-primary/10 p-4">
+              <div className="relative h-24 sm:h-32 bg-gradient-to-br from-primary/5 to-primary/10 p-4">
                 <div className="absolute bottom-4 left-4">
                   <h3 className="text-base sm:text-lg font-semibold">{subcat.name}</h3>
                   <div className="flex items-center gap-1 mt-1">
-                    <Star className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-yellow-500 fill-yellow-500" />
+                    <Star className="h-3.5 w-3.5 text-yellow-500 fill-yellow-500" />
                     <span className="text-xs sm:text-sm font-medium">{(4 + Math.random()).toFixed(1)}</span>
                     <span className="text-xs text-muted-foreground">({Math.floor(Math.random() * 200) + 50} ratings)</span>
                   </div>
                 </div>
               </div>
               
-              <CardContent className="p-3 sm:p-4 space-y-3 sm:space-y-4">                
+              <CardContent className="p-3 sm:p-4 space-y-3">                
                 <div className="flex justify-between items-center">
                   <div className="text-primary font-semibold text-base sm:text-lg">₹{price}</div>
                   
                   <Button 
                     onClick={() => handleBookService(subcat.id)}
                     size="sm"
-                    className="text-xs sm:text-sm px-3 sm:px-4 py-1 h-8 sm:h-9"
+                    className="text-xs sm:text-sm px-3 sm:px-4 py-1 h-8"
                   >
                     Book Now
                   </Button>
