@@ -78,7 +78,7 @@ const ServiceSubcategoryView = ({ categoryId, onBack }: SubcategoryViewProps) =>
           <p className="text-muted-foreground">No services available for this category.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
           {subcategories.map((subcat: any) => {
             // Get the price from servicePricing if available
             const price = servicePricing[categoryId]?.[subcat.id] || 499;

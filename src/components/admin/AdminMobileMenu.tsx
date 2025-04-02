@@ -1,102 +1,84 @@
 
-import { Gauge, LayoutGrid, Users, BarChart3, Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { motion, AnimatePresence } from "framer-motion";
-import { useState } from "react";
-import { Badge } from "@/components/ui/badge";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+import { Info, List, Menu, ShoppingCart, Star, Users2, Watch, Wrench } from "lucide-react";
 
-interface AdminMobileMenuProps {
+type AdminMobileMenuProps = {
   activeTab: string;
   setActiveTab: (tab: string) => void;
-}
+};
 
 const AdminMobileMenu = ({ activeTab, setActiveTab }: AdminMobileMenuProps) => {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const menuItems = [
+    {
+      id: 'dashboard',
+      label: 'Dashboard',
+      icon: <Info className="h-4 w-4" />,
+    },
+    {
+      id: 'listings',
+      label: 'Listings',
+      icon: <ShoppingCart className="h-4 w-4" />,
+    },
+    {
+      id: 'users',
+      label: 'Users',
+      icon: <Users2 className="h-4 w-4" />,
+    },
+    {
+      id: 'analytics',
+      label: 'Analytics',
+      icon: <Star className="h-4 w-4" />,
+    },
+    {
+      id: 'service-leads',
+      label: 'Service Leads',
+      icon: <List className="h-4 w-4" />,
+    },
+    {
+      id: 'service-center',
+      label: 'Service Center',
+      icon: <Wrench className="h-4 w-4" />,
+    },
+  ];
 
-  const handleTabChange = (tab: string) => {
-    setActiveTab(tab);
-    setMobileMenuOpen(false);
+  const getActiveLabel = () => {
+    const item = menuItems.find(item => item.id === activeTab);
+    return item ? item.label : 'Dashboard';
   };
 
   return (
-    <>
-      <Button 
-        variant={mobileMenuOpen ? "default" : "ghost"} 
-        size="icon" 
-        className="md:hidden relative"
-        onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-        aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
-      >
-        {mobileMenuOpen ? (
-          <X className="h-5 w-5" />
-        ) : (
-          <>
-            <Menu className="h-5 w-5" />
-            <Badge className="absolute -top-1 -right-1 bg-primary text-[10px] h-4 w-4 flex items-center justify-center p-0">
-              4
-            </Badge>
-          </>
-        )}
-      </Button>
-      
-      <AnimatePresence>
-        {mobileMenuOpen && (
-          <motion.div 
-            className="fixed top-16 left-0 right-0 bg-white shadow-lg z-40 md:hidden border-b border-primary/10"
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.2 }}
-          >
-            <div className="p-3 space-y-1">
-              <Button 
-                variant={activeTab === 'dashboard' ? "default" : "ghost"} 
-                className="w-full justify-start text-base font-medium rounded-lg h-12"
-                onClick={() => handleTabChange('dashboard')}
-              >
-                <Gauge className="w-5 h-5 mr-3" />
-                Dashboard
-                <div className="ml-auto bg-primary/10 text-primary text-xs font-medium px-2 py-0.5 rounded-full">
-                  Overview
-                </div>
-              </Button>
-              
-              <Button 
-                variant={activeTab === 'listings' ? "default" : "ghost"} 
-                className="w-full justify-start text-base font-medium rounded-lg h-12"
-                onClick={() => handleTabChange('listings')}
-              >
-                <LayoutGrid className="w-5 h-5 mr-3" />
-                Listings
-                <Badge className="ml-auto bg-amber-500/90 hover:bg-amber-500 text-white">12</Badge>
-              </Button>
-              
-              <Button 
-                variant={activeTab === 'users' ? "default" : "ghost"} 
-                className="w-full justify-start text-base font-medium rounded-lg h-12"
-                onClick={() => handleTabChange('users')}
-              >
-                <Users className="w-5 h-5 mr-3" />
-                Users
-                <Badge className="ml-auto bg-green-500/90 hover:bg-green-500 text-white">6</Badge>
-              </Button>
-              
-              <Button 
-                variant={activeTab === 'analytics' ? "default" : "ghost"} 
-                className="w-full justify-start text-base font-medium rounded-lg h-12"
-                onClick={() => handleTabChange('analytics')}
-              >
-                <BarChart3 className="w-5 h-5 mr-3" />
-                Analytics
-                <div className="ml-auto bg-primary/10 text-primary text-xs font-medium px-2 py-0.5 rounded-full">
-                  Reports
-                </div>
-              </Button>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </>
+    <Sheet>
+      <SheetTrigger asChild>
+        <Button variant="outline" size="icon" className="mr-2">
+          <Menu className="h-5 w-5" />
+        </Button>
+      </SheetTrigger>
+      <SheetContent side="left">
+        <SheetHeader>
+          <SheetTitle>Admin Navigation</SheetTitle>
+        </SheetHeader>
+        <div className="grid gap-2 py-4">
+          {menuItems.map((item) => (
+            <Button
+              key={item.id}
+              variant={activeTab === item.id ? "default" : "ghost"}
+              className="justify-start gap-2"
+              onClick={() => setActiveTab(item.id)}
+            >
+              {item.icon}
+              {item.label}
+            </Button>
+          ))}
+        </div>
+      </SheetContent>
+    </Sheet>
   );
 };
 
