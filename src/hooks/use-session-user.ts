@@ -57,12 +57,20 @@ export const useSession = () => {
       
       if (session?.user) {
         // Check if user is a service provider
-        supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', session.user.id)
-          .single()
-          .then(({ data }) => {
+        // Use a properly typed Promise with error handling
+        const fetchProfile = async () => {
+          try {
+            const { data, error } = await supabase
+              .from('profiles')
+              .select('*')
+              .eq('id', session.user.id)
+              .single();
+              
+            if (error) {
+              console.error("Error fetching user profile:", error);
+              return;
+            }
+            
             if (data) {
               // Check for role in different potential fields using optional chaining
               // This avoids TypeScript errors for properties that might not exist
@@ -75,8 +83,12 @@ export const useSession = () => {
                 setUserRole(userType);
               }
             }
-          })
-          .catch(error => console.error("Error fetching user profile:", error));
+          } catch (err) {
+            console.error("Exception when fetching user profile:", err);
+          }
+        };
+        
+        fetchProfile();
       }
       
       setLoading(false);
