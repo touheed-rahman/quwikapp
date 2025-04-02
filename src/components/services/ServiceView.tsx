@@ -1,9 +1,8 @@
-
 import { useState, useEffect } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { useNavigate } from "react-router-dom";
 import { serviceCategories } from "@/data/serviceCategories";
-import { BellRing, LogIn, Tool, Briefcase } from "lucide-react";
+import { BellRing, LogIn, Wrench, Briefcase } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -202,7 +201,7 @@ const ServiceView = () => {
                   <CardContent className="p-6">
                     <div className="flex flex-col items-center text-center space-y-3">
                       <div className="h-14 w-14 bg-blue-100 rounded-full flex items-center justify-center mb-2">
-                        <Tool className="h-7 w-7 text-blue-600" />
+                        <Wrench className="h-7 w-7 text-blue-600" />
                       </div>
                       <h3 className="text-xl font-semibold text-blue-800">Hire Service Professionals</h3>
                       <p className="text-blue-700/80">

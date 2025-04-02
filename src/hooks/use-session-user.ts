@@ -21,13 +21,13 @@ export const useSession = () => {
           setTimeout(async () => {
             try {
               const { data, error } = await supabase
-                .from('user_profiles')
-                .select('user_role')
-                .eq('user_id', session.user.id)
+                .from('profiles')
+                .select('role')
+                .eq('id', session.user.id)
                 .single();
               
               if (data && !error) {
-                setUserRole(data.user_role);
+                setUserRole(data.role);
               }
             } catch (err) {
               console.error("Error fetching user role:", err);
@@ -49,13 +49,13 @@ export const useSession = () => {
       if (session?.user) {
         // Check if user is a service provider
         supabase
-          .from('user_profiles')
-          .select('user_role')
-          .eq('user_id', session.user.id)
+          .from('profiles')
+          .select('role')
+          .eq('id', session.user.id)
           .single()
           .then(({ data, error }) => {
             if (data && !error) {
-              setUserRole(data.user_role);
+              setUserRole(data.role);
             }
           })
           .catch(err => console.error("Error fetching user role:", err));

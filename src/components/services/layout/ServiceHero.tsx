@@ -56,17 +56,17 @@ const ServiceHero = ({
 
   return (
     <motion.div 
-      className="bg-gradient-to-b from-primary/20 via-primary/10 to-transparent backdrop-blur-sm rounded-xl p-5 md:p-6 lg:p-8 border border-primary/20 shadow-lg"
+      className="bg-gradient-to-b from-primary/20 via-primary/10 to-transparent backdrop-blur-sm rounded-xl p-4 sm:p-5 md:p-6 lg:p-8 border border-primary/20 shadow-lg"
       variants={item}
     >
       <motion.div 
-        className="text-center mb-4 md:mb-6"
+        className="text-center mb-3 md:mb-6"
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2, duration: 0.5 }}
       >
-        <div className="relative inline-block mb-3">
-          <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-primary via-primary/80 to-primary/60 text-transparent bg-clip-text inline-block">
+        <div className="relative inline-block mb-2 sm:mb-3">
+          <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-primary via-primary/80 to-primary/60 text-transparent bg-clip-text inline-block">
             Book Professional Services
           </h1>
           <motion.div 
@@ -91,13 +91,14 @@ const ServiceHero = ({
           transition={{ delay: 0.3, duration: 0.5 }}
         >
           <div className="w-full relative bg-background/80 backdrop-blur-sm rounded-lg border border-primary/10 shadow-sm overflow-hidden">
-            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-primary/70">
-              <MapPin className="h-4 w-4 md:h-5 md:w-5" />
-            </div>
             <LocationSelector 
               value={selectedLocation || ""} 
               onChange={onLocationChange}
+              className="pl-9 pr-4 h-12 w-full border-none focus:ring-primary focus:border-primary/50 transition-all"
             />
+            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-primary/70">
+              <MapPin className="h-4 w-4 md:h-5 md:w-5" />
+            </div>
           </div>
           
           <div className="w-full relative">
@@ -107,7 +108,7 @@ const ServiceHero = ({
                 placeholder="Search for services..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 pr-4 h-12 w-full border-primary/20 shadow-inner rounded-lg focus:ring-primary focus:border-primary/50 transition-all"
+                className="pl-10 pr-12 h-12 w-full border-primary/20 shadow-inner rounded-lg focus:ring-primary focus:border-primary/50 transition-all"
                 onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
               />
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 md:h-5 md:w-5 text-primary/70" />
@@ -125,19 +126,19 @@ const ServiceHero = ({
         
         {!session && (
           <motion.div
-            className="bg-yellow-50 border border-yellow-200 text-yellow-800 px-4 py-3 rounded-lg text-sm flex items-center justify-center gap-2"
+            className="bg-yellow-50 border border-yellow-200 text-yellow-800 px-4 py-2 sm:py-3 rounded-lg text-xs sm:text-sm flex items-center justify-center gap-2"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.7 }}
           >
             <span className="font-medium">Pro tip:</span>
-            Log in to access your service history and manage service requests
+            Log in to access your service history and track your requests
           </motion.div>
         )}
       </div>
       
       <motion.div 
-        className="mt-4 md:mt-5 text-center text-xs md:text-sm text-muted-foreground"
+        className="mt-3 md:mt-5 text-center text-xs md:text-sm text-muted-foreground"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.7 }}
