@@ -27,11 +27,15 @@ export const useSession = () => {
                 .single();
               
               if (data) {
-                // Check for role in different potential fields
-                if (data.role !== undefined) {
-                  setUserRole(data.role);
-                } else if (data.user_type !== undefined) {
-                  setUserRole(data.user_type);
+                // Check for role in different potential fields using optional chaining
+                // This avoids TypeScript errors for properties that might not exist
+                const role = (data as any).role;
+                const userType = (data as any).user_type;
+                
+                if (role !== undefined) {
+                  setUserRole(role);
+                } else if (userType !== undefined) {
+                  setUserRole(userType);
                 }
               }
             } catch (err) {
@@ -60,11 +64,15 @@ export const useSession = () => {
           .single()
           .then(({ data }) => {
             if (data) {
-              // Check for role in different potential fields
-              if (data.role !== undefined) {
-                setUserRole(data.role);
-              } else if (data.user_type !== undefined) {
-                setUserRole(data.user_type);
+              // Check for role in different potential fields using optional chaining
+              // This avoids TypeScript errors for properties that might not exist
+              const role = (data as any).role;
+              const userType = (data as any).user_type;
+              
+              if (role !== undefined) {
+                setUserRole(role);
+              } else if (userType !== undefined) {
+                setUserRole(userType);
               }
             }
           })
