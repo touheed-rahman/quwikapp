@@ -13,17 +13,21 @@ import { Calendar } from "@/components/ui/calendar";
 import { useToast } from "@/components/ui/use-toast";
 import Header from "@/components/Header";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
 import { 
   Bell, Calendar as CalendarIcon, Check, ChevronDown, ClipboardList, Clock, 
   DollarSign, Home, MapPin, Phone, RefreshCw, Shield, Star, ThumbsUp, 
-  Wrench, User, X, Mail, Lock, Building, Briefcase, Tag, Smartphone, Info
+  Wrench, User, X, Mail, Lock, Building, Briefcase, Tag, Smartphone, Info,
+  AlertTriangle
 } from "lucide-react";
-import { useServiceLeads, useUpdateServiceLeadStatus } from "@/hooks/useServiceLeads";
+import { useServiceLeads } from "@/hooks/useServiceLeads";
 import { format } from "date-fns";
+import ServiceCenterAuth from "@/services/ServiceCenterAuth";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 const ServiceCenter = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isAuthorized, setIsAuthorized] = useState(false);
   const [authTab, setAuthTab] = useState("login");
   const [loginLoading, setLoginLoading] = useState(false);
   const [signupLoading, setSignupLoading] = useState(false);
@@ -39,65 +43,72 @@ const ServiceCenter = () => {
     phone: '',
     confirmPassword: ''
   });
+  const [authError, setAuthError] = useState<string | null>(null);
   
-  const { leads, isLoading } = useServiceLeads();
-  const { updateStatus, isUpdating } = useUpdateServiceLeadStatus();
+  const { leads, isLoading: leadsLoading } = useServiceLeads();
   const { toast } = useToast();
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Check if service provider is logged in
     const checkAuth = async () => {
-      const { data } = await supabase.auth.getSession();
-      if (data.session) {
-        setIsAuthenticated(true);
+      setIsLoading(true);
+      try {
+        // Check if user is authenticated
+        const { data } = await ServiceCenterAuth.isServiceProvider();
+        
+        if (data) {
+          setIsAuthenticated(true);
+          setIsAuthorized(true);
+        } else {
+          setIsAuthenticated(false);
+          setIsAuthorized(false);
+        }
+      } catch (error) {
+        console.error("Auth check error:", error);
+        setIsAuthenticated(false);
+        setIsAuthorized(false);
+      } finally {
+        setIsLoading(false);
       }
     };
 
     checkAuth();
-    
-    // Set up auth state listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        if (session) {
-          setIsAuthenticated(true);
-        } else {
-          setIsAuthenticated(false);
-        }
-      }
-    );
-
-    return () => {
-      subscription.unsubscribe();
-    };
   }, []);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target;
     setAuthFormData(prev => ({ ...prev, [id]: value }));
+    setAuthError(null);
   };
   
   const handleSelectChange = (name: string, value: string) => {
     setAuthFormData(prev => ({ ...prev, [name]: value }));
+    setAuthError(null);
   };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoginLoading(true);
+    setAuthError(null);
     
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: authFormData.email,
-        password: authFormData.password,
-      });
+      const { data, error } = await ServiceCenterAuth.signInServiceProvider(
+        authFormData.email,
+        authFormData.password
+      );
 
       if (error) throw error;
+      
+      setIsAuthenticated(true);
+      setIsAuthorized(true);
       
       toast({
         title: "Login successful",
         description: "Welcome to Service Center Dashboard"
       });
     } catch (error: any) {
+      setAuthError(error.message || "Authentication failed. Please check your credentials and try again.");
+      
       toast({
         variant: "destructive",
         title: "Login failed",
@@ -111,9 +122,11 @@ const ServiceCenter = () => {
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setSignupLoading(true);
+    setAuthError(null);
     
     // Password validation
     if (authFormData.password !== authFormData.confirmPassword) {
+      setAuthError("Passwords do not match");
       toast({
         variant: "destructive",
         title: "Passwords do not match",
@@ -124,6 +137,7 @@ const ServiceCenter = () => {
     }
     
     if (authFormData.password.length < 6) {
+      setAuthError("Password must be at least 6 characters long");
       toast({
         variant: "destructive",
         title: "Password too short",
@@ -134,29 +148,25 @@ const ServiceCenter = () => {
     }
     
     try {
-      // Sign up with Supabase
-      const { data, error } = await supabase.auth.signUp({
-        email: authFormData.email,
-        password: authFormData.password,
-        options: {
-          data: {
-            full_name: authFormData.fullName,
-            business_name: authFormData.businessName,
-            provider_type: authFormData.providerType,
-            services: authFormData.services,
-            phone: authFormData.phone,
-          }
-        }
-      });
+      const { data, error } = await ServiceCenterAuth.registerServiceProvider(
+        authFormData.email,
+        authFormData.password,
+        authFormData.fullName,
+        authFormData.businessName,
+        authFormData.providerType,
+        authFormData.services,
+        authFormData.phone
+      );
 
       if (error) throw error;
       
       toast({
-        title: "Account created successfully",
-        description: "Please verify your email to complete registration"
+        title: "Application submitted",
+        description: "Your service provider application has been submitted for review. You'll be notified once approved."
       });
       setAuthTab("login");
     } catch (error: any) {
+      setAuthError(error.message || "Registration failed");
       toast({
         variant: "destructive",
         title: "Sign up failed",
@@ -166,14 +176,12 @@ const ServiceCenter = () => {
       setSignupLoading(false);
     }
   };
-
-  const handleStatusUpdate = async (id: string, status: string) => {
-    updateStatus({ leadId: id, status: status as any });
-  };
   
   const handleSignOut = async () => {
     try {
-      await supabase.auth.signOut();
+      await ServiceCenterAuth.signOut();
+      setIsAuthenticated(false);
+      setIsAuthorized(false);
       toast({
         title: "Signed out successfully",
         description: "You have been logged out of your account."
@@ -194,21 +202,30 @@ const ServiceCenter = () => {
       transition={{ duration: 0.5 }}
       className="p-4"
     >
-      <Card className="w-full max-w-md mx-auto shadow-lg border-primary/10">
-        <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl text-center">Service Provider Portal</CardTitle>
-          <CardDescription className="text-center">
+      <Card className="w-full max-w-md mx-auto shadow-lg border-primary/10 overflow-hidden">
+        <div className="bg-gradient-to-r from-primary to-primary/80 text-white p-6">
+          <h2 className="text-2xl font-bold">Service Provider Portal</h2>
+          <p className="text-white/90 mt-1">
             {authTab === "login" 
-              ? "Sign in to your service provider account" 
-              : "Create a new service provider account"}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
+              ? "Access your service provider dashboard" 
+              : "Join our network of service professionals"}
+          </p>
+        </div>
+        
+        <CardContent className="p-6 pt-8">
           <Tabs value={authTab} onValueChange={setAuthTab} className="w-full">
             <TabsList className="grid w-full grid-cols-2 mb-6">
               <TabsTrigger value="login">Login</TabsTrigger>
               <TabsTrigger value="signup">Sign Up</TabsTrigger>
             </TabsList>
+            
+            {authError && (
+              <Alert variant="destructive" className="mb-6">
+                <AlertTriangle className="h-4 w-4" />
+                <AlertTitle>Error</AlertTitle>
+                <AlertDescription>{authError}</AlertDescription>
+              </Alert>
+            )}
             
             <TabsContent value="login">
               <form onSubmit={handleLogin} className="space-y-4">
@@ -225,6 +242,7 @@ const ServiceCenter = () => {
                     value={authFormData.email}
                     onChange={handleInputChange}
                     required 
+                    className="border-input/60"
                   />
                 </div>
                 <div className="space-y-2">
@@ -239,15 +257,28 @@ const ServiceCenter = () => {
                     value={authFormData.password}
                     onChange={handleInputChange}
                     required 
+                    className="border-input/60"
                   />
                 </div>
-                <Button type="submit" className="w-full" disabled={loginLoading}>
+                <Button type="submit" className="w-full mt-2" disabled={loginLoading}>
                   {loginLoading ? "Logging in..." : "Login"}
                 </Button>
               </form>
             </TabsContent>
             
             <TabsContent value="signup">
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
+                <div className="flex items-start gap-2">
+                  <Info className="h-5 w-5 text-blue-600 mt-0.5" />
+                  <div className="flex-1">
+                    <h4 className="text-blue-800 font-medium">Service Provider Registration</h4>
+                    <p className="text-sm text-blue-700">
+                      Apply to join our service professional network. Your application will be reviewed by our team.
+                    </p>
+                  </div>
+                </div>
+              </div>
+              
               <form onSubmit={handleSignup} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="fullName" className="flex items-center gap-2">
@@ -260,6 +291,7 @@ const ServiceCenter = () => {
                     value={authFormData.fullName}
                     onChange={handleInputChange}
                     required 
+                    className="border-input/60"
                   />
                 </div>
                 <div className="space-y-2">
@@ -273,6 +305,7 @@ const ServiceCenter = () => {
                     value={authFormData.businessName}
                     onChange={handleInputChange}
                     required 
+                    className="border-input/60"
                   />
                 </div>
                 <div className="space-y-2">
@@ -284,7 +317,7 @@ const ServiceCenter = () => {
                     value={authFormData.providerType}
                     onValueChange={(value) => handleSelectChange('providerType', value)}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="border-input/60">
                       <SelectValue placeholder="Select provider type" />
                     </SelectTrigger>
                     <SelectContent>
@@ -303,7 +336,7 @@ const ServiceCenter = () => {
                     value={authFormData.services}
                     onValueChange={(value) => handleSelectChange('services', value)}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="border-input/60">
                       <SelectValue placeholder="Select service category" />
                     </SelectTrigger>
                     <SelectContent>
@@ -326,6 +359,7 @@ const ServiceCenter = () => {
                     value={authFormData.phone}
                     onChange={handleInputChange}
                     required 
+                    className="border-input/60"
                   />
                 </div>
                 <div className="space-y-2">
@@ -340,6 +374,7 @@ const ServiceCenter = () => {
                     value={authFormData.email}
                     onChange={handleInputChange}
                     required 
+                    className="border-input/60"
                   />
                 </div>
                 <div className="space-y-2">
@@ -353,6 +388,7 @@ const ServiceCenter = () => {
                     value={authFormData.password}
                     onChange={handleInputChange}
                     required 
+                    className="border-input/60"
                   />
                 </div>
                 <div className="space-y-2">
@@ -366,10 +402,11 @@ const ServiceCenter = () => {
                     value={authFormData.confirmPassword}
                     onChange={handleInputChange}
                     required 
+                    className="border-input/60"
                   />
                 </div>
-                <Button type="submit" className="w-full" disabled={signupLoading}>
-                  {signupLoading ? "Creating Account..." : "Create Account"}
+                <Button type="submit" className="w-full mt-2" disabled={signupLoading}>
+                  {signupLoading ? "Creating Account..." : "Apply to Join"}
                 </Button>
               </form>
             </TabsContent>
@@ -381,6 +418,44 @@ const ServiceCenter = () => {
           </Button>
         </CardFooter>
       </Card>
+      
+      <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+        <Card className="border-primary/10 shadow-sm">
+          <CardContent className="p-6 text-center">
+            <div className="bg-primary/10 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Users className="h-6 w-6 text-primary" />
+            </div>
+            <h3 className="text-lg font-semibold">Join Our Network</h3>
+            <p className="text-sm text-muted-foreground mt-2">
+              Become a verified service provider and grow your business with new customers
+            </p>
+          </CardContent>
+        </Card>
+        
+        <Card className="border-primary/10 shadow-sm">
+          <CardContent className="p-6 text-center">
+            <div className="bg-primary/10 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4">
+              <ClipboardList className="h-6 w-6 text-primary" />
+            </div>
+            <h3 className="text-lg font-semibold">Manage Requests</h3>
+            <p className="text-sm text-muted-foreground mt-2">
+              Easily manage service requests, schedules and customer communications
+            </p>
+          </CardContent>
+        </Card>
+        
+        <Card className="border-primary/10 shadow-sm">
+          <CardContent className="p-6 text-center">
+            <div className="bg-primary/10 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4">
+              <DollarSign className="h-6 w-6 text-primary" />
+            </div>
+            <h3 className="text-lg font-semibold">Grow Your Business</h3>
+            <p className="text-sm text-muted-foreground mt-2">
+              Increase your earnings and expand your service offerings
+            </p>
+          </CardContent>
+        </Card>
+      </div>
     </motion.div>
   );
 
@@ -391,7 +466,7 @@ const ServiceCenter = () => {
       transition={{ duration: 0.5 }}
       className="space-y-6 px-4 sm:px-6 md:px-8 pb-10"
     >
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-gradient-to-r from-primary/5 to-primary/10 p-4 rounded-lg shadow-sm">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-gradient-to-r from-primary/5 to-primary/15 p-4 rounded-xl shadow-sm">
         <div>
           <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-primary">Service Provider Dashboard</h2>
           <p className="text-sm text-muted-foreground">Manage your service requests and bookings</p>
@@ -403,13 +478,13 @@ const ServiceCenter = () => {
           <Button className="flex items-center gap-1 text-xs sm:text-sm h-9">
             <Wrench className="h-3 w-3 sm:h-4 sm:w-4" /> <span className="hidden sm:inline">Add Service</span>
           </Button>
-          <Button variant="outline" className="relative bg-white shadow-sm h-9 px-2">
+          <Button variant="outline" className="relative bg-white shadow-sm h-9 px-2 flex-shrink-0">
             <Bell className="h-4 w-4" />
             <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
               3
             </span>
           </Button>
-          <Button variant="outline" className="bg-white shadow-sm text-xs sm:text-sm h-9" onClick={handleSignOut}>
+          <Button variant="outline" className="bg-white shadow-sm text-xs sm:text-sm h-9 flex-shrink-0" onClick={handleSignOut}>
             <User className="h-3 w-3 sm:h-4 sm:w-4 mr-1" /> <span className="hidden sm:inline">Sign Out</span>
           </Button>
         </div>
@@ -498,7 +573,7 @@ const ServiceCenter = () => {
             </CardTitle>
           </CardHeader>
           <CardContent className="p-3 sm:p-4">
-            {isLoading ? (
+            {leadsLoading ? (
               <div className="text-center py-10">
                 <RefreshCw className="h-8 w-8 sm:h-10 sm:w-10 animate-spin text-primary mx-auto mb-4" />
                 <p>Loading service requests...</p>
@@ -545,7 +620,7 @@ const ServiceCenter = () => {
                       </div>
                       <div className="text-right self-end sm:self-start">
                         <p className="text-xs sm:text-sm text-muted-foreground">
-                          {format(new Date(request.created_at), 'dd MMM yyyy')}
+                          {request.created_at && format(new Date(request.created_at), 'dd MMM yyyy')}
                         </p>
                         {request.amount && (
                           <p className="font-bold text-primary">₹{request.amount}</p>
@@ -571,7 +646,7 @@ const ServiceCenter = () => {
                       <div className="space-y-1">
                         <div className="flex items-center gap-1 text-xs sm:text-sm">
                           <CalendarIcon className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
-                          <span>{format(new Date(request.appointment_date), 'dd MMM yyyy')}</span>
+                          <span>{request.appointment_date && format(new Date(request.appointment_date), 'dd MMM yyyy')}</span>
                         </div>
                         <div className="flex items-center gap-1 text-xs sm:text-sm">
                           <Clock className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
@@ -595,16 +670,12 @@ const ServiceCenter = () => {
                             size="sm" 
                             variant="outline" 
                             className="text-red-600 hover:text-red-700 hover:bg-red-50 text-xs h-8"
-                            onClick={() => handleStatusUpdate(request.id, 'Cancelled')}
-                            disabled={isUpdating}
                           >
                             <X className="h-3 w-3 sm:h-4 sm:w-4 mr-1" /> Reject
                           </Button>
                           <Button 
                             size="sm" 
                             className="bg-green-600 hover:bg-green-700 text-xs h-8"
-                            onClick={() => handleStatusUpdate(request.id, 'In Progress')}
-                            disabled={isUpdating}
                           >
                             <Check className="h-3 w-3 sm:h-4 sm:w-4 mr-1" /> Accept
                           </Button>
@@ -614,8 +685,6 @@ const ServiceCenter = () => {
                         <Button 
                           size="sm"
                           className="text-xs h-8" 
-                          onClick={() => handleStatusUpdate(request.id, 'Completed')}
-                          disabled={isUpdating}
                         >
                           <ThumbsUp className="h-3 w-3 sm:h-4 sm:w-4 mr-1" /> Mark Complete
                         </Button>
@@ -659,6 +728,7 @@ const ServiceCenter = () => {
                 
                 {leads.filter(req => 
                   req.status === 'In Progress' && 
+                  req.appointment_date && 
                   new Date(req.appointment_date).toDateString() === (selectedDate?.toDateString() || '')
                 ).map(appointment => (
                   <div key={appointment.id} className="flex p-2 sm:p-3 border rounded-lg hover:bg-primary/5 transition-colors">
@@ -673,6 +743,7 @@ const ServiceCenter = () => {
                 
                 {leads.filter(req => 
                   req.status === 'In Progress' && 
+                  req.appointment_date && 
                   new Date(req.appointment_date).toDateString() === (selectedDate?.toDateString() || '')
                 ).length === 0 && (
                   <div className="text-center py-6 text-muted-foreground bg-slate-50 rounded-lg border border-dashed text-xs sm:text-sm">
@@ -734,11 +805,73 @@ const ServiceCenter = () => {
     </motion.div>
   );
 
+  const renderNotAuthorized = () => (
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      className="p-4"
+    >
+      <Card className="w-full max-w-md mx-auto shadow-lg border-primary/10">
+        <CardHeader className="pb-0">
+          <CardTitle className="text-2xl text-center">Restricted Access</CardTitle>
+          <CardDescription className="text-center">
+            The Service Center is only accessible to approved service providers
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="p-6 text-center">
+          <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6">
+            <AlertTriangle className="h-12 w-12 text-amber-500 mx-auto mb-2" />
+            <h3 className="text-lg font-medium text-amber-800">Not Authorized</h3>
+            <p className="text-sm text-amber-700 mt-1">
+              Your account doesn't have service provider access or your application is still pending approval.
+            </p>
+          </div>
+          
+          <div className="space-y-4">
+            <Button 
+              variant="outline" 
+              className="w-full"
+              onClick={() => navigate("/")}
+            >
+              Return to Home
+            </Button>
+            
+            <Button 
+              className="w-full"
+              onClick={() => {
+                setAuthTab("signup");
+                setIsAuthenticated(false);
+              }}
+            >
+              Apply to Become a Service Provider
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    </motion.div>
+  );
+
+  if (isLoading) {
+    return (
+      <>
+        <Header />
+        <div className="container max-w-7xl pb-6 flex items-center justify-center h-[70vh]">
+          <div className="text-center">
+            <RefreshCw className="h-12 w-12 text-primary animate-spin mx-auto mb-4" />
+            <p className="text-muted-foreground">Loading Service Center...</p>
+          </div>
+        </div>
+      </>
+    );
+  }
+
   return (
     <>
       <Header />
       <div className="container max-w-7xl pb-6">
-        {!isAuthenticated ? renderAuthForm() : renderDashboard()}
+        {!isAuthenticated ? renderAuthForm() : 
+         !isAuthorized ? renderNotAuthorized() : renderDashboard()}
       </div>
     </>
   );

@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { serviceCategories } from "@/data/serviceCategories";
-import { ChevronLeft, Star, Calendar, Clock } from "lucide-react";
+import { ChevronLeft, Star, Calendar, Clock, MapPin, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -47,7 +47,15 @@ const ServiceSubcategoryView = ({ categoryId, onBack }: SubcategoryViewProps) =>
   if (!category) {
     return (
       <div className="py-8 text-center">
-        <p className="text-muted-foreground">Loading category...</p>
+        <div className="animate-pulse flex flex-col items-center">
+          <div className="h-8 bg-primary/10 rounded w-48 mb-4"></div>
+          <div className="h-4 bg-primary/10 rounded w-64"></div>
+          <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 w-full">
+            {[1, 2, 3].map(i => (
+              <div key={i} className="h-64 bg-primary/5 rounded-lg"></div>
+            ))}
+          </div>
+        </div>
       </div>
     );
   }
@@ -58,6 +66,22 @@ const ServiceSubcategoryView = ({ categoryId, onBack }: SubcategoryViewProps) =>
   if (subcategories.length === 0) {
     console.error("No subcategories found for category:", category);
   }
+
+  // Animated container for subcategories
+  const container = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1
+      }
+    }
+  };
+
+  const item = {
+    hidden: { opacity: 0, y: 20 },
+    show: { opacity: 1, y: 0, transition: { duration: 0.3 } }
+  };
 
   return (
     <motion.div
@@ -73,61 +97,132 @@ const ServiceSubcategoryView = ({ categoryId, onBack }: SubcategoryViewProps) =>
         <h2 className="text-2xl font-bold">{category.name}</h2>
       </div>
 
-      <p className="text-muted-foreground">{category.description || `Choose from our range of ${category.name.toLowerCase()} services`}</p>
+      <div className="relative overflow-hidden rounded-lg bg-gradient-to-br from-primary/10 to-primary/5 p-6 mb-6">
+        <div className="relative z-10">
+          <h3 className="text-lg sm:text-xl font-medium mb-2">Professional {category.name} Services</h3>
+          <p className="text-muted-foreground max-w-3xl">
+            {category.description || `Choose from our range of professional ${category.name.toLowerCase()} services tailored to your needs. Our certified experts deliver high-quality services at competitive prices.`}
+          </p>
+          
+          <div className="flex flex-wrap gap-3 mt-4">
+            <div className="flex items-center gap-1.5 bg-background/80 backdrop-blur-sm px-3 py-1.5 rounded-full text-sm">
+              <Shield className="h-3.5 w-3.5 text-primary" />
+              <span>Verified Professionals</span>
+            </div>
+            <div className="flex items-center gap-1.5 bg-background/80 backdrop-blur-sm px-3 py-1.5 rounded-full text-sm">
+              <Star className="h-3.5 w-3.5 text-yellow-500" />
+              <span>Top Rated Services</span>
+            </div>
+            <div className="flex items-center gap-1.5 bg-background/80 backdrop-blur-sm px-3 py-1.5 rounded-full text-sm">
+              <Clock className="h-3.5 w-3.5 text-primary" />
+              <span>On-time Service</span>
+            </div>
+          </div>
+        </div>
+        
+        <div className="absolute -right-12 -bottom-12 h-48 w-48 bg-primary/10 rounded-full blur-3xl"></div>
+        <div className="absolute right-24 -top-12 h-32 w-32 bg-primary/10 rounded-full blur-2xl"></div>
+      </div>
 
       {subcategories.length === 0 ? (
         <div className="py-8 text-center">
           <p className="text-muted-foreground">No services available for this category.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <motion.div 
+          variants={container}
+          initial="hidden"
+          animate="show"
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5"
+        >
           {subcategories.map((subcat: any) => {
             // Get the price from servicePricing if available
             const price = servicePricing[categoryId]?.[subcat.id] || 499;
+            const discountedPrice = Math.round(price * 0.85);
+            const hasDiscount = Math.random() > 0.7;
             
             return (
-              <Card 
-                key={subcat.id}
-                className="overflow-hidden border-transparent hover:border-primary/20 transition-all duration-300 shadow-sm hover:shadow-md"
-              >
-                <div className="relative h-24 sm:h-32 bg-gradient-to-br from-primary/5 to-primary/10 p-4">
-                  <div className="absolute bottom-4 left-4">
-                    <h3 className="text-base sm:text-lg font-semibold">{subcat.name}</h3>
-                    <div className="flex items-center gap-1 mt-1">
-                      <Star className="h-3.5 w-3.5 text-yellow-500 fill-yellow-500" />
-                      <span className="text-xs sm:text-sm font-medium">{(4 + Math.random()).toFixed(1)}</span>
-                      <span className="text-xs text-muted-foreground">({Math.floor(Math.random() * 200) + 50} ratings)</span>
+              <motion.div key={subcat.id} variants={item}>
+                <Card 
+                  className="overflow-hidden border-transparent hover:border-primary/20 transition-all duration-300 shadow-sm hover:shadow-md group h-full"
+                >
+                  <div className="relative h-36 sm:h-44 bg-gradient-to-br from-primary/5 via-primary/10 to-primary/15 p-5">
+                    <div className="absolute bottom-4 left-4 space-y-1.5">
+                      <h3 className="text-lg sm:text-xl font-semibold group-hover:text-primary transition-colors">{subcat.name}</h3>
+                      <div className="flex items-center gap-1">
+                        <div className="flex">
+                          {[1, 2, 3, 4, 5].map((star) => (
+                            <Star key={star} className="h-3.5 w-3.5 text-yellow-500 fill-yellow-500" />
+                          ))}
+                        </div>
+                        <span className="text-xs sm:text-sm text-muted-foreground">({Math.floor(Math.random() * 200) + 50})</span>
+                      </div>
                     </div>
-                  </div>
-                </div>
-                
-                <CardContent className="p-3 sm:p-4 space-y-3">                
-                  <div className="flex justify-between items-center">
-                    <div className="text-primary font-semibold text-base sm:text-lg">₹{price}</div>
                     
-                    <Button 
-                      onClick={() => handleBookService(subcat.id)}
-                      size="sm"
-                      className="text-xs sm:text-sm px-3 sm:px-4 py-1 h-8"
-                    >
-                      Book Now
-                    </Button>
+                    {hasDiscount && (
+                      <div className="absolute top-3 right-3">
+                        <Badge className="bg-green-100 text-green-800 hover:bg-green-200 font-medium">15% OFF</Badge>
+                      </div>
+                    )}
                   </div>
-
-                  {subcat.tags && (
-                    <div className="flex flex-wrap gap-1 mt-2">
-                      {subcat.tags.slice(0, 2).map((tag: string, i: number) => (
-                        <Badge key={i} variant="outline" className="text-xs bg-primary/5 text-primary/80">
-                          {tag}
-                        </Badge>
-                      ))}
+                  
+                  <CardContent className="p-4 sm:p-5 space-y-4">                
+                    <div className="flex justify-between items-center">
+                      <div className="space-y-1">
+                        <div className="text-primary font-semibold text-lg sm:text-xl">
+                          ₹{hasDiscount ? discountedPrice : price}
+                          {hasDiscount && (
+                            <span className="ml-2 text-sm text-muted-foreground line-through">₹{price}</span>
+                          )}
+                        </div>
+                        <div className="text-xs text-muted-foreground">Starting price</div>
+                      </div>
+                      
+                      <Button 
+                        onClick={() => handleBookService(subcat.id)}
+                        size="sm"
+                        className="text-xs sm:text-sm px-4 py-1 h-9 bg-primary hover:bg-primary/90"
+                      >
+                        Book Now
+                      </Button>
                     </div>
-                  )}
-                </CardContent>
-              </Card>
+
+                    <Separator />
+                    
+                    <div className="grid grid-cols-2 gap-2 text-sm">
+                      <div className="flex items-center gap-1.5">
+                        <Clock className="h-3.5 w-3.5 text-muted-foreground" />
+                        <span>{Math.floor(Math.random() * 2) + 1}-{Math.floor(Math.random() * 2) + 2} hrs</span>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
+                        <span>Same day service</span>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <MapPin className="h-3.5 w-3.5 text-muted-foreground" />
+                        <span>At your location</span>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <Shield className="h-3.5 w-3.5 text-muted-foreground" />
+                        <span>30-day warranty</span>
+                      </div>
+                    </div>
+
+                    {subcat.tags && (
+                      <div className="flex flex-wrap gap-1 mt-2">
+                        {subcat.tags.slice(0, 3).map((tag: string, i: number) => (
+                          <Badge key={i} variant="outline" className="text-xs bg-primary/5 text-primary/80">
+                            {tag}
+                          </Badge>
+                        ))}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </motion.div>
             );
           })}
-        </div>
+        </motion.div>
       )}
     </motion.div>
   );

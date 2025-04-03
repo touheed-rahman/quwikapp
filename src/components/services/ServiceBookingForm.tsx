@@ -1,30 +1,55 @@
 
 import React, { useState } from "react";
-import { motion } from "framer-motion";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import * as z from "zod";
+import { useToast } from "@/components/ui/use-toast";
+import { CalendarIcon, Clock, Info, MapPin, ChevronDown, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { z } from "zod";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
-import { Badge } from "@/components/ui/badge";
-import { format } from "date-fns";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
+import { format, addDays } from "date-fns";
 import { cn } from "@/lib/utils";
-import { useToast } from "@/components/ui/use-toast";
-import { formSchema, FormValues } from "@/types/serviceTypes";
-import { serviceCategories } from "@/data/serviceCategories";
-import { CalendarDays, Clock, IndianRupee, CheckCircle2, ArrowLeft, Shield } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Separator } from "@/components/ui/separator";
 import { useNavigate } from "react-router-dom";
+import { useSession } from "@/hooks/use-session-user";
+import { supabase } from "@/integrations/supabase/client";
+
+// Define form schema with Zod
+const formSchema = z.object({
+  customer_name: z.string().min(3, { message: "Name must be at least 3 characters" }),
+  phone: z.string().min(10, { message: "Please enter a valid phone number" }),
+  address: z.string().min(10, { message: "Please provide a detailed address" }),
+  appointment_date: z.date({ required_error: "Please select a date" }),
+  appointment_time: z.string({ required_error: "Please select a time slot" }),
+  description: z.string().optional(),
+  payment_method: z.enum(["cash", "online", "upi"], { required_error: "Please select a payment method" }),
+  urgent: z.boolean().default(false),
+});
 
 type ServiceBookingFormProps = {
-  categoryId: string;
-  subserviceId: string | null;
+  categoryId: string | undefined;
+  subserviceId: string | undefined;
   selectedSubserviceName: string;
   onBack: () => void;
   timeSlots: string[];
@@ -37,381 +62,412 @@ const ServiceBookingForm = ({
   selectedSubserviceName,
   onBack,
   timeSlots,
-  estimatedAmount
+  estimatedAmount,
 }: ServiceBookingFormProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { user, session } = useSession();
   
-  // Get the category details
-  const categoryDetails = serviceCategories.find(c => c.id === categoryId);
-  
-  const form = useForm<FormValues>({
+  // Initialize form with react-hook-form
+  const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      serviceCategory: categoryId || "",
-      serviceType: subserviceId || "", // Using the subserviceId as the value
-      description: "",
-      date: undefined,
-      time: "",
-      address: "",
-      name: "",
+      customer_name: user?.user_metadata?.full_name || "",
       phone: "",
+      address: "",
+      description: "",
+      payment_method: "cash",
       urgent: false,
-    }
+    },
   });
 
-  const onSubmit = async (data: FormValues) => {
+  // Calculate pricing
+  const subtotal = estimatedAmount;
+  const serviceFee = Math.round(subtotal * 0.05);
+  const discount = user ? Math.round(subtotal * 0.1) : 0;
+  const total = subtotal + serviceFee - discount;
+
+  const onSubmit = async (data: z.infer<typeof formSchema>) => {
     setIsSubmitting(true);
     
     try {
-      // Get the category name
-      const categoryName = categoryDetails?.name || "";
-      
-      // Insert into service_leads table
-      const { data: leadData, error } = await supabase
-        .from('service_leads')
-        .insert({
-          customer_name: data.name,
-          phone: data.phone,
-          service_category: categoryName,
-          service_type: selectedSubserviceName,
-          description: data.description,
-          address: data.address,
-          appointment_date: format(data.date, "yyyy-MM-dd"),
-          appointment_time: data.time,
-          status: "Pending" as "Pending" | "In Progress" | "Completed" | "Cancelled",
-          urgent: data.urgent,
-          amount: estimatedAmount
-        })
-        .select();
-        
-      if (error) {
-        console.error("Error creating service lead:", error);
+      if (!session) {
         toast({
-          title: "Something went wrong",
-          description: "Unable to submit your service request. Please try again.",
+          title: "Login Required",
+          description: "Please login to book a service",
           variant: "destructive",
         });
+        navigate("/auth");
         return;
       }
       
+      // Create a service lead
+      const serviceData = {
+        customer_name: data.customer_name,
+        phone: data.phone,
+        service_category: categoryId,
+        service_type: selectedSubserviceName,
+        description: data.description,
+        address: data.address,
+        appointment_date: format(data.appointment_date, "yyyy-MM-dd"),
+        appointment_time: data.appointment_time,
+        status: "Pending",
+        urgent: data.urgent,
+        user_id: session.user.id,
+        amount: total,
+        payment_method: data.payment_method,
+      };
+      
+      const { data: createdLead, error } = await supabase
+        .from("service_leads")
+        .insert([serviceData])
+        .select();
+      
+      if (error) throw error;
+      
+      // Success toast
       toast({
-        title: "Service Booked Successfully!",
-        description: `Your ${selectedSubserviceName} service has been scheduled for ${format(data.date, "PPP")} at ${data.time}.`,
-        variant: "default",
+        title: "Booking Successful!",
+        description: `Your ${selectedSubserviceName} service has been booked successfully.`,
       });
       
-      // Reset form
-      form.reset();
-      
-      // Navigate to thank you or home page
-      setTimeout(() => {
-        navigate("/"); // Or to a thank you page
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      }, 2000);
-      
-    } catch (error) {
-      console.error("Error in service booking:", error);
+      // Navigate to service requests page or orders page
+      navigate("/profile/orders");
+    } catch (error: any) {
+      console.error("Booking error:", error);
       toast({
         title: "Booking Failed",
-        description: "There was an error processing your request. Please try again.",
+        description: error.message || "Failed to book service. Please try again.",
         variant: "destructive",
       });
     } finally {
       setIsSubmitting(false);
     }
   };
-  
+
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4 }}
-      className="space-y-6"
-    >
-      <div className="flex items-center gap-2 mb-2">
-        <Button 
-          variant="outline" 
-          size="sm" 
-          className="text-muted-foreground flex items-center gap-1 hover:bg-primary/10 hover:text-primary transition-colors"
-          onClick={onBack}
-        >
-          <ArrowLeft className="h-4 w-4 mr-1" /> Back to services
-        </Button>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="md:col-span-2">
-          <Card className="border shadow-md overflow-hidden">
-            <CardHeader className="bg-gradient-to-r from-primary/10 to-primary/5 border-b">
-              <div className="flex items-center gap-3">
-                {categoryDetails && categoryDetails.icon && React.createElement(categoryDetails.icon, { 
-                  className: "h-6 w-6 text-primary" 
-                })}
-                <div>
-                  <CardTitle className="flex items-center gap-2 text-xl">
-                    Book {selectedSubserviceName}
-                  </CardTitle>
-                  <CardDescription>
-                    Fill in the details below to schedule your service appointment
-                  </CardDescription>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent className="p-4 sm:p-6">
-              <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-4">
-                      <FormField
-                        control={form.control}
-                        name="name"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Your Name</FormLabel>
-                            <FormControl>
-                              <Input placeholder="Enter your full name" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      
-                      <FormField
-                        control={form.control}
-                        name="phone"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Phone Number</FormLabel>
-                            <FormControl>
-                              <Input placeholder="Enter your phone number" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      
-                      <FormField
-                        control={form.control}
-                        name="address"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Service Address</FormLabel>
-                            <FormControl>
-                              <Textarea 
-                                placeholder="Enter your complete address" 
-                                className="resize-none min-h-[100px]" 
-                                {...field}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-                    
-                    <div className="space-y-4">
-                      <FormField
-                        control={form.control}
-                        name="description"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Describe your issue</FormLabel>
-                            <FormControl>
-                              <Textarea 
-                                placeholder="What needs to be fixed? Please provide details." 
-                                className="resize-none min-h-[100px]" 
-                                {...field}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <FormField
-                          control={form.control}
-                          name="date"
-                          render={({ field }) => (
-                            <FormItem className="flex flex-col">
-                              <FormLabel>Service Date</FormLabel>
-                              <Popover>
-                                <PopoverTrigger asChild>
-                                  <FormControl>
-                                    <Button
-                                      variant={"outline"}
-                                      className={cn(
-                                        "w-full pl-3 text-left font-normal flex justify-between items-center",
-                                        !field.value && "text-muted-foreground"
-                                      )}
-                                    >
-                                      {field.value ? (
-                                        format(field.value, "PPP")
-                                      ) : (
-                                        "Pick a date"
-                                      )}
-                                      <CalendarDays className="h-4 w-4 opacity-50" />
-                                    </Button>
-                                  </FormControl>
-                                </PopoverTrigger>
-                                <PopoverContent className="w-auto p-0" align="start">
-                                  <Calendar
-                                    mode="single"
-                                    selected={field.value}
-                                    onSelect={field.onChange}
-                                    disabled={(date) => date < new Date() || date > new Date(new Date().setMonth(new Date().getMonth() + 1))}
-                                    initialFocus
-                                  />
-                                </PopoverContent>
-                              </Popover>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        
-                        <FormField
-                          control={form.control}
-                          name="time"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Preferred Time</FormLabel>
-                              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                <FormControl>
-                                  <SelectTrigger>
-                                    <SelectValue placeholder="Select time slot" />
-                                  </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                  {timeSlots.map((slot) => (
-                                    <SelectItem key={slot} value={slot}>
-                                      {slot}
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-                      
-                      <FormField
-                        control={form.control}
-                        name="urgent"
-                        render={({ field }) => (
-                          <div className="bg-amber-50 border border-amber-200 rounded-md p-3 mt-2">
-                            <div className="flex items-center space-x-2">
-                              <input
-                                type="checkbox"
-                                id="urgent-service"
-                                checked={field.value}
-                                onChange={field.onChange}
-                                className="h-4 w-4 text-primary rounded focus:ring-primary"
-                              />
-                              <label htmlFor="urgent-service" className="text-sm font-medium text-amber-800">
-                                This is an urgent request (priority service, additional charges may apply)
-                              </label>
-                            </div>
-                          </div>
-                        )}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="pt-4 flex justify-end">
-                    <Button 
-                      type="submit" 
-                      size="lg"
-                      className="bg-primary hover:bg-primary/90 text-white px-8 w-full md:w-auto"
-                      disabled={isSubmitting}
-                    >
-                      {isSubmitting ? "Scheduling..." : "Schedule Service"}
-                    </Button>
-                  </div>
-                </form>
-              </Form>
-            </CardContent>
-          </Card>
-        </div>
-        
-        <div>
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-          >
-            <Card className="sticky top-6">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-lg">Service Summary</CardTitle>
-              </CardHeader>
-              <CardContent className="pb-4">
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="lg:col-span-2 space-y-6">
+        <Card className="border-primary/10 shadow-sm">
+          <CardHeader>
+            <CardTitle className="text-2xl">Book Your Service</CardTitle>
+            <CardDescription>
+              Please provide your details to book the {selectedSubserviceName} service
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                 <div className="space-y-4">
-                  <div className="flex items-start gap-3 pb-3 border-b">
-                    <div className="bg-primary/10 p-2 rounded-full">
-                      {categoryDetails && categoryDetails.icon && React.createElement(categoryDetails.icon, { 
-                        className: "h-5 w-5 text-primary" 
-                      })}
-                    </div>
-                    <div className="flex-1">
-                      <p className="text-sm font-medium">{categoryDetails?.name}</p>
-                      <p className="text-primary font-semibold">{selectedSubserviceName}</p>
-                    </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="customer_name"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Full Name</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Your full name" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="phone"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Phone Number</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Your contact number" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
                   </div>
+
+                  <FormField
+                    control={form.control}
+                    name="address"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Service Address</FormLabel>
+                        <FormControl>
+                          <div className="relative">
+                            <Textarea 
+                              placeholder="Enter your complete address" 
+                              className="min-h-[80px] resize-none pl-9" 
+                              {...field} 
+                            />
+                            <MapPin className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                          </div>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="appointment_date"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-col">
+                          <FormLabel>Service Date</FormLabel>
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <FormControl>
+                                <Button
+                                  variant={"outline"}
+                                  className={cn(
+                                    "pl-3 text-left font-normal",
+                                    !field.value && "text-muted-foreground"
+                                  )}
+                                >
+                                  <CalendarIcon className="mr-2 h-4 w-4" />
+                                  {field.value ? (
+                                    format(field.value, "PPP")
+                                  ) : (
+                                    <span>Pick a date</span>
+                                  )}
+                                  <ChevronDown className="ml-auto h-4 w-4 opacity-50" />
+                                </Button>
+                              </FormControl>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0" align="start">
+                              <Calendar
+                                mode="single"
+                                selected={field.value}
+                                onSelect={field.onChange}
+                                disabled={(date) =>
+                                  date < new Date() || date > addDays(new Date(), 30)
+                                }
+                                initialFocus
+                              />
+                            </PopoverContent>
+                          </Popover>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="appointment_time"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Service Time</FormLabel>
+                          <FormControl>
+                            <div className="relative">
+                              <select
+                                className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 appearance-none pl-9"
+                                value={field.value}
+                                onChange={field.onChange}
+                              >
+                                <option value="" disabled>
+                                  Select time slot
+                                </option>
+                                {timeSlots.map((slot) => (
+                                  <option key={slot} value={slot}>
+                                    {slot}
+                                  </option>
+                                ))}
+                              </select>
+                              <Clock className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                              <ChevronDown className="absolute right-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                            </div>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  <FormField
+                    control={form.control}
+                    name="description"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>
+                          Service Details <span className="text-muted-foreground">(Optional)</span>
+                        </FormLabel>
+                        <FormControl>
+                          <Textarea
+                            placeholder="Describe your service requirement or any special instructions"
+                            className="min-h-[80px] resize-none"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                   
-                  <div className="bg-primary/5 p-4 rounded-lg">
-                    <div className="flex justify-between items-center mb-3">
-                      <span className="text-sm text-muted-foreground">Estimated Price</span>
-                      <div className="flex items-center text-lg font-bold text-primary">
-                        <IndianRupee className="h-4 w-4 mr-1" />
-                        {estimatedAmount}
-                      </div>
-                    </div>
-                    <div className="text-xs text-muted-foreground">
-                      Final price may vary based on service requirements
-                    </div>
-                  </div>
+                  <FormField
+                    control={form.control}
+                    name="urgent"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                        <div className="space-y-1 leading-none">
+                          <FormLabel className="flex items-center gap-2">
+                            <span>Urgent Service</span>
+                            <Badge className="bg-red-100 text-red-800 hover:bg-red-200">Priority</Badge>
+                          </FormLabel>
+                          <p className="text-sm text-muted-foreground">
+                            Select this if you need the service on priority basis
+                          </p>
+                        </div>
+                      </FormItem>
+                    )}
+                  />
                   
-                  <div className="space-y-2">
-                    <p className="text-sm font-medium">What's Included:</p>
-                    <ul className="space-y-1.5">
-                      <li className="flex items-start gap-2">
-                        <CheckCircle2 className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
-                        <span className="text-xs">Professional service by certified experts</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <CheckCircle2 className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
-                        <span className="text-xs">30-day service guarantee</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <CheckCircle2 className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
-                        <span className="text-xs">Quality spare parts (if required, charged separately)</span>
-                      </li>
-                    </ul>
-                  </div>
+                  <FormField
+                    control={form.control}
+                    name="payment_method"
+                    render={({ field }) => (
+                      <FormItem className="space-y-3">
+                        <FormLabel>Payment Method</FormLabel>
+                        <FormControl>
+                          <RadioGroup
+                            onValueChange={field.onChange}
+                            defaultValue={field.value}
+                            className="flex flex-col space-y-1"
+                          >
+                            <div className="flex items-center space-x-2 rounded-md border p-3">
+                              <RadioGroupItem value="cash" id="cash" />
+                              <Label htmlFor="cash" className="flex-1 cursor-pointer font-medium">Cash on Delivery</Label>
+                            </div>
+                            <div className="flex items-center space-x-2 rounded-md border p-3">
+                              <RadioGroupItem value="online" id="online" />
+                              <Label htmlFor="online" className="flex-1 cursor-pointer font-medium">Credit/Debit Card</Label>
+                            </div>
+                            <div className="flex items-center space-x-2 rounded-md border p-3">
+                              <RadioGroupItem value="upi" id="upi" />
+                              <Label htmlFor="upi" className="flex-1 cursor-pointer font-medium">UPI / Mobile Wallet</Label>
+                            </div>
+                          </RadioGroup>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                   
-                  <div className="bg-green-50 border border-green-100 rounded-lg p-3">
-                    <div className="flex items-start gap-2">
-                      <Badge className="bg-green-100 text-green-800 hover:bg-green-200">NEW</Badge>
-                      <div className="text-xs text-green-800">
-                        Get 10% off on your first service booking! Applied at checkout.
-                      </div>
-                    </div>
-                  </div>
+                  <Alert className="bg-muted/50">
+                    <Info className="h-4 w-4" />
+                    <AlertDescription className="text-xs">
+                      Payment will be collected after the service is completed to your satisfaction.
+                    </AlertDescription>
+                  </Alert>
                 </div>
-              </CardContent>
-              <CardFooter className="bg-slate-50 flex flex-col items-start p-4">
-                <p className="text-xs text-muted-foreground mb-2">Have questions about this service?</p>
-                <Button variant="outline" size="sm" className="text-xs w-full">
-                  Contact Customer Support
-                </Button>
-              </CardFooter>
-            </Card>
-          </motion.div>
-        </div>
+                
+                <div className="flex justify-between pt-2">
+                  <Button type="button" variant="outline" onClick={onBack}>
+                    Go Back
+                  </Button>
+                  <Button type="submit" disabled={isSubmitting}>
+                    {isSubmitting ? "Processing..." : "Confirm Booking"}
+                  </Button>
+                </div>
+              </form>
+            </Form>
+          </CardContent>
+        </Card>
       </div>
-    </motion.div>
+      
+      <div className="space-y-6">
+        <Card className="border-primary/10 shadow-sm sticky top-6">
+          <CardHeader className="pb-2">
+            <CardTitle>Booking Summary</CardTitle>
+            <CardDescription>Review your service details</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="space-y-2">
+              <div className="flex items-center justify-between text-sm">
+                <span>Service:</span>
+                <span className="font-medium">{selectedSubserviceName}</span>
+              </div>
+              
+              <Separator className="my-2" />
+              
+              <div className="space-y-3">
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Subtotal</span>
+                  <span>₹{subtotal}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Service Fee</span>
+                  <span>₹{serviceFee}</span>
+                </div>
+                {discount > 0 && (
+                  <div className="flex justify-between text-green-600">
+                    <span>Discount (10%)</span>
+                    <span>-₹{discount}</span>
+                  </div>
+                )}
+              </div>
+              
+              <Separator className="my-2" />
+              
+              <div className="flex justify-between font-bold">
+                <span>Total</span>
+                <span>₹{total}</span>
+              </div>
+            </div>
+            
+            <div className="rounded-lg bg-primary/5 p-3 space-y-2">
+              <h3 className="text-sm font-medium flex items-center gap-1.5">
+                <CheckCircle2 className="h-4 w-4 text-green-600" />
+                Service Guarantee
+              </h3>
+              <ul className="text-xs space-y-1 text-muted-foreground">
+                <li className="flex items-start gap-1.5">
+                  <CheckCircle2 className="h-3 w-3 text-green-600 mt-0.5" />
+                  <span>Verified Professional Service Providers</span>
+                </li>
+                <li className="flex items-start gap-1.5">
+                  <CheckCircle2 className="h-3 w-3 text-green-600 mt-0.5" />
+                  <span>Hassle-free Rescheduling</span>
+                </li>
+                <li className="flex items-start gap-1.5">
+                  <CheckCircle2 className="h-3 w-3 text-green-600 mt-0.5" />
+                  <span>100% Satisfaction or Money Back</span>
+                </li>
+                <li className="flex items-start gap-1.5">
+                  <CheckCircle2 className="h-3 w-3 text-green-600 mt-0.5" />
+                  <span>30-day Service Warranty</span>
+                </li>
+              </ul>
+            </div>
+            
+            {!session && (
+              <Alert variant="default" className="bg-blue-50 text-blue-800 border-blue-200">
+                <div className="flex flex-col items-start gap-2">
+                  <h4 className="text-sm font-semibold">Login for Member Benefits</h4>
+                  <p className="text-xs">Sign in to get 10% discount and track your service requests</p>
+                  <Button 
+                    size="sm" 
+                    variant="outline"
+                    className="mt-1 bg-white border-blue-200 hover:bg-blue-50 text-blue-700"
+                    onClick={() => navigate("/auth")}
+                  >
+                    Login / Sign Up
+                  </Button>
+                </div>
+              </Alert>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+    </div>
   );
 };
 
