@@ -17,7 +17,6 @@ import ListingManagement from "@/components/admin/ListingManagement";
 import UserManagement from "@/components/admin/UserManagement";
 import ServiceLeadsManagement from "@/components/admin/ServiceLeadsManagement";
 import ServiceCenterManagement from "@/components/admin/ServiceCenterManagement";
-import { ServiceErrorBoundary } from "@/components/services/ServiceErrorBoundary";
 
 const AdminPanel = () => {
   const navigate = useNavigate();
@@ -138,33 +137,31 @@ const AdminPanel = () => {
             transition={{ duration: 0.2 }}
             className="space-y-6"
           >
-            <ServiceErrorBoundary>
-              <Tabs value={activeTab} className="w-full">
-                <TabsContent value="dashboard">
-                  <DashboardMetrics />
-                </TabsContent>
-                
-                <TabsContent value="listings">
-                  <ListingManagement />
-                </TabsContent>
-                
-                <TabsContent value="users">
-                  <UserManagement />
-                </TabsContent>
-                
-                <TabsContent value="analytics">
-                  <AdminAnalytics />
-                </TabsContent>
-                
-                <TabsContent value="service-leads">
-                  <ServiceLeadsManagement />
-                </TabsContent>
-                
-                <TabsContent value="service-center">
-                  <ServiceCenterManagement />
-                </TabsContent>
-              </Tabs>
-            </ServiceErrorBoundary>
+            <Tabs value={activeTab} className="w-full">
+              <TabsContent value="dashboard">
+                <DashboardMetrics />
+              </TabsContent>
+              
+              <TabsContent value="listings">
+                <ListingManagement />
+              </TabsContent>
+              
+              <TabsContent value="users">
+                <UserManagement />
+              </TabsContent>
+              
+              <TabsContent value="analytics">
+                <AdminAnalytics />
+              </TabsContent>
+              
+              <TabsContent value="service-leads">
+                <ServiceLeadsManagement />
+              </TabsContent>
+              
+              <TabsContent value="service-center">
+                <ServiceCenterManagement />
+              </TabsContent>
+            </Tabs>
           </motion.div>
         </AnimatePresence>
       </motion.div>

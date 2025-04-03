@@ -12,7 +12,6 @@ export interface DashboardMetrics {
   rejectedListings: number;
   featuredRequests: number;
   serviceLeads: number;
-  serviceProviders?: number;
 }
 
 export function useAdminMetrics() {
@@ -44,14 +43,6 @@ export function useAdminMetrics() {
         .select('count', { count: 'exact', head: true });
       
       const serviceLeads = serviceLeadsError ? 0 : (serviceLeadsCount || 0);
-      
-      // Fetch service providers count
-      const { count: serviceProvidersCount, error: serviceProvidersError } = await supabase
-        .from('profiles')
-        .select('count', { count: 'exact', head: true })
-        .or('role.eq.service_provider,user_type.eq.service_provider');
-      
-      const serviceProviders = serviceProvidersError ? 0 : (serviceProvidersCount || 0);
 
       // Map the database column names to our interface property names
       return {
@@ -62,8 +53,7 @@ export function useAdminMetrics() {
         featuredListings: viewData?.featured_listings || 0,
         rejectedListings: viewData?.rejected_listings || 0,
         featuredRequests,
-        serviceLeads,
-        serviceProviders
+        serviceLeads
       };
     },
     staleTime: 1000, // Data considered fresh for 1 second

@@ -1,308 +1,417 @@
 
-import React, { useState } from 'react';
-import { format } from 'date-fns';
-import { Calendar } from "@/components/ui/calendar";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import React, { useState } from "react";
+import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
+import { z } from "zod";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { Badge } from "@/components/ui/badge";
+import { format } from "date-fns";
+import { cn } from "@/lib/utils";
 import { useToast } from "@/components/ui/use-toast";
-import { useCreateServiceLead } from "@/hooks/useServiceLeads";
-import { useSession } from "@/hooks/use-session-user";
+import { formSchema, FormValues } from "@/types/serviceTypes";
+import { serviceCategories } from "@/data/serviceCategories";
+import { CalendarDays, Clock, IndianRupee, CheckCircle2, ArrowLeft, Shield } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
-import { ServiceErrorBoundary } from '@/components/services/ServiceErrorBoundary';
 
-export interface ServiceBookingFormProps {
+type ServiceBookingFormProps = {
   categoryId: string;
-  serviceName: string;
-  price: number;
-  timeSlots?: string[];
-  onBack?: () => void;
-  estimatedAmount?: number;
-  selectedSubserviceName?: string;
-}
+  subserviceId: string | null;
+  selectedSubserviceName: string;
+  onBack: () => void;
+  timeSlots: string[];
+  estimatedAmount: number;
+};
 
-const ServiceBookingForm = ({ 
-  categoryId, 
-  serviceName, 
-  price, 
-  timeSlots = [], 
+const ServiceBookingForm = ({
+  categoryId,
+  subserviceId,
+  selectedSubserviceName,
   onBack,
-  estimatedAmount,
-  selectedSubserviceName 
+  timeSlots,
+  estimatedAmount
 }: ServiceBookingFormProps) => {
-  const [formData, setFormData] = useState({
-    name: '',
-    phone: '',
-    address: '',
-    additionalInfo: '',
-    urgent: false
-  });
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
-  const [selectedTime, setSelectedTime] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
-  const { createLead, isCreating } = useCreateServiceLead();
-  const { session } = useSession();
   const navigate = useNavigate();
   
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
-
-  const handleCheckboxChange = (checked: boolean) => {
-    setFormData(prev => ({
-      ...prev,
-      urgent: checked
-    }));
-  };
+  // Get the category details
+  const categoryDetails = serviceCategories.find(c => c.id === categoryId);
   
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!session?.user) {
-      toast({
-        title: "Authentication Required",
-        description: "You need to sign in to book a service",
-        variant: "destructive"
-      });
-      navigate('/profile');
-      return;
+  const form = useForm<FormValues>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      serviceCategory: categoryId || "",
+      serviceType: subserviceId || "", // Using the subserviceId as the value
+      description: "",
+      date: undefined,
+      time: "",
+      address: "",
+      name: "",
+      phone: "",
+      urgent: false,
     }
-    
-    if (!formData.name || !formData.phone || !formData.address || !selectedDate || !selectedTime) {
-      toast({
-        title: "Missing Information",
-        description: "Please fill all required fields",
-        variant: "destructive"
-      });
-      return;
-    }
-    
-    // Create service lead data
-    const serviceLeadData = {
-      user_id: session.user.id,
-      customer_name: formData.name,
-      phone: formData.phone,
-      service_category: categoryId,
-      service_type: selectedSubserviceName || serviceName,
-      description: formData.additionalInfo || '',
-      address: formData.address,
-      appointment_date: format(selectedDate, 'yyyy-MM-dd'),
-      appointment_time: selectedTime,
-      urgent: formData.urgent,
-      amount: estimatedAmount || price,
-      status: 'Pending' // Add required status field
-    };
-    
-    // Submit service lead
-    createLead(serviceLeadData, {
-      onSuccess: () => {
-        setFormData({
-          name: '',
-          phone: '',
-          address: '',
-          additionalInfo: '',
-          urgent: false
-        });
-        
-        setSelectedDate(undefined);
-        setSelectedTime('');
-        
-        // Show success message and navigate to booking confirmation
-        toast({
-          title: "Service Booked Successfully",
-          description: "You can track your service request in the My Services section",
-        });
-        
-        navigate('/my-orders');
-      }
-    });
-  };
+  });
 
-  // Determine which time slots to display
-  const displayTimeSlots = timeSlots.length > 0 ? timeSlots : [
-    "9:00 AM",
-    "10:00 AM",
-    "11:00 AM",
-    "2:00 PM",
-    "3:00 PM",
-    "4:00 PM"
-  ];
+  const onSubmit = async (data: FormValues) => {
+    setIsSubmitting(true);
+    
+    try {
+      // Get the category name
+      const categoryName = categoryDetails?.name || "";
+      
+      // Insert into service_leads table
+      const { data: leadData, error } = await supabase
+        .from('service_leads')
+        .insert({
+          customer_name: data.name,
+          phone: data.phone,
+          service_category: categoryName,
+          service_type: selectedSubserviceName,
+          description: data.description,
+          address: data.address,
+          appointment_date: format(data.date, "yyyy-MM-dd"),
+          appointment_time: data.time,
+          status: "Pending" as "Pending" | "In Progress" | "Completed" | "Cancelled",
+          urgent: data.urgent,
+          amount: estimatedAmount
+        })
+        .select();
+        
+      if (error) {
+        console.error("Error creating service lead:", error);
+        toast({
+          title: "Something went wrong",
+          description: "Unable to submit your service request. Please try again.",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      toast({
+        title: "Service Booked Successfully!",
+        description: `Your ${selectedSubserviceName} service has been scheduled for ${format(data.date, "PPP")} at ${data.time}.`,
+        variant: "default",
+      });
+      
+      // Reset form
+      form.reset();
+      
+      // Navigate to thank you or home page
+      setTimeout(() => {
+        navigate("/"); // Or to a thank you page
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }, 2000);
+      
+    } catch (error) {
+      console.error("Error in service booking:", error);
+      toast({
+        title: "Booking Failed",
+        description: "There was an error processing your request. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
   
   return (
-    <ServiceErrorBoundary>
-      <Card className="shadow-md border-primary/10">
-        <CardHeader>
-          <CardTitle className="text-xl">Book {selectedSubserviceName || serviceName}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="name">Your Name</Label>
-                <Input 
-                  id="name"
-                  name="name"
-                  placeholder="John Doe" 
-                  value={formData.name}
-                  onChange={handleChange}
-                  required
-                  className="border-input/60 focus-visible:ring-primary/60"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="phone">Phone Number</Label>
-                <Input 
-                  id="phone"
-                  name="phone"
-                  placeholder="+91 9876543210" 
-                  type="tel"
-                  value={formData.phone}
-                  onChange={handleChange}
-                  required
-                  className="border-input/60 focus-visible:ring-primary/60"
-                />
-              </div>
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="address">Address</Label>
-              <Input 
-                id="address"
-                name="address"
-                placeholder="123 Main St, City" 
-                value={formData.address}
-                onChange={handleChange}
-                required
-                className="border-input/60 focus-visible:ring-primary/60"
-              />
-            </div>
-            
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="date">Select Date</Label>
-                <div className="border rounded-md p-2 bg-card">
-                  <Calendar
-                    mode="single"
-                    selected={selectedDate}
-                    onSelect={setSelectedDate}
-                    className="rounded-md"
-                    disabled={(date) => date < new Date()}
-                  />
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4 }}
+      className="space-y-6"
+    >
+      <div className="flex items-center gap-2 mb-2">
+        <Button 
+          variant="outline" 
+          size="sm" 
+          className="text-muted-foreground flex items-center gap-1 hover:bg-primary/10 hover:text-primary transition-colors"
+          onClick={onBack}
+        >
+          <ArrowLeft className="h-4 w-4 mr-1" /> Back to services
+        </Button>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="md:col-span-2">
+          <Card className="border shadow-md overflow-hidden">
+            <CardHeader className="bg-gradient-to-r from-primary/10 to-primary/5 border-b">
+              <div className="flex items-center gap-3">
+                {categoryDetails && categoryDetails.icon && React.createElement(categoryDetails.icon, { 
+                  className: "h-6 w-6 text-primary" 
+                })}
+                <div>
+                  <CardTitle className="flex items-center gap-2 text-xl">
+                    Book {selectedSubserviceName}
+                  </CardTitle>
+                  <CardDescription>
+                    Fill in the details below to schedule your service appointment
+                  </CardDescription>
                 </div>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="time">Select Time</Label>
-                <Select onValueChange={setSelectedTime}>
-                  <SelectTrigger className="w-full border-input/60 focus-visible:ring-primary/60">
-                    <SelectValue placeholder="Select a time" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {displayTimeSlots.map((time) => (
-                      <SelectItem key={time} value={time}>{time}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+            </CardHeader>
+            <CardContent className="p-4 sm:p-6">
+              <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-4">
+                      <FormField
+                        control={form.control}
+                        name="name"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Your Name</FormLabel>
+                            <FormControl>
+                              <Input placeholder="Enter your full name" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <FormField
+                        control={form.control}
+                        name="phone"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Phone Number</FormLabel>
+                            <FormControl>
+                              <Input placeholder="Enter your phone number" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <FormField
+                        control={form.control}
+                        name="address"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Service Address</FormLabel>
+                            <FormControl>
+                              <Textarea 
+                                placeholder="Enter your complete address" 
+                                className="resize-none min-h-[100px]" 
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                    
+                    <div className="space-y-4">
+                      <FormField
+                        control={form.control}
+                        name="description"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Describe your issue</FormLabel>
+                            <FormControl>
+                              <Textarea 
+                                placeholder="What needs to be fixed? Please provide details." 
+                                className="resize-none min-h-[100px]" 
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
 
-                <div className="mt-6 space-y-4">
-                  <div className="bg-primary/5 p-4 rounded-md">
-                    <h4 className="font-medium text-sm mb-2">Available Services</h4>
-                    <ul className="space-y-2 text-sm">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <FormField
+                          control={form.control}
+                          name="date"
+                          render={({ field }) => (
+                            <FormItem className="flex flex-col">
+                              <FormLabel>Service Date</FormLabel>
+                              <Popover>
+                                <PopoverTrigger asChild>
+                                  <FormControl>
+                                    <Button
+                                      variant={"outline"}
+                                      className={cn(
+                                        "w-full pl-3 text-left font-normal flex justify-between items-center",
+                                        !field.value && "text-muted-foreground"
+                                      )}
+                                    >
+                                      {field.value ? (
+                                        format(field.value, "PPP")
+                                      ) : (
+                                        "Pick a date"
+                                      )}
+                                      <CalendarDays className="h-4 w-4 opacity-50" />
+                                    </Button>
+                                  </FormControl>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-auto p-0" align="start">
+                                  <Calendar
+                                    mode="single"
+                                    selected={field.value}
+                                    onSelect={field.onChange}
+                                    disabled={(date) => date < new Date() || date > new Date(new Date().setMonth(new Date().getMonth() + 1))}
+                                    initialFocus
+                                  />
+                                </PopoverContent>
+                              </Popover>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        
+                        <FormField
+                          control={form.control}
+                          name="time"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Preferred Time</FormLabel>
+                              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                <FormControl>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Select time slot" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  {timeSlots.map((slot) => (
+                                    <SelectItem key={slot} value={slot}>
+                                      {slot}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                      
+                      <FormField
+                        control={form.control}
+                        name="urgent"
+                        render={({ field }) => (
+                          <div className="bg-amber-50 border border-amber-200 rounded-md p-3 mt-2">
+                            <div className="flex items-center space-x-2">
+                              <input
+                                type="checkbox"
+                                id="urgent-service"
+                                checked={field.value}
+                                onChange={field.onChange}
+                                className="h-4 w-4 text-primary rounded focus:ring-primary"
+                              />
+                              <label htmlFor="urgent-service" className="text-sm font-medium text-amber-800">
+                                This is an urgent request (priority service, additional charges may apply)
+                              </label>
+                            </div>
+                          </div>
+                        )}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="pt-4 flex justify-end">
+                    <Button 
+                      type="submit" 
+                      size="lg"
+                      className="bg-primary hover:bg-primary/90 text-white px-8 w-full md:w-auto"
+                      disabled={isSubmitting}
+                    >
+                      {isSubmitting ? "Scheduling..." : "Schedule Service"}
+                    </Button>
+                  </div>
+                </form>
+              </Form>
+            </CardContent>
+          </Card>
+        </div>
+        
+        <div>
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+          >
+            <Card className="sticky top-6">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-lg">Service Summary</CardTitle>
+              </CardHeader>
+              <CardContent className="pb-4">
+                <div className="space-y-4">
+                  <div className="flex items-start gap-3 pb-3 border-b">
+                    <div className="bg-primary/10 p-2 rounded-full">
+                      {categoryDetails && categoryDetails.icon && React.createElement(categoryDetails.icon, { 
+                        className: "h-5 w-5 text-primary" 
+                      })}
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm font-medium">{categoryDetails?.name}</p>
+                      <p className="text-primary font-semibold">{selectedSubserviceName}</p>
+                    </div>
+                  </div>
+                  
+                  <div className="bg-primary/5 p-4 rounded-lg">
+                    <div className="flex justify-between items-center mb-3">
+                      <span className="text-sm text-muted-foreground">Estimated Price</span>
+                      <div className="flex items-center text-lg font-bold text-primary">
+                        <IndianRupee className="h-4 w-4 mr-1" />
+                        {estimatedAmount}
+                      </div>
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      Final price may vary based on service requirements
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <p className="text-sm font-medium">What's Included:</p>
+                    <ul className="space-y-1.5">
                       <li className="flex items-start gap-2">
-                        <span className="text-primary">•</span>
-                        <span>Professional diagnosis</span>
+                        <CheckCircle2 className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                        <span className="text-xs">Professional service by certified experts</span>
                       </li>
                       <li className="flex items-start gap-2">
-                        <span className="text-primary">•</span>
-                        <span>Quality repair with warranty</span>
+                        <CheckCircle2 className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                        <span className="text-xs">30-day service guarantee</span>
                       </li>
                       <li className="flex items-start gap-2">
-                        <span className="text-primary">•</span>
-                        <span>Genuine replacement parts</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-primary">•</span>
-                        <span>Post-service assistance</span>
+                        <CheckCircle2 className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                        <span className="text-xs">Quality spare parts (if required, charged separately)</span>
                       </li>
                     </ul>
                   </div>
+                  
+                  <div className="bg-green-50 border border-green-100 rounded-lg p-3">
+                    <div className="flex items-start gap-2">
+                      <Badge className="bg-green-100 text-green-800 hover:bg-green-200">NEW</Badge>
+                      <div className="text-xs text-green-800">
+                        Get 10% off on your first service booking! Applied at checkout.
+                      </div>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="additionalInfo">Additional Information</Label>
-              <Textarea 
-                id="additionalInfo"
-                name="additionalInfo"
-                placeholder="Any specific details about the service needed..."
-                value={formData.additionalInfo}
-                onChange={handleChange}
-                rows={3}
-                className="border-input/60 focus-visible:ring-primary/60"
-              />
-            </div>
-            
-            <div className="flex items-center space-x-2 p-3 border rounded-md bg-muted/20">
-              <Checkbox 
-                id="urgent"
-                checked={formData.urgent}
-                onCheckedChange={handleCheckboxChange}
-              />
-              <Label htmlFor="urgent" className="text-sm">
-                <span className="font-medium">Priority Service</span>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Get faster service with priority scheduling (additional charges may apply)
-                </p>
-              </Label>
-            </div>
-            
-            <div className="pt-4 border-t">
-              <div className="flex justify-between mb-4">
-                <span className="text-muted-foreground">Service Fee</span>
-                <span className="font-medium">₹{estimatedAmount || price}</span>
-              </div>
-              
-              <Button 
-                type="submit" 
-                className="w-full"
-                disabled={isCreating}
-              >
-                {isCreating ? "Submitting..." : `Book Service for ₹${estimatedAmount || price}`}
-              </Button>
-              
-              {onBack && (
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                  className="w-full mt-2"
-                  onClick={onBack}
-                >
-                  Back to Service Details
+              </CardContent>
+              <CardFooter className="bg-slate-50 flex flex-col items-start p-4">
+                <p className="text-xs text-muted-foreground mb-2">Have questions about this service?</p>
+                <Button variant="outline" size="sm" className="text-xs w-full">
+                  Contact Customer Support
                 </Button>
-              )}
-              
-              <p className="text-xs text-center text-muted-foreground mt-4">
-                By booking, you agree to our Terms of Service and Privacy Policy
-              </p>
-            </div>
-          </form>
-        </CardContent>
-      </Card>
-    </ServiceErrorBoundary>
+              </CardFooter>
+            </Card>
+          </motion.div>
+        </div>
+      </div>
+    </motion.div>
   );
 };
 

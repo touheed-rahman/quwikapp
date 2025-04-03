@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { useNavigate } from "react-router-dom";
@@ -30,7 +29,6 @@ import HowItWorks from "@/components/services/HowItWorks";
 import ServiceGuarantee from "@/components/services/ServiceGuarantee";
 import RecentlyViewedServices from "@/components/services/RecentlyViewedServices";
 import ServiceRequestsMenu from "@/components/services/ServiceRequestsMenu";
-import ServiceErrorBoundary from "@/components/services/ServiceErrorBoundary";
 import { Separator } from "@/components/ui/separator";
 import { useSession } from "@/hooks/use-session-user";
 
@@ -110,6 +108,10 @@ const ServiceView = () => {
     setSelectedLocation(value);
   };
 
+  const handleLogin = () => {
+    navigate('/auth');
+  };
+
   // Floating action button for My Requests (visible only when logged in)
   const RequestsFloatingButton = () => {
     if (!session) return null;
@@ -160,12 +162,10 @@ const ServiceView = () => {
         />
 
         {selectedCategory ? (
-          <ServiceErrorBoundary>
-            <ServiceSubcategoryView 
-              categoryId={selectedCategory}
-              onBack={handleBackToCategories}
-            />
-          </ServiceErrorBoundary>
+          <ServiceSubcategoryView 
+            categoryId={selectedCategory}
+            onBack={handleBackToCategories}
+          />
         ) : (
           <>
             <ServiceFilterBar 
@@ -173,40 +173,27 @@ const ServiceView = () => {
               onFilterChange={handleFilterChange} 
             />
             
-            <ServiceErrorBoundary>
-              <PromoBanner />
-            </ServiceErrorBoundary>
+            <PromoBanner />
             
-            <ServiceErrorBoundary>
-              <ServiceCategories 
-                searchQuery={searchQuery}
-                onSelectCategory={handleCategorySelect}
-                selectedCategory={null}
-              />
-            </ServiceErrorBoundary>
+            <ServiceCategories 
+              searchQuery={searchQuery}
+              onSelectCategory={handleCategorySelect}
+              selectedCategory={null}
+            />
             
-            <ServiceErrorBoundary>
-              <PopularServices onSelectService={handlePopularServiceSelect} />
-            </ServiceErrorBoundary>
+            <PopularServices onSelectService={handlePopularServiceSelect} />
             
             {recentlyViewed.length > 0 && (
-              <ServiceErrorBoundary>
-                <RecentlyViewedServices 
-                  recentlyViewed={recentlyViewed}
-                  onSelectRecent={handleCategorySelect}
-                />
-              </ServiceErrorBoundary>
+              <RecentlyViewedServices 
+                recentlyViewed={recentlyViewed}
+                onSelectRecent={handleCategorySelect}
+              />
             )}
             
             <Separator className="my-8" />
             
-            <ServiceErrorBoundary>
-              <HowItWorks />
-            </ServiceErrorBoundary>
-            
-            <ServiceErrorBoundary>
-              <ServiceGuarantee />
-            </ServiceErrorBoundary>
+            <HowItWorks />
+            <ServiceGuarantee />
             
             {session ? (
               <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">

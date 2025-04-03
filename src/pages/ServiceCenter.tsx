@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -546,6 +547,9 @@ const ServiceCenter = () => {
                         <p className="text-xs sm:text-sm text-muted-foreground">
                           {format(new Date(request.created_at), 'dd MMM yyyy')}
                         </p>
+                        {request.amount && (
+                          <p className="font-bold text-primary">₹{request.amount}</p>
+                        )}
                       </div>
                     </div>
                     
@@ -573,6 +577,12 @@ const ServiceCenter = () => {
                           <Clock className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
                           <span>{request.appointment_time}</span>
                         </div>
+                        {request.payment_method && (
+                          <div className="flex items-center gap-1 text-xs sm:text-sm">
+                            <DollarSign className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
+                            <span>{request.payment_method}</span>
+                          </div>
+                        )}
                       </div>
                     </div>
                     

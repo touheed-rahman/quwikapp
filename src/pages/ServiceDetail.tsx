@@ -13,15 +13,12 @@ import ServiceConnector from "@/components/services/ServiceConnector";
 import { serviceCategories } from "@/data/serviceCategories";
 import { servicePricing } from "@/types/serviceTypes";
 import { useToast } from "@/components/ui/use-toast";
-import { useSession } from "@/hooks/use-session-user";
-import { ServiceErrorBoundary } from "@/components/services/ServiceErrorBoundary";
 
 const ServiceDetail = () => {
   const { categoryId, serviceId } = useParams<{ categoryId: string; serviceId: string }>();
   const navigate = useNavigate();
   const [showBookingForm, setShowBookingForm] = useState(false);
   const { toast } = useToast();
-  const { user, session, loading } = useSession();
   
   const category = serviceCategories.find(c => c.id === categoryId);
   const service = category?.subservices.find(s => s.id === serviceId);
@@ -62,21 +59,12 @@ const ServiceDetail = () => {
   };
   
   const handleBookService = () => {
-    if (!session?.user) {
-      toast({
-        title: "Authentication Required",
-        description: "You must be logged in to book a service.",
-        variant: "destructive",
-      });
-      navigate('/profile');
-      return;
-    }
     setShowBookingForm(true);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
   
   return (
-    <ServiceErrorBoundary>
+    <>
       <Header />
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
@@ -98,14 +86,14 @@ const ServiceDetail = () => {
               <ArrowLeft className="h-4 w-4 mr-1" /> Back to service details
             </Button>
             <ServiceBookingForm
-              categoryId={categoryId || ""}
-              serviceName={service.name}
-              price={price}
-              timeSlots={timeSlots}
+              categoryId={categoryId}
+              subserviceId={serviceId}
+              selectedSubserviceName={service.name}
               onBack={() => {
                 setShowBookingForm(false);
                 window.scrollTo({ top: 0, behavior: 'smooth' });
               }}
+              timeSlots={timeSlots}
               estimatedAmount={price}
             />
           </>
@@ -338,7 +326,7 @@ const ServiceDetail = () => {
           </>
         )}
       </motion.div>
-    </ServiceErrorBoundary>
+    </>
   );
 };
 
