@@ -1,140 +1,160 @@
 
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import { useToast } from "@/components/ui/use-toast";
-import { ArrowRight, Bell, CheckCircle, Clock } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { Phone, Send } from "lucide-react";
+import { useCreateServiceLead } from "@/hooks/useServiceLeads";
+import { useSession } from "@/hooks/use-session-user";
+import { useNavigate } from "react-router-dom";
 
-type ServiceConnectorProps = {
+interface ServiceConnectorProps {
   serviceId: string;
   serviceName: string;
-  showCard?: boolean;
-};
+}
 
-const ServiceConnector = ({ serviceId, serviceName, showCard = true }: ServiceConnectorProps) => {
-  const [serviceRequests, setServiceRequests] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+const ServiceConnector = ({ serviceId, serviceName }: ServiceConnectorProps) => {
+  const [formData, setFormData] = useState({
+    name: '',
+    phone: '',
+    message: ''
+  });
   const { toast } = useToast();
+  const { createLead, isCreating } = useCreateServiceLead();
+  const { session } = useSession();
   const navigate = useNavigate();
   
-  useEffect(() => {
-    // Fetch service requests
-    const fetchRequests = async () => {
-      try {
-        setLoading(true);
-        // In a real app, we'd filter by the specific service
-        const { data, error } = await supabase
-          .from('service_leads')
-          .select('*')
-          .eq('service_type', serviceName)
-          .limit(2)
-          .order('created_at', { ascending: false });
-
-        if (error) throw error;
-        setServiceRequests(data || []);
-      } catch (error) {
-        console.error("Error fetching service requests:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (serviceName) {
-      fetchRequests();
-    }
-  }, [serviceName]);
-  
-  const handleViewAllRequests = () => {
-    navigate('/service-center');
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
   
-  if (!showCard) {
-    return (
-      <Button 
-        onClick={handleViewAllRequests} 
-        className="w-full mt-4"
-        variant="outline"
-      >
-        View All Service Requests <ArrowRight className="ml-2 h-4 w-4" />
-      </Button>
-    );
-  }
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!formData.name || !formData.phone) {
+      toast({
+        title: "Missing Information",
+        description: "Please provide your name and phone number",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    if (!session?.user) {
+      toast({
+        title: "Authentication Required",
+        description: "You need to sign in to request service information",
+        variant: "destructive"
+      });
+      navigate('/profile');
+      return;
+    }
+    
+    // Create a quick service lead with minimal information
+    const serviceLeadData = {
+      user_id: session.user.id,
+      customer_name: formData.name,
+      phone: formData.phone,
+      service_category: "inquiry", // Special category for quick inquiries
+      service_type: serviceName,
+      description: formData.message,
+      address: "To be provided",
+      appointment_date: new Date().toISOString().split('T')[0], // Today's date
+      appointment_time: "To be scheduled",
+      urgent: false,
+      amount: 0
+    };
+    
+    createLead(serviceLeadData, {
+      onSuccess: () => {
+        setFormData({
+          name: '',
+          phone: '',
+          message: ''
+        });
+        
+        toast({
+          title: "Request Submitted",
+          description: "We'll contact you shortly with more information about this service",
+        });
+      }
+    });
+  };
   
   return (
     <Card>
-      <CardHeader className="pb-3">
-        <div className="flex justify-between items-center">
-          <CardTitle className="text-lg flex items-center gap-2">
-            <Bell className="h-5 w-5 text-primary" />
-            Service Requests
-          </CardTitle>
-          <Badge variant="outline" className="bg-primary/5">
-            {loading ? "Loading..." : `${serviceRequests.length} requests`}
-          </Badge>
-        </div>
-        <CardDescription>
-          Recent service requests for {serviceName}
-        </CardDescription>
+      <CardHeader>
+        <CardTitle className="text-xl">Quick Service Request</CardTitle>
       </CardHeader>
-      <CardContent className="space-y-2">
-        {loading ? (
-          <div className="text-center py-6">
-            <Clock className="h-6 w-6 animate-spin mx-auto mb-2 text-primary/70" />
-            <p className="text-muted-foreground">Loading service requests...</p>
-          </div>
-        ) : serviceRequests.length > 0 ? (
-          serviceRequests.map((request) => (
-            <div key={request.id} className="p-3 rounded-lg border hover:bg-muted/5 transition-colors">
-              <div className="flex justify-between items-start mb-2">
-                <h4 className="font-medium">{request.customer_name}</h4>
-                <Badge
-                  className={
-                    request.status === 'Pending' ? 'bg-blue-100 text-blue-800' :
-                    request.status === 'In Progress' ? 'bg-amber-100 text-amber-800' :
-                    request.status === 'Completed' ? 'bg-green-100 text-green-800' :
-                    'bg-red-100 text-red-800'
-                  }
-                >
-                  {request.status}
-                </Badge>
-              </div>
-              <div className="text-sm text-muted-foreground mb-2 line-clamp-2">
-                {request.description || "No description provided"}
-              </div>
-              <div className="flex items-center justify-between text-xs">
-                <div className="flex items-center gap-1">
-                  <Clock className="h-3.5 w-3.5" />
-                  <span>{new Date(request.appointment_date).toLocaleDateString()}, {request.appointment_time}</span>
-                </div>
-                {request.urgent && (
-                  <Badge variant="outline" className="text-xs bg-red-50 text-red-700 border-red-200">
-                    Urgent
-                  </Badge>
-                )}
-              </div>
+      <CardContent>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="space-y-2">
+              <Label htmlFor="name">Your Name</Label>
+              <Input 
+                id="name"
+                name="name"
+                placeholder="John Doe" 
+                value={formData.name}
+                onChange={handleChange}
+                required
+              />
             </div>
-          ))
-        ) : (
-          <div className="text-center py-6 bg-muted/10 rounded-lg">
-            <CheckCircle className="h-6 w-6 mx-auto mb-2 text-muted-foreground" />
-            <p className="text-muted-foreground">No pending service requests</p>
+            <div className="space-y-2">
+              <Label htmlFor="phone">Phone Number</Label>
+              <Input 
+                id="phone"
+                name="phone"
+                placeholder="+91 9876543210" 
+                type="tel"
+                value={formData.phone}
+                onChange={handleChange}
+                required
+              />
+            </div>
           </div>
-        )}
+          
+          <div className="space-y-2">
+            <Label htmlFor="message">Your Message</Label>
+            <Textarea 
+              id="message"
+              name="message"
+              placeholder={`I'm interested in the ${serviceName} service...`}
+              value={formData.message}
+              onChange={handleChange}
+              rows={3}
+            />
+          </div>
+          
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+            <Button 
+              type="submit" 
+              className="flex-1 gap-2" 
+              disabled={isCreating}
+            >
+              <Send className="h-4 w-4" />
+              Request Information
+            </Button>
+            <Button 
+              type="button" 
+              variant="outline" 
+              className="flex-1 gap-2"
+              onClick={() => window.location.href = `tel:+919876543210`}
+            >
+              <Phone className="h-4 w-4" />
+              Call Us
+            </Button>
+          </div>
+          
+          <p className="text-xs text-center text-muted-foreground mt-2">
+            By submitting this form, you agree to be contacted about our services
+          </p>
+        </form>
       </CardContent>
-      <Separator />
-      <CardFooter className="pt-4">
-        <Button 
-          onClick={handleViewAllRequests} 
-          className="w-full"
-          variant="outline"
-        >
-          Go to Service Center <ArrowRight className="ml-2 h-4 w-4" />
-        </Button>
-      </CardFooter>
     </Card>
   );
 };
