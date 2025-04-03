@@ -66,7 +66,8 @@ const ServiceConnector = ({ serviceId, serviceName }: ServiceConnectorProps) => 
       appointment_date: new Date().toISOString().split('T')[0], // Today's date
       appointment_time: "To be scheduled",
       urgent: false,
-      amount: 0
+      amount: 0,
+      status: 'Pending' // Add required status field
     };
     
     createLead(serviceLeadData, {

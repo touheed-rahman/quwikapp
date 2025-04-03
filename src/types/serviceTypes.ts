@@ -14,6 +14,7 @@ export interface SubService {
   name: string;
   description?: string;
   price?: number;
+  tags?: string[];
 }
 
 // Price mapping for services
@@ -75,4 +76,15 @@ export interface ServiceLead {
   updated_at?: string;
   provider_id?: string;
   amount?: number;
+}
+
+// Popular service interface
+export interface PopularService {
+  id: string;
+  name: string;
+  price: number;
+  rating: number;
+  reviews: number;
+  image: string;
+  tags: string[];
 }

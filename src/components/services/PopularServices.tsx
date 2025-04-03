@@ -1,189 +1,117 @@
 
-import { motion } from "framer-motion";
-import { Smartphone, WashingMachine, Zap, PaintBucket, Calendar, Sparkles, Award, Clock, Star, Heart } from "lucide-react";
+import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { servicePricing } from "@/types/serviceTypes";
-import { useState } from "react";
-import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { ArrowRight, Star } from "lucide-react";
+import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 
-type PopularServicesProps = {
+// Define popular services data structure
+const popularServices = [
+  {
+    id: "electronic-television",
+    name: "TV Repair & Installation",
+    price: 399,
+    rating: 4.9,
+    reviews: 124,
+    image: "/placeholder.svg",
+    tags: ["Smart TV", "LED", "LCD", "Setup"]
+  },
+  {
+    id: "appliance-washing_machine",
+    name: "Washing Machine Repair",
+    price: 349,
+    rating: 4.8,
+    reviews: 98,
+    image: "/placeholder.svg",
+    tags: ["Front Load", "Top Load", "Installation"]
+  },
+  {
+    id: "plumbing-water_heater",
+    name: "Water Heater Service",
+    price: 549,
+    rating: 4.7,
+    reviews: 85,
+    image: "/placeholder.svg",
+    tags: ["Repair", "Installation", "Maintenance"]
+  },
+  {
+    id: "appliance-air_conditioner",
+    name: "AC Repair & Service",
+    price: 649,
+    rating: 4.8,
+    reviews: 112,
+    image: "/placeholder.svg",
+    tags: ["Split AC", "Window AC", "Service"]
+  }
+];
+
+interface PopularServicesProps {
   onSelectService: (id: string, name: string) => void;
-};
+}
 
 const PopularServices = ({ onSelectService }: PopularServicesProps) => {
-  const [favorites, setFavorites] = useState<string[]>([]);
-  const { toast } = useToast();
-  
-  const services = [
-    {
-      id: "electronic-ac_service",
-      name: "AC Repair & Service",
-      price: servicePricing.electronic.ac_service,
-      icon: Zap,
-      category: "electronic",
-      color: "from-blue-50 to-blue-100",
-      iconColor: "text-blue-600",
-      badge: "Most Popular",
-      badgeColor: "bg-blue-100 text-blue-800",
-      rating: 4.9,
-      reviews: 238,
-      timeEstimate: "1-2 hrs"
-    },
-    {
-      id: "mobile-mobile_repair",
-      name: "Mobile Screen Repair",
-      price: servicePricing.mobile.screen_replacement,
-      icon: Smartphone,
-      category: "mobile",
-      color: "from-purple-50 to-purple-100",
-      iconColor: "text-purple-600",
-      badge: "Fast Service",
-      badgeColor: "bg-purple-100 text-purple-800",
-      rating: 4.7,
-      reviews: 164,
-      timeEstimate: "30-60 min"
-    },
-    {
-      id: "electronic-washing_machine",
-      name: "Washing Machine Repair",
-      price: servicePricing.electronic.washing_machine,
-      icon: WashingMachine,
-      category: "electronic",
-      color: "from-teal-50 to-teal-100",
-      iconColor: "text-teal-600",
-      rating: 4.8,
-      reviews: 196,
-      timeEstimate: "1-2 hrs"
-    },
-    {
-      id: "home-painting",
-      name: "Home Painting",
-      price: servicePricing.home.painting,
-      icon: PaintBucket,
-      category: "home",
-      color: "from-amber-50 to-amber-100",
-      iconColor: "text-amber-600",
-      badge: "New",
-      badgeColor: "bg-amber-100 text-amber-800",
-      rating: 4.6,
-      reviews: 89,
-      timeEstimate: "3-5 hrs"
-    }
-  ];
-
-  const toggleFavorite = (e: React.MouseEvent, serviceId: string) => {
-    e.stopPropagation();
-    
-    setFavorites(prev => {
-      if (prev.includes(serviceId)) {
-        toast({
-          title: "Removed from favorites",
-          description: "Service removed from your favorites",
-          duration: 1500,
-        });
-        return prev.filter(id => id !== serviceId);
-      } else {
-        toast({
-          title: "Added to favorites",
-          description: "Service added to your favorites",
-          duration: 1500,
-        });
-        return [...prev, serviceId];
-      }
-    });
-  };
+  const navigate = useNavigate();
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-      className="space-y-6"
-    >
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-2">
+    <section className="mt-8 mb-12">
+      <div className="flex flex-wrap items-center justify-between mb-4">
         <div>
-          <h2 className="text-2xl font-bold text-slate-900">Popular Services</h2>
-          <p className="text-muted-foreground">Our most booked services with great ratings</p>
+          <h2 className="text-xl font-bold mb-1">Popular Services</h2>
+          <p className="text-muted-foreground text-sm">Most requested services near you</p>
         </div>
-        <Badge variant="outline" className="bg-primary/5 text-primary">Starting at ₹{Math.min(...Object.values(servicePricing.home))}</Badge>
+        <Button 
+          variant="link" 
+          className="flex items-center gap-1 text-primary"
+          onClick={() => navigate("/service-center")}
+        >
+          View All <ArrowRight className="h-4 w-4" />
+        </Button>
       </div>
-
+      
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {services.map((service) => (
+        {popularServices.map((service) => (
           <motion.div
             key={service.id}
-            whileHover={{ y: -5 }}
-            className="cursor-pointer h-full"
-            onClick={() => onSelectService(service.id, service.name)}
+            whileHover={{ scale: 1.02 }}
+            transition={{ duration: 0.2 }}
           >
-            <Card className="overflow-hidden h-full border-transparent hover:border-primary/20 transition-all duration-300 shadow-sm hover:shadow-md flex flex-col">
-              <div 
-                className={`relative bg-gradient-to-br ${service.color} p-5`}
-              >
-                {service.badge && (
-                  <Badge className={`absolute top-2 left-2 text-xs ${service.badgeColor}`}>
-                    {service.badge}
-                  </Badge>
-                )}
-                
-                <button 
-                  className="absolute top-2 right-2 p-1.5 bg-white/80 backdrop-blur-sm rounded-full shadow-sm hover:bg-white transition-colors"
-                  onClick={(e) => toggleFavorite(e, service.id)}
-                >
-                  <Heart 
-                    className={`h-4 w-4 ${favorites.includes(service.id) ? 'text-red-500 fill-red-500' : 'text-gray-400'}`} 
-                  />
-                </button>
-                
-                <div className="flex justify-center">
-                  <service.icon className={`h-16 w-16 ${service.iconColor} mx-auto transition-transform duration-300`} />
+            <Card className="h-full overflow-hidden border border-primary/10 hover:shadow-md transition-shadow cursor-pointer" onClick={() => onSelectService(service.id, service.name)}>
+              <div className="aspect-[4/3] bg-muted-foreground/10 relative">
+                <img 
+                  src={service.image} 
+                  alt={service.name} 
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute top-2 right-2">
+                  <Badge className="bg-primary/90 hover:bg-primary">₹{service.price}</Badge>
                 </div>
               </div>
-              
-              <CardContent className="p-4 space-y-3 flex-grow flex flex-col">
-                <h3 className="font-medium text-base text-center text-slate-900">{service.name}</h3>
-                
-                <div className="flex items-center justify-between text-sm">
-                  <div className="flex items-center gap-1 text-muted-foreground">
-                    <Clock className="h-3.5 w-3.5" />
-                    <span>{service.timeEstimate}</span>
-                  </div>
-                  
-                  <div className="flex items-center gap-1">
-                    <Star className="h-3.5 w-3.5 text-yellow-500 fill-yellow-500" />
-                    <span className="font-medium">{service.rating}</span>
-                    <span className="text-muted-foreground">({service.reviews})</span>
-                  </div>
+              <CardContent className="p-3">
+                <h3 className="font-semibold mb-1 line-clamp-1">{service.name}</h3>
+                <div className="flex items-center gap-1 text-xs mb-2">
+                  <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
+                  <span className="font-medium">{service.rating}</span>
+                  <span className="text-muted-foreground">({service.reviews} reviews)</span>
                 </div>
-                
-                <div className="flex items-center justify-between pt-2 mt-auto">
-                  <div>
-                    <div className="text-xs text-muted-foreground">Starting from</div>
-                    <div className="text-primary font-bold text-lg">₹{service.price}</div>
-                  </div>
-                  
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    className="border-primary/20 hover:bg-primary/10 hover:text-primary whitespace-nowrap"
-                  >
-                    Book Now
-                  </Button>
+                <div className="flex flex-wrap gap-1 mt-2">
+                  {service.tags.map((tag, index) => (
+                    <Badge 
+                      key={index} 
+                      variant="outline" 
+                      className="bg-primary/5 text-primary-foreground/80 border-primary/10 text-xs"
+                    >
+                      {tag}
+                    </Badge>
+                  ))}
                 </div>
               </CardContent>
             </Card>
           </motion.div>
         ))}
       </div>
-      
-      <div className="text-center pt-4">
-        <Button variant="outline" size="lg" className="bg-primary/5 hover:bg-primary/10">
-          View All Services <Award className="ml-2 h-4 w-4" />
-        </Button>
-      </div>
-    </motion.div>
+    </section>
   );
 };
 
