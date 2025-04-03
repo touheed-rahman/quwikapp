@@ -13,7 +13,7 @@ interface State {
   error: Error | null;
 }
 
-class ServiceErrorBoundary extends Component<Props, State> {
+export class ServiceErrorBoundary extends Component<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = {

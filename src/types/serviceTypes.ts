@@ -1,4 +1,6 @@
 
+import { ReactNode } from 'react';
+
 // Service interface definitions
 export interface ServiceCategory {
   id: string;
@@ -15,6 +17,9 @@ export interface SubService {
   description?: string;
   price?: number;
   tags?: string[];
+  estimated_time?: string;
+  warranty?: string;
+  urgent_service_available?: boolean;
 }
 
 // Price mapping for services
@@ -58,6 +63,9 @@ export const servicePricing: {
   }
 };
 
+// Service statuses
+export type ServiceStatus = 'Pending' | 'In Progress' | 'Completed' | 'Cancelled';
+
 // Service lead type
 export interface ServiceLead {
   id: string;
@@ -87,4 +95,46 @@ export interface PopularService {
   reviews: number;
   image: string;
   tags: string[];
+  category?: string;
+}
+
+// Service Provider interface
+export interface ServiceProvider {
+  id: string;
+  business_name?: string;
+  provider_type?: string;
+  services?: string[];
+  phone?: string;
+  address?: string;
+  status?: string;
+  documents?: string[];
+  rating?: number;
+  created_at?: string;
+  updated_at?: string;
+}
+
+// Service Booking interface
+export interface ServiceBooking {
+  id: string;
+  service_id: string;
+  service_name: string;
+  customer_id: string;
+  provider_id?: string;
+  booking_date: string;
+  booking_time: string;
+  status: ServiceStatus;
+  price: number;
+  notes?: string;
+  created_at: string;
+}
+
+// Service review interface
+export interface ServiceReview {
+  id: string;
+  service_id: string;
+  booking_id: string;
+  user_id: string;
+  rating: number;
+  comment?: string;
+  created_at: string;
 }

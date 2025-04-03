@@ -1,3 +1,4 @@
+
 import { useParams, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
@@ -13,6 +14,7 @@ import { serviceCategories } from "@/data/serviceCategories";
 import { servicePricing } from "@/types/serviceTypes";
 import { useToast } from "@/components/ui/use-toast";
 import { useSession } from "@/hooks/use-session-user";
+import { ServiceErrorBoundary } from "@/components/services/ServiceErrorBoundary";
 
 const ServiceDetail = () => {
   const { categoryId, serviceId } = useParams<{ categoryId: string; serviceId: string }>();
@@ -74,7 +76,7 @@ const ServiceDetail = () => {
   };
   
   return (
-    <>
+    <ServiceErrorBoundary>
       <Header />
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
@@ -96,14 +98,14 @@ const ServiceDetail = () => {
               <ArrowLeft className="h-4 w-4 mr-1" /> Back to service details
             </Button>
             <ServiceBookingForm
-              categoryId={categoryId}
-              subserviceId={serviceId}
-              selectedSubserviceName={service.name}
+              categoryId={categoryId || ""}
+              serviceName={service.name}
+              price={price}
+              timeSlots={timeSlots}
               onBack={() => {
                 setShowBookingForm(false);
                 window.scrollTo({ top: 0, behavior: 'smooth' });
               }}
-              timeSlots={timeSlots}
               estimatedAmount={price}
             />
           </>
@@ -336,7 +338,7 @@ const ServiceDetail = () => {
           </>
         )}
       </motion.div>
-    </>
+    </ServiceErrorBoundary>
   );
 };
 
