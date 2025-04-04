@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -26,7 +25,6 @@ const ServiceConnector = ({ serviceId, serviceName, showCard = true }: ServiceCo
   const { session } = useSession();
   
   useEffect(() => {
-    // Check if user is a service provider
     const checkServiceProvider = async () => {
       if (session) {
         try {
@@ -40,11 +38,9 @@ const ServiceConnector = ({ serviceId, serviceName, showCard = true }: ServiceCo
     
     checkServiceProvider();
     
-    // Fetch service requests only if not a service provider
     const fetchRequests = async () => {
       try {
         setLoading(true);
-        // In a real app, we'd filter by the specific service
         const { data, error } = await supabase
           .from('service_leads')
           .select('*')
@@ -55,7 +51,7 @@ const ServiceConnector = ({ serviceId, serviceName, showCard = true }: ServiceCo
         if (error) throw error;
         setServiceRequests(data || []);
       } catch (error) {
-        console.error("Error fetching service requests:", error);
+        console.error("Error fetching service leads:", error);
       } finally {
         setLoading(false);
       }
@@ -72,7 +68,6 @@ const ServiceConnector = ({ serviceId, serviceName, showCard = true }: ServiceCo
     navigate('/service-center');
   };
   
-  // If user is a service provider, don't show service requests to them
   if (isServiceProvider) return null;
   
   if (!showCard) {

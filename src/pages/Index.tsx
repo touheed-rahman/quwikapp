@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import Header from "@/components/Header";
 import ChatWindow from "@/components/chat/ChatWindow";
@@ -24,7 +23,6 @@ const Index = () => {
   const [showWelcomePopup, setShowWelcomePopup] = useState(true);
   const [randomFeaturedListings, setRandomFeaturedListings] = useState<Listing[]>([]);
   const [activeTab, setActiveTab] = useState(() => {
-    // Get stored tab from localStorage or default to "classified"
     return localStorage.getItem("activeTab") || "classified";
   });
   const [isTabChanging, setIsTabChanging] = useState(false);
@@ -39,7 +37,6 @@ const Index = () => {
   });
 
   useEffect(() => {
-    // Check if user is a service provider on initial load
     const checkServiceProvider = async () => {
       if (session) {
         try {
@@ -62,28 +59,22 @@ const Index = () => {
     }
   }, [listings, session]);
 
-  // Handle tab change with splash screen
   const handleTabChange = (value: string) => {
-    // Store the selected tab in localStorage for persistence
     localStorage.setItem("activeTab", value);
     
     setIsTabChanging(true);
     setSplashText(value === "classified" ? "Quwik Classified" : "Service Now");
     
-    // After animation completes, change the tab
     setTimeout(() => {
       setActiveTab(value);
       setIsTabChanging(false);
     }, 1000);
   };
 
-  // Only show the bottom navigation and floating sell button in the classified view
   const showBottomNav = activeTab === "classified";
 
-  // If user is a service provider, don't show the service tab
-  // They should be redirected to the service center dashboard
   if (!loading && isServiceProvider) {
-    return null; // They will be redirected in the ServiceView component
+    return null;
   }
 
   return (
@@ -132,7 +123,6 @@ const Index = () => {
             </TabsTrigger>
           </TabsList>
           
-          {/* Splash Screen */}
           <AnimatePresence>
             {isTabChanging && (
               <motion.div
@@ -170,7 +160,6 @@ const Index = () => {
           </AnimatePresence>
           
           <div className="overflow-hidden">
-            {/* Main Content */}
             <AnimatePresence mode="wait">
               <motion.div
                 key={activeTab}
