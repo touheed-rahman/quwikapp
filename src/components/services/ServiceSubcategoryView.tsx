@@ -133,7 +133,7 @@ const ServiceSubcategoryView = ({ categoryId, onBack }: SubcategoryViewProps) =>
           variants={container}
           initial="hidden"
           animate="show"
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
+          className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6"
         >
           {subcategories.map((subcat: any) => {
             // Get the price from servicePricing if available
@@ -146,46 +146,46 @@ const ServiceSubcategoryView = ({ categoryId, onBack }: SubcategoryViewProps) =>
                 <Card 
                   className="overflow-hidden border border-primary/10 hover:border-primary/30 transition-all duration-300 shadow-md hover:shadow-lg group h-full"
                 >
-                  <div className="relative h-36 sm:h-48 bg-gradient-to-br from-primary/5 via-primary/10 to-primary/20 p-5">
-                    <div className="absolute top-3 left-3 flex items-center gap-1.5 bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-full text-xs shadow-sm">
+                  <div className="relative h-32 sm:h-40 bg-gradient-to-br from-primary/5 via-primary/10 to-primary/20 p-4">
+                    <div className="absolute top-2 left-2 flex items-center gap-1 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-full text-xs shadow-sm">
                       <Users className="h-3 w-3 text-primary" />
-                      <span>Most Booked</span>
+                      <span className="text-xs">Most Booked</span>
                     </div>
                     
-                    <div className="absolute bottom-4 left-4 space-y-1.5">
-                      <h3 className="text-xl font-bold group-hover:text-primary transition-colors">{subcat.name}</h3>
+                    <div className="absolute bottom-3 left-3 space-y-1">
+                      <h3 className="text-base sm:text-lg font-bold group-hover:text-primary transition-colors line-clamp-2">{subcat.name}</h3>
                       <div className="flex items-center gap-1">
                         <div className="flex">
                           {[1, 2, 3, 4, 5].map((star) => (
-                            <Star key={star} className="h-3.5 w-3.5 text-yellow-500 fill-yellow-500" />
+                            <Star key={star} className="h-3 w-3 text-yellow-500 fill-yellow-500" />
                           ))}
                         </div>
-                        <span className="text-sm text-muted-foreground">({Math.floor(Math.random() * 200) + 50})</span>
+                        <span className="text-xs text-muted-foreground">({Math.floor(Math.random() * 200) + 50})</span>
                       </div>
                     </div>
                     
                     {hasDiscount && (
-                      <div className="absolute top-3 right-3">
-                        <Badge className="bg-green-600 hover:bg-green-700 text-white font-medium">15% OFF</Badge>
+                      <div className="absolute top-2 right-2">
+                        <Badge className="bg-green-600 hover:bg-green-700 text-white font-medium text-xs">15% OFF</Badge>
                       </div>
                     )}
                   </div>
                   
-                  <CardContent className="p-5 space-y-4">                
+                  <CardContent className="p-3 sm:p-4 space-y-3">                
                     <div className="flex justify-between items-center">
-                      <div className="space-y-1">
-                        <div className="text-primary font-bold text-2xl">
+                      <div className="space-y-0.5">
+                        <div className="text-primary font-bold text-lg sm:text-xl">
                           ₹{hasDiscount ? discountedPrice : price}
                           {hasDiscount && (
-                            <span className="ml-2 text-sm text-muted-foreground line-through">₹{price}</span>
+                            <span className="ml-1 text-xs text-muted-foreground line-through">₹{price}</span>
                           )}
                         </div>
-                        <div className="text-xs text-muted-foreground">Starting price includes all taxes</div>
+                        <div className="text-[10px] sm:text-xs text-muted-foreground">Incl. taxes</div>
                       </div>
                       
                       <Button 
                         onClick={() => handleBookService(subcat.id)}
-                        className="px-5 py-2 h-10 bg-primary hover:bg-primary/90 font-medium text-white"
+                        className="px-3 sm:px-4 py-1 h-8 sm:h-9 bg-primary hover:bg-primary/90 font-medium text-white text-xs sm:text-sm"
                       >
                         Book Now
                       </Button>
@@ -193,41 +193,34 @@ const ServiceSubcategoryView = ({ categoryId, onBack }: SubcategoryViewProps) =>
 
                     <Separator />
                     
-                    <div className="grid grid-cols-2 gap-3 text-sm">
-                      <div className="flex items-center gap-2">
-                        <Clock className="h-4 w-4 text-primary" />
+                    <div className="grid grid-cols-2 gap-2 text-xs">
+                      <div className="flex items-center gap-1.5">
+                        <Clock className="h-3 w-3 text-primary" />
                         <span>{Math.floor(Math.random() * 2) + 1}-{Math.floor(Math.random() * 2) + 2} hrs</span>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <Calendar className="h-4 w-4 text-primary" />
-                        <span>Next day available</span>
+                      <div className="flex items-center gap-1.5">
+                        <MapPin className="h-3 w-3 text-primary" />
+                        <span>At your home</span>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <MapPin className="h-4 w-4 text-primary" />
-                        <span>At your location</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Shield className="h-4 w-4 text-primary" />
+                      <div className="flex items-center gap-1.5">
+                        <Shield className="h-3 w-3 text-primary" />
                         <span>30-day warranty</span>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <SparkleIcon className="h-3 w-3 text-amber-500" />
+                        <span>500+ happy customers</span>
                       </div>
                     </div>
 
                     {subcat.tags && subcat.tags.length > 0 && (
-                      <div className="flex flex-wrap gap-1.5 mt-2">
-                        {subcat.tags.slice(0, 3).map((tag: string, i: number) => (
-                          <Badge key={i} variant="outline" className="text-xs bg-primary/5 text-primary border-primary/20">
+                      <div className="flex flex-wrap gap-1 mt-1">
+                        {subcat.tags.slice(0, 2).map((tag: string, i: number) => (
+                          <Badge key={i} variant="outline" className="text-[10px] sm:text-xs bg-primary/5 text-primary border-primary/20">
                             {tag}
                           </Badge>
                         ))}
                       </div>
                     )}
-                    
-                    <div className="mt-2 text-sm text-muted-foreground">
-                      <div className="flex items-center gap-1.5">
-                        <SparkleIcon className="h-3.5 w-3.5 text-amber-500" />
-                        <span>Over 500+ happy customers</span>
-                      </div>
-                    </div>
                   </CardContent>
                 </Card>
               </motion.div>

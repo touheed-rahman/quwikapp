@@ -53,7 +53,7 @@ const ServiceCenterAuth = {
         if (!isProvider) {
           // Sign out if not a service provider
           await supabase.auth.signOut();
-          throw new Error("This account does not have service provider access");
+          throw new Error("This account does not have service provider access. If you've recently applied, please wait for approval.");
         }
       }
       
@@ -76,6 +76,17 @@ const ServiceCenterAuth = {
     phone: string
   ) {
     try {
+      // Check if the email already exists
+      const { data: existingUser } = await supabase
+        .from('profiles')
+        .select('email')
+        .eq('email', email)
+        .single();
+        
+      if (existingUser) {
+        throw new Error("An account with this email already exists. Please login or use a different email.");
+      }
+      
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -94,6 +105,9 @@ const ServiceCenterAuth = {
       
       if (error) throw error;
       
+      // After registration, automatically sign out so they can't access the dashboard until approved
+      await supabase.auth.signOut();
+      
       return { data, error: null };
     } catch (error: any) {
       return { data: null, error };
@@ -110,6 +124,29 @@ const ServiceCenterAuth = {
       return { error: null };
     } catch (error: any) {
       return { error };
+    }
+  },
+  
+  /**
+   * Get the current provider's profile
+   */
+  async getProviderProfile() {
+    try {
+      const { data: session } = await supabase.auth.getSession();
+      
+      if (!session.session) return { profile: null, error: new Error("Not authenticated") };
+      
+      const { data: profile, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', session.session.user.id)
+        .single();
+        
+      if (error) throw error;
+      
+      return { profile, error: null };
+    } catch (error: any) {
+      return { profile: null, error };
     }
   }
 };

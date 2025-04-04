@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -731,6 +732,152 @@ const ServiceCenter = () => {
                   req.status === 'In Progress' && 
                   req.appointment_date && 
                   new Date(req.appointment_date).toDateString() === (selectedDate?.toDateString() || '')
-                ).map(appointment => (
-                  <div key={appointment.id} className="flex p-2 sm:p-3 border rounded-lg hover:bg-primary/5 transition-colors">
-                    <div className="font-medium w-20 sm:w-24 text-primary text-
+                ).length > 0 ? (
+                  leads.filter(req => 
+                    req.status === 'In Progress' && 
+                    req.appointment_date && 
+                    new Date(req.appointment_date).toDateString() === (selectedDate?.toDateString() || '')
+                  ).map(appointment => (
+                    <div key={appointment.id} className="flex p-2 sm:p-3 border rounded-lg hover:bg-primary/5 transition-colors">
+                      <div className="font-medium w-20 sm:w-24 text-primary text-xs sm:text-sm">
+                        {appointment.appointment_time}
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-medium text-sm sm:text-base">
+                          {appointment.service_category} - {appointment.service_type}
+                        </p>
+                        <p className="text-xs sm:text-sm text-muted-foreground">
+                          {appointment.customer_name} • {appointment.address?.split(',')[0]}
+                        </p>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-center py-10 bg-muted/10 rounded-lg">
+                    <Calendar className="h-10 w-10 sm:h-12 sm:w-12 text-muted-foreground mx-auto mb-2" />
+                    <h3 className="text-base font-medium">No appointments</h3>
+                    <p className="text-xs sm:text-sm text-muted-foreground">
+                      No appointments scheduled for this date
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card className="border-primary/10 shadow-md">
+          <CardHeader className="bg-primary/5 p-3 sm:p-4">
+            <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+              <Star className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+              Performance
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-3 sm:p-4">
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <span className="text-sm">Overall Rating</span>
+                <div className="flex items-center gap-1">
+                  <div className="flex">
+                    {[1, 2, 3, 4, 5].map(star => (
+                      <Star key={star} className="h-4 w-4 text-yellow-500 fill-yellow-500" />
+                    ))}
+                  </div>
+                  <span className="font-medium text-sm">5.0</span>
+                </div>
+              </div>
+              
+              <div className="flex items-center justify-between">
+                <span className="text-sm">Completed Jobs</span>
+                <span className="font-medium">{leads.filter(req => req.status === 'Completed').length}</span>
+              </div>
+              
+              <div className="flex items-center justify-between">
+                <span className="text-sm">On-time Arrival</span>
+                <span className="font-medium text-green-600">98%</span>
+              </div>
+              
+              <div className="flex items-center justify-between">
+                <span className="text-sm">Customer Satisfaction</span>
+                <span className="font-medium text-green-600">97%</span>
+              </div>
+              
+              <Separator />
+              
+              <div>
+                <h4 className="font-medium text-sm mb-2">Recent Reviews</h4>
+                {leads.filter(req => req.status === 'Completed').length > 0 ? (
+                  <div className="space-y-2">
+                    <div className="p-2 border rounded-lg">
+                      <div className="flex items-center gap-1 mb-1">
+                        {[1, 2, 3, 4, 5].map(star => (
+                          <Star key={star} className="h-3 w-3 text-yellow-500 fill-yellow-500" />
+                        ))}
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        "Excellent service, very professional and on time. Highly recommend!"
+                      </p>
+                      <p className="text-xs font-medium mt-1">- Rahul S.</p>
+                    </div>
+                    <div className="p-2 border rounded-lg">
+                      <div className="flex items-center gap-1 mb-1">
+                        {[1, 2, 3, 4, 5].map(star => (
+                          <Star key={star} className="h-3 w-3 text-yellow-500 fill-yellow-500" />
+                        ))}
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        "Fixed my AC in no time. Great job!"
+                      </p>
+                      <p className="text-xs font-medium mt-1">- Priya M.</p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-center py-4 bg-muted/10 rounded-lg">
+                    <p className="text-xs sm:text-sm text-muted-foreground">
+                      No reviews yet
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </motion.div>
+  );
+
+  return (
+    <div className="min-h-screen bg-background">
+      <Header />
+      <div className="container max-w-7xl mx-auto py-6">
+        {isLoading ? (
+          <div className="flex items-center justify-center h-[60vh]">
+            <RefreshCw className="h-10 w-10 animate-spin text-primary" />
+          </div>
+        ) : !isAuthenticated ? (
+          renderAuthForm()
+        ) : !isAuthorized ? (
+          <div className="max-w-2xl mx-auto py-10 text-center space-y-4">
+            <AlertTriangle className="h-16 w-16 text-amber-500 mx-auto" />
+            <h2 className="text-2xl font-bold">Service Provider Access Required</h2>
+            <p className="text-muted-foreground">
+              This area is restricted to approved service providers only. Your account doesn't have the necessary permissions.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center mt-6">
+              <Button variant="outline" onClick={() => navigate("/")}>
+                Return to Home
+              </Button>
+              <Button onClick={handleSignOut}>
+                Sign Out
+              </Button>
+            </div>
+          </div>
+        ) : (
+          renderDashboard()
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default ServiceCenter;

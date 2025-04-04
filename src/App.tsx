@@ -98,7 +98,6 @@ const ServiceProviderRoute = ({ children }: { children: React.ReactNode }) => {
     return <div>Loading...</div>;
   }
 
-  // Redirect to the service center page which will show not authorized message
   if (!isProvider) {
     return <ServiceCenter />;
   }
