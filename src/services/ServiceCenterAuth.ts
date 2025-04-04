@@ -4,6 +4,27 @@ import { useToast } from "@/components/ui/use-toast";
 
 export type ServiceProviderRole = "service_provider" | "admin" | undefined;
 
+// Define an extended profile type that includes the provider fields
+interface ExtendedProfile {
+  id: string;
+  full_name?: string;
+  email?: string;
+  avatar_url?: string;
+  role?: string;
+  bio?: string;
+  location?: string;
+  created_at?: string;
+  updated_at?: string;
+  followers_count?: number;
+  following_count?: number;
+  // Additional provider-specific fields
+  provider_type?: string;
+  provider_status?: string;
+  business_name?: string;
+  phone?: string;
+  services?: string;
+}
+
 /**
  * Service to handle authentication for service center
  */
@@ -26,9 +47,11 @@ const ServiceCenterAuth = {
       
       if (!profile || error) return false;
       
+      const typedProfile = profile as unknown as ExtendedProfile;
+      
       // Check if the user is a service provider and has been approved
-      return (profile.role === 'service_provider' || profile.provider_type) && 
-             (profile.provider_status === 'approved' || profile.provider_status === undefined);
+      return (typedProfile.role === 'service_provider' || typedProfile.provider_type) && 
+             (typedProfile.provider_status === 'approved' || typedProfile.provider_status === undefined);
     } catch (error) {
       console.error("Error checking if user is service provider:", error);
       return false;
@@ -144,7 +167,7 @@ const ServiceCenterAuth = {
         
       if (error) throw error;
       
-      return { profile, error: null };
+      return { profile: profile as unknown as ExtendedProfile, error: null };
     } catch (error: any) {
       return { profile: null, error };
     }
