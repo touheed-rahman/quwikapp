@@ -2,7 +2,7 @@
 import { motion } from "framer-motion";
 import { Star, Users, Clock, MapPin, Shield, SparkleIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { servicePricing } from "@/types/serviceTypes";
@@ -32,7 +32,7 @@ const ServiceSubcategoryCard = ({ categoryId, subcategory, onBookService }: Serv
   return (
     <motion.div variants={item}>
       <Card 
-        className="overflow-hidden border border-primary/10 hover:border-primary/30 transition-all duration-300 shadow-md hover:shadow-lg group h-full"
+        className="overflow-hidden border border-primary/10 hover:border-primary/30 transition-all duration-300 shadow-md hover:shadow-lg group h-full flex flex-col"
       >
         <div className="relative h-32 sm:h-40 bg-gradient-to-br from-primary/5 via-primary/10 to-primary/20 p-4">
           <div className="absolute top-2 left-2 flex items-center gap-1 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-full text-xs shadow-sm">
@@ -59,24 +59,15 @@ const ServiceSubcategoryCard = ({ categoryId, subcategory, onBookService }: Serv
           )}
         </div>
         
-        <CardContent className="p-3 sm:p-4 space-y-3">                
-          <div className="flex justify-between items-center">
-            <div className="space-y-0.5">
-              <div className="text-primary font-bold text-lg sm:text-xl">
-                ₹{hasDiscount ? discountedPrice : price}
-                {hasDiscount && (
-                  <span className="ml-1 text-xs text-muted-foreground line-through">₹{price}</span>
-                )}
-              </div>
-              <div className="text-[10px] sm:text-xs text-muted-foreground">Incl. taxes</div>
+        <CardContent className="p-3 sm:p-4 space-y-3 flex-grow">                
+          <div className="space-y-0.5">
+            <div className="text-primary font-bold text-lg sm:text-xl">
+              ₹{hasDiscount ? discountedPrice : price}
+              {hasDiscount && (
+                <span className="ml-1 text-xs text-muted-foreground line-through">₹{price}</span>
+              )}
             </div>
-            
-            <Button 
-              onClick={() => onBookService(subcategory.id)}
-              className="px-3 sm:px-4 py-1 h-8 sm:h-9 bg-primary hover:bg-primary/90 font-medium text-white text-xs sm:text-sm"
-            >
-              Book Now
-            </Button>
+            <div className="text-[10px] sm:text-xs text-muted-foreground">Incl. taxes</div>
           </div>
 
           <Separator />
@@ -110,6 +101,15 @@ const ServiceSubcategoryCard = ({ categoryId, subcategory, onBookService }: Serv
             </div>
           )}
         </CardContent>
+        
+        <CardFooter className="p-3 sm:p-4 pt-0">
+          <Button 
+            onClick={() => onBookService(subcategory.id)}
+            className="w-full h-9 bg-primary hover:bg-primary/90 font-medium text-white text-sm"
+          >
+            Book Now
+          </Button>
+        </CardFooter>
       </Card>
     </motion.div>
   );

@@ -99,7 +99,54 @@ const ServiceProviderRoute = ({ children }: { children: React.ReactNode }) => {
   }
 
   if (!isProvider) {
-    return <ServiceCenter />;
+    return <Navigate to="/service-center" />;
+  }
+
+  return <>{children}</>;
+};
+
+// Admin Route - only allows access to admin users
+const AdminRoute = ({ children }: { children: React.ReactNode }) => {
+  const [isAdmin, setIsAdmin] = useState<boolean>(false);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const checkAdmin = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        
+        if (!user) {
+          setIsAdmin(false);
+          setLoading(false);
+          return;
+        }
+
+        const { data: isAdminResult, error } = await supabase
+          .rpc('is_admin', { user_uid: user.id });
+
+        if (error || !isAdminResult) {
+          console.error('Error checking admin status:', error);
+          setIsAdmin(false);
+        } else {
+          setIsAdmin(true);
+        }
+      } catch (error) {
+        console.error('Error in admin check:', error);
+        setIsAdmin(false);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    checkAdmin();
+  }, []);
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  if (!isAdmin) {
+    return <Navigate to="/admin/login" />;
   }
 
   return <>{children}</>;
@@ -124,6 +171,14 @@ const App = () => (
               <Route path="/services/:categoryId/:serviceId" element={<ServiceDetail />} />
               <Route path="/service-center" element={<ServiceCenter />} />
               <Route
+                path="/service-center/dashboard"
+                element={
+                  <ServiceProviderRoute>
+                    <ServiceCenter />
+                  </ServiceProviderRoute>
+                }
+              />
+              <Route
                 path="/sell"
                 element={
                   <PrivateRoute>
@@ -146,9 +201,9 @@ const App = () => (
               <Route
                 path="/admin"
                 element={
-                  <PrivateRoute>
+                  <AdminRoute>
                     <AdminPanel />
-                  </PrivateRoute>
+                  </AdminRoute>
                 }
               />
               <Route

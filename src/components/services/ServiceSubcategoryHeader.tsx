@@ -9,7 +9,7 @@ interface ServiceSubcategoryHeaderProps {
 
 const ServiceSubcategoryHeader = ({ categoryName, onBack }: ServiceSubcategoryHeaderProps) => {
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center gap-2 mb-4">
       <Button variant="ghost" size="sm" onClick={onBack} className="p-0 h-9 w-9">
         <ChevronLeft className="h-5 w-5" />
       </Button>
