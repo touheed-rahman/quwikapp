@@ -5,6 +5,7 @@ import ChatWindow from "@/components/chat/ChatWindow";
 import MobileNavigation from "@/components/navigation/MobileNavigation";
 import FloatingSellButton from "@/components/navigation/FloatingSellButton";
 import WelcomeDialog from "@/components/dialogs/WelcomeDialog";
+import { useLocation as useReactRouterLocation } from "react-router-dom";
 import { useLocation } from "@/contexts/LocationContext";
 import { useListings } from "@/hooks/useListings";
 import { motion, AnimatePresence } from "framer-motion";
@@ -13,6 +14,8 @@ import { Listing } from "@/hooks/useListings";
 import ServiceView from "@/components/services/ServiceView";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ClassifiedView from "@/components/views/ClassifiedView";
+import { useSession } from "@/hooks/use-session-user";
+import ServiceCenterAuth from "@/services/ServiceCenterAuth";
 
 const FEATURED_ITEMS_LIMIT = 4;
 
@@ -20,16 +23,36 @@ const Index = () => {
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [showWelcomePopup, setShowWelcomePopup] = useState(true);
   const [randomFeaturedListings, setRandomFeaturedListings] = useState<Listing[]>([]);
-  const [activeTab, setActiveTab] = useState("classified");
+  const [activeTab, setActiveTab] = useState(() => {
+    // Get stored tab from localStorage or default to "classified"
+    return localStorage.getItem("activeTab") || "classified";
+  });
   const [isTabChanging, setIsTabChanging] = useState(false);
   const [splashText, setSplashText] = useState("");
   const { selectedLocation } = useLocation();
+  const reactLocation = useReactRouterLocation();
+  const { user, session, loading } = useSession();
+  const [isServiceProvider, setIsServiceProvider] = useState(false);
   
   const { data: listings = [], isLoading, error } = useListings({
     selectedLocation
   });
 
   useEffect(() => {
+    // Check if user is a service provider on initial load
+    const checkServiceProvider = async () => {
+      if (session) {
+        try {
+          const isProvider = await ServiceCenterAuth.isServiceProvider();
+          setIsServiceProvider(isProvider);
+        } catch (error) {
+          console.error("Error checking service provider status:", error);
+        }
+      }
+    };
+    
+    checkServiceProvider();
+    
     if (listings.length > 0) {
       const featuredItems = listings.filter(listing => listing.featured);
       const shuffled = [...featuredItems].sort(() => 0.5 - Math.random());
@@ -37,10 +60,13 @@ const Index = () => {
     } else {
       setRandomFeaturedListings([]);
     }
-  }, [listings]);
+  }, [listings, session]);
 
   // Handle tab change with splash screen
   const handleTabChange = (value: string) => {
+    // Store the selected tab in localStorage for persistence
+    localStorage.setItem("activeTab", value);
+    
     setIsTabChanging(true);
     setSplashText(value === "classified" ? "Quwik Classified" : "Service Now");
     
@@ -53,6 +79,12 @@ const Index = () => {
 
   // Only show the bottom navigation and floating sell button in the classified view
   const showBottomNav = activeTab === "classified";
+
+  // If user is a service provider, don't show the service tab
+  // They should be redirected to the service center dashboard
+  if (!loading && isServiceProvider) {
+    return null; // They will be redirected in the ServiceView component
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background via-background to-primary/5">

@@ -8,6 +8,8 @@ import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/components/ui/use-toast";
 import { ArrowRight, Bell, CheckCircle, Clock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import ServiceCenterAuth from "@/services/ServiceCenterAuth";
+import { useSession } from "@/hooks/use-session-user";
 
 type ServiceConnectorProps = {
   serviceId: string;
@@ -18,11 +20,27 @@ type ServiceConnectorProps = {
 const ServiceConnector = ({ serviceId, serviceName, showCard = true }: ServiceConnectorProps) => {
   const [serviceRequests, setServiceRequests] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isServiceProvider, setIsServiceProvider] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { session } = useSession();
   
   useEffect(() => {
-    // Fetch service requests
+    // Check if user is a service provider
+    const checkServiceProvider = async () => {
+      if (session) {
+        try {
+          const isProvider = await ServiceCenterAuth.isServiceProvider();
+          setIsServiceProvider(isProvider);
+        } catch (error) {
+          console.error("Error checking service provider status:", error);
+        }
+      }
+    };
+    
+    checkServiceProvider();
+    
+    // Fetch service requests only if not a service provider
     const fetchRequests = async () => {
       try {
         setLoading(true);
@@ -43,14 +61,19 @@ const ServiceConnector = ({ serviceId, serviceName, showCard = true }: ServiceCo
       }
     };
 
-    if (serviceName) {
+    if (session && serviceName && !isServiceProvider) {
       fetchRequests();
+    } else {
+      setLoading(false);
     }
-  }, [serviceName]);
+  }, [serviceName, session, isServiceProvider]);
   
   const handleViewAllRequests = () => {
     navigate('/service-center');
   };
+  
+  // If user is a service provider, don't show service requests to them
+  if (isServiceProvider) return null;
   
   if (!showCard) {
     return (

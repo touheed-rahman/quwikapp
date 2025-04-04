@@ -1,9 +1,9 @@
 
 import { useState, useEffect } from "react";
 import { useToast } from "@/components/ui/use-toast";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { serviceCategories } from "@/data/serviceCategories";
-import { BellRing, LogIn, Wrench, Briefcase } from "lucide-react";
+import { BellRing, LogIn, Wrench, Briefcase, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -36,6 +36,7 @@ import ServiceCenterAuth from "@/services/ServiceCenterAuth";
 
 const ServiceView = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [selectedLocation, setSelectedLocation] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
@@ -49,12 +50,20 @@ const ServiceView = () => {
   const [recentlyViewed, setRecentlyViewed] = useState<{id: string, name: string}[]>([]);
 
   useEffect(() => {
+    // Save current location in localStorage for consistent navigation
+    localStorage.setItem('lastServiceLocation', location.pathname);
+    
     // Check if user is a service provider
     const checkServiceProvider = async () => {
       if (session) {
         try {
           const isProvider = await ServiceCenterAuth.isServiceProvider();
           setIsServiceProvider(isProvider);
+          
+          // If user is a service provider, redirect them to the service center dashboard
+          if (isProvider && location.pathname === '/') {
+            navigate('/service-center/dashboard');
+          }
         } catch (error) {
           console.error("Error checking service provider status:", error);
           setIsServiceProvider(false);
@@ -83,7 +92,13 @@ const ServiceView = () => {
         console.error("Error parsing service requests", e);
       }
     }
-  }, [session]);
+    
+    // Load location from localStorage for consistency
+    const savedLocation = localStorage.getItem('serviceSelectedLocation');
+    if (savedLocation) {
+      setSelectedLocation(savedLocation);
+    }
+  }, [session, navigate, location.pathname]);
 
   const saveToRecentlyViewed = (serviceId: string, serviceName: string) => {
     const newRecent = [
@@ -124,15 +139,29 @@ const ServiceView = () => {
   // Define a handler function for LocationSelector
   const handleLocationChange = (value: string) => {
     setSelectedLocation(value);
+    localStorage.setItem('serviceSelectedLocation', value);
   };
 
   const handleLogin = () => {
     navigate('/auth');
   };
+  
+  // Navigate back to previous page or home
+  const handleGoBack = () => {
+    const lastLocation = localStorage.getItem('lastServiceLocation');
+    if (lastLocation && lastLocation !== location.pathname) {
+      navigate(lastLocation);
+    } else {
+      navigate('/');
+    }
+  };
 
-  // Floating action button for My Requests (visible only when logged in)
+  // Show the service connector component to regular users, not service providers
+  const shouldShowServiceConnector = session && !isServiceProvider;
+
+  // Floating action button for My Requests (visible only when logged in and not a service provider)
   const RequestsFloatingButton = () => {
-    if (!session) return null;
+    if (!session || isServiceProvider) return null;
     
     return (
       <div className="fixed bottom-20 right-4 z-30">
@@ -169,9 +198,29 @@ const ServiceView = () => {
     );
   };
 
+  // If user is a service provider, redirect to service center directly
+  if (!loading && isServiceProvider && location.pathname === '/') {
+    navigate('/service-center/dashboard');
+    return null;
+  }
+
   return (
     <div className="relative">
       <ServiceLayout>
+        {location.pathname !== '/' && (
+          <div className="mb-4">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={handleGoBack}
+              className="flex items-center gap-1 text-primary"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Back
+            </Button>
+          </div>
+        )}
+        
         <ServiceHero 
           searchQuery={searchQuery}
           setSearchQuery={setSearchQuery}
@@ -213,7 +262,7 @@ const ServiceView = () => {
             <HowItWorks />
             <ServiceGuarantee />
             
-            {session ? (
+            {session && !isServiceProvider ? (
               <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
                 <Card className="bg-gradient-to-br from-blue-50 to-sky-50 border-blue-100 hover:shadow-md transition-shadow">
                   <CardContent className="p-6">
@@ -235,49 +284,27 @@ const ServiceView = () => {
                   </CardContent>
                 </Card>
                 
-                {isServiceProvider ? (
-                  <Card className="bg-gradient-to-br from-purple-50 to-indigo-50 border-purple-100 hover:shadow-md transition-shadow">
-                    <CardContent className="p-6">
-                      <div className="flex flex-col items-center text-center space-y-3">
-                        <div className="h-14 w-14 bg-purple-100 rounded-full flex items-center justify-center mb-2">
-                          <Briefcase className="h-7 w-7 text-purple-600" />
-                        </div>
-                        <h3 className="text-xl font-semibold text-purple-800">Service Provider Dashboard</h3>
-                        <p className="text-purple-700/80">
-                          Access your service provider dashboard to manage service requests
-                        </p>
-                        <Button 
-                          className="bg-purple-600 hover:bg-purple-700 text-white"
-                          onClick={() => navigate('/service-center')}
-                        >
-                          Go to Dashboard
-                        </Button>
+                <Card className="bg-gradient-to-br from-purple-50 to-indigo-50 border-purple-100 hover:shadow-md transition-shadow">
+                  <CardContent className="p-6">
+                    <div className="flex flex-col items-center text-center space-y-3">
+                      <div className="h-14 w-14 bg-purple-100 rounded-full flex items-center justify-center mb-2">
+                        <Briefcase className="h-7 w-7 text-purple-600" />
                       </div>
-                    </CardContent>
-                  </Card>
-                ) : (
-                  <Card className="bg-gradient-to-br from-purple-50 to-indigo-50 border-purple-100 hover:shadow-md transition-shadow">
-                    <CardContent className="p-6">
-                      <div className="flex flex-col items-center text-center space-y-3">
-                        <div className="h-14 w-14 bg-purple-100 rounded-full flex items-center justify-center mb-2">
-                          <Briefcase className="h-7 w-7 text-purple-600" />
-                        </div>
-                        <h3 className="text-xl font-semibold text-purple-800">Become a Service Provider</h3>
-                        <p className="text-purple-700/80">
-                          Apply to become a service professional and start receiving job requests
-                        </p>
-                        <Button 
-                          className="bg-purple-600 hover:bg-purple-700 text-white"
-                          onClick={() => navigate('/service-center')}
-                        >
-                          Apply Now
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                )}
+                      <h3 className="text-xl font-semibold text-purple-800">Become a Service Provider</h3>
+                      <p className="text-purple-700/80">
+                        Apply to become a service professional and start receiving job requests
+                      </p>
+                      <Button 
+                        className="bg-purple-600 hover:bg-purple-700 text-white"
+                        onClick={() => navigate('/service-center')}
+                      >
+                        Apply Now
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
               </div>
-            ) : (
+            ) : !session ? (
               <div className="mt-8 bg-primary/5 rounded-xl p-6 border border-primary/20">
                 <div className="text-center space-y-4">
                   <h3 className="text-xl font-semibold text-primary">Sign in to access service features</h3>
@@ -293,11 +320,11 @@ const ServiceView = () => {
                   </Button>
                 </div>
               </div>
-            )}
+            ) : null}
           </>
         )}
         
-        {/* Floating action button for requests */}
+        {/* Floating action button for requests - only for regular users, not service providers */}
         <RequestsFloatingButton />
       </ServiceLayout>
     </div>
