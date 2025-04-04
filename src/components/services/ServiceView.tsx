@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { useNavigate } from "react-router-dom";
@@ -31,6 +32,7 @@ import RecentlyViewedServices from "@/components/services/RecentlyViewedServices
 import ServiceRequestsMenu from "@/components/services/ServiceRequestsMenu";
 import { Separator } from "@/components/ui/separator";
 import { useSession } from "@/hooks/use-session-user";
+import ServiceCenterAuth from "@/services/ServiceCenterAuth";
 
 const ServiceView = () => {
   const navigate = useNavigate();
@@ -41,11 +43,27 @@ const ServiceView = () => {
   const { toast } = useToast();
   const [requestCount, setRequestCount] = useState(0);
   const { user, session, loading } = useSession();
+  const [isServiceProvider, setIsServiceProvider] = useState(false);
 
   // State to track recently viewed services
   const [recentlyViewed, setRecentlyViewed] = useState<{id: string, name: string}[]>([]);
 
   useEffect(() => {
+    // Check if user is a service provider
+    const checkServiceProvider = async () => {
+      if (session) {
+        try {
+          const isProvider = await ServiceCenterAuth.isServiceProvider();
+          setIsServiceProvider(isProvider);
+        } catch (error) {
+          console.error("Error checking service provider status:", error);
+          setIsServiceProvider(false);
+        }
+      }
+    };
+
+    checkServiceProvider();
+    
     // Load recently viewed services from localStorage
     const storedRecent = localStorage.getItem('recentlyViewedServices');
     if (storedRecent) {
@@ -65,7 +83,7 @@ const ServiceView = () => {
         console.error("Error parsing service requests", e);
       }
     }
-  }, []);
+  }, [session]);
 
   const saveToRecentlyViewed = (serviceId: string, serviceName: string) => {
     const newRecent = [
@@ -217,25 +235,47 @@ const ServiceView = () => {
                   </CardContent>
                 </Card>
                 
-                <Card className="bg-gradient-to-br from-purple-50 to-indigo-50 border-purple-100 hover:shadow-md transition-shadow">
-                  <CardContent className="p-6">
-                    <div className="flex flex-col items-center text-center space-y-3">
-                      <div className="h-14 w-14 bg-purple-100 rounded-full flex items-center justify-center mb-2">
-                        <Briefcase className="h-7 w-7 text-purple-600" />
+                {isServiceProvider ? (
+                  <Card className="bg-gradient-to-br from-purple-50 to-indigo-50 border-purple-100 hover:shadow-md transition-shadow">
+                    <CardContent className="p-6">
+                      <div className="flex flex-col items-center text-center space-y-3">
+                        <div className="h-14 w-14 bg-purple-100 rounded-full flex items-center justify-center mb-2">
+                          <Briefcase className="h-7 w-7 text-purple-600" />
+                        </div>
+                        <h3 className="text-xl font-semibold text-purple-800">Service Provider Dashboard</h3>
+                        <p className="text-purple-700/80">
+                          Access your service provider dashboard to manage service requests
+                        </p>
+                        <Button 
+                          className="bg-purple-600 hover:bg-purple-700 text-white"
+                          onClick={() => navigate('/service-center')}
+                        >
+                          Go to Dashboard
+                        </Button>
                       </div>
-                      <h3 className="text-xl font-semibold text-purple-800">Become a Service Provider</h3>
-                      <p className="text-purple-700/80">
-                        Register as a service professional and start receiving job requests
-                      </p>
-                      <Button 
-                        className="bg-purple-600 hover:bg-purple-700 text-white"
-                        onClick={() => navigate('/service-center')}
-                      >
-                        Join as Provider
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
+                    </CardContent>
+                  </Card>
+                ) : (
+                  <Card className="bg-gradient-to-br from-purple-50 to-indigo-50 border-purple-100 hover:shadow-md transition-shadow">
+                    <CardContent className="p-6">
+                      <div className="flex flex-col items-center text-center space-y-3">
+                        <div className="h-14 w-14 bg-purple-100 rounded-full flex items-center justify-center mb-2">
+                          <Briefcase className="h-7 w-7 text-purple-600" />
+                        </div>
+                        <h3 className="text-xl font-semibold text-purple-800">Become a Service Provider</h3>
+                        <p className="text-purple-700/80">
+                          Apply to become a service professional and start receiving job requests
+                        </p>
+                        <Button 
+                          className="bg-purple-600 hover:bg-purple-700 text-white"
+                          onClick={() => navigate('/service-center')}
+                        >
+                          Apply Now
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
               </div>
             ) : (
               <div className="mt-8 bg-primary/5 rounded-xl p-6 border border-primary/20">

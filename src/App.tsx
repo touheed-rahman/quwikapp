@@ -28,6 +28,7 @@ import SellerProfile from "./pages/SellerProfile";
 import MyOrders from "./pages/MyOrders";
 import ServiceDetail from "./pages/ServiceDetail";
 import ServiceCenter from "./pages/ServiceCenter";
+import ServiceCenterAuth from "./services/ServiceCenterAuth";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -67,6 +68,39 @@ const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
 
   if (!session) {
     return <Navigate to="/profile" />;
+  }
+
+  return <>{children}</>;
+};
+
+// Service Provider Route - only allows access to service providers
+const ServiceProviderRoute = ({ children }: { children: React.ReactNode }) => {
+  const [isProvider, setIsProvider] = useState<boolean>(false);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const checkServiceProvider = async () => {
+      try {
+        const isServiceProvider = await ServiceCenterAuth.isServiceProvider();
+        setIsProvider(isServiceProvider);
+      } catch (error) {
+        console.error("Error checking service provider status:", error);
+        setIsProvider(false);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    checkServiceProvider();
+  }, []);
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  // Redirect to the service center page which will show not authorized message
+  if (!isProvider) {
+    return <ServiceCenter />;
   }
 
   return <>{children}</>;

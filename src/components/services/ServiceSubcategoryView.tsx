@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { serviceCategories } from "@/data/serviceCategories";
-import { ChevronLeft, Star, Calendar, Clock, MapPin, Shield } from "lucide-react";
+import { ChevronLeft, Star, Calendar, Clock, MapPin, Shield, Users, SparkleIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -133,7 +133,7 @@ const ServiceSubcategoryView = ({ categoryId, onBack }: SubcategoryViewProps) =>
           variants={container}
           initial="hidden"
           animate="show"
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5"
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
         >
           {subcategories.map((subcat: any) => {
             // Get the price from servicePricing if available
@@ -144,44 +144,48 @@ const ServiceSubcategoryView = ({ categoryId, onBack }: SubcategoryViewProps) =>
             return (
               <motion.div key={subcat.id} variants={item}>
                 <Card 
-                  className="overflow-hidden border-transparent hover:border-primary/20 transition-all duration-300 shadow-sm hover:shadow-md group h-full"
+                  className="overflow-hidden border border-primary/10 hover:border-primary/30 transition-all duration-300 shadow-md hover:shadow-lg group h-full"
                 >
-                  <div className="relative h-36 sm:h-44 bg-gradient-to-br from-primary/5 via-primary/10 to-primary/15 p-5">
+                  <div className="relative h-36 sm:h-48 bg-gradient-to-br from-primary/5 via-primary/10 to-primary/20 p-5">
+                    <div className="absolute top-3 left-3 flex items-center gap-1.5 bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-full text-xs shadow-sm">
+                      <Users className="h-3 w-3 text-primary" />
+                      <span>Most Booked</span>
+                    </div>
+                    
                     <div className="absolute bottom-4 left-4 space-y-1.5">
-                      <h3 className="text-lg sm:text-xl font-semibold group-hover:text-primary transition-colors">{subcat.name}</h3>
+                      <h3 className="text-xl font-bold group-hover:text-primary transition-colors">{subcat.name}</h3>
                       <div className="flex items-center gap-1">
                         <div className="flex">
                           {[1, 2, 3, 4, 5].map((star) => (
                             <Star key={star} className="h-3.5 w-3.5 text-yellow-500 fill-yellow-500" />
                           ))}
                         </div>
-                        <span className="text-xs sm:text-sm text-muted-foreground">({Math.floor(Math.random() * 200) + 50})</span>
+                        <span className="text-sm text-muted-foreground">({Math.floor(Math.random() * 200) + 50})</span>
                       </div>
                     </div>
                     
                     {hasDiscount && (
                       <div className="absolute top-3 right-3">
-                        <Badge className="bg-green-100 text-green-800 hover:bg-green-200 font-medium">15% OFF</Badge>
+                        <Badge className="bg-green-600 hover:bg-green-700 text-white font-medium">15% OFF</Badge>
                       </div>
                     )}
                   </div>
                   
-                  <CardContent className="p-4 sm:p-5 space-y-4">                
+                  <CardContent className="p-5 space-y-4">                
                     <div className="flex justify-between items-center">
                       <div className="space-y-1">
-                        <div className="text-primary font-semibold text-lg sm:text-xl">
+                        <div className="text-primary font-bold text-2xl">
                           ₹{hasDiscount ? discountedPrice : price}
                           {hasDiscount && (
                             <span className="ml-2 text-sm text-muted-foreground line-through">₹{price}</span>
                           )}
                         </div>
-                        <div className="text-xs text-muted-foreground">Starting price</div>
+                        <div className="text-xs text-muted-foreground">Starting price includes all taxes</div>
                       </div>
                       
                       <Button 
                         onClick={() => handleBookService(subcat.id)}
-                        size="sm"
-                        className="text-xs sm:text-sm px-4 py-1 h-9 bg-primary hover:bg-primary/90"
+                        className="px-5 py-2 h-10 bg-primary hover:bg-primary/90 font-medium text-white"
                       >
                         Book Now
                       </Button>
@@ -189,34 +193,41 @@ const ServiceSubcategoryView = ({ categoryId, onBack }: SubcategoryViewProps) =>
 
                     <Separator />
                     
-                    <div className="grid grid-cols-2 gap-2 text-sm">
-                      <div className="flex items-center gap-1.5">
-                        <Clock className="h-3.5 w-3.5 text-muted-foreground" />
+                    <div className="grid grid-cols-2 gap-3 text-sm">
+                      <div className="flex items-center gap-2">
+                        <Clock className="h-4 w-4 text-primary" />
                         <span>{Math.floor(Math.random() * 2) + 1}-{Math.floor(Math.random() * 2) + 2} hrs</span>
                       </div>
-                      <div className="flex items-center gap-1.5">
-                        <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
-                        <span>Same day service</span>
+                      <div className="flex items-center gap-2">
+                        <Calendar className="h-4 w-4 text-primary" />
+                        <span>Next day available</span>
                       </div>
-                      <div className="flex items-center gap-1.5">
-                        <MapPin className="h-3.5 w-3.5 text-muted-foreground" />
+                      <div className="flex items-center gap-2">
+                        <MapPin className="h-4 w-4 text-primary" />
                         <span>At your location</span>
                       </div>
-                      <div className="flex items-center gap-1.5">
-                        <Shield className="h-3.5 w-3.5 text-muted-foreground" />
+                      <div className="flex items-center gap-2">
+                        <Shield className="h-4 w-4 text-primary" />
                         <span>30-day warranty</span>
                       </div>
                     </div>
 
-                    {subcat.tags && (
-                      <div className="flex flex-wrap gap-1 mt-2">
+                    {subcat.tags && subcat.tags.length > 0 && (
+                      <div className="flex flex-wrap gap-1.5 mt-2">
                         {subcat.tags.slice(0, 3).map((tag: string, i: number) => (
-                          <Badge key={i} variant="outline" className="text-xs bg-primary/5 text-primary/80">
+                          <Badge key={i} variant="outline" className="text-xs bg-primary/5 text-primary border-primary/20">
                             {tag}
                           </Badge>
                         ))}
                       </div>
                     )}
+                    
+                    <div className="mt-2 text-sm text-muted-foreground">
+                      <div className="flex items-center gap-1.5">
+                        <SparkleIcon className="h-3.5 w-3.5 text-amber-500" />
+                        <span>Over 500+ happy customers</span>
+                      </div>
+                    </div>
                   </CardContent>
                 </Card>
               </motion.div>

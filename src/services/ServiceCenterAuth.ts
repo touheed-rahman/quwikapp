@@ -18,13 +18,13 @@ const ServiceCenterAuth = {
       if (!data.session) return false;
       
       // Get the user profile
-      const { data: profile } = await supabase
+      const { data: profile, error } = await supabase
         .from('profiles')
-        .select('role, provider_type, provider_status')
+        .select('*')
         .eq('id', data.session.user.id)
         .single();
       
-      if (!profile) return false;
+      if (!profile || error) return false;
       
       // Check if the user is a service provider and has been approved
       return (profile.role === 'service_provider' || profile.provider_type) && 

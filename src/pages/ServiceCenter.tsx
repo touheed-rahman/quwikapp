@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -17,7 +16,7 @@ import {
   Bell, Calendar as CalendarIcon, Check, ChevronDown, ClipboardList, Clock, 
   DollarSign, Home, MapPin, Phone, RefreshCw, Shield, Star, ThumbsUp, 
   Wrench, User, X, Mail, Lock, Building, Briefcase, Tag, Smartphone, Info,
-  AlertTriangle
+  AlertTriangle, Users as UsersIcon
 } from "lucide-react";
 import { useServiceLeads } from "@/hooks/useServiceLeads";
 import { format } from "date-fns";
@@ -54,9 +53,9 @@ const ServiceCenter = () => {
       setIsLoading(true);
       try {
         // Check if user is authenticated
-        const { data } = await ServiceCenterAuth.isServiceProvider();
+        const isProvider = await ServiceCenterAuth.isServiceProvider();
         
-        if (data) {
+        if (isProvider) {
           setIsAuthenticated(true);
           setIsAuthorized(true);
         } else {
@@ -423,7 +422,7 @@ const ServiceCenter = () => {
         <Card className="border-primary/10 shadow-sm">
           <CardContent className="p-6 text-center">
             <div className="bg-primary/10 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Users className="h-6 w-6 text-primary" />
+              <UsersIcon className="h-6 w-6 text-primary" />
             </div>
             <h3 className="text-lg font-semibold">Join Our Network</h3>
             <p className="text-sm text-muted-foreground mt-2">
@@ -459,6 +458,7 @@ const ServiceCenter = () => {
     </motion.div>
   );
 
+  
   const renderDashboard = () => (
     <motion.div 
       initial={{ opacity: 0, y: 20 }}
@@ -546,6 +546,7 @@ const ServiceCenter = () => {
         </Card>
       </div>
 
+      
       {/* Conditional content based on mobile tab */}
       <div className={activeTab === "requests" || activeTab === "calendar" ? "block" : "hidden md:block"}>
         <Card className="shadow-md border-primary/10">
@@ -732,149 +733,4 @@ const ServiceCenter = () => {
                   new Date(req.appointment_date).toDateString() === (selectedDate?.toDateString() || '')
                 ).map(appointment => (
                   <div key={appointment.id} className="flex p-2 sm:p-3 border rounded-lg hover:bg-primary/5 transition-colors">
-                    <div className="font-medium w-20 sm:w-24 text-primary text-xs sm:text-sm">{appointment.appointment_time}</div>
-                    <div className="flex-1">
-                      <div className="font-medium text-xs sm:text-sm">{appointment.service_type}</div>
-                      <div className="text-xs text-muted-foreground">{appointment.customer_name}</div>
-                    </div>
-                    <Button variant="ghost" size="sm" className="h-6 sm:h-8 px-2 text-xs">View</Button>
-                  </div>
-                ))}
-                
-                {leads.filter(req => 
-                  req.status === 'In Progress' && 
-                  req.appointment_date && 
-                  new Date(req.appointment_date).toDateString() === (selectedDate?.toDateString() || '')
-                ).length === 0 && (
-                  <div className="text-center py-6 text-muted-foreground bg-slate-50 rounded-lg border border-dashed text-xs sm:text-sm">
-                    No appointments scheduled for this day
-                  </div>
-                )}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card className="border-primary/10 shadow-md">
-          <CardHeader className="bg-primary/5 p-3 sm:p-4">
-            <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
-              <Star className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
-              Performance Stats
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3 sm:space-y-4 p-3 sm:p-4">
-            <div className="flex justify-between items-center border-b pb-2">
-              <div className="flex items-center gap-2 text-xs sm:text-sm">
-                <Star className="h-3 w-3 sm:h-5 sm:w-5 text-yellow-500" />
-                <span>Average Rating</span>
-              </div>
-              <div className="font-bold text-xs sm:text-sm">4.8/5</div>
-            </div>
-            <div className="flex justify-between items-center border-b pb-2">
-              <div className="flex items-center gap-2 text-xs sm:text-sm">
-                <Clock className="h-3 w-3 sm:h-5 sm:w-5 text-blue-500" />
-                <span>Response Time</span>
-              </div>
-              <div className="font-bold text-xs sm:text-sm">32 min</div>
-            </div>
-            <div className="flex justify-between items-center border-b pb-2">
-              <div className="flex items-center gap-2 text-xs sm:text-sm">
-                <Shield className="h-3 w-3 sm:h-5 sm:w-5 text-green-500" />
-                <span>Completion Rate</span>
-              </div>
-              <div className="font-bold text-xs sm:text-sm">98%</div>
-            </div>
-            <div className="flex justify-between items-center border-b pb-2">
-              <div className="flex items-center gap-2 text-xs sm:text-sm">
-                <DollarSign className="h-3 w-3 sm:h-5 sm:w-5 text-emerald-500" />
-                <span>This Month</span>
-              </div>
-              <div className="font-bold text-xs sm:text-sm">₹12,450</div>
-            </div>
-            <div className="flex justify-between items-center">
-              <div className="flex items-center gap-2 text-xs sm:text-sm">
-                <Home className="h-3 w-3 sm:h-5 sm:w-5 text-purple-500" />
-                <span>Total Services</span>
-              </div>
-              <div className="font-bold text-xs sm:text-sm">42</div>
-            </div>
-            <Button variant="default" className="w-full mt-2 sm:mt-4 text-xs sm:text-sm h-8 sm:h-9">View Full Report</Button>
-          </CardContent>
-        </Card>
-      </div>
-    </motion.div>
-  );
-
-  const renderNotAuthorized = () => (
-    <motion.div 
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-      className="p-4"
-    >
-      <Card className="w-full max-w-md mx-auto shadow-lg border-primary/10">
-        <CardHeader className="pb-0">
-          <CardTitle className="text-2xl text-center">Restricted Access</CardTitle>
-          <CardDescription className="text-center">
-            The Service Center is only accessible to approved service providers
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="p-6 text-center">
-          <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6">
-            <AlertTriangle className="h-12 w-12 text-amber-500 mx-auto mb-2" />
-            <h3 className="text-lg font-medium text-amber-800">Not Authorized</h3>
-            <p className="text-sm text-amber-700 mt-1">
-              Your account doesn't have service provider access or your application is still pending approval.
-            </p>
-          </div>
-          
-          <div className="space-y-4">
-            <Button 
-              variant="outline" 
-              className="w-full"
-              onClick={() => navigate("/")}
-            >
-              Return to Home
-            </Button>
-            
-            <Button 
-              className="w-full"
-              onClick={() => {
-                setAuthTab("signup");
-                setIsAuthenticated(false);
-              }}
-            >
-              Apply to Become a Service Provider
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-    </motion.div>
-  );
-
-  if (isLoading) {
-    return (
-      <>
-        <Header />
-        <div className="container max-w-7xl pb-6 flex items-center justify-center h-[70vh]">
-          <div className="text-center">
-            <RefreshCw className="h-12 w-12 text-primary animate-spin mx-auto mb-4" />
-            <p className="text-muted-foreground">Loading Service Center...</p>
-          </div>
-        </div>
-      </>
-    );
-  }
-
-  return (
-    <>
-      <Header />
-      <div className="container max-w-7xl pb-6">
-        {!isAuthenticated ? renderAuthForm() : 
-         !isAuthorized ? renderNotAuthorized() : renderDashboard()}
-      </div>
-    </>
-  );
-};
-
-export default ServiceCenter;
+                    <div className="font-medium w-20 sm:w-24 text-primary text-
