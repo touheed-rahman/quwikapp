@@ -19,7 +19,11 @@ const AdminPanel = () => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [currentTab, setCurrentTab] = useState("dashboard");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [notifications, setNotifications] = useState(0);
+  const [notifications, setNotifications] = useState(3);
+  const [userData, setUserData] = useState({
+    name: "Admin User",
+    avatar: "",
+  });
 
   // Handle logout
   const handleLogout = async () => {
@@ -61,6 +65,20 @@ const AdminPanel = () => {
         return;
       }
       
+      // Fetch user profile data
+      const { data: profileData } = await supabase
+        .from("profiles")
+        .select("full_name, avatar_url")
+        .eq("id", session.user.id)
+        .single();
+      
+      if (profileData) {
+        setUserData({
+          name: profileData.full_name || "Admin User",
+          avatar: profileData.avatar_url || "",
+        });
+      }
+      
       setIsAdmin(true);
     };
     
@@ -81,7 +99,7 @@ const AdminPanel = () => {
   }, []);
 
   if (!isAdmin) {
-    return <div>Checking permissions...</div>;
+    return <div className="flex h-screen items-center justify-center">Checking permissions...</div>;
   }
 
   return (
@@ -89,7 +107,9 @@ const AdminPanel = () => {
       <AdminHeader 
         handleLogout={handleLogout} 
         isMobileMenuOpen={isMobileMenuOpen} 
-        setIsMobileMenuOpen={setIsMobileMenuOpen} 
+        setIsMobileMenuOpen={setIsMobileMenuOpen}
+        userAvatar={userData.avatar}
+        userName={userData.name} 
       />
       
       <AdminMobileMenu 
@@ -118,21 +138,15 @@ const AdminPanel = () => {
           {currentTab === "listings" && <ListingManagement />}
           {currentTab === "users" && <UserManagement />}
           {currentTab === "notifications" && (
-            <div className="bg-white rounded-lg p-6">
+            <div className="bg-white rounded-lg p-6 shadow-sm">
               <h2 className="text-2xl font-bold mb-4">Notifications</h2>
               <p className="text-gray-500">Notification center coming soon.</p>
             </div>
           )}
           {currentTab === "settings" && (
-            <div className="bg-white rounded-lg p-6">
+            <div className="bg-white rounded-lg p-6 shadow-sm">
               <h2 className="text-2xl font-bold mb-4">Admin Settings</h2>
               <p className="text-gray-500">Settings panel coming soon.</p>
-            </div>
-          )}
-          {currentTab === "providers" && (
-            <div className="bg-white rounded-lg p-6">
-              <h2 className="text-2xl font-bold mb-4">Service Providers</h2>
-              <p className="text-gray-500">Service provider management coming soon.</p>
             </div>
           )}
         </div>
