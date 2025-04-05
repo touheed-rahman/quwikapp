@@ -1,126 +1,109 @@
 
-import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { User, Session } from "@supabase/supabase-js";
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
+import type { User } from '@supabase/supabase-js';
+import { toast } from '@/hooks/use-toast';
 
-export const useSession = () => {
-  const [user, setUser] = useState<User | null>(null);
-  const [session, setSession] = useState<Session | null>(null);
+export function useSessionUser(conversationId: string | undefined) {
+  const navigate = useNavigate();
+  const [sessionUser, setSessionUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
-  const [userRole, setUserRole] = useState<string | null>(null);
 
   useEffect(() => {
-    // Set up the auth state listener first
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
+    const initializeSession = async () => {
+      try {
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         
-        if (session?.user) {
-          // Check if user is a service provider
-          setTimeout(async () => {
-            try {
-              const { data } = await supabase
-                .from('profiles')
-                .select('*')
-                .eq('id', session.user.id)
-                .single();
-              
-              if (data) {
-                // Check for role in different potential fields using optional chaining
-                // This avoids TypeScript errors for properties that might not exist
-                const role = (data as any).role;
-                const userType = (data as any).user_type;
-                
-                if (role !== undefined) {
-                  setUserRole(role);
-                } else if (userType !== undefined) {
-                  setUserRole(userType);
-                }
-              }
-            } catch (err) {
-              console.error("Error fetching user profile:", err);
-            }
-          }, 0);
-        } else {
-          setUserRole(null);
+        if (sessionError) {
+          console.error('Error fetching session:', sessionError);
+          // Clear any invalid session data but don't redirect yet
+          await supabase.auth.signOut();
+          setSessionUser(null);
+          setLoading(false);
+          return;
+        }
+
+        if (!session) {
+          if (conversationId) {
+            localStorage.setItem('intended_conversation', conversationId);
+          }
+          setSessionUser(null);
+          setLoading(false);
+          return;
+        }
+
+        // Verify the session is still valid
+        const { data: { user }, error: userError } = await supabase.auth.getUser();
+        
+        if (userError || !user) {
+          console.error('Error fetching user:', userError);
+          // Clear any invalid session data
+          await supabase.auth.signOut();
+          setSessionUser(null);
+          setLoading(false);
+          return;
+        }
+
+        setSessionUser(user);
+        setLoading(false);
+      } catch (error) {
+        console.error('Session initialization error:', error);
+        // Clear any invalid session data
+        await supabase.auth.signOut();
+        setSessionUser(null);
+        setLoading(false);
+      }
+    };
+
+    initializeSession();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        console.log('Auth state changed:', event, session?.user?.id);
+        
+        if (event === 'SIGNED_OUT' || !session) {
+          setSessionUser(null);
+          return;
         }
         
-        setLoading(false);
+        if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+          setSessionUser(session.user);
+          
+          // Show success toast on successful login
+          if (event === 'SIGNED_IN') {
+            toast({
+              title: "Successfully signed in",
+              description: "Welcome to Quwik!"
+            });
+          }
+          
+          // Check if there's an intended conversation to redirect to
+          const intendedConversation = localStorage.getItem('intended_conversation');
+          if (intendedConversation) {
+            localStorage.removeItem('intended_conversation');
+            navigate(`/chat/${intendedConversation}`);
+          } else {
+            // Only redirect to home if we're on the profile page
+            if (window.location.pathname === '/profile') {
+              navigate('/');
+            }
+          }
+        }
       }
     );
 
-    // Then check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      
-      if (session?.user) {
-        // Check if user is a service provider
-        // Use a properly typed Promise with error handling
-        const fetchProfile = async () => {
-          try {
-            const { data, error } = await supabase
-              .from('profiles')
-              .select('*')
-              .eq('id', session.user.id)
-              .single();
-              
-            if (error) {
-              console.error("Error fetching user profile:", error);
-              return;
-            }
-            
-            if (data) {
-              // Check for role in different potential fields using optional chaining
-              // This avoids TypeScript errors for properties that might not exist
-              const role = (data as any).role;
-              const userType = (data as any).user_type;
-              
-              if (role !== undefined) {
-                setUserRole(role);
-              } else if (userType !== undefined) {
-                setUserRole(userType);
-              }
-            }
-          } catch (err) {
-            console.error("Exception when fetching user profile:", err);
-          }
-        };
-        
-        fetchProfile();
-      }
-      
-      setLoading(false);
-    });
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [navigate, conversationId]);
 
-    return () => subscription.unsubscribe();
-  }, []);
-
-  const signOut = async () => {
-    try {
-      await supabase.auth.signOut();
-      return { success: true };
-    } catch (error) {
-      console.error("Error signing out:", error);
-      return { success: false, error };
+  // Use the useEffect hook to handle redirects based on session state
+  useEffect(() => {
+    if (!loading && !sessionUser && window.location.pathname !== '/profile') {
+      navigate('/profile');
     }
-  };
+  }, [sessionUser, loading, navigate]);
 
-  const isServiceProvider = () => {
-    return userRole === 'service_provider' || userRole === 'service_admin';
-  };
-
-  return {
-    user,
-    session,
-    loading,
-    signOut,
-    isAuthenticated: !!session?.user,
-    isServiceProvider,
-    userRole
-  };
-};
-
-// Also export with the name that use-chat.ts is expecting
-export const useSessionUser = useSession;
+  return { sessionUser, loading };
+}

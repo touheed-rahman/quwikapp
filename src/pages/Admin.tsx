@@ -16,7 +16,6 @@ import DashboardMetrics from "@/components/admin/DashboardMetrics";
 import ListingManagement from "@/components/admin/ListingManagement";
 import UserManagement from "@/components/admin/UserManagement";
 import ServiceLeadsManagement from "@/components/admin/ServiceLeadsManagement";
-import ServiceCenterManagement from "@/components/admin/ServiceCenterManagement";
 
 const AdminPanel = () => {
   const navigate = useNavigate();
@@ -31,8 +30,6 @@ const AdminPanel = () => {
         setActiveTab('users');
       } else if (location.state.filter === 'service-leads') {
         setActiveTab('service-leads');
-      } else if (location.state.filter === 'service-center') {
-        setActiveTab('service-center');
       } else {
         setActiveTab('listings');
       }
@@ -156,10 +153,6 @@ const AdminPanel = () => {
               
               <TabsContent value="service-leads">
                 <ServiceLeadsManagement />
-              </TabsContent>
-              
-              <TabsContent value="service-center">
-                <ServiceCenterManagement />
               </TabsContent>
             </Tabs>
           </motion.div>

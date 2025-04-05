@@ -2,44 +2,18 @@
 import { motion } from "framer-motion";
 import { Tag, Clock, CheckCircle2, ArrowRight, Percent, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useIsMobile } from "@/hooks/use-mobile";
 
 const PromoBanner = () => {
-  const isMobile = useIsMobile();
-  
-  // Animation variants
-  const container = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.2
-      }
-    }
-  };
-  
-  const item = {
-    hidden: { opacity: 0, y: 20 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: { duration: 0.5 }
-    }
-  };
-
   return (
     <motion.div
-      className="my-10 overflow-hidden"
-      initial="hidden"
-      animate="visible"
-      variants={container}
+      className="my-12 overflow-hidden"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, delay: 0.2 }}
     >
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* First Promo Banner */}
-        <motion.div 
-          variants={item}
-          className="bg-gradient-to-r from-purple-600/90 to-blue-600/90 rounded-xl overflow-hidden relative shadow-lg"
-        >
+        <div className="bg-gradient-to-r from-purple-600/90 to-blue-600/90 rounded-xl overflow-hidden relative shadow-lg">
           <div className="absolute top-0 right-0 w-32 h-32 bg-white opacity-10 rounded-full -mt-10 -mr-10"></div>
           <div className="absolute bottom-0 left-0 w-24 h-24 bg-white opacity-10 rounded-full -mb-8 -ml-8"></div>
           
@@ -66,13 +40,10 @@ const PromoBanner = () => {
               Book Now <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
             </Button>
           </div>
-        </motion.div>
+        </div>
         
         {/* Second Promo Banner */}
-        <motion.div 
-          variants={item}
-          className="bg-gradient-to-r from-amber-500/90 to-orange-600/90 rounded-xl overflow-hidden relative shadow-lg"
-        >
+        <div className="bg-gradient-to-r from-amber-500/90 to-orange-600/90 rounded-xl overflow-hidden relative shadow-lg">
           <div className="absolute top-0 right-0 w-32 h-32 bg-white opacity-10 rounded-full -mt-10 -mr-10"></div>
           <div className="absolute bottom-0 left-0 w-24 h-24 bg-white opacity-10 rounded-full -mb-8 -ml-8"></div>
           
@@ -105,13 +76,10 @@ const PromoBanner = () => {
               Book Now <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
             </Button>
           </div>
-        </motion.div>
+        </div>
         
         {/* Third Promo Banner */}
-        <motion.div 
-          variants={item}
-          className="bg-gradient-to-r from-green-600/90 to-emerald-600/90 rounded-xl overflow-hidden relative shadow-lg"
-        >
+        <div className="bg-gradient-to-r from-green-600/90 to-emerald-600/90 rounded-xl overflow-hidden relative shadow-lg">
           <div className="absolute top-0 right-0 w-32 h-32 bg-white opacity-10 rounded-full -mt-10 -mr-10"></div>
           <div className="absolute bottom-0 left-0 w-24 h-24 bg-white opacity-10 rounded-full -mb-8 -ml-8"></div>
           
@@ -144,7 +112,7 @@ const PromoBanner = () => {
               Book Now <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
             </Button>
           </div>
-        </motion.div>
+        </div>
       </div>
     </motion.div>
   );
