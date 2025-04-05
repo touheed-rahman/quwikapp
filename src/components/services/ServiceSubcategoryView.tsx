@@ -1,114 +1,160 @@
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { motion } from "framer-motion";
-import { serviceCategories } from "@/data/serviceCategories";
-import { ChevronLeft, Star, Calendar, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
-import { useNavigate } from "react-router-dom";
-import { useToast } from "@/components/ui/use-toast";
+import { Badge } from "@/components/ui/badge";
+import { serviceCategories } from "@/data/serviceCategories";
 import { servicePricing } from "@/types/serviceTypes";
+import ServiceBookingForm from "@/components/services/ServiceBookingForm";
+import { ArrowLeft, ArrowRight, Star, Clock, Calendar, Shield } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Separator } from "@/components/ui/separator";
+import { useToast } from "@/components/ui/use-toast";
 
-interface SubcategoryViewProps {
+type ServiceSubcategoryViewProps = {
   categoryId: string;
   onBack: () => void;
-}
+};
 
-const ServiceSubcategoryView = ({ categoryId, onBack }: SubcategoryViewProps) => {
-  const [category, setCategory] = useState<any>(null);
+const ServiceSubcategoryView = ({ categoryId, onBack }: ServiceSubcategoryViewProps) => {
+  const [selectedSubservice, setSelectedSubservice] = useState<string | null>(null);
+  const [selectedSubserviceName, setSelectedSubserviceName] = useState<string>("");
+  const [bookingStep, setBookingStep] = useState<number>(0);
   const navigate = useNavigate();
   const { toast } = useToast();
-
-  useEffect(() => {
-    const foundCategory = serviceCategories.find(cat => cat.id === categoryId);
-    setCategory(foundCategory);
-  }, [categoryId]);
-
-  const handleBookService = (subcategoryId: string) => {
-    navigate(`/services/${categoryId}/${subcategoryId}`);
-  };
-
-  const showInfoToast = () => {
-    toast({
-      title: "Service Info",
-      description: "This is a preview of our service marketplace. Book a service to see the full experience.",
-    });
-  };
-
-  if (!category) {
+  
+  const categoryDetails = serviceCategories.find(c => c.id === categoryId);
+  
+  if (!categoryDetails) {
     return (
-      <div className="py-8 text-center">
-        <p className="text-muted-foreground">Loading category...</p>
+      <div className="text-center py-12">
+        <h2 className="text-xl font-semibold mb-2">Category not found</h2>
+        <Button onClick={onBack}>Back to all services</Button>
       </div>
     );
   }
+  
+  const handleSubserviceSelect = (subserviceId: string, subserviceName: string) => {
+    // Navigate to the individual service page
+    navigate(`/services/${categoryId}/${subserviceId}`);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleBackToSubservices = () => {
+    setSelectedSubservice(null);
+    setSelectedSubserviceName("");
+    setBookingStep(0);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+  
+  // Get pricing for selected service
+  const getEstimatedAmount = (subserviceId: string | null) => {
+    if (!subserviceId || !categoryId) return 349; // Default
+    return servicePricing[categoryId]?.[subserviceId] || 349;
+  };
+  
+  const timeSlots = [
+    "08:00 AM - 10:00 AM",
+    "10:00 AM - 12:00 PM", 
+    "12:00 PM - 02:00 PM", 
+    "02:00 PM - 04:00 PM", 
+    "04:00 PM - 06:00 PM", 
+    "06:00 PM - 08:00 PM"
+  ];
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
+      transition={{ duration: 0.3 }}
       className="space-y-6"
     >
-      <div className="flex items-center gap-2">
-        <Button variant="ghost" size="sm" onClick={onBack} className="p-0 h-9 w-9">
-          <ChevronLeft className="h-5 w-5" />
-        </Button>
-        <h2 className="text-2xl font-bold">{category.name}</h2>
-      </div>
-
-      <p className="text-muted-foreground">{category.description || `Choose from our range of ${category.name.toLowerCase()} services`}</p>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {category.subcategories.map((subcat: any) => {
-          // Get the price from servicePricing if available
-          const price = servicePricing[categoryId]?.[subcat.id] || 499;
-          
-          return (
-            <Card 
-              key={subcat.id}
-              className="overflow-hidden border-transparent hover:border-primary/20 transition-all duration-300 shadow-sm hover:shadow-md"
+      {bookingStep === 0 ? (
+        <>
+          <div className="flex items-center justify-between flex-wrap gap-2">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="text-muted-foreground flex items-center gap-1 hover:bg-primary/10 hover:text-primary transition-colors"
+              onClick={onBack}
             >
-              <div className="relative h-24 sm:h-32 bg-gradient-to-br from-primary/5 to-primary/10 p-4">
-                <div className="absolute bottom-4 left-4">
-                  <h3 className="text-base sm:text-lg font-semibold">{subcat.name}</h3>
-                  <div className="flex items-center gap-1 mt-1">
-                    <Star className="h-3.5 w-3.5 text-yellow-500 fill-yellow-500" />
-                    <span className="text-xs sm:text-sm font-medium">{(4 + Math.random()).toFixed(1)}</span>
-                    <span className="text-xs text-muted-foreground">({Math.floor(Math.random() * 200) + 50} ratings)</span>
-                  </div>
-                </div>
+              <ArrowLeft className="h-4 w-4 mr-1" /> Back to all services
+            </Button>
+            <Badge variant="outline" className="bg-primary/5 text-primary">
+              {categoryDetails.name}
+            </Badge>
+          </div>
+          
+          <div className="space-y-4">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+              <h2 className="text-2xl font-semibold">{categoryDetails.name} Services</h2>
+              <div className="flex items-center gap-2">
+                <Star className="h-4 w-4 text-yellow-500" />
+                <span className="text-sm font-medium">4.8 average rating</span>
               </div>
-              
-              <CardContent className="p-3 sm:p-4 space-y-3">                
-                <div className="flex justify-between items-center">
-                  <div className="text-primary font-semibold text-base sm:text-lg">₹{price}</div>
-                  
-                  <Button 
-                    onClick={() => handleBookService(subcat.id)}
-                    size="sm"
-                    className="text-xs sm:text-sm px-3 sm:px-4 py-1 h-8"
+            </div>
+            <p className="text-muted-foreground">Select a specific service to book a professional</p>
+          
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-6">
+              {categoryDetails.subservices.map((subservice) => {
+                const pricing = getEstimatedAmount(subservice.id);
+                const IconComponent = categoryDetails.icon;
+                
+                return (
+                  <motion.div 
+                    key={subservice.id} 
+                    whileHover={{ scale: 1.03 }} 
+                    whileTap={{ scale: 0.98 }}
+                    className="h-full"
                   >
-                    Book Now
-                  </Button>
-                </div>
-
-                {subcat.tags && (
-                  <div className="flex flex-wrap gap-1 mt-2">
-                    {subcat.tags.slice(0, 2).map((tag: string, i: number) => (
-                      <Badge key={i} variant="outline" className="text-xs bg-primary/5 text-primary/80">
-                        {tag}
-                      </Badge>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          );
-        })}
-      </div>
+                    <Card 
+                      className="h-full overflow-hidden border cursor-pointer transition-all duration-300 hover:shadow-md hover:border-primary/30 group"
+                      onClick={() => handleSubserviceSelect(subservice.id, subservice.name)}
+                    >
+                      <div className={`bg-gradient-to-br ${categoryDetails.color} p-4 aspect-[3/2] flex items-center justify-center`}>
+                        {IconComponent && <IconComponent className="h-12 w-12 text-primary group-hover:scale-110 transition-transform" />}
+                      </div>
+                      <CardContent className="p-4">
+                        <h3 className="font-medium text-base mb-2">{subservice.name}</h3>
+                        <Separator className="my-2 bg-primary/10" />
+                        <div className="flex flex-col gap-2">
+                          <div className="flex justify-between items-center">
+                            <span className="text-xs text-muted-foreground">Starting at</span>
+                            <span className="text-primary font-semibold">₹{pricing}</span>
+                          </div>
+                          <div className="flex justify-between items-center text-xs text-muted-foreground">
+                            <div className="flex items-center gap-1">
+                              <Clock className="h-3 w-3" />
+                              <span>1-2 hrs</span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <Star className="h-3 w-3 text-yellow-500" />
+                              <span>4.8 (120+)</span>
+                            </div>
+                          </div>
+                          <Button className="w-full mt-2 text-xs" size="sm">
+                            View Details <ArrowRight className="ml-1 h-3 w-3" />
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                );
+              })}
+            </div>
+          </div>
+        </>
+      ) : (
+        <ServiceBookingForm
+          subserviceId={selectedSubservice}
+          categoryId={categoryId}
+          selectedSubserviceName={selectedSubserviceName}
+          onBack={handleBackToSubservices}
+          timeSlots={timeSlots}
+          estimatedAmount={getEstimatedAmount(selectedSubservice)}
+        />
+      )}
     </motion.div>
   );
 };

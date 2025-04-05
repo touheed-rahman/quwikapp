@@ -7,7 +7,7 @@ import FloatingSellButton from "@/components/navigation/FloatingSellButton";
 import WelcomeDialog from "@/components/dialogs/WelcomeDialog";
 import { useLocation } from "@/contexts/LocationContext";
 import { useListings } from "@/hooks/useListings";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import SeoHead from "@/components/seo/SeoHead";
 import { Listing } from "@/hooks/useListings";
 import ServiceView from "@/components/services/ServiceView";
@@ -21,8 +21,6 @@ const Index = () => {
   const [showWelcomePopup, setShowWelcomePopup] = useState(true);
   const [randomFeaturedListings, setRandomFeaturedListings] = useState<Listing[]>([]);
   const [activeTab, setActiveTab] = useState("classified");
-  const [isTabChanging, setIsTabChanging] = useState(false);
-  const [splashText, setSplashText] = useState("");
   const { selectedLocation } = useLocation();
   
   const { data: listings = [], isLoading, error } = useListings({
@@ -32,24 +30,14 @@ const Index = () => {
   useEffect(() => {
     if (listings.length > 0) {
       const featuredItems = listings.filter(listing => listing.featured);
+      
       const shuffled = [...featuredItems].sort(() => 0.5 - Math.random());
+      
       setRandomFeaturedListings(shuffled.slice(0, FEATURED_ITEMS_LIMIT));
     } else {
       setRandomFeaturedListings([]);
     }
   }, [listings]);
-
-  // Handle tab change with splash screen
-  const handleTabChange = (value: string) => {
-    setIsTabChanging(true);
-    setSplashText(value === "classified" ? "Quwik Classified" : "Service Now");
-    
-    // After animation completes, change the tab
-    setTimeout(() => {
-      setActiveTab(value);
-      setIsTabChanging(false);
-    }, 1000);
-  };
 
   // Only show the bottom navigation and floating sell button in the classified view
   const showBottomNav = activeTab === "classified";
@@ -68,14 +56,12 @@ const Index = () => {
         <Tabs 
           defaultValue="classified" 
           className="w-full"
-          onValueChange={handleTabChange}
-          value={activeTab}
+          onValueChange={(value) => setActiveTab(value)}
         >
           <TabsList className="grid w-full grid-cols-2 mb-8 p-1.5 rounded-full bg-muted/80 backdrop-blur-sm border border-primary/10 shadow-sm shadow-primary/5">
             <TabsTrigger 
               value="classified" 
               className="rounded-full py-3.5 px-4 data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-300 font-semibold relative overflow-hidden"
-              disabled={isTabChanging}
             >
               <span className="relative z-10">Quwik Classified</span>
               <motion.div 
@@ -88,7 +74,6 @@ const Index = () => {
             <TabsTrigger 
               value="services" 
               className="rounded-full py-3.5 px-4 data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-300 font-semibold relative overflow-hidden"
-              disabled={isTabChanging}
             >
               <span className="relative z-10">Service Now</span>
               <motion.div 
@@ -100,70 +85,27 @@ const Index = () => {
             </TabsTrigger>
           </TabsList>
           
-          {/* Splash Screen */}
-          <AnimatePresence>
-            {isTabChanging && (
-              <motion.div
-                className="fixed inset-0 bg-primary/95 z-50 flex items-center justify-center"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.5 }}
-              >
-                <motion.div
-                  initial={{ scale: 0.8, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  exit={{ scale: 1.2, opacity: 0 }}
-                  transition={{ duration: 0.5 }}
-                  className="text-center"
-                >
-                  <motion.h1 
-                    className="text-4xl md:text-6xl font-bold text-white"
-                    initial={{ y: 20 }}
-                    animate={{ y: 0 }}
-                  >
-                    {splashText}
-                  </motion.h1>
-                  <motion.div 
-                    className="mt-4 flex justify-center"
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    transition={{ delay: 0.2 }}
-                  >
-                    <div className="w-16 h-1 bg-white rounded-full" />
-                  </motion.div>
-                </motion.div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-          
-          <div className="overflow-hidden">
-            {/* Main Content */}
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={activeTab}
-                initial={{ opacity: 0, x: activeTab === "classified" ? -20 : 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: activeTab === "classified" ? 20 : -20 }}
-                transition={{ duration: 0.3 }}
-                className="overflow-hidden"
-              >
-                <TabsContent value="classified" className="mt-0">
-                  <ClassifiedView 
-                    listings={listings}
-                    isLoading={isLoading}
-                    error={error as Error}
-                    selectedLocation={selectedLocation}
-                    featuredListings={randomFeaturedListings}
-                  />
-                </TabsContent>
-                
-                <TabsContent value="services" className="mt-0">
-                  <ServiceView />
-                </TabsContent>
-              </motion.div>
-            </AnimatePresence>
-          </div>
+          <motion.div
+            key={activeTab}
+            initial={{ opacity: 0, x: activeTab === "classified" ? -20 : 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.3 }}
+            className="overflow-hidden"
+          >
+            <TabsContent value="classified" className="mt-0">
+              <ClassifiedView 
+                listings={listings}
+                isLoading={isLoading}
+                error={error as Error}
+                selectedLocation={selectedLocation}
+                featuredListings={randomFeaturedListings}
+              />
+            </TabsContent>
+            
+            <TabsContent value="services" className="mt-0">
+              <ServiceView />
+            </TabsContent>
+          </motion.div>
         </Tabs>
 
         {showBottomNav && (

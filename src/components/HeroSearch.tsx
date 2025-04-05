@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Search, Loader2, MapPin } from "lucide-react";
+import { Search, Loader2 } from "lucide-react";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import LocationSelector from "./LocationSelector";
@@ -95,30 +95,25 @@ const HeroSearch = () => {
           Find Anything You Need
         </h2>
         <div className="flex flex-col gap-3">
-          <div className="relative">
-            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-primary">
-              <MapPin className="h-4 w-4 md:h-5 md:w-5" />
-            </div>
-            <LocationSelector 
-              value={selectedLocation} 
-              onChange={handleLocationChange}
-            />
-          </div>
-          <div className="flex flex-col sm:flex-row gap-3">
+          <LocationSelector 
+            value={selectedLocation} 
+            onChange={handleLocationChange}
+          />
+          <div className="flex flex-col md:flex-row gap-3">
             <div className="relative flex-1">
               <Input
                 type="text"
                 placeholder="What are you looking for?"
-                className="pl-10 pr-4 h-10 sm:h-12 text-sm md:text-base w-full border-primary/20 focus-visible:ring-primary/20"
+                className="pl-10 pr-4 h-12 text-sm md:text-base w-full border-primary/20 focus-visible:ring-primary/20"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onKeyPress={handleKeyPress}
               />
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-primary" />
             </div>
             <Button 
               size="lg" 
-              className="h-10 sm:h-12 px-4 sm:px-8 text-sm sm:text-base bg-primary hover:bg-primary/90 disabled:opacity-50"
+              className="h-12 px-8 text-base bg-primary hover:bg-primary/90 disabled:opacity-50"
               onClick={handleSearch}
               disabled={isSearching}
             >
