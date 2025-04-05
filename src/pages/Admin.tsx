@@ -1,44 +1,57 @@
 
-import { useEffect, useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/components/ui/use-toast";
-import { Tabs, TabsContent } from "@/components/ui/tabs";
-import { motion, AnimatePresence } from "framer-motion";
-
-// Import refactored components
+import { useNavigate } from "react-router-dom";
 import AdminHeader from "@/components/admin/AdminHeader";
 import AdminNavTabs from "@/components/admin/AdminNavTabs";
-import AdminMobileMenu from "@/components/admin/AdminMobileMenu";
-import AdminContentHeader from "@/components/admin/AdminContentHeader";
-import AdminAnalytics from "@/components/admin/AdminAnalytics";
 import DashboardMetrics from "@/components/admin/DashboardMetrics";
 import ListingManagement from "@/components/admin/ListingManagement";
 import UserManagement from "@/components/admin/UserManagement";
+import AdminContentHeader from "@/components/admin/AdminContentHeader";
+import AdminMobileMenu from "@/components/admin/AdminMobileMenu";
+import AdminAnalytics from "@/components/admin/AdminAnalytics";
+import AdvancedAnalytics from "@/components/admin/AdvancedAnalytics";
 
 const AdminPanel = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  const { toast } = useToast();
-  const [activeTab, setActiveTab] = useState('dashboard');
-  
-  // Check if there's a filter passed from dashboard metrics
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [currentTab, setCurrentTab] = useState("dashboard");
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [notifications, setNotifications] = useState(0);
+
+  // Check if user is an admin
   useEffect(() => {
-    if (location.state?.filter) {
-      if (location.state.filter === 'users') {
-        setActiveTab('users');
-      } else {
-        setActiveTab('listings');
+    const checkAdminStatus = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session?.user) {
+        navigate("/admin/login");
+        return;
       }
-    }
-  }, [location.state]);
-
-  // Listen for custom event to change tabs
-  useEffect(() => {
-    const handleTabChange = (event: CustomEvent<string>) => {
-      setActiveTab(event.detail);
+      
+      const { data: adminData, error } = await supabase
+        .from("admins")
+        .select("*")
+        .eq("user_id", session.user.id)
+        .single();
+      
+      if (error || !adminData) {
+        navigate("/");
+        return;
+      }
+      
+      setIsAdmin(true);
     };
+    
+    checkAdminStatus();
+  }, [navigate]);
 
+  // Listen for tab change events from child components
+  useEffect(() => {
+    const handleTabChange = (e: CustomEvent) => {
+      setCurrentTab(e.detail);
+    };
+    
     window.addEventListener('adminTabChange', handleTabChange as EventListener);
     
     return () => {
@@ -46,111 +59,55 @@ const AdminPanel = () => {
     };
   }, []);
 
-  useEffect(() => {
-    const checkAdminAccess = async () => {
-      try {
-        const { data: { user } } = await supabase.auth.getUser();
-        
-        if (!user) {
-          navigate('/admin/login');
-          return;
-        }
-
-        const { data: isAdmin, error: fnError } = await supabase
-          .rpc('is_admin', { user_uid: user.id });
-
-        if (fnError || !isAdmin) {
-          console.error('Error checking admin status:', fnError);
-          toast({
-            title: "Access Denied",
-            description: "You don't have permission to access the admin panel",
-            variant: "destructive"
-          });
-          navigate('/admin/login');
-          return;
-        }
-      } catch (error) {
-        console.error('Error in admin check:', error);
-        navigate('/admin/login');
-      }
-    };
-
-    checkAdminAccess();
-  }, [navigate, toast]);
-
-  const handleLogout = async () => {
-    try {
-      await supabase.auth.signOut();
-      toast({
-        title: "Logged out successfully",
-        description: "You have been logged out of the admin panel"
-      });
-      navigate('/admin/login');
-    } catch (error) {
-      console.error('Error logging out:', error);
-      toast({
-        title: "Error",
-        description: "Failed to log out. Please try again.",
-        variant: "destructive"
-      });
-    }
-  };
-
-  // Determine if we should show the back button
-  const shouldShowBackButton = activeTab !== 'dashboard';
+  if (!isAdmin) {
+    return <div>Checking permissions...</div>;
+  }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
-      {/* Top navbar */}
-      <AdminHeader handleLogout={handleLogout} />
+    <div className="min-h-screen bg-gray-50">
+      <AdminHeader isMobileMenuOpen={isMobileMenuOpen} setIsMobileMenuOpen={setIsMobileMenuOpen} />
       
-      <div className="flex items-center absolute left-4 top-0 h-16 md:relative md:left-0 md:top-0">
-        <AdminMobileMenu activeTab={activeTab} setActiveTab={setActiveTab} />
-        <AdminNavTabs 
-          activeTab={activeTab} 
-          setActiveTab={setActiveTab} 
-          showBackButton={shouldShowBackButton}
-        />
-      </div>
+      <AdminMobileMenu isOpen={isMobileMenuOpen} currentTab={currentTab} setCurrentTab={(tab) => {
+        setCurrentTab(tab);
+        setIsMobileMenuOpen(false);
+      }} />
       
-      {/* Main content */}
-      <motion.div 
-        className="flex-1 p-4 md:p-6 transition-all duration-300 pt-20"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.3 }}
-      >
-        <AdminContentHeader activeTab={activeTab} />
-
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={activeTab}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.2 }}
-            className="space-y-6"
-          >
-            <Tabs value={activeTab} className="w-full">
-              <TabsContent value="dashboard">
-                <DashboardMetrics />
-              </TabsContent>
-              
-              <TabsContent value="listings">
-                <ListingManagement />
-              </TabsContent>
-              
-              <TabsContent value="users">
-                <UserManagement />
-              </TabsContent>
-              
-              <TabsContent value="analytics">
-                <AdminAnalytics />
-              </TabsContent>
-            </Tabs>
-          </motion.div>
-        </AnimatePresence>
-      </motion.div>
+      <main className="container max-w-7xl mx-auto px-4 py-6 pt-20">
+        <AdminContentHeader />
+        
+        <div className="mt-6">
+          <AdminNavTabs 
+            currentTab={currentTab} 
+            setCurrentTab={setCurrentTab} 
+            notificationCount={notifications} 
+          />
+        </div>
+        
+        <div className="mt-6">
+          {currentTab === "dashboard" && <DashboardMetrics />}
+          {currentTab === "analytics" && <AdvancedAnalytics />}
+          {currentTab === "listings" && <ListingManagement />}
+          {currentTab === "users" && <UserManagement />}
+          {currentTab === "notifications" && (
+            <div className="bg-white rounded-lg p-6">
+              <h2 className="text-2xl font-bold mb-4">Notifications</h2>
+              <p className="text-gray-500">Notification center coming soon.</p>
+            </div>
+          )}
+          {currentTab === "settings" && (
+            <div className="bg-white rounded-lg p-6">
+              <h2 className="text-2xl font-bold mb-4">Admin Settings</h2>
+              <p className="text-gray-500">Settings panel coming soon.</p>
+            </div>
+          )}
+          {currentTab === "providers" && (
+            <div className="bg-white rounded-lg p-6">
+              <h2 className="text-2xl font-bold mb-4">Service Providers</h2>
+              <p className="text-gray-500">Service provider management coming soon.</p>
+            </div>
+          )}
+        </div>
+      </main>
     </div>
   );
 };

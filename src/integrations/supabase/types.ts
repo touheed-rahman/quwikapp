@@ -33,6 +33,21 @@ export type Database = {
         }
         Relationships: []
       }
+      categories: {
+        Row: {
+          id: string
+          name: string
+        }
+        Insert: {
+          id?: string
+          name: string
+        }
+        Update: {
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
       cities: {
         Row: {
           created_at: string
@@ -530,6 +545,38 @@ export type Database = {
         }
         Relationships: []
       }
+      product_videos: {
+        Row: {
+          created_at: string
+          id: string
+          listing_id: string
+          user_id: string
+          video_url: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          listing_id: string
+          user_id: string
+          video_url: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          listing_id?: string
+          user_id?: string
+          video_url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_videos_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -541,6 +588,7 @@ export type Database = {
           full_name: string | null
           id: string
           location: string | null
+          role: string | null
           updated_at: string
         }
         Insert: {
@@ -553,6 +601,7 @@ export type Database = {
           full_name?: string | null
           id: string
           location?: string | null
+          role?: string | null
           updated_at?: string
         }
         Update: {
@@ -565,6 +614,7 @@ export type Database = {
           full_name?: string | null
           id?: string
           location?: string | null
+          role?: string | null
           updated_at?: string
         }
         Relationships: []
@@ -687,6 +737,113 @@ export type Database = {
         }
         Relationships: []
       }
+      service_leads: {
+        Row: {
+          address: string
+          amount: number | null
+          appointment_date: string
+          appointment_time: string
+          created_at: string
+          customer_name: string
+          description: string | null
+          id: string
+          phone: string
+          provider_id: string | null
+          service_category: string
+          service_type: string
+          status: string
+          updated_at: string
+          urgent: boolean | null
+          user_id: string | null
+        }
+        Insert: {
+          address: string
+          amount?: number | null
+          appointment_date: string
+          appointment_time: string
+          created_at?: string
+          customer_name: string
+          description?: string | null
+          id?: string
+          phone: string
+          provider_id?: string | null
+          service_category: string
+          service_type: string
+          status?: string
+          updated_at?: string
+          urgent?: boolean | null
+          user_id?: string | null
+        }
+        Update: {
+          address?: string
+          amount?: number | null
+          appointment_date?: string
+          appointment_time?: string
+          created_at?: string
+          customer_name?: string
+          description?: string | null
+          id?: string
+          phone?: string
+          provider_id?: string | null
+          service_category?: string
+          service_type?: string
+          status?: string
+          updated_at?: string
+          urgent?: boolean | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "service_leads_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "service_providers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      service_providers: {
+        Row: {
+          address: string | null
+          business_name: string | null
+          created_at: string | null
+          documents: string[] | null
+          id: string
+          phone: string | null
+          provider_type: string | null
+          rating: number | null
+          services: string[] | null
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          address?: string | null
+          business_name?: string | null
+          created_at?: string | null
+          documents?: string[] | null
+          id: string
+          phone?: string | null
+          provider_type?: string | null
+          rating?: number | null
+          services?: string[] | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          address?: string | null
+          business_name?: string | null
+          created_at?: string | null
+          documents?: string[] | null
+          id?: string
+          phone?: string | null
+          provider_type?: string | null
+          rating?: number | null
+          services?: string[] | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       spatial_ref_sys: {
         Row: {
           auth_name: string | null
@@ -731,6 +888,32 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      subcategories: {
+        Row: {
+          category_id: string
+          id: string
+          name: string
+        }
+        Insert: {
+          category_id: string
+          id?: string
+          name: string
+        }
+        Update: {
+          category_id?: string
+          id?: string
+          name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subcategories_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       system_notifications: {
         Row: {
@@ -889,6 +1072,18 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      dashboard_metrics: {
+        Row: {
+          approved_listings: number | null
+          featured_listings: number | null
+          featured_requests: number | null
+          pending_listings: number | null
+          rejected_listings: number | null
+          total_listings: number | null
+          total_users: number | null
+        }
+        Relationships: []
       }
       deleted_listings_stats: {
         Row: {
@@ -1911,6 +2106,12 @@ export type Database = {
         Returns: undefined
       }
       is_admin: {
+        Args: {
+          user_uid: string
+        }
+        Returns: boolean
+      }
+      is_service_provider: {
         Args: {
           user_uid: string
         }
