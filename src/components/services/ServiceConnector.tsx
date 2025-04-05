@@ -7,7 +7,7 @@ import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/components/ui/use-toast";
 import { ArrowRight, Bell, CheckCircle, Clock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import ServiceCenterAuth from "@/services/ServiceCenterAuth";
+import ProviderAuth from "@/services/ProviderAuth";
 import { useSession } from "@/hooks/use-session-user";
 
 type ServiceConnectorProps = {
@@ -28,7 +28,7 @@ const ServiceConnector = ({ serviceId, serviceName, showCard = true }: ServiceCo
     const checkServiceProvider = async () => {
       if (session) {
         try {
-          const isProvider = await ServiceCenterAuth.isServiceProvider();
+          const isProvider = await ProviderAuth.isServiceProvider();
           setIsServiceProvider(isProvider);
         } catch (error) {
           console.error("Error checking service provider status:", error);

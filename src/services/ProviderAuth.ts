@@ -25,9 +25,9 @@ interface ExtendedProfile {
 }
 
 /**
- * Service to handle authentication for service center
+ * Service to handle authentication for service provider
  */
-const ServiceCenterAuth = {
+const ProviderAuth = {
   /**
    * Check if a user is authenticated as a service provider
    */
@@ -173,4 +173,4 @@ const ServiceCenterAuth = {
   }
 };
 
-export default ServiceCenterAuth;
+export default ProviderAuth;

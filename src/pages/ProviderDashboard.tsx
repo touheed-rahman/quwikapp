@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -21,7 +20,7 @@ import {
 } from "lucide-react";
 import { useServiceLeads } from "@/hooks/useServiceLeads";
 import { format } from "date-fns";
-import ServiceCenterAuth from "@/services/ServiceCenterAuth";
+import ProviderAuth from "@/services/ProviderAuth";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 const ServiceCenter = () => {
@@ -53,8 +52,7 @@ const ServiceCenter = () => {
     const checkAuth = async () => {
       setIsLoading(true);
       try {
-        // Check if user is authenticated
-        const isProvider = await ServiceCenterAuth.isServiceProvider();
+        const isProvider = await ProviderAuth.isServiceProvider();
         
         if (isProvider) {
           setIsAuthenticated(true);
@@ -92,7 +90,7 @@ const ServiceCenter = () => {
     setAuthError(null);
     
     try {
-      const { data, error } = await ServiceCenterAuth.signInServiceProvider(
+      const { data, error } = await ProviderAuth.signInServiceProvider(
         authFormData.email,
         authFormData.password
       );
@@ -124,7 +122,6 @@ const ServiceCenter = () => {
     setSignupLoading(true);
     setAuthError(null);
     
-    // Password validation
     if (authFormData.password !== authFormData.confirmPassword) {
       setAuthError("Passwords do not match");
       toast({
@@ -148,7 +145,7 @@ const ServiceCenter = () => {
     }
     
     try {
-      const { data, error } = await ServiceCenterAuth.registerServiceProvider(
+      const { data, error } = await ProviderAuth.registerServiceProvider(
         authFormData.email,
         authFormData.password,
         authFormData.fullName,
@@ -179,7 +176,7 @@ const ServiceCenter = () => {
   
   const handleSignOut = async () => {
     try {
-      await ServiceCenterAuth.signOut();
+      await ProviderAuth.signOut();
       setIsAuthenticated(false);
       setIsAuthorized(false);
       toast({
@@ -426,9 +423,7 @@ const ServiceCenter = () => {
               <UsersIcon className="h-6 w-6 text-primary" />
             </div>
             <h3 className="text-lg font-semibold">Join Our Network</h3>
-            <p className="text-sm text-muted-foreground mt-2">
-              Become a verified service provider and grow your business with new customers
-            </p>
+            <p className="text-sm text-muted-foreground">Become a verified service provider and grow your business with new customers</p>
           </CardContent>
         </Card>
         

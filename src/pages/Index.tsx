@@ -14,7 +14,7 @@ import ServiceView from "@/components/services/ServiceView";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ClassifiedView from "@/components/views/ClassifiedView";
 import { useSession } from "@/hooks/use-session-user";
-import ServiceCenterAuth from "@/services/ServiceCenterAuth";
+import ProviderAuth from "@/services/ProviderAuth";
 
 const FEATURED_ITEMS_LIMIT = 4;
 
@@ -40,7 +40,7 @@ const Index = () => {
     const checkServiceProvider = async () => {
       if (session) {
         try {
-          const isProvider = await ServiceCenterAuth.isServiceProvider();
+          const isProvider = await ProviderAuth.isServiceProvider();
           setIsServiceProvider(isProvider);
         } catch (error) {
           console.error("Error checking service provider status:", error);

@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -26,7 +27,7 @@ import CategorySubcategories from "./pages/CategorySubcategories";
 import SellerProfile from "./pages/SellerProfile";
 import MyOrders from "./pages/MyOrders";
 import ServiceDetail from "./pages/ServiceDetail";
-import ServiceCenter from "./pages/ServiceCenter";
+import ProviderDashboard from "./pages/ProviderDashboard";
 import ProviderAuth from "./services/ProviderAuth";
 
 const queryClient = new QueryClient({
@@ -166,12 +167,12 @@ const App = () => (
               <Route path="/recent-listings/:category" element={<RecentSubcategoryListings />} />
               <Route path="/seller/:id" element={<SellerProfile />} />
               <Route path="/services/:categoryId/:serviceId" element={<ServiceDetail />} />
-              <Route path="/provider" element={<ServiceCenter />} />
+              <Route path="/provider" element={<ProviderDashboard />} />
               <Route
                 path="/provider/dashboard"
                 element={
                   <ProviderRoute>
-                    <ServiceCenter />
+                    <ProviderDashboard />
                   </ProviderRoute>
                 }
               />
