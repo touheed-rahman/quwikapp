@@ -7,10 +7,10 @@ import { useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 
 interface AdminContentHeaderProps {
-  activeTab: string;
+  activeTab?: string;
 }
 
-const AdminContentHeader = ({ activeTab }: AdminContentHeaderProps) => {
+const AdminContentHeader = ({ activeTab = 'dashboard' }: AdminContentHeaderProps) => {
   const navigate = useNavigate();
   
   // Choose the appropriate icon based on the active tab

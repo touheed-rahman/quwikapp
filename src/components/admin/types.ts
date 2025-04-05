@@ -30,3 +30,23 @@ export interface FeatureCoupon {
   created_at?: string;
   updated_at?: string;
 }
+
+// Interface for service lead management
+export interface ServiceLead {
+  id: string;
+  customer_name: string;
+  phone: string;
+  service_type: string;
+  service_category: string;
+  address: string;
+  description?: string;
+  status: string;
+  appointment_date: string;
+  appointment_time: string;
+  urgent: boolean;
+  amount?: number;
+  created_at: string;
+  updated_at: string;
+  user_id?: string;
+  provider_id?: string;
+}

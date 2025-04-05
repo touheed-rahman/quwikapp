@@ -33,7 +33,7 @@ export const useServiceLeads = (options: UseServiceLeadsOptions = {}) => {
         throw error;
       }
       
-      return data as ServiceLead[];
+      return data as unknown as ServiceLead[];
     },
     refetchInterval: 30000, // Refetch every 30 seconds
   });

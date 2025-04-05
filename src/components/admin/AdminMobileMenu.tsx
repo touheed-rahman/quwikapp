@@ -6,28 +6,39 @@ import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 
 interface AdminMobileMenuProps {
-  activeTab: string;
-  setActiveTab: (tab: string) => void;
+  activeTab?: string;
+  setActiveTab?: (tab: string) => void;
+  isOpen?: boolean; 
+  currentTab?: string;
+  setCurrentTab?: (tab: string) => void;
 }
 
-const AdminMobileMenu = ({ activeTab, setActiveTab }: AdminMobileMenuProps) => {
+const AdminMobileMenu = ({ activeTab, setActiveTab, isOpen, currentTab, setCurrentTab }: AdminMobileMenuProps) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
+  
+  // Use provided state or fallback to internal state
+  const menuOpen = isOpen !== undefined ? isOpen : mobileMenuOpen;
+  const currentActiveTab = currentTab || activeTab;
+  
   const handleTabChange = (tab: string) => {
-    setActiveTab(tab);
+    if (setCurrentTab) {
+      setCurrentTab(tab);
+    } else if (setActiveTab) {
+      setActiveTab(tab);
+    }
     setMobileMenuOpen(false);
   };
 
   return (
     <>
       <Button 
-        variant={mobileMenuOpen ? "default" : "ghost"} 
+        variant={menuOpen ? "default" : "ghost"} 
         size="icon" 
         className="md:hidden relative"
         onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-        aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
+        aria-label={menuOpen ? "Close menu" : "Open menu"}
       >
-        {mobileMenuOpen ? (
+        {menuOpen ? (
           <X className="h-5 w-5" />
         ) : (
           <>
@@ -40,7 +51,7 @@ const AdminMobileMenu = ({ activeTab, setActiveTab }: AdminMobileMenuProps) => {
       </Button>
       
       <AnimatePresence>
-        {mobileMenuOpen && (
+        {menuOpen && (
           <motion.div 
             className="fixed top-16 left-0 right-0 bg-white shadow-lg z-40 md:hidden border-b border-primary/10"
             initial={{ opacity: 0, height: 0 }}
@@ -50,7 +61,7 @@ const AdminMobileMenu = ({ activeTab, setActiveTab }: AdminMobileMenuProps) => {
           >
             <div className="p-3 space-y-1">
               <Button 
-                variant={activeTab === 'dashboard' ? "default" : "ghost"} 
+                variant={currentActiveTab === 'dashboard' ? "default" : "ghost"} 
                 className="w-full justify-start text-base font-medium rounded-lg h-12"
                 onClick={() => handleTabChange('dashboard')}
               >
@@ -62,7 +73,7 @@ const AdminMobileMenu = ({ activeTab, setActiveTab }: AdminMobileMenuProps) => {
               </Button>
               
               <Button 
-                variant={activeTab === 'listings' ? "default" : "ghost"} 
+                variant={currentActiveTab === 'listings' ? "default" : "ghost"} 
                 className="w-full justify-start text-base font-medium rounded-lg h-12"
                 onClick={() => handleTabChange('listings')}
               >
@@ -72,7 +83,7 @@ const AdminMobileMenu = ({ activeTab, setActiveTab }: AdminMobileMenuProps) => {
               </Button>
               
               <Button 
-                variant={activeTab === 'users' ? "default" : "ghost"} 
+                variant={currentActiveTab === 'users' ? "default" : "ghost"} 
                 className="w-full justify-start text-base font-medium rounded-lg h-12"
                 onClick={() => handleTabChange('users')}
               >
@@ -82,7 +93,7 @@ const AdminMobileMenu = ({ activeTab, setActiveTab }: AdminMobileMenuProps) => {
               </Button>
               
               <Button 
-                variant={activeTab === 'analytics' ? "default" : "ghost"} 
+                variant={currentActiveTab === 'analytics' ? "default" : "ghost"} 
                 className="w-full justify-start text-base font-medium rounded-lg h-12"
                 onClick={() => handleTabChange('analytics')}
               >

@@ -7,9 +7,11 @@ import { supabase } from "@/integrations/supabase/client";
 
 interface AdminHeaderProps {
   handleLogout: () => Promise<void>;
+  isMobileMenuOpen?: boolean;
+  setIsMobileMenuOpen?: (open: boolean) => void;
 }
 
-const AdminHeader = ({ handleLogout }: AdminHeaderProps) => {
+const AdminHeader = ({ handleLogout, isMobileMenuOpen, setIsMobileMenuOpen }: AdminHeaderProps) => {
   return (
     <div className="bg-white shadow-sm border-b h-16 fixed top-0 left-0 right-0 z-50 flex items-center px-4">
       <div className="flex items-center justify-between w-full">

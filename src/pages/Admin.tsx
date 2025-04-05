@@ -11,13 +11,34 @@ import AdminContentHeader from "@/components/admin/AdminContentHeader";
 import AdminMobileMenu from "@/components/admin/AdminMobileMenu";
 import AdminAnalytics from "@/components/admin/AdminAnalytics";
 import AdvancedAnalytics from "@/components/admin/AdvancedAnalytics";
+import { useToast } from "@/components/ui/use-toast";
 
 const AdminPanel = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [isAdmin, setIsAdmin] = useState(false);
   const [currentTab, setCurrentTab] = useState("dashboard");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [notifications, setNotifications] = useState(0);
+
+  // Handle logout
+  const handleLogout = async () => {
+    try {
+      await supabase.auth.signOut();
+      toast({
+        title: "Logged out successfully",
+        description: "You have been logged out of the admin panel.",
+      });
+      navigate("/admin/login");
+    } catch (error) {
+      console.error("Error logging out:", error);
+      toast({
+        title: "Error logging out",
+        description: "There was a problem signing you out.",
+        variant: "destructive",
+      });
+    }
+  };
 
   // Check if user is an admin
   useEffect(() => {
@@ -65,15 +86,23 @@ const AdminPanel = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <AdminHeader isMobileMenuOpen={isMobileMenuOpen} setIsMobileMenuOpen={setIsMobileMenuOpen} />
+      <AdminHeader 
+        handleLogout={handleLogout} 
+        isMobileMenuOpen={isMobileMenuOpen} 
+        setIsMobileMenuOpen={setIsMobileMenuOpen} 
+      />
       
-      <AdminMobileMenu isOpen={isMobileMenuOpen} currentTab={currentTab} setCurrentTab={(tab) => {
-        setCurrentTab(tab);
-        setIsMobileMenuOpen(false);
-      }} />
+      <AdminMobileMenu 
+        isOpen={isMobileMenuOpen} 
+        currentTab={currentTab} 
+        setCurrentTab={(tab) => {
+          setCurrentTab(tab);
+          setIsMobileMenuOpen(false);
+        }} 
+      />
       
       <main className="container max-w-7xl mx-auto px-4 py-6 pt-20">
-        <AdminContentHeader />
+        <AdminContentHeader activeTab={currentTab} />
         
         <div className="mt-6">
           <AdminNavTabs 
