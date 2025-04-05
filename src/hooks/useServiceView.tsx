@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
 import { useSession } from "@/hooks/use-session-user";
-import ServiceCenterAuth from "@/services/ServiceCenterAuth";
+import ProviderAuth from "@/services/ProviderAuth";
 
 export function useServiceView() {
   const navigate = useNavigate();
@@ -26,12 +26,12 @@ export function useServiceView() {
     const checkServiceProvider = async () => {
       if (session) {
         try {
-          const isProvider = await ServiceCenterAuth.isServiceProvider();
+          const isProvider = await ProviderAuth.isServiceProvider();
           setIsServiceProvider(isProvider);
           
-          // If user is a service provider, redirect them to the service center dashboard
+          // If user is a service provider, redirect them to the provider dashboard
           if (isProvider && location.pathname === '/') {
-            navigate('/service-center/dashboard');
+            navigate('/provider/dashboard');
           }
         } catch (error) {
           console.error("Error checking service provider status:", error);
@@ -148,5 +148,5 @@ export function useServiceView() {
   };
 }
 
-// Need to import this at the top
+// Import service categories
 import { serviceCategories } from "@/data/serviceCategories";

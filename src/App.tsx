@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -28,7 +27,7 @@ import SellerProfile from "./pages/SellerProfile";
 import MyOrders from "./pages/MyOrders";
 import ServiceDetail from "./pages/ServiceDetail";
 import ServiceCenter from "./pages/ServiceCenter";
-import ServiceCenterAuth from "./services/ServiceCenterAuth";
+import ProviderAuth from "./services/ProviderAuth";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -73,15 +72,14 @@ const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
   return <>{children}</>;
 };
 
-// Service Provider Route - only allows access to service providers
-const ServiceProviderRoute = ({ children }: { children: React.ReactNode }) => {
+const ProviderRoute = ({ children }: { children: React.ReactNode }) => {
   const [isProvider, setIsProvider] = useState<boolean>(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const checkServiceProvider = async () => {
       try {
-        const isServiceProvider = await ServiceCenterAuth.isServiceProvider();
+        const isServiceProvider = await ProviderAuth.isServiceProvider();
         setIsProvider(isServiceProvider);
       } catch (error) {
         console.error("Error checking service provider status:", error);
@@ -99,13 +97,12 @@ const ServiceProviderRoute = ({ children }: { children: React.ReactNode }) => {
   }
 
   if (!isProvider) {
-    return <Navigate to="/service-center" />;
+    return <Navigate to="/provider/login" />;
   }
 
   return <>{children}</>;
 };
 
-// Admin Route - only allows access to admin users
 const AdminRoute = ({ children }: { children: React.ReactNode }) => {
   const [isAdmin, setIsAdmin] = useState<boolean>(false);
   const [loading, setLoading] = useState(true);
@@ -169,13 +166,13 @@ const App = () => (
               <Route path="/recent-listings/:category" element={<RecentSubcategoryListings />} />
               <Route path="/seller/:id" element={<SellerProfile />} />
               <Route path="/services/:categoryId/:serviceId" element={<ServiceDetail />} />
-              <Route path="/service-center" element={<ServiceCenter />} />
+              <Route path="/provider" element={<ServiceCenter />} />
               <Route
-                path="/service-center/dashboard"
+                path="/provider/dashboard"
                 element={
-                  <ServiceProviderRoute>
+                  <ProviderRoute>
                     <ServiceCenter />
-                  </ServiceProviderRoute>
+                  </ProviderRoute>
                 }
               />
               <Route

@@ -28,9 +28,9 @@ const ServiceView = () => {
     location
   } = useServiceView();
 
-  // If user is a service provider, redirect to service center directly
+  // If user is a service provider, redirect to provider dashboard directly
   if (!loading && isServiceProvider && location.pathname === '/') {
-    navigate('/service-center/dashboard');
+    navigate('/provider/dashboard');
     return null;
   }
 
@@ -40,6 +40,7 @@ const ServiceView = () => {
         <ServiceBackButton 
           onBack={handleGoBack} 
           showButton={location.pathname !== '/'} 
+          title={location.pathname.includes('/services/') ? "Back to Services" : "Back"}
         />
         
         <ServiceHero 

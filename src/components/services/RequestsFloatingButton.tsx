@@ -1,5 +1,5 @@
 
-import { BellRing } from "lucide-react";
+import { BellRing, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -31,12 +31,12 @@ const RequestsFloatingButton = ({
         <SheetTrigger asChild>
           <Button 
             size="sm" 
-            className="rounded-full h-12 w-12 shadow-lg bg-primary hover:bg-primary/90 text-white flex items-center justify-center"
+            className="rounded-full h-14 w-14 shadow-lg bg-primary hover:bg-primary/90 text-white flex items-center justify-center"
           >
-            <BellRing className="h-5 w-5" />
+            <MessageCircle className="h-6 w-6" />
             {requestCount > 0 && (
               <Badge 
-                className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center bg-red-500 hover:bg-red-600 p-0"
+                className="absolute -top-2 -right-2 h-6 w-6 flex items-center justify-center bg-red-500 hover:bg-red-600 p-0"
               >
                 {requestCount}
               </Badge>
@@ -50,7 +50,7 @@ const RequestsFloatingButton = ({
               My Service Requests
             </SheetTitle>
             <SheetDescription>
-              View and manage your service requests
+              Track and manage your service requests
             </SheetDescription>
           </SheetHeader>
           <ServiceRequestsMenu />

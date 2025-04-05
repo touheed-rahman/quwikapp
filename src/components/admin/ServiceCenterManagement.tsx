@@ -14,26 +14,14 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import { 
-  Check, X, ChevronDown, Search, Users, RefreshCw,
-  Calendar, Phone, MapPin, CheckCircle, Clock, AlertTriangle
+  Check, X, Search, Users, RefreshCw,
+  Calendar, Phone, MapPin, CheckCircle, Clock, AlertTriangle,
+  Building, Star, Briefcase
 } from "lucide-react";
 import { useServiceLeads } from "@/hooks/useServiceLeads";
+import { ServiceProvider } from "./types";
 
-type ServiceProvider = {
-  id: string;
-  email: string;
-  full_name: string;
-  business_name: string;
-  provider_type: string;
-  services: string;
-  phone: string;
-  status: "pending" | "approved" | "rejected";
-  created_at: string;
-  rating?: number;
-  total_services?: number;
-};
-
-const ServiceCenterManagement = () => {
+const ProviderManagement = () => {
   const [activeTab, setActiveTab] = useState("providers");
   const [providers, setProviders] = useState<ServiceProvider[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -52,7 +40,7 @@ const ServiceCenterManagement = () => {
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
-        .or('role.eq.service_provider,user_type.eq.service_provider');
+        .or('role.eq.service_provider,provider_type.eq.service_provider');
         
       if (error) throw error;
       
@@ -65,10 +53,10 @@ const ServiceCenterManagement = () => {
         provider_type: provider.provider_type || 'individual',
         services: provider.services || '',
         phone: provider.phone || '',
-        status: provider.status || 'pending',
+        provider_status: provider.provider_status || 'pending',
         created_at: provider.created_at,
-        rating: Math.floor(Math.random() * 5) + 3.5, // Mock rating
-        total_services: Math.floor(Math.random() * 50) // Mock total services
+        rating: provider.rating || Math.floor(Math.random() * 5) + 3.5, // Use actual rating or mock
+        total_services: provider.total_services || Math.floor(Math.random() * 50) // Use actual or mock
       }));
       
       setProviders(formattedProviders);
@@ -90,17 +78,15 @@ const ServiceCenterManagement = () => {
       setProviders(prev => 
         prev.map(provider => 
           provider.id === providerId 
-            ? { ...provider, status } 
+            ? { ...provider, provider_status: status } 
             : provider
         )
       );
       
       // Create a custom column update
-      const updateData: Record<string, any> = {};
-      
-      // For storing in the profiles table, we need to use a custom field
-      // Since 'status' doesn't exist in the base type, we add it as a custom field
-      updateData.provider_status = status;
+      const updateData: Record<string, any> = {
+        provider_status: status
+      };
       
       const { error } = await supabase
         .from('profiles')
@@ -129,7 +115,6 @@ const ServiceCenterManagement = () => {
   const assignLeadToProvider = async (leadId: string, providerId: string) => {
     try {
       // We need to update our service_leads table with a custom column
-      // Since this field doesn't exist in the base type, we add it as a custom field
       const updateData: Record<string, any> = {
         provider_id: providerId,
         status: "In Progress" // Update the status to reflect assignment
@@ -159,10 +144,10 @@ const ServiceCenterManagement = () => {
   const filteredProviders = providers.filter(provider => {
     const query = searchQuery.toLowerCase();
     return (
-      provider.full_name.toLowerCase().includes(query) ||
-      provider.business_name.toLowerCase().includes(query) ||
-      provider.services.toLowerCase().includes(query) ||
-      provider.email.toLowerCase().includes(query)
+      provider.full_name?.toLowerCase().includes(query) ||
+      provider.business_name?.toLowerCase().includes(query) ||
+      provider.services?.toLowerCase().includes(query) ||
+      provider.email?.toLowerCase().includes(query)
     );
   });
   
@@ -172,7 +157,7 @@ const ServiceCenterManagement = () => {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
         <div>
-          <h3 className="text-lg font-medium">Service Center Management</h3>
+          <h3 className="text-lg font-medium">Provider Management</h3>
           <p className="text-sm text-muted-foreground">
             Manage service providers and lead assignments
           </p>
@@ -222,17 +207,17 @@ const ServiceCenterManagement = () => {
                       <div className="flex items-center gap-2">
                         <Badge 
                           className={
-                            provider.status === 'approved' ? 'bg-green-100 text-green-800 hover:bg-green-200' :
-                            provider.status === 'rejected' ? 'bg-red-100 text-red-800 hover:bg-red-200' :
+                            provider.provider_status === 'approved' ? 'bg-green-100 text-green-800 hover:bg-green-200' :
+                            provider.provider_status === 'rejected' ? 'bg-red-100 text-red-800 hover:bg-red-200' :
                             'bg-amber-100 text-amber-800 hover:bg-amber-200'
                           }
                         >
-                          {provider.status.charAt(0).toUpperCase() + provider.status.slice(1)}
+                          {provider.provider_status?.charAt(0).toUpperCase() + provider.provider_status?.slice(1) || "Pending"}
                         </Badge>
                         <span className="font-medium">{provider.full_name}</span>
                       </div>
                       
-                      {provider.status === 'pending' && (
+                      {provider.provider_status === 'pending' && (
                         <div className="flex gap-2 w-full sm:w-auto">
                           <Button 
                             size="sm" 
@@ -257,11 +242,17 @@ const ServiceCenterManagement = () => {
                       <div className="space-y-3">
                         <div>
                           <Label className="text-xs text-muted-foreground">Business Name</Label>
-                          <p className="truncate">{provider.business_name}</p>
+                          <div className="flex items-center gap-2">
+                            <Building className="h-4 w-4 text-muted-foreground" />
+                            <p className="truncate">{provider.business_name}</p>
+                          </div>
                         </div>
                         <div>
                           <Label className="text-xs text-muted-foreground">Provider Type</Label>
-                          <p>{provider.provider_type}</p>
+                          <div className="flex items-center gap-2">
+                            <Briefcase className="h-4 w-4 text-muted-foreground" />
+                            <p>{provider.provider_type}</p>
+                          </div>
                         </div>
                         <div>
                           <Label className="text-xs text-muted-foreground">Services Offered</Label>
@@ -278,7 +269,10 @@ const ServiceCenterManagement = () => {
                         <div>
                           <Label className="text-xs text-muted-foreground">Performance</Label>
                           <div className="flex justify-between items-center">
-                            <span>Rating</span>
+                            <div className="flex items-center gap-1">
+                              <Star className="h-4 w-4 text-yellow-500" />
+                              <span>Rating</span>
+                            </div>
                             <Badge variant="outline" className="bg-yellow-50 text-yellow-700">
                               {provider.rating?.toFixed(1)} ⭐
                             </Badge>
@@ -354,8 +348,8 @@ const ServiceCenterManagement = () => {
                               variant="secondary"
                               onClick={() => {
                                 // In a real app, you would show a provider selection dialog here
-                                // For now, we'll just assign to the first available provider
-                                const availableProvider = providers.find(p => p.status === 'approved');
+                                // For now, we'll just assign to the first available approved provider
+                                const availableProvider = providers.find(p => p.provider_status === 'approved');
                                 if (availableProvider && lead.id) {
                                   assignLeadToProvider(lead.id, availableProvider.id);
                                 } else {
@@ -430,4 +424,4 @@ const ServiceCenterManagement = () => {
   );
 };
 
-export default ServiceCenterManagement;
+export default ProviderManagement;
