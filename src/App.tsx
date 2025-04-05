@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -26,6 +27,7 @@ import CategorySubcategories from "./pages/CategorySubcategories";
 import SellerProfile from "./pages/SellerProfile";
 import MyOrders from "./pages/MyOrders";
 import ServiceDetail from "./pages/ServiceDetail";
+import ServiceCenter from "./pages/ServiceCenter";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -87,6 +89,7 @@ const App = () => (
               <Route path="/recent-listings/:category" element={<RecentSubcategoryListings />} />
               <Route path="/seller/:id" element={<SellerProfile />} />
               <Route path="/services/:categoryId/:serviceId" element={<ServiceDetail />} />
+              <Route path="/service-center" element={<ServiceCenter />} />
               <Route
                 path="/sell"
                 element={

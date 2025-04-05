@@ -30,3 +30,32 @@ export interface FeatureCoupon {
   created_at?: string;
   updated_at?: string;
 }
+
+// Additional service provider types
+export interface ServiceProvider extends Profile {
+  business_name?: string;
+  provider_type?: string;
+  services?: string;
+  provider_status?: "pending" | "approved" | "rejected";
+  rating?: number;
+  total_services?: number;
+}
+
+// Extend service lead type
+export interface ServiceLead {
+  id: string;
+  customer_name?: string;
+  phone?: string;
+  service_category?: string;
+  service_type?: string;
+  description?: string;
+  address?: string;
+  appointment_date?: string;
+  appointment_time?: string;
+  status?: string;
+  urgent?: boolean;
+  created_at?: string;
+  updated_at?: string;
+  provider_id?: string; // ID of the assigned service provider
+  amount?: number;
+}

@@ -588,6 +588,7 @@ export type Database = {
           full_name: string | null
           id: string
           location: string | null
+          role: string | null
           updated_at: string
         }
         Insert: {
@@ -600,6 +601,7 @@ export type Database = {
           full_name?: string | null
           id: string
           location?: string | null
+          role?: string | null
           updated_at?: string
         }
         Update: {
@@ -612,6 +614,7 @@ export type Database = {
           full_name?: string | null
           id?: string
           location?: string | null
+          role?: string | null
           updated_at?: string
         }
         Relationships: []
@@ -745,11 +748,13 @@ export type Database = {
           description: string | null
           id: string
           phone: string
+          provider_id: string | null
           service_category: string
           service_type: string
           status: string
           updated_at: string
           urgent: boolean | null
+          user_id: string | null
         }
         Insert: {
           address: string
@@ -761,11 +766,13 @@ export type Database = {
           description?: string | null
           id?: string
           phone: string
+          provider_id?: string | null
           service_category: string
           service_type: string
           status?: string
           updated_at?: string
           urgent?: boolean | null
+          user_id?: string | null
         }
         Update: {
           address?: string
@@ -777,11 +784,63 @@ export type Database = {
           description?: string | null
           id?: string
           phone?: string
+          provider_id?: string | null
           service_category?: string
           service_type?: string
           status?: string
           updated_at?: string
           urgent?: boolean | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "service_leads_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "service_providers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      service_providers: {
+        Row: {
+          address: string | null
+          business_name: string | null
+          created_at: string | null
+          documents: string[] | null
+          id: string
+          phone: string | null
+          provider_type: string | null
+          rating: number | null
+          services: string[] | null
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          address?: string | null
+          business_name?: string | null
+          created_at?: string | null
+          documents?: string[] | null
+          id: string
+          phone?: string | null
+          provider_type?: string | null
+          rating?: number | null
+          services?: string[] | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          address?: string | null
+          business_name?: string | null
+          created_at?: string | null
+          documents?: string[] | null
+          id?: string
+          phone?: string | null
+          provider_type?: string | null
+          rating?: number | null
+          services?: string[] | null
+          status?: string | null
+          updated_at?: string | null
         }
         Relationships: []
       }
@@ -2047,6 +2106,12 @@ export type Database = {
         Returns: undefined
       }
       is_admin: {
+        Args: {
+          user_uid: string
+        }
+        Returns: boolean
+      }
+      is_service_provider: {
         Args: {
           user_uid: string
         }

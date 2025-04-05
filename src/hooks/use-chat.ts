@@ -1,5 +1,5 @@
 
-import { useSessionUser } from './use-session-user';
+import { useSession } from './use-session-user';
 import { useConversationDetails } from './use-conversation-details';
 import { useMessageList } from './use-message-list';
 import { useMessageSender } from './use-message-sender';
@@ -9,7 +9,7 @@ import { useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
 export function useChat(conversationId: string | undefined) {
-  const { sessionUser, loading } = useSessionUser(conversationId);
+  const { user: sessionUser, loading } = useSession();
   const { conversationDetails, isLoading: conversationLoading } = useConversationDetails(conversationId, sessionUser);
   const { messages, isLoading: messagesLoading } = useMessageList(conversationId, sessionUser?.id);
   const { newMessage, setNewMessage, handleSend, handleImageUpload } = useMessageSender(conversationId, sessionUser?.id);
