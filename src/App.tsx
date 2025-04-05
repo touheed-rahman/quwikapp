@@ -27,8 +27,7 @@ import CategorySubcategories from "./pages/CategorySubcategories";
 import SellerProfile from "./pages/SellerProfile";
 import MyOrders from "./pages/MyOrders";
 import ServiceDetail from "./pages/ServiceDetail";
-import ProviderDashboard from "./pages/ProviderDashboard";
-import ProviderAuth from "./services/ProviderAuth";
+import ServiceCenter from "./pages/ServiceCenter";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -73,83 +72,6 @@ const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
   return <>{children}</>;
 };
 
-const ProviderRoute = ({ children }: { children: React.ReactNode }) => {
-  const [isProvider, setIsProvider] = useState<boolean>(false);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const checkServiceProvider = async () => {
-      try {
-        const isServiceProvider = await ProviderAuth.isServiceProvider();
-        setIsProvider(isServiceProvider);
-      } catch (error) {
-        console.error("Error checking service provider status:", error);
-        setIsProvider(false);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    checkServiceProvider();
-  }, []);
-
-  if (loading) {
-    return <div>Loading...</div>;
-  }
-
-  if (!isProvider) {
-    return <Navigate to="/provider/login" />;
-  }
-
-  return <>{children}</>;
-};
-
-const AdminRoute = ({ children }: { children: React.ReactNode }) => {
-  const [isAdmin, setIsAdmin] = useState<boolean>(false);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const checkAdmin = async () => {
-      try {
-        const { data: { user } } = await supabase.auth.getUser();
-        
-        if (!user) {
-          setIsAdmin(false);
-          setLoading(false);
-          return;
-        }
-
-        const { data: isAdminResult, error } = await supabase
-          .rpc('is_admin', { user_uid: user.id });
-
-        if (error || !isAdminResult) {
-          console.error('Error checking admin status:', error);
-          setIsAdmin(false);
-        } else {
-          setIsAdmin(true);
-        }
-      } catch (error) {
-        console.error('Error in admin check:', error);
-        setIsAdmin(false);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    checkAdmin();
-  }, []);
-
-  if (loading) {
-    return <div>Loading...</div>;
-  }
-
-  if (!isAdmin) {
-    return <Navigate to="/admin/login" />;
-  }
-
-  return <>{children}</>;
-};
-
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
@@ -167,15 +89,7 @@ const App = () => (
               <Route path="/recent-listings/:category" element={<RecentSubcategoryListings />} />
               <Route path="/seller/:id" element={<SellerProfile />} />
               <Route path="/services/:categoryId/:serviceId" element={<ServiceDetail />} />
-              <Route path="/provider" element={<ProviderDashboard />} />
-              <Route
-                path="/provider/dashboard"
-                element={
-                  <ProviderRoute>
-                    <ProviderDashboard />
-                  </ProviderRoute>
-                }
-              />
+              <Route path="/service-center" element={<ServiceCenter />} />
               <Route
                 path="/sell"
                 element={
@@ -199,9 +113,9 @@ const App = () => (
               <Route
                 path="/admin"
                 element={
-                  <AdminRoute>
+                  <PrivateRoute>
                     <AdminPanel />
-                  </AdminRoute>
+                  </PrivateRoute>
                 }
               />
               <Route

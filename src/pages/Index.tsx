@@ -1,10 +1,10 @@
+
 import { useState, useEffect } from "react";
 import Header from "@/components/Header";
 import ChatWindow from "@/components/chat/ChatWindow";
 import MobileNavigation from "@/components/navigation/MobileNavigation";
 import FloatingSellButton from "@/components/navigation/FloatingSellButton";
 import WelcomeDialog from "@/components/dialogs/WelcomeDialog";
-import { useLocation as useReactRouterLocation } from "react-router-dom";
 import { useLocation } from "@/contexts/LocationContext";
 import { useListings } from "@/hooks/useListings";
 import { motion, AnimatePresence } from "framer-motion";
@@ -13,8 +13,6 @@ import { Listing } from "@/hooks/useListings";
 import ServiceView from "@/components/services/ServiceView";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ClassifiedView from "@/components/views/ClassifiedView";
-import { useSession } from "@/hooks/use-session-user";
-import ProviderAuth from "@/services/ProviderAuth";
 
 const FEATURED_ITEMS_LIMIT = 4;
 
@@ -22,34 +20,16 @@ const Index = () => {
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [showWelcomePopup, setShowWelcomePopup] = useState(true);
   const [randomFeaturedListings, setRandomFeaturedListings] = useState<Listing[]>([]);
-  const [activeTab, setActiveTab] = useState(() => {
-    return localStorage.getItem("activeTab") || "classified";
-  });
+  const [activeTab, setActiveTab] = useState("classified");
   const [isTabChanging, setIsTabChanging] = useState(false);
   const [splashText, setSplashText] = useState("");
   const { selectedLocation } = useLocation();
-  const reactLocation = useReactRouterLocation();
-  const { user, session, loading } = useSession();
-  const [isServiceProvider, setIsServiceProvider] = useState(false);
   
   const { data: listings = [], isLoading, error } = useListings({
     selectedLocation
   });
 
   useEffect(() => {
-    const checkServiceProvider = async () => {
-      if (session) {
-        try {
-          const isProvider = await ProviderAuth.isServiceProvider();
-          setIsServiceProvider(isProvider);
-        } catch (error) {
-          console.error("Error checking service provider status:", error);
-        }
-      }
-    };
-    
-    checkServiceProvider();
-    
     if (listings.length > 0) {
       const featuredItems = listings.filter(listing => listing.featured);
       const shuffled = [...featuredItems].sort(() => 0.5 - Math.random());
@@ -57,25 +37,22 @@ const Index = () => {
     } else {
       setRandomFeaturedListings([]);
     }
-  }, [listings, session]);
+  }, [listings]);
 
+  // Handle tab change with splash screen
   const handleTabChange = (value: string) => {
-    localStorage.setItem("activeTab", value);
-    
     setIsTabChanging(true);
     setSplashText(value === "classified" ? "Quwik Classified" : "Service Now");
     
+    // After animation completes, change the tab
     setTimeout(() => {
       setActiveTab(value);
       setIsTabChanging(false);
     }, 1000);
   };
 
+  // Only show the bottom navigation and floating sell button in the classified view
   const showBottomNav = activeTab === "classified";
-
-  if (!loading && isServiceProvider) {
-    return null;
-  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background via-background to-primary/5">
@@ -123,6 +100,7 @@ const Index = () => {
             </TabsTrigger>
           </TabsList>
           
+          {/* Splash Screen */}
           <AnimatePresence>
             {isTabChanging && (
               <motion.div
@@ -160,6 +138,7 @@ const Index = () => {
           </AnimatePresence>
           
           <div className="overflow-hidden">
+            {/* Main Content */}
             <AnimatePresence mode="wait">
               <motion.div
                 key={activeTab}

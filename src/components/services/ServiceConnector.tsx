@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -7,8 +8,6 @@ import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/components/ui/use-toast";
 import { ArrowRight, Bell, CheckCircle, Clock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import ProviderAuth from "@/services/ProviderAuth";
-import { useSession } from "@/hooks/use-session-user";
 
 type ServiceConnectorProps = {
   serviceId: string;
@@ -19,28 +18,15 @@ type ServiceConnectorProps = {
 const ServiceConnector = ({ serviceId, serviceName, showCard = true }: ServiceConnectorProps) => {
   const [serviceRequests, setServiceRequests] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [isServiceProvider, setIsServiceProvider] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
-  const { session } = useSession();
   
   useEffect(() => {
-    const checkServiceProvider = async () => {
-      if (session) {
-        try {
-          const isProvider = await ProviderAuth.isServiceProvider();
-          setIsServiceProvider(isProvider);
-        } catch (error) {
-          console.error("Error checking service provider status:", error);
-        }
-      }
-    };
-    
-    checkServiceProvider();
-    
+    // Fetch service requests
     const fetchRequests = async () => {
       try {
         setLoading(true);
+        // In a real app, we'd filter by the specific service
         const { data, error } = await supabase
           .from('service_leads')
           .select('*')
@@ -51,24 +37,20 @@ const ServiceConnector = ({ serviceId, serviceName, showCard = true }: ServiceCo
         if (error) throw error;
         setServiceRequests(data || []);
       } catch (error) {
-        console.error("Error fetching service leads:", error);
+        console.error("Error fetching service requests:", error);
       } finally {
         setLoading(false);
       }
     };
 
-    if (session && serviceName && !isServiceProvider) {
+    if (serviceName) {
       fetchRequests();
-    } else {
-      setLoading(false);
     }
-  }, [serviceName, session, isServiceProvider]);
+  }, [serviceName]);
   
   const handleViewAllRequests = () => {
     navigate('/service-center');
   };
-  
-  if (isServiceProvider) return null;
   
   if (!showCard) {
     return (

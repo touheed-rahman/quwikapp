@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -16,11 +17,11 @@ import {
   Bell, Calendar as CalendarIcon, Check, ChevronDown, ClipboardList, Clock, 
   DollarSign, Home, MapPin, Phone, RefreshCw, Shield, Star, ThumbsUp, 
   Wrench, User, X, Mail, Lock, Building, Briefcase, Tag, Smartphone, Info,
-  AlertTriangle, Users as UsersIcon
+  AlertTriangle
 } from "lucide-react";
 import { useServiceLeads } from "@/hooks/useServiceLeads";
 import { format } from "date-fns";
-import ProviderAuth from "@/services/ProviderAuth";
+import ServiceCenterAuth from "@/services/ServiceCenterAuth";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 const ServiceCenter = () => {
@@ -52,9 +53,10 @@ const ServiceCenter = () => {
     const checkAuth = async () => {
       setIsLoading(true);
       try {
-        const isProvider = await ProviderAuth.isServiceProvider();
+        // Check if user is authenticated
+        const { data } = await ServiceCenterAuth.isServiceProvider();
         
-        if (isProvider) {
+        if (data) {
           setIsAuthenticated(true);
           setIsAuthorized(true);
         } else {
@@ -90,7 +92,7 @@ const ServiceCenter = () => {
     setAuthError(null);
     
     try {
-      const { data, error } = await ProviderAuth.signInServiceProvider(
+      const { data, error } = await ServiceCenterAuth.signInServiceProvider(
         authFormData.email,
         authFormData.password
       );
@@ -122,6 +124,7 @@ const ServiceCenter = () => {
     setSignupLoading(true);
     setAuthError(null);
     
+    // Password validation
     if (authFormData.password !== authFormData.confirmPassword) {
       setAuthError("Passwords do not match");
       toast({
@@ -145,7 +148,7 @@ const ServiceCenter = () => {
     }
     
     try {
-      const { data, error } = await ProviderAuth.registerServiceProvider(
+      const { data, error } = await ServiceCenterAuth.registerServiceProvider(
         authFormData.email,
         authFormData.password,
         authFormData.fullName,
@@ -176,7 +179,7 @@ const ServiceCenter = () => {
   
   const handleSignOut = async () => {
     try {
-      await ProviderAuth.signOut();
+      await ServiceCenterAuth.signOut();
       setIsAuthenticated(false);
       setIsAuthorized(false);
       toast({
@@ -420,10 +423,12 @@ const ServiceCenter = () => {
         <Card className="border-primary/10 shadow-sm">
           <CardContent className="p-6 text-center">
             <div className="bg-primary/10 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4">
-              <UsersIcon className="h-6 w-6 text-primary" />
+              <Users className="h-6 w-6 text-primary" />
             </div>
             <h3 className="text-lg font-semibold">Join Our Network</h3>
-            <p className="text-sm text-muted-foreground">Become a verified service provider and grow your business with new customers</p>
+            <p className="text-sm text-muted-foreground mt-2">
+              Become a verified service provider and grow your business with new customers
+            </p>
           </CardContent>
         </Card>
         
@@ -454,7 +459,6 @@ const ServiceCenter = () => {
     </motion.div>
   );
 
-  
   const renderDashboard = () => (
     <motion.div 
       initial={{ opacity: 0, y: 20 }}
@@ -542,7 +546,6 @@ const ServiceCenter = () => {
         </Card>
       </div>
 
-      
       {/* Conditional content based on mobile tab */}
       <div className={activeTab === "requests" || activeTab === "calendar" ? "block" : "hidden md:block"}>
         <Card className="shadow-md border-primary/10">
@@ -727,33 +730,24 @@ const ServiceCenter = () => {
                   req.status === 'In Progress' && 
                   req.appointment_date && 
                   new Date(req.appointment_date).toDateString() === (selectedDate?.toDateString() || '')
-                ).length > 0 ? (
-                  leads.filter(req => 
-                    req.status === 'In Progress' && 
-                    req.appointment_date && 
-                    new Date(req.appointment_date).toDateString() === (selectedDate?.toDateString() || '')
-                  ).map(appointment => (
-                    <div key={appointment.id} className="flex p-2 sm:p-3 border rounded-lg hover:bg-primary/5 transition-colors">
-                      <div className="font-medium w-20 sm:w-24 text-primary text-xs sm:text-sm">
-                        {appointment.appointment_time}
-                      </div>
-                      <div className="flex-1">
-                        <p className="font-medium text-sm sm:text-base">
-                          {appointment.service_category} - {appointment.service_type}
-                        </p>
-                        <p className="text-xs sm:text-sm text-muted-foreground">
-                          {appointment.customer_name} • {appointment.address?.split(',')[0]}
-                        </p>
-                      </div>
+                ).map(appointment => (
+                  <div key={appointment.id} className="flex p-2 sm:p-3 border rounded-lg hover:bg-primary/5 transition-colors">
+                    <div className="font-medium w-20 sm:w-24 text-primary text-xs sm:text-sm">{appointment.appointment_time}</div>
+                    <div className="flex-1">
+                      <div className="font-medium text-xs sm:text-sm">{appointment.service_type}</div>
+                      <div className="text-xs text-muted-foreground">{appointment.customer_name}</div>
                     </div>
-                  ))
-                ) : (
-                  <div className="text-center py-10 bg-muted/10 rounded-lg">
-                    <Calendar className="h-10 w-10 sm:h-12 sm:w-12 text-muted-foreground mx-auto mb-2" />
-                    <h3 className="text-base font-medium">No appointments</h3>
-                    <p className="text-xs sm:text-sm text-muted-foreground">
-                      No appointments scheduled for this date
-                    </p>
+                    <Button variant="ghost" size="sm" className="h-6 sm:h-8 px-2 text-xs">View</Button>
+                  </div>
+                ))}
+                
+                {leads.filter(req => 
+                  req.status === 'In Progress' && 
+                  req.appointment_date && 
+                  new Date(req.appointment_date).toDateString() === (selectedDate?.toDateString() || '')
+                ).length === 0 && (
+                  <div className="text-center py-6 text-muted-foreground bg-slate-50 rounded-lg border border-dashed text-xs sm:text-sm">
+                    No appointments scheduled for this day
                   </div>
                 )}
               </div>
@@ -765,113 +759,121 @@ const ServiceCenter = () => {
           <CardHeader className="bg-primary/5 p-3 sm:p-4">
             <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
               <Star className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
-              Performance
+              Performance Stats
             </CardTitle>
           </CardHeader>
-          <CardContent className="p-3 sm:p-4">
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <span className="text-sm">Overall Rating</span>
-                <div className="flex items-center gap-1">
-                  <div className="flex">
-                    {[1, 2, 3, 4, 5].map(star => (
-                      <Star key={star} className="h-4 w-4 text-yellow-500 fill-yellow-500" />
-                    ))}
-                  </div>
-                  <span className="font-medium text-sm">5.0</span>
-                </div>
+          <CardContent className="space-y-3 sm:space-y-4 p-3 sm:p-4">
+            <div className="flex justify-between items-center border-b pb-2">
+              <div className="flex items-center gap-2 text-xs sm:text-sm">
+                <Star className="h-3 w-3 sm:h-5 sm:w-5 text-yellow-500" />
+                <span>Average Rating</span>
               </div>
-              
-              <div className="flex items-center justify-between">
-                <span className="text-sm">Completed Jobs</span>
-                <span className="font-medium">{leads.filter(req => req.status === 'Completed').length}</span>
-              </div>
-              
-              <div className="flex items-center justify-between">
-                <span className="text-sm">On-time Arrival</span>
-                <span className="font-medium text-green-600">98%</span>
-              </div>
-              
-              <div className="flex items-center justify-between">
-                <span className="text-sm">Customer Satisfaction</span>
-                <span className="font-medium text-green-600">97%</span>
-              </div>
-              
-              <Separator />
-              
-              <div>
-                <h4 className="font-medium text-sm mb-2">Recent Reviews</h4>
-                {leads.filter(req => req.status === 'Completed').length > 0 ? (
-                  <div className="space-y-2">
-                    <div className="p-2 border rounded-lg">
-                      <div className="flex items-center gap-1 mb-1">
-                        {[1, 2, 3, 4, 5].map(star => (
-                          <Star key={star} className="h-3 w-3 text-yellow-500 fill-yellow-500" />
-                        ))}
-                      </div>
-                      <p className="text-xs text-muted-foreground">
-                        "Excellent service, very professional and on time. Highly recommend!"
-                      </p>
-                      <p className="text-xs font-medium mt-1">- Rahul S.</p>
-                    </div>
-                    <div className="p-2 border rounded-lg">
-                      <div className="flex items-center gap-1 mb-1">
-                        {[1, 2, 3, 4, 5].map(star => (
-                          <Star key={star} className="h-3 w-3 text-yellow-500 fill-yellow-500" />
-                        ))}
-                      </div>
-                      <p className="text-xs text-muted-foreground">
-                        "Fixed my AC in no time. Great job!"
-                      </p>
-                      <p className="text-xs font-medium mt-1">- Priya M.</p>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="text-center py-4 bg-muted/10 rounded-lg">
-                    <p className="text-xs sm:text-sm text-muted-foreground">
-                      No reviews yet
-                    </p>
-                  </div>
-                )}
-              </div>
+              <div className="font-bold text-xs sm:text-sm">4.8/5</div>
             </div>
+            <div className="flex justify-between items-center border-b pb-2">
+              <div className="flex items-center gap-2 text-xs sm:text-sm">
+                <Clock className="h-3 w-3 sm:h-5 sm:w-5 text-blue-500" />
+                <span>Response Time</span>
+              </div>
+              <div className="font-bold text-xs sm:text-sm">32 min</div>
+            </div>
+            <div className="flex justify-between items-center border-b pb-2">
+              <div className="flex items-center gap-2 text-xs sm:text-sm">
+                <Shield className="h-3 w-3 sm:h-5 sm:w-5 text-green-500" />
+                <span>Completion Rate</span>
+              </div>
+              <div className="font-bold text-xs sm:text-sm">98%</div>
+            </div>
+            <div className="flex justify-between items-center border-b pb-2">
+              <div className="flex items-center gap-2 text-xs sm:text-sm">
+                <DollarSign className="h-3 w-3 sm:h-5 sm:w-5 text-emerald-500" />
+                <span>This Month</span>
+              </div>
+              <div className="font-bold text-xs sm:text-sm">₹12,450</div>
+            </div>
+            <div className="flex justify-between items-center">
+              <div className="flex items-center gap-2 text-xs sm:text-sm">
+                <Home className="h-3 w-3 sm:h-5 sm:w-5 text-purple-500" />
+                <span>Total Services</span>
+              </div>
+              <div className="font-bold text-xs sm:text-sm">42</div>
+            </div>
+            <Button variant="default" className="w-full mt-2 sm:mt-4 text-xs sm:text-sm h-8 sm:h-9">View Full Report</Button>
           </CardContent>
         </Card>
       </div>
     </motion.div>
   );
 
-  return (
-    <div className="min-h-screen bg-background">
-      <Header />
-      <div className="container max-w-7xl mx-auto py-6">
-        {isLoading ? (
-          <div className="flex items-center justify-center h-[60vh]">
-            <RefreshCw className="h-10 w-10 animate-spin text-primary" />
-          </div>
-        ) : !isAuthenticated ? (
-          renderAuthForm()
-        ) : !isAuthorized ? (
-          <div className="max-w-2xl mx-auto py-10 text-center space-y-4">
-            <AlertTriangle className="h-16 w-16 text-amber-500 mx-auto" />
-            <h2 className="text-2xl font-bold">Service Provider Access Required</h2>
-            <p className="text-muted-foreground">
-              This area is restricted to approved service providers only. Your account doesn't have the necessary permissions.
+  const renderNotAuthorized = () => (
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      className="p-4"
+    >
+      <Card className="w-full max-w-md mx-auto shadow-lg border-primary/10">
+        <CardHeader className="pb-0">
+          <CardTitle className="text-2xl text-center">Restricted Access</CardTitle>
+          <CardDescription className="text-center">
+            The Service Center is only accessible to approved service providers
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="p-6 text-center">
+          <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6">
+            <AlertTriangle className="h-12 w-12 text-amber-500 mx-auto mb-2" />
+            <h3 className="text-lg font-medium text-amber-800">Not Authorized</h3>
+            <p className="text-sm text-amber-700 mt-1">
+              Your account doesn't have service provider access or your application is still pending approval.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center mt-6">
-              <Button variant="outline" onClick={() => navigate("/")}>
-                Return to Home
-              </Button>
-              <Button onClick={handleSignOut}>
-                Sign Out
-              </Button>
-            </div>
           </div>
-        ) : (
-          renderDashboard()
-        )}
+          
+          <div className="space-y-4">
+            <Button 
+              variant="outline" 
+              className="w-full"
+              onClick={() => navigate("/")}
+            >
+              Return to Home
+            </Button>
+            
+            <Button 
+              className="w-full"
+              onClick={() => {
+                setAuthTab("signup");
+                setIsAuthenticated(false);
+              }}
+            >
+              Apply to Become a Service Provider
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    </motion.div>
+  );
+
+  if (isLoading) {
+    return (
+      <>
+        <Header />
+        <div className="container max-w-7xl pb-6 flex items-center justify-center h-[70vh]">
+          <div className="text-center">
+            <RefreshCw className="h-12 w-12 text-primary animate-spin mx-auto mb-4" />
+            <p className="text-muted-foreground">Loading Service Center...</p>
+          </div>
+        </div>
+      </>
+    );
+  }
+
+  return (
+    <>
+      <Header />
+      <div className="container max-w-7xl pb-6">
+        {!isAuthenticated ? renderAuthForm() : 
+         !isAuthorized ? renderNotAuthorized() : renderDashboard()}
       </div>
-    </div>
+    </>
   );
 };
 
