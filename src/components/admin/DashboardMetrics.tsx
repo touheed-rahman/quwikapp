@@ -1,11 +1,10 @@
 
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { Shield, Users, ListChecks, Clock, Star, XCircle, BellRing, ArrowLeft, Wrench } from "lucide-react";
+import { Shield, Users, ListChecks, Clock, Star, XCircle, BellRing, ArrowLeft } from "lucide-react";
 import MetricCard from "./MetricCard";
 import { useAdminMetrics } from "@/hooks/useAdminMetrics";
 import { Button } from "@/components/ui/button"; 
-import { Skeleton } from "@/components/ui/skeleton";
 
 const DashboardMetrics = () => {
   const navigate = useNavigate();
@@ -13,30 +12,19 @@ const DashboardMetrics = () => {
   
   if (isLoading) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {Array.from({ length: 8 }).map((_, index) => (
-          <Skeleton key={index} className="h-32 w-full rounded-lg" />
-        ))}
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-pulse flex flex-col items-center gap-4">
+          <div className="h-12 w-12 bg-primary/20 rounded-full"></div>
+          <div className="h-4 w-32 bg-primary/20 rounded"></div>
+        </div>
       </div>
     );
   }
 
-  // Ensure metrics is defined before accessing its properties
-  const safeMetrics = metrics || {
-    totalListings: 0,
-    pendingListings: 0,
-    approvedListings: 0,
-    totalUsers: 0,
-    featuredListings: 0,
-    rejectedListings: 0,
-    featuredRequests: 0,
-    serviceLeads: 0
-  };
-
   const metricCards = [
     {
       title: "Total Listings",
-      value: safeMetrics.totalListings,
+      value: metrics?.totalListings || 0,
       icon: ListChecks,
       color: "text-blue-600",
       bgColor: "bg-blue-50",
@@ -45,7 +33,7 @@ const DashboardMetrics = () => {
     },
     {
       title: "Pending Review",
-      value: safeMetrics.pendingListings,
+      value: metrics?.pendingListings || 0,
       icon: Clock,
       color: "text-yellow-600",
       bgColor: "bg-yellow-50",
@@ -54,7 +42,7 @@ const DashboardMetrics = () => {
     },
     {
       title: "Approved Listings",
-      value: safeMetrics.approvedListings,
+      value: metrics?.approvedListings || 0,
       icon: Shield,
       color: "text-green-600",
       bgColor: "bg-green-50",
@@ -63,7 +51,7 @@ const DashboardMetrics = () => {
     },
     {
       title: "Featured Listings",
-      value: safeMetrics.featuredListings,
+      value: metrics?.featuredListings || 0,
       icon: Star,
       color: "text-purple-600",
       bgColor: "bg-purple-50",
@@ -71,17 +59,8 @@ const DashboardMetrics = () => {
       onClick: () => navigate('/admin', { state: { filter: 'featured' } })
     },
     {
-      title: "Service Now Leads",
-      value: safeMetrics.serviceLeads,
-      icon: Wrench,
-      color: "text-teal-600",
-      bgColor: "bg-teal-50",
-      hoverBgColor: "hover:bg-teal-100",
-      onClick: () => navigate('/admin', { state: { filter: 'service-leads' } })
-    },
-    {
       title: "Featured Requests",
-      value: safeMetrics.featuredRequests,
+      value: metrics?.featuredRequests || 0,
       icon: BellRing,
       color: "text-pink-600",
       bgColor: "bg-pink-50",
@@ -90,7 +69,7 @@ const DashboardMetrics = () => {
     },
     {
       title: "Rejected Listings",
-      value: safeMetrics.rejectedListings,
+      value: metrics?.rejectedListings || 0,
       icon: XCircle,
       color: "text-red-600",
       bgColor: "bg-red-50",
@@ -99,7 +78,7 @@ const DashboardMetrics = () => {
     },
     {
       title: "Total Users",
-      value: safeMetrics.totalUsers,
+      value: metrics?.totalUsers || 0,
       icon: Users,
       color: "text-indigo-600",
       bgColor: "bg-indigo-50",

@@ -3,25 +3,21 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAdminMetrics } from "@/hooks/useAdminMetrics";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
-import { Skeleton } from "@/components/ui/skeleton";
 
 const AdminAnalytics = () => {
   const { metrics, isLoading } = useAdminMetrics();
   
   if (isLoading) {
-    return <div className="space-y-4">
-      <Skeleton className="h-8 w-40 mb-4" />
-      <Skeleton className="h-[300px] w-full rounded-lg" />
-    </div>;
+    return <div>Loading analytics data...</div>;
   }
 
   // Data for the listings status chart
-  const listingStatusData = metrics ? [
-    { name: "Pending", value: metrics.pendingListings || 0, color: "#eab308" },
-    { name: "Approved", value: metrics.approvedListings || 0, color: "#22c55e" },
-    { name: "Rejected", value: metrics.rejectedListings || 0, color: "#ef4444" },
-    { name: "Featured", value: metrics.featuredListings || 0, color: "#a855f7" }
-  ] : [];
+  const listingStatusData = [
+    { name: "Pending", value: metrics?.pendingListings || 0, color: "#eab308" },
+    { name: "Approved", value: metrics?.approvedListings || 0, color: "#22c55e" },
+    { name: "Rejected", value: metrics?.rejectedListings || 0, color: "#ef4444" },
+    { name: "Featured", value: metrics?.featuredListings || 0, color: "#a855f7" }
+  ];
 
   // Colors for the pie chart
   const COLORS = ['#eab308', '#22c55e', '#ef4444', '#a855f7'];
