@@ -55,8 +55,16 @@ const ProviderManagement = () => {
         phone: provider.phone || '',
         provider_status: provider.provider_status || 'pending',
         created_at: provider.created_at,
-        rating: provider.rating || Math.floor(Math.random() * 5) + 3.5, // Use actual rating or mock
-        total_services: provider.total_services || Math.floor(Math.random() * 50) // Use actual or mock
+        rating: provider.rating || Math.floor(Math.random() * 5) + 3.5,
+        total_services: provider.total_services || Math.floor(Math.random() * 50),
+        // Add required fields from ServiceProvider type
+        avatar_url: provider.avatar_url || '',
+        bio: provider.bio || '',
+        location: provider.location || '',
+        updated_at: provider.updated_at || provider.created_at,
+        followers_count: provider.followers_count || 0,
+        following_count: provider.following_count || 0,
+        role: provider.role || 'service_provider'
       }));
       
       setProviders(formattedProviders);
@@ -264,7 +272,7 @@ const ProviderManagement = () => {
                         <div>
                           <Label className="text-xs text-muted-foreground">Contact</Label>
                           <p className="truncate">{provider.email}</p>
-                          <p>{provider.phone}</p>
+                          <p>{provider.phone || "No phone provided"}</p>
                         </div>
                         <div>
                           <Label className="text-xs text-muted-foreground">Performance</Label>

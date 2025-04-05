@@ -1,7 +1,7 @@
 
 import { supabase } from "@/integrations/supabase/client";
 
-export type ProviderRole = "service_provider" | "admin" | undefined;
+export type ServiceProviderRole = "service_provider" | "admin" | undefined;
 
 // Define an extended profile type that includes the provider fields
 interface ExtendedProfile {
@@ -25,9 +25,9 @@ interface ExtendedProfile {
 }
 
 /**
- * Service to handle authentication for service providers
+ * Service to handle authentication for service center
  */
-const ProviderAuth = {
+const ServiceCenterAuth = {
   /**
    * Check if a user is authenticated as a service provider
    */
@@ -75,7 +75,7 @@ const ProviderAuth = {
         if (!isProvider) {
           // Sign out if not a service provider
           await supabase.auth.signOut();
-          throw new Error("This account does not have provider access. If you've recently applied, please wait for approval.");
+          throw new Error("This account does not have service provider access. If you've recently applied, please wait for approval.");
         }
       }
       
@@ -173,4 +173,4 @@ const ProviderAuth = {
   }
 };
 
-export default ProviderAuth;
+export default ServiceCenterAuth;
