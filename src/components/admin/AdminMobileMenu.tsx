@@ -3,14 +3,33 @@ import { LayoutDashboard, PieChart, ListFilter, Users, Bell, Settings, Menu, X }
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
+import { useToast } from "@/hooks/use-toast";
 
 interface AdminMobileMenuProps {
   isOpen: boolean;
   currentTab: string;
   setCurrentTab: (tab: string) => void;
+  notificationCount?: number;
 }
 
-const AdminMobileMenu = ({ isOpen, currentTab, setCurrentTab }: AdminMobileMenuProps) => {
+const AdminMobileMenu = ({ 
+  isOpen, 
+  currentTab, 
+  setCurrentTab, 
+  notificationCount = 3 
+}: AdminMobileMenuProps) => {
+  const { toast } = useToast();
+
+  const handleTabChange = (tab: string) => {
+    setCurrentTab(tab);
+    
+    toast({
+      title: "Tab Changed",
+      description: `You're now viewing the ${tab} section`,
+      duration: 2000,
+    });
+  };
+  
   const menuItems = [
     {
       id: "dashboard",
@@ -40,7 +59,7 @@ const AdminMobileMenu = ({ isOpen, currentTab, setCurrentTab }: AdminMobileMenuP
       id: "notifications",
       label: "Notifications",
       icon: Bell,
-      badge: { type: "count", value: 3 }
+      badge: { type: "count", value: notificationCount }
     },
     {
       id: "settings",
@@ -65,7 +84,7 @@ const AdminMobileMenu = ({ isOpen, currentTab, setCurrentTab }: AdminMobileMenuP
                 key={item.id}
                 variant={currentTab === item.id ? "default" : "ghost"} 
                 className="w-full justify-start text-base font-medium rounded-lg h-12"
-                onClick={() => setCurrentTab(item.id)}
+                onClick={() => handleTabChange(item.id)}
               >
                 <item.icon className="w-5 h-5 mr-3" />
                 {item.label}

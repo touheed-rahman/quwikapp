@@ -6,10 +6,12 @@ import {
   ListFilter, 
   Users, 
   Settings, 
-  Bell
+  Bell,
+  ChevronRight
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
+import { Badge } from "@/components/ui/badge";
 
 interface AdminNavTabsProps {
   currentTab: string;
@@ -22,33 +24,39 @@ const AdminNavTabs = ({ currentTab, setCurrentTab, notificationCount = 0 }: Admi
     {
       id: "dashboard",
       label: "Dashboard",
-      icon: LayoutDashboard
+      icon: LayoutDashboard,
+      description: "Overview of all activities"
     },
     {
       id: "analytics",
       label: "Analytics",
-      icon: PieChart
+      icon: PieChart,
+      description: "Data insights & reports"
     },
     {
       id: "listings",
       label: "Listings",
-      icon: ListFilter
+      icon: ListFilter,
+      description: "Manage product listings"
     },
     {
       id: "users",
       label: "Users",
-      icon: Users
+      icon: Users,
+      description: "User management"
     },
     {
       id: "notifications",
       label: "Notifications",
       icon: Bell,
-      count: notificationCount
+      count: notificationCount,
+      description: "System alerts & messages"
     },
     {
       id: "settings",
       label: "Settings",
-      icon: Settings
+      icon: Settings,
+      description: "System configuration"
     }
   ];
 
@@ -60,7 +68,7 @@ const AdminNavTabs = ({ currentTab, setCurrentTab, notificationCount = 0 }: Admi
             key={tab.id}
             onClick={() => setCurrentTab(tab.id)}
             className={cn(
-              "flex items-center px-4 py-2.5 text-sm font-medium rounded-md relative whitespace-nowrap transition-all",
+              "flex items-center px-4 py-3 text-sm font-medium rounded-md relative whitespace-nowrap transition-all group",
               currentTab === tab.id
                 ? "bg-primary text-primary-foreground"
                 : "text-muted-foreground hover:text-foreground hover:bg-accent"
@@ -68,13 +76,24 @@ const AdminNavTabs = ({ currentTab, setCurrentTab, notificationCount = 0 }: Admi
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
           >
-            <tab.icon className="h-4 w-4 mr-2" />
-            {tab.label}
-            {tab.count ? (
-              <span className="ml-2 rounded-full bg-destructive w-5 h-5 flex items-center justify-center text-xs text-white">
-                {tab.count}
-              </span>
-            ) : null}
+            <div className="flex items-center">
+              <tab.icon className="h-4 w-4 mr-2 flex-shrink-0" />
+              <span>{tab.label}</span>
+              
+              {tab.count ? (
+                <span className="ml-2 rounded-full bg-destructive w-5 h-5 flex items-center justify-center text-xs text-white">
+                  {tab.count}
+                </span>
+              ) : null}
+            </div>
+            
+            {/* Tooltip that appears on hover with more description */}
+            <span className={cn(
+              "absolute -bottom-8 left-1/2 transform -translate-x-1/2 bg-foreground text-background text-xs py-1 px-2 rounded opacity-0 transition-opacity pointer-events-none whitespace-nowrap",
+              "group-hover:opacity-100"
+            )}>
+              {tab.description}
+            </span>
           </motion.button>
         ))}
       </nav>

@@ -1,7 +1,7 @@
 
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { Shield, Users, ListChecks, Clock, Star, XCircle, BellRing, ArrowLeft } from "lucide-react";
+import { Shield, Users, ListChecks, Clock, Star, XCircle, BellRing } from "lucide-react";
 import MetricCard from "./MetricCard";
 import { useAdminMetrics } from "@/hooks/useAdminMetrics";
 import { Button } from "@/components/ui/button"; 
@@ -9,6 +9,12 @@ import { Button } from "@/components/ui/button";
 const DashboardMetrics = () => {
   const navigate = useNavigate();
   const { metrics, isLoading } = useAdminMetrics();
+  
+  const handleTabChange = (tab: string) => {
+    // Dispatch custom event to change the admin tab
+    const event = new CustomEvent('adminTabChange', { detail: tab });
+    window.dispatchEvent(event);
+  };
   
   if (isLoading) {
     return (
@@ -29,7 +35,7 @@ const DashboardMetrics = () => {
       color: "text-blue-600",
       bgColor: "bg-blue-50",
       hoverBgColor: "hover:bg-blue-100",
-      onClick: () => navigate('/admin', { state: { filter: 'all' } })
+      onClick: () => handleTabChange('listings')
     },
     {
       title: "Pending Review",
@@ -83,7 +89,7 @@ const DashboardMetrics = () => {
       color: "text-indigo-600",
       bgColor: "bg-indigo-50",
       hoverBgColor: "hover:bg-indigo-100",
-      onClick: () => navigate('/admin', { state: { filter: 'users' } })
+      onClick: () => handleTabChange('users')
     }
   ];
 
