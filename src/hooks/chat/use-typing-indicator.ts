@@ -1,6 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { TypingPresence } from '@/types/database.types';
 
 export function useTypingIndicator(conversationId: string | undefined, userId: string | undefined) {
   const [isTyping, setIsTyping] = useState(false);
@@ -24,7 +25,7 @@ export function useTypingIndicator(conversationId: string | undefined, userId: s
             return presenceUserId !== userId && 
                   Array.isArray(presence) && 
                   presence.length > 0 && 
-                  presence[0].isTyping;
+                  presence[0] && (presence[0] as unknown as TypingPresence).isTyping;
           });
         
         if (typingUsers.length > 0) {

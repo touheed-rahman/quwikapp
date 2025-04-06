@@ -2,7 +2,7 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import type { ConversationDetails } from "./types/chat-detail";
 import { Badge } from "@/components/ui/badge";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { formatDistanceToNow } from "date-fns";
 import { Button } from "../ui/button";
 import { MoreVertical, Star, Flag, Ban, UserX } from "lucide-react";
@@ -70,7 +70,7 @@ const HeaderUserInfo = ({
     <div className="flex items-center flex-1 justify-between">
       <div className="flex items-center gap-2">
         <Avatar className="h-9 w-9">
-          <AvatarImage src={otherUser?.avatar_url} alt={otherUser?.full_name} />
+          <AvatarImage src={otherUser?.avatar_url || ''} alt={otherUser?.full_name || 'User'} />
           <AvatarFallback className={getAvatarColor(otherUser?.id || '')}>
             {getInitials(otherUser?.full_name || 'User')}
           </AvatarFallback>

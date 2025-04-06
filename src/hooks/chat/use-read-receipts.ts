@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Message } from '@/components/chat/types/chat-detail';
+import { ReadReceipt } from '@/types/database.types';
 
 export function useReadReceipts(
   conversationId: string | undefined, 
@@ -16,17 +17,17 @@ export function useReadReceipts(
 
     const fetchReadReceipts = async () => {
       try {
-        const { data, error } = await supabase
-          .from('read_receipts')
-          .select('*')
-          .eq('conversation_id', conversationId)
-          .neq('user_id', sessionUserId);
+        // Use RPC call to get read receipts
+        const { data, error } = await supabase.rpc('get_read_receipts_for_conversation', {
+          p_conversation_id: conversationId,
+          p_current_user_id: sessionUserId
+        });
         
         if (error) throw error;
         
         if (data && data.length > 0) {
           // Get the most recent read receipt timestamp
-          const lastReceipt = data[0];
+          const lastReceipt = data[0] as ReadReceipt;
           setLastReadTimestamp(lastReceipt.read_at);
           
           // Mark messages as read
@@ -63,7 +64,7 @@ export function useReadReceipts(
         },
         (payload) => {
           // Update read receipts when they change
-          const { new: newReceipt } = payload;
+          const newReceipt = payload.new as ReadReceipt;
           if (newReceipt && newReceipt.user_id !== sessionUserId) {
             setLastReadTimestamp(newReceipt.read_at);
             
@@ -96,16 +97,12 @@ export function useReadReceipts(
       try {
         const latestMessage = messages[messages.length - 1];
         
-        await supabase
-          .from('read_receipts')
-          .upsert({
-            conversation_id: conversationId,
-            user_id: sessionUserId,
-            read_at: new Date().toISOString(),
-            last_read_message_id: latestMessage.id
-          }, {
-            onConflict: 'conversation_id,user_id'
-          });
+        // Use RPC call to update read receipt
+        await supabase.rpc('update_read_receipt', {
+          p_conversation_id: conversationId,
+          p_user_id: sessionUserId,
+          p_message_id: latestMessage.id
+        });
       } catch (error) {
         console.error('Error updating read receipt:', error);
       }

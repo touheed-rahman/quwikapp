@@ -10,6 +10,7 @@ import { useTypingIndicator } from './chat/use-typing-indicator';
 import { useReadReceipts } from './chat/use-read-receipts';
 import { useChat as useChatContext } from '@/contexts/ChatContext';
 import { supabase } from '@/integrations/supabase/client';
+import { UserStatus } from '@/types/database.types';
 
 export function useChat(conversationId: string | undefined) {
   const { sessionUser, loading } = useSessionUser(conversationId);
@@ -58,33 +59,31 @@ export function useChat(conversationId: string | undefined) {
       : conversationDetails.buyer_id;
       
     const fetchLastOnline = async () => {
-      const { data, error } = await supabase
-        .from('user_status')
-        .select('last_online')
-        .eq('user_id', otherUserId)
-        .single();
+      try {
+        // Use RPC call to get user status
+        const { data, error } = await supabase.rpc('get_user_status', {
+          user_id: otherUserId
+        });
         
-      if (!error && data) {
-        setUserLastOnline(data.last_online);
+        if (!error && data) {
+          setUserLastOnline(data.last_online);
+        }
+      } catch (err) {
+        console.error('Error fetching user status:', err);
       }
     };
     
     fetchLastOnline();
     
-    // Subscribe to status changes
+    // Subscribe to status changes using a custom channel
     const statusChannel = supabase
-      .channel(`user_status:${otherUserId}`)
+      .channel(`user-status-${otherUserId}`)
       .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'user_status',
-          filter: `user_id=eq.${otherUserId}`
-        },
+        'broadcast',
+        { event: 'status-change' },
         (payload) => {
-          if (payload.new) {
-            setUserLastOnline(payload.new.last_online);
+          if (payload.payload) {
+            setUserLastOnline(payload.payload.last_online);
           }
         }
       )
