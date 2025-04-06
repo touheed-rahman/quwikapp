@@ -3,6 +3,7 @@ export interface Profile {
   id: string;
   full_name: string;
   avatar_url?: string;
+  online?: boolean;
 }
 
 export interface ListingDetails {
@@ -18,6 +19,7 @@ export interface Conversation {
   listing_id: string;
   last_message?: string;
   last_message_at?: string;
+  created_at?: string;
   listing: ListingDetails;
   seller: Profile;
   buyer: Profile;

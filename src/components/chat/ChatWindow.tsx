@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from "react";
 import { Card } from "@/components/ui/card";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -8,10 +7,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { ChatHeader } from "./ChatHeader";
 import { ChatFilters } from "./ChatFilters";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button"; 
 import { Search, Filter, ArrowUpDown, Loader2, UserPlus } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
 
 interface ChatWindowProps {
   isOpen: boolean;
@@ -29,7 +28,6 @@ const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
   
-  // Check authentication state
   useEffect(() => {
     const checkAuth = async () => {
       const { data: { session } } = await supabase.auth.getSession();
@@ -40,7 +38,6 @@ const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
     
     checkAuth();
 
-    // Listen for auth changes
     const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
       setIsAuthenticated(!!session);
       setUserId(session?.user?.id || null);
@@ -66,7 +63,6 @@ const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
     isAuthenticated
   );
 
-  // Set the selected conversation from the URL when the component mounts
   useEffect(() => {
     const path = location.pathname;
     if (path.startsWith('/chat/')) {
@@ -79,7 +75,6 @@ const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
     }
   }, [location.pathname]);
 
-  // Force refresh when chat window opens, filter changes, or auth state changes
   useEffect(() => {
     if (isOpen && isAuthenticated && userId) {
       console.log('Chat window opened or filter changed, refreshing conversations');
@@ -87,7 +82,6 @@ const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
     }
   }, [isOpen, filter, isAuthenticated, userId, refreshConversations]);
 
-  // Additional refresh when tab becomes visible
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible' && isAuthenticated && userId && isOpen) {
@@ -103,7 +97,6 @@ const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
     };
   }, [isAuthenticated, userId, refreshConversations, isOpen]);
 
-  // Periodic refresh every 30 seconds when window is open
   useEffect(() => {
     let interval: NodeJS.Timeout;
     
@@ -143,27 +136,29 @@ const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
     onClose();
   }, [onClose]);
 
-  // Filter and sort conversations
+  const sortConversations = (conversations: any[]) => {
+    return [...conversations].sort((a, b) => {
+      const dateA = new Date(a.last_message_at || a.created_at || Date.now()).getTime();
+      const dateB = new Date(b.last_message_at || b.created_at || Date.now()).getTime();
+      return sortOrder === 'latest' ? dateB - dateA : dateA - dateB;
+    });
+  };
+
   let filteredConversations = searchTerm.trim() 
     ? filterConversations(searchTerm)
     : conversations;
     
-  // Apply sorting
-  filteredConversations = [...filteredConversations].sort((a, b) => {
-    const dateA = new Date(a.last_message_at || a.created_at || 0).getTime();
-    const dateB = new Date(b.last_message_at || b.created_at || 0).getTime();
-    return sortOrder === 'latest' ? dateB - dateA : dateA - dateB;
-  });
+  filteredConversations = sortConversations(filteredConversations);
 
   console.log("Chat window rendering with", conversations.length, "conversations");
   console.log("Filtered to", filteredConversations.length, "conversations");
 
   if (isAuthenticated === null) {
-    return null; // Don't render anything while checking auth
+    return null;
   }
 
   if (!isAuthenticated) {
-    return null; // Don't show the chat window if not authenticated
+    return null;
   }
 
   return (
@@ -264,7 +259,5 @@ const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
     </Card>
   );
 };
-
-import { cn } from "@/lib/utils";
 
 export default ChatWindow;

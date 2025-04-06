@@ -8,7 +8,6 @@ import { ConversationDetails, Message } from "@/components/chat/types/chat-detai
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { format } from "date-fns";
-import { Loader } from "lucide-react";
 
 interface ChatMainViewProps {
   conversationDetails: ConversationDetails | null;
@@ -53,8 +52,8 @@ const ChatMainView = ({
   
   const handleQuickMessage = (message: string) => {
     setNewMessage(message);
-    // Optional: automatically send the message
-    // setTimeout(() => handleSend(), 100);
+    // Automatically send the message after selecting it
+    setTimeout(() => handleSend(), 100);
   };
   
   // Format the last online time
@@ -120,20 +119,22 @@ const ChatMainView = ({
         {isEmptyChat && isBuyer && <ChatTipBox />}
       </div>
       
-      <QuickMessageSuggestions 
-        onSendQuickMessage={handleQuickMessage} 
-        isBuyer={isBuyer}
-      />
+      <div className="mt-auto">
+        <QuickMessageSuggestions 
+          onSendQuickMessage={handleQuickMessage} 
+          isBuyer={isBuyer}
+        />
       
-      <ChatInput
-        newMessage={newMessage}
-        setNewMessage={setNewMessage}
-        handleSend={handleSend}
-        disabled={chatDisabled}
-        disabledReason={disabledReason}
-        onImageUpload={onImageUpload}
-        isTyping={isTyping}
-      />
+        <ChatInput
+          newMessage={newMessage}
+          setNewMessage={setNewMessage}
+          handleSend={handleSend}
+          disabled={chatDisabled}
+          disabledReason={disabledReason}
+          onImageUpload={onImageUpload}
+          isTyping={isTyping}
+        />
+      </div>
     </motion.div>
   );
 };
