@@ -27,8 +27,7 @@ const ChatDetail = () => {
     isTyping,
     typingUser,
     readMessages,
-    userLastOnline,
-    isSending
+    userLastOnline
   } = useChat(id);
 
   // Create a wrapper function to handle type conversion
@@ -107,7 +106,6 @@ const ChatDetail = () => {
         typingUser={typingUser}
         readMessages={readMessages}
         userLastOnline={userLastOnline}
-        isSending={isSending}
       />
     </>
   );

@@ -16,7 +16,7 @@ export function useChat(conversationId: string | undefined) {
   const { sessionUser, loading } = useSessionUser(conversationId);
   const { conversationDetails, isLoading: conversationLoading } = useConversationDetails(conversationId, sessionUser);
   const { messages, isLoading: messagesLoading } = useMessageList(conversationId, sessionUser?.id);
-  const { newMessage, setNewMessage, handleSend, handleImageUpload, isSending, sendQuickMessage } = useMessageSender(conversationId, sessionUser?.id);
+  const { newMessage, setNewMessage, handleSend, handleImageUpload } = useMessageSender(conversationId, sessionUser?.id);
   const { typing, setTypingStatus, markAsRead } = useChatContext();
   const { isTyping, typingUser } = useTypingIndicator(conversationId, sessionUser?.id);
   const { readMessages } = useReadReceipts(conversationId, sessionUser?.id, messages);
@@ -66,9 +66,7 @@ export function useChat(conversationId: string | undefined) {
         });
         
         if (!error && data) {
-          // Safely access the data with typecasting
-          const userData = data as any;
-          setUserLastOnline(userData.last_online);
+          setUserLastOnline(data.last_online);
         }
       } catch (err) {
         console.error('Error fetching user status:', err);
@@ -105,13 +103,11 @@ export function useChat(conversationId: string | undefined) {
     setNewMessage,
     handleSend,
     handleImageUpload,
-    sendQuickMessage,
     chatDisabled: isDisabled,
     disabledReason,
     isTyping,
     typingUser,
     readMessages,
-    userLastOnline,
-    isSending
+    userLastOnline
   };
 }

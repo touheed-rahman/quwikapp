@@ -25,7 +25,7 @@ export function useReadReceipts(
         
         if (error) throw error;
         
-        if (data && Array.isArray(data) && data.length > 0) {
+        if (data && data.length > 0) {
           // Get the most recent read receipt timestamp
           const lastReceipt = data[0] as ReadReceipt;
           setLastReadTimestamp(lastReceipt.read_at);

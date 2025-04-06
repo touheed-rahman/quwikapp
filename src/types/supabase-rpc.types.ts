@@ -4,17 +4,6 @@
  * These functions need to be created in Supabase SQL editor.
  */
 
-// Define the RPC function types to be recognized by TypeScript
-declare module '@supabase/supabase-js' {
-  interface SupabaseClient<Database = any> {
-    rpc<T = any>(
-      fn: 'get_read_receipts_for_conversation' | 'update_read_receipt' | 'get_user_status',
-      params?: object,
-      options?: object
-    ): { data: T; error: Error | null };
-  }
-}
-
 /**
  * Function: get_read_receipts_for_conversation
  * 
