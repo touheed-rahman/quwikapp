@@ -2,6 +2,7 @@
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { motion } from "framer-motion";
 
 interface QuickMessageSuggestionsProps {
   onSendQuickMessage: (message: string) => void;
@@ -37,23 +38,28 @@ const QuickMessageSuggestions: React.FC<QuickMessageSuggestionsProps> = ({
   const quickMessages = isBuyer ? buyerMessages : sellerMessages;
 
   return (
-    <ScrollArea className="bg-background/80 backdrop-blur-sm border-t">
-      <div className="flex overflow-x-auto py-2 px-2 max-w-full mx-auto">
-        <div className="flex gap-2 px-1 flex-nowrap min-w-full">
+    <motion.div 
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.2 }}
+      className="bg-background/95 backdrop-blur-sm border-t"
+    >
+      <ScrollArea className="py-2 px-1">
+        <div className="flex gap-2 px-2 pb-1 flex-wrap">
           {quickMessages.map((message) => (
             <Button
               key={message}
               variant="outline"
               size="sm"
-              className="whitespace-nowrap text-sm py-1.5 px-3 h-auto rounded-full bg-white hover:bg-primary/5 flex-shrink-0"
+              className="whitespace-nowrap text-sm py-1.5 px-3 h-auto rounded-full bg-white hover:bg-primary/10 hover:text-primary flex-shrink-0 transition-all"
               onClick={() => onSendQuickMessage(message)}
             >
               {message}
             </Button>
           ))}
         </div>
-      </div>
-    </ScrollArea>
+      </ScrollArea>
+    </motion.div>
   );
 };
 

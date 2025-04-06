@@ -2,7 +2,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Send, Image, X, Paperclip, Smile, Mic, MapPin } from "lucide-react";
+import { Send, Image, X, Smile, Mic, Loader2 } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Separator } from "@/components/ui/separator";
@@ -16,6 +16,7 @@ interface ChatInputProps {
   disabledReason?: string;
   onImageUpload?: (file: File) => void;
   isTyping?: boolean;
+  isSending?: boolean;
 }
 
 const ChatInput = ({ 
@@ -25,7 +26,8 @@ const ChatInput = ({
   disabled, 
   disabledReason,
   onImageUpload,
-  isTyping
+  isTyping,
+  isSending = false
 }: ChatInputProps) => {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -73,6 +75,8 @@ const ChatInput = ({
   };
 
   const handleSubmit = () => {
+    if (isSending) return;
+    
     if (selectedFile && onImageUpload) {
       onImageUpload(selectedFile);
       handleClearImage();
@@ -168,7 +172,7 @@ const ChatInput = ({
                   size="icon"
                   className="text-muted-foreground hover:text-primary transition-colors h-8 w-8"
                   onClick={() => fileInputRef.current?.click()}
-                  disabled={disabled}
+                  disabled={disabled || isSending}
                 >
                   <Image className="h-4 w-4" />
                 </Button>
@@ -186,7 +190,7 @@ const ChatInput = ({
                 variant="ghost"
                 size="icon"
                 className="text-muted-foreground hover:text-primary transition-colors h-8 w-8"
-                disabled={disabled}
+                disabled={disabled || isSending}
               >
                 <Smile className="h-4 w-4" />
               </Button>
@@ -203,13 +207,14 @@ const ChatInput = ({
           ref={inputRef}
           value={newMessage}
           onChange={(e) => setNewMessage(e.target.value)}
-          placeholder="Type a message..."
+          placeholder={isSending ? "Sending..." : "Type a message..."}
           className={cn(
             "flex-1 focus-visible:ring-primary/50 pl-16 pr-10",
-            isRecording && "bg-red-50 animate-pulse"
+            isRecording && "bg-red-50 animate-pulse",
+            isSending && "text-muted-foreground"
           )}
-          onKeyDown={(e) => e.key === "Enter" && !disabled && handleSubmit()}
-          disabled={disabled}
+          onKeyDown={(e) => e.key === "Enter" && !disabled && !isSending && handleSubmit()}
+          disabled={disabled || isSending}
         />
         
         <div className="absolute right-12">
@@ -225,7 +230,7 @@ const ChatInput = ({
                     isRecording && "text-red-500"
                   )}
                   onClick={handleMicToggle}
-                  disabled={disabled}
+                  disabled={disabled || isSending}
                 >
                   <Mic className="h-4 w-4" />
                 </Button>
@@ -239,10 +244,14 @@ const ChatInput = ({
         
         <Button 
           onClick={handleSubmit}
-          disabled={disabled || (!newMessage.trim() && !selectedFile)}
+          disabled={disabled || isSending || (!newMessage.trim() && !selectedFile)}
           className="bg-primary hover:bg-primary/90"
         >
-          <Send className="h-4 w-4" />
+          {isSending ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <Send className="h-4 w-4" />
+          )}
         </Button>
       </div>
     </div>

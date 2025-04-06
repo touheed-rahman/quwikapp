@@ -6,7 +6,7 @@ import ChatDetailHeader from "@/components/chat/ChatDetailHeader";
 import ChatTipBox from "@/components/chat/ChatTipBox";
 import { ConversationDetails, Message } from "@/components/chat/types/chat-detail";
 import { motion } from "framer-motion";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { format } from "date-fns";
 
 interface ChatMainViewProps {
@@ -27,6 +27,7 @@ interface ChatMainViewProps {
   typingUser?: string | null;
   readMessages?: Record<string, boolean>;
   userLastOnline?: string | null;
+  isSending?: boolean;
 }
 
 const ChatMainView = ({
@@ -46,15 +47,22 @@ const ChatMainView = ({
   isTyping = false,
   typingUser = null,
   readMessages = {},
-  userLastOnline = null
+  userLastOnline = null,
+  isSending = false
 }: ChatMainViewProps) => {
   const [lastSeenText, setLastSeenText] = useState<string | null>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
   
   const handleQuickMessage = (message: string) => {
     setNewMessage(message);
     // Automatically send the message after selecting it
-    setTimeout(() => handleSend(), 100);
+    setTimeout(() => handleSend(), 50);
   };
+  
+  // Scroll to bottom when messages change
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
   
   // Format the last online time
   useEffect(() => {
@@ -117,6 +125,7 @@ const ChatMainView = ({
         )}
         
         {isEmptyChat && isBuyer && <ChatTipBox />}
+        <div ref={messagesEndRef} />
       </div>
       
       <div className="mt-auto">
@@ -129,10 +138,11 @@ const ChatMainView = ({
           newMessage={newMessage}
           setNewMessage={setNewMessage}
           handleSend={handleSend}
-          disabled={chatDisabled}
+          disabled={chatDisabled || isSending}
           disabledReason={disabledReason}
           onImageUpload={onImageUpload}
           isTyping={isTyping}
+          isSending={isSending}
         />
       </div>
     </motion.div>
