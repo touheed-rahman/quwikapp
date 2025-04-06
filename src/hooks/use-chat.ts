@@ -66,7 +66,9 @@ export function useChat(conversationId: string | undefined) {
         });
         
         if (!error && data) {
-          setUserLastOnline(data.last_online);
+          // Safely access the data with typecasting
+          const userData = data as any;
+          setUserLastOnline(userData.last_online);
         }
       } catch (err) {
         console.error('Error fetching user status:', err);

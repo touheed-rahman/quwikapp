@@ -2,7 +2,6 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import type { ConversationDetails } from "./types/chat-detail";
 import { Badge } from "@/components/ui/badge";
-import { useEffect, useState } from "react";
 import { formatDistanceToNow } from "date-fns";
 import { Button } from "../ui/button";
 import { MoreVertical, Star, Flag, Ban, UserX } from "lucide-react";
@@ -132,5 +131,7 @@ const HeaderUserInfo = ({
     </div>
   );
 };
+
+import { useState } from "react";
 
 export default HeaderUserInfo;

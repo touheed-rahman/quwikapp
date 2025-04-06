@@ -16,6 +16,12 @@ export interface Listing {
   deleted_at?: string | null;
 }
 
+export interface UserProfile {
+  id: string;
+  full_name: string;
+  avatar_url?: string;
+}
+
 export interface ConversationDetails {
   id: string;
   buyer_id: string;
@@ -26,13 +32,7 @@ export interface ConversationDetails {
   last_message_at?: string;
   deleted?: boolean;
   deleted_by?: string | null;
-  seller?: {
-    id: string;
-    full_name: string;
-  };
-  buyer?: {
-    id: string;
-    full_name: string;
-  };
+  seller?: UserProfile;
+  buyer?: UserProfile;
   listing?: Listing;
 }
