@@ -6,6 +6,7 @@ import { useImageUpload } from "@/hooks/use-image-upload";
 import ChatMainView from "@/components/chat/ChatMainView";
 import ChatSignInPrompt from "@/components/chat/ChatSignInPrompt";
 import ChatLoadingState from "@/components/chat/ChatLoadingState";
+import { Helmet } from "react-helmet";
 
 const ChatDetail = () => {
   const { id } = useParams();
@@ -22,7 +23,11 @@ const ChatDetail = () => {
     handleSend,
     chatDisabled,
     disabledReason,
-    handleImageUpload: handleImageUrlUpload
+    handleImageUpload: handleImageUrlUpload,
+    isTyping,
+    typingUser,
+    readMessages,
+    userLastOnline
   } = useChat(id);
 
   // Create a wrapper function to handle type conversion
@@ -39,6 +44,17 @@ const ChatDetail = () => {
 
   const handleBack = () => {
     navigate('/');
+  };
+
+  // Page title based on conversation details
+  const getPageTitle = () => {
+    if (!conversationDetails) return "Chat";
+    
+    const otherUser = sessionUser?.id === conversationDetails.buyer_id 
+      ? conversationDetails.seller?.full_name 
+      : conversationDetails.buyer?.full_name;
+      
+    return `Chat with ${otherUser || "User"}`;
   };
 
   // Show sign-in prompt if user is not logged in
@@ -67,21 +83,31 @@ const ChatDetail = () => {
   const isEmptyChat = messages.length === 0;
 
   return (
-    <ChatMainView
-      conversationDetails={conversationDetails}
-      messages={messages}
-      newMessage={newMessage}
-      setNewMessage={setNewMessage}
-      handleSend={handleSend}
-      isOtherUserOnline={isOtherUserOnline}
-      sessionUserId={sessionUser.id}
-      isBuyer={isBuyer || false}
-      chatDisabled={chatDisabled}
-      disabledReason={disabledReason}
-      onBack={handleBack}
-      onImageUpload={handleImageUpload}
-      isEmptyChat={isEmptyChat}
-    />
+    <>
+      <Helmet>
+        <title>{getPageTitle()}</title>
+      </Helmet>
+      
+      <ChatMainView
+        conversationDetails={conversationDetails}
+        messages={messages}
+        newMessage={newMessage}
+        setNewMessage={setNewMessage}
+        handleSend={handleSend}
+        isOtherUserOnline={isOtherUserOnline}
+        sessionUserId={sessionUser.id}
+        isBuyer={isBuyer || false}
+        chatDisabled={chatDisabled}
+        disabledReason={disabledReason}
+        onBack={handleBack}
+        onImageUpload={handleImageUpload}
+        isEmptyChat={isEmptyChat}
+        isTyping={isTyping}
+        typingUser={typingUser}
+        readMessages={readMessages}
+        userLastOnline={userLastOnline}
+      />
+    </>
   );
 };
 

@@ -8,6 +8,7 @@ interface ChatDetailHeaderProps {
   conversationDetails: ConversationDetails | null;
   onBack: () => void;
   isOnline?: boolean;
+  lastSeen?: string | null;
   sessionUserId?: string | null;
 }
 
@@ -15,6 +16,7 @@ const ChatDetailHeader = ({
   conversationDetails, 
   onBack,
   isOnline = false,
+  lastSeen = null,
   sessionUserId
 }: ChatDetailHeaderProps) => {
   // If we don't have conversation details, show a minimal header
@@ -37,7 +39,8 @@ const ChatDetailHeader = ({
       
       <HeaderUserInfo 
         conversationDetails={conversationDetails} 
-        isOnline={isOnline} 
+        isOnline={isOnline}
+        lastSeen={lastSeen}
         sessionUserId={sessionUserId} 
       />
     </header>
