@@ -47,8 +47,32 @@ export function useMessageSender(conversationId: string | undefined, userId: str
   };
 
   const sendQuickMessage = async (message: string) => {
-    setNewMessage(message);
-    await handleSend();
+    if (isSending) return;
+    
+    try {
+      setIsSending(true);
+      setNewMessage(message);
+      
+      console.log("Sending quick message:", message);
+      const success = await sendTextMessage(message);
+      
+      if (!success) {
+        toast({
+          title: "Failed to send",
+          description: "Your quick message couldn't be sent. Please try again.",
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
+      console.error("Error sending quick message:", error);
+      toast({
+        title: "Error",
+        description: "There was a problem sending your quick message",
+        variant: "destructive"
+      });
+    } finally {
+      setIsSending(false);
+    }
   };
 
   const handleImageUpload = async (imageUrl: string) => {
