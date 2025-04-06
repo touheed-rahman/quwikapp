@@ -11,8 +11,6 @@ import { Button } from "@/components/ui/button";
 import { RefreshCw, Download, Upload, PlusCircle, ArrowLeft } from "lucide-react";
 import { motion } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Card } from "@/components/ui/card";
 
 const ListingManagement = () => {
   const location = useLocation();
@@ -54,109 +52,65 @@ const ListingManagement = () => {
         animate={{ opacity: 1, y: 0 }}
         className="flex items-center gap-2 mb-4"
       >
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={handleBackToDashboard}
-                className="flex items-center gap-1 text-primary h-8 bg-primary/5 hover:bg-primary/10 border-primary/20"
-                aria-label="Back to Dashboard"
-              >
-                <ArrowLeft className="h-4 w-4" />
-                <span>Back to Dashboard</span>
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Return to the main dashboard view</p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
+        <Button 
+          variant="outline" 
+          size="sm" 
+          onClick={handleBackToDashboard}
+          className="flex items-center gap-1 text-primary h-8 bg-primary/5 hover:bg-primary/10 border-primary/20"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          <span>Back to Dashboard</span>
+        </Button>
       </motion.div>
     
       <ListingTabs currentFilter={filter} />
       
       <motion.div 
-        className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
+        className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-white p-4 rounded-lg shadow-sm border border-gray-100"
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3, delay: 0.1 }}
       >
-        <Card className="w-full p-4 border border-gray-100 shadow-sm">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 w-full">
-            <ListingSearchBar 
-              searchTerm={searchTerm}
-              onSearchChange={setSearchTerm}
-            />
-            
-            <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      className="flex items-center gap-1 w-full sm:w-auto bg-primary/5 text-primary hover:bg-primary/10 border-primary/20"
-                      onClick={() => {
-                        refetch();
-                        toast({
-                          title: "Refreshed",
-                          description: "Listing data has been refreshed",
-                        });
-                      }}
-                      aria-label="Refresh listings data"
-                    >
-                      <RefreshCw className="h-4 w-4" />
-                      <span>Refresh</span>
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Refresh listing data</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-              
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      className="flex items-center gap-1 w-full sm:w-auto bg-green-50 text-green-600 hover:bg-green-100 border-green-200"
-                      aria-label="Add new listing"
-                    >
-                      <PlusCircle className="h-4 w-4" />
-                      <span>Add New</span>
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Create a new listing</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-              
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      className="flex items-center gap-1 w-full sm:w-auto"
-                      aria-label="Export listings data"
-                    >
-                      <Download className="h-4 w-4" />
-                      <span>Export</span>
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Export listings to CSV</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            </div>
-          </div>
-        </Card>
+        <ListingSearchBar 
+          searchTerm={searchTerm}
+          onSearchChange={setSearchTerm}
+        />
+        
+        <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="flex items-center gap-1 w-full sm:w-auto bg-primary/5 text-primary hover:bg-primary/10 border-primary/20"
+            onClick={() => {
+              refetch();
+              toast({
+                title: "Refreshed",
+                description: "Listing data has been refreshed",
+              });
+            }}
+          >
+            <RefreshCw className="h-4 w-4" />
+            <span>Refresh</span>
+          </Button>
+          
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="flex items-center gap-1 w-full sm:w-auto bg-green-50 text-green-600 hover:bg-green-100 border-green-200"
+          >
+            <PlusCircle className="h-4 w-4" />
+            <span>Add New</span>
+          </Button>
+          
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="flex items-center gap-1 w-full sm:w-auto"
+          >
+            <Download className="h-4 w-4" />
+            <span>Export</span>
+          </Button>
+        </div>
       </motion.div>
 
       {isLoading ? (
@@ -169,14 +123,12 @@ const ListingManagement = () => {
           animate={{ opacity: 1 }}
           transition={{ duration: 0.3, delay: 0.2 }}
         >
-          <Card className="border border-gray-100 shadow-sm overflow-hidden">
-            <ListingTable 
-              listings={filteredListings || []}
-              onStatusUpdate={handleStatusUpdate}
-              onFeaturedToggle={handleFeaturedToggle}
-              onDelete={handleDelete}
-            />
-          </Card>
+          <ListingTable 
+            listings={filteredListings || []}
+            onStatusUpdate={handleStatusUpdate}
+            onFeaturedToggle={handleFeaturedToggle}
+            onDelete={handleDelete}
+          />
         </motion.div>
       )}
     </div>

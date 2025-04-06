@@ -35,7 +35,6 @@ const DashboardMetrics = () => {
       color: "text-blue-600",
       bgColor: "bg-blue-50",
       hoverBgColor: "hover:bg-blue-100",
-      description: "View all listings across all categories",
       onClick: () => handleTabChange('listings')
     },
     {
@@ -45,8 +44,7 @@ const DashboardMetrics = () => {
       color: "text-yellow-600",
       bgColor: "bg-yellow-50",
       hoverBgColor: "hover:bg-yellow-100",
-      description: "Listings awaiting moderator approval",
-      onClick: () => navigate('/admin', { state: { filter: 'pending', tab: 'listings' } })
+      onClick: () => navigate('/admin', { state: { filter: 'pending' } })
     },
     {
       title: "Approved Listings",
@@ -55,8 +53,7 @@ const DashboardMetrics = () => {
       color: "text-green-600",
       bgColor: "bg-green-50",
       hoverBgColor: "hover:bg-green-100",
-      description: "Listings that have been approved",
-      onClick: () => navigate('/admin', { state: { filter: 'approved', tab: 'listings' } })
+      onClick: () => navigate('/admin', { state: { filter: 'approved' } })
     },
     {
       title: "Featured Listings",
@@ -65,8 +62,7 @@ const DashboardMetrics = () => {
       color: "text-purple-600",
       bgColor: "bg-purple-50",
       hoverBgColor: "hover:bg-purple-100",
-      description: "Premium listings with enhanced visibility",
-      onClick: () => navigate('/admin', { state: { filter: 'featured', tab: 'listings' } })
+      onClick: () => navigate('/admin', { state: { filter: 'featured' } })
     },
     {
       title: "Featured Requests",
@@ -75,8 +71,7 @@ const DashboardMetrics = () => {
       color: "text-pink-600",
       bgColor: "bg-pink-50",
       hoverBgColor: "hover:bg-pink-100",
-      description: "Requests to feature listings from users",
-      onClick: () => navigate('/admin', { state: { filter: 'feature-requests', tab: 'listings' } })
+      onClick: () => navigate('/admin', { state: { filter: 'feature-requests' } })
     },
     {
       title: "Rejected Listings",
@@ -85,8 +80,7 @@ const DashboardMetrics = () => {
       color: "text-red-600",
       bgColor: "bg-red-50",
       hoverBgColor: "hover:bg-red-100",
-      description: "Listings that didn't meet guidelines",
-      onClick: () => navigate('/admin', { state: { filter: 'rejected', tab: 'listings' } })
+      onClick: () => navigate('/admin', { state: { filter: 'rejected' } })
     },
     {
       title: "Total Users",
@@ -95,7 +89,6 @@ const DashboardMetrics = () => {
       color: "text-indigo-600",
       bgColor: "bg-indigo-50",
       hoverBgColor: "hover:bg-indigo-100",
-      description: "Manage all registered users",
       onClick: () => handleTabChange('users')
     }
   ];
@@ -116,7 +109,6 @@ const DashboardMetrics = () => {
           color={card.color}
           bgColor={card.bgColor}
           hoverBgColor={card.hoverBgColor}
-          description={card.description}
           onClick={card.onClick}
           index={index}
         />

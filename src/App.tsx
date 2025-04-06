@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -6,7 +7,6 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { supabase } from "./integrations/supabase/client";
 import { LocationProvider } from "./contexts/LocationContext";
-import { ChatProvider } from "./contexts/ChatContext";
 import ScrollToTop from "./components/utils/ScrollToTop";
 import ErrorBoundary from "./components/utils/ErrorBoundary";
 import Index from "./pages/Index";
@@ -75,75 +75,73 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <LocationProvider>
-        <ChatProvider>
-          <BrowserRouter>
-            <ErrorBoundary>
-              <ScrollToTop />
-              <Toaster />
-              <Sonner />
-              <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/category/:categoryId" element={<CategorySubcategories />} />
-                <Route path="/category/:category/:subcategory" element={<Subcategory />} />
-                <Route path="/fresh-recommendations" element={<FreshRecommendations />} />
-                <Route path="/recent-listings/:category" element={<RecentSubcategoryListings />} />
-                <Route path="/seller/:id" element={<SellerProfile />} />
-                <Route
-                  path="/sell"
-                  element={
-                    <PrivateRoute>
-                      <Sell />
-                    </PrivateRoute>
-                  }
-                />
-                <Route path="/product/:id" element={<Product />} />
-                <Route path="/categories" element={<Categories />} />
-                <Route
-                  path="/chat/:id"
-                  element={
-                    <PrivateRoute>
-                      <ChatDetail />
-                    </PrivateRoute>
-                  }
-                />
-                <Route path="/profile" element={<Profile />} />
-                <Route path="/admin/login" element={<AdminLogin />} />
-                <Route
-                  path="/admin"
-                  element={
-                    <PrivateRoute>
-                      <AdminPanel />
-                    </PrivateRoute>
-                  }
-                />
-                <Route
-                  path="/my-ads"
-                  element={
-                    <PrivateRoute>
-                      <MyAds />
-                    </PrivateRoute>
-                  }
-                />
-                <Route
-                  path="/my-orders"
-                  element={
-                    <PrivateRoute>
-                      <MyOrders />
-                    </PrivateRoute>
-                  }
-                />
-                <Route
-                  path="/wishlist"
-                  element={
-                    <PrivateRoute>
-                      <Wishlist />
-                    </PrivateRoute>
-                  }
-                />
-              </Routes>
-            </ErrorBoundary>
-          </BrowserRouter>
-        </ChatProvider>
+        <BrowserRouter>
+          <ErrorBoundary>
+            <ScrollToTop />
+            <Toaster />
+            <Sonner />
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/category/:categoryId" element={<CategorySubcategories />} />
+              <Route path="/category/:category/:subcategory" element={<Subcategory />} />
+              <Route path="/fresh-recommendations" element={<FreshRecommendations />} />
+              <Route path="/recent-listings/:category" element={<RecentSubcategoryListings />} />
+              <Route path="/seller/:id" element={<SellerProfile />} />
+              <Route
+                path="/sell"
+                element={
+                  <PrivateRoute>
+                    <Sell />
+                  </PrivateRoute>
+                }
+              />
+              <Route path="/product/:id" element={<Product />} />
+              <Route path="/categories" element={<Categories />} />
+              <Route
+                path="/chat/:id"
+                element={
+                  <PrivateRoute>
+                    <ChatDetail />
+                  </PrivateRoute>
+                }
+              />
+              <Route path="/profile" element={<Profile />} />
+              <Route path="/admin/login" element={<AdminLogin />} />
+              <Route
+                path="/admin"
+                element={
+                  <PrivateRoute>
+                    <AdminPanel />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/my-ads"
+                element={
+                  <PrivateRoute>
+                    <MyAds />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/my-orders"
+                element={
+                  <PrivateRoute>
+                    <MyOrders />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/wishlist"
+                element={
+                  <PrivateRoute>
+                    <Wishlist />
+                  </PrivateRoute>
+                }
+              />
+            </Routes>
+          </ErrorBoundary>
+        </BrowserRouter>
       </LocationProvider>
     </TooltipProvider>
   </QueryClientProvider>
