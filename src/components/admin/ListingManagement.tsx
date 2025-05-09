@@ -10,12 +10,10 @@ import { useAdminListings } from "@/hooks/useAdminListings";
 import { Button } from "@/components/ui/button";
 import { RefreshCw, Download, Upload, PlusCircle, ArrowLeft } from "lucide-react";
 import { motion } from "framer-motion";
-import { useToast } from "@/hooks/use-toast";
 
 const ListingManagement = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { toast } = useToast();
   const filter = location.state?.filter || 'all';
   const {
     filteredListings,
@@ -33,12 +31,6 @@ const ListingManagement = () => {
     // Navigate back to dashboard tab
     const event = new CustomEvent('adminTabChange', { detail: 'dashboard' });
     window.dispatchEvent(event);
-    
-    // Show confirmation toast
-    toast({
-      title: "Returned to Dashboard",
-      description: "You're now viewing the dashboard overview",
-    });
   };
 
   if (error) {
@@ -53,10 +45,10 @@ const ListingManagement = () => {
         className="flex items-center gap-2 mb-4"
       >
         <Button 
-          variant="outline" 
+          variant="ghost" 
           size="sm" 
           onClick={handleBackToDashboard}
-          className="flex items-center gap-1 text-primary h-8 bg-primary/5 hover:bg-primary/10 border-primary/20"
+          className="flex items-center gap-1 text-primary h-8"
         >
           <ArrowLeft className="h-4 w-4" />
           <span>Back to Dashboard</span>
@@ -81,13 +73,7 @@ const ListingManagement = () => {
             variant="outline" 
             size="sm" 
             className="flex items-center gap-1 w-full sm:w-auto bg-primary/5 text-primary hover:bg-primary/10 border-primary/20"
-            onClick={() => {
-              refetch();
-              toast({
-                title: "Refreshed",
-                description: "Listing data has been refreshed",
-              });
-            }}
+            onClick={() => refetch()}
           >
             <RefreshCw className="h-4 w-4" />
             <span>Refresh</span>

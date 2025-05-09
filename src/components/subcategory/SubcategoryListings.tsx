@@ -55,9 +55,9 @@ const SubcategoryListings = ({
         }
 
         if (selectedLocation) {
-          const cityName = selectedLocation.split('|')[0];
-          if (cityName) {
-            query = query.ilike('location', `%${cityName}%`);
+          const placeId = selectedLocation.split('|')[1];
+          if (placeId) {
+            query = query.eq('location', selectedLocation);
           }
         }
 

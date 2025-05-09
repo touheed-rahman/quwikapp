@@ -1,68 +1,37 @@
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import { MapPin, Loader2, ChevronRight, ArrowLeft } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Command, CommandEmpty, CommandList } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Location, State, City, Country } from './location/types';
+import { Location, State, City } from './location/types';
 import { useToast } from './ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 
 const LocationSelector = ({ value, onChange }: { value: string | null, onChange: (value: string | null) => void }) => {
   const [open, setOpen] = useState(false);
-  const [countries, setCountries] = useState<Country[]>([]);
   const [states, setStates] = useState<State[]>([]);
   const [cities, setCities] = useState<City[]>([]);
-  const [selectedCountry, setSelectedCountry] = useState<Country | null>(null);
   const [selectedState, setSelectedState] = useState<State | null>(null);
   const [loading, setLoading] = useState(false);
-  const [level, setLevel] = useState<'country' | 'state' | 'city'>('country');
   const { toast } = useToast();
 
   const getLocationName = useCallback((locationString: string) => {
     if (!locationString) return '';
-    const parts = locationString.split('|');
-    if (parts.length >= 3) {
-      return `${parts[0]}, ${parts[1]}, ${parts[2]}`;
-    }
-    return locationString;
+    const [city, state] = locationString.split('|');
+    return `${city}, ${state}`;
   }, []);
 
-  const loadCountries = useCallback(async () => {
+  const loadStates = useCallback(async () => {
     setLoading(true);
     try {
-      const { data: countriesData, error } = await supabase
-        .from('countries')
-        .select('*')
-        .order('name');
-
-      if (error) throw error;
-      setCountries(countriesData || []);
-      setLevel('country');
-    } catch (error) {
-      console.error('Error loading countries:', error);
-      toast({
-        title: "Error",
-        description: "Could not load countries. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  }, [toast]);
-
-  const loadStates = useCallback(async (countryId: string) => {
-    setLoading(true);
-    try {
-      const { data: statesData, error } = await supabase
+      const { data: states, error } = await supabase
         .from('states')
         .select('*')
-        .eq('country_id', countryId)
         .order('name');
 
       if (error) throw error;
-      setStates(statesData || []);
-      setLevel('state');
+      setStates(states || []);
     } catch (error) {
       console.error('Error loading states:', error);
       toast({
@@ -78,7 +47,7 @@ const LocationSelector = ({ value, onChange }: { value: string | null, onChange:
   const loadCities = useCallback(async (stateId: string) => {
     setLoading(true);
     try {
-      const { data: citiesData, error } = await supabase
+      const { data: cities, error } = await supabase
         .from('cities')
         .select('*')
         .eq('state_id', stateId)
@@ -86,13 +55,12 @@ const LocationSelector = ({ value, onChange }: { value: string | null, onChange:
 
       if (error) throw error;
 
-      // Filter out duplicates (like Bangalore if Bengaluru exists)
-      const filteredCities = citiesData?.filter(city => 
-        city.name !== 'Bangalore' || !citiesData.some(c => c.name === 'Bengaluru')
+      // Filter out Bangalore if Bengaluru exists
+      const filteredCities = cities?.filter(city => 
+        city.name !== 'Bangalore' || !cities.some(c => c.name === 'Bengaluru')
       ) || [];
 
       setCities(filteredCities);
-      setLevel('city');
     } catch (error) {
       console.error('Error loading cities:', error);
       toast({
@@ -105,38 +73,26 @@ const LocationSelector = ({ value, onChange }: { value: string | null, onChange:
     }
   }, [toast]);
 
-  const handleCountrySelect = useCallback(async (country: Country) => {
-    setSelectedCountry(country);
-    await loadStates(country.id);
-  }, [loadStates]);
-
   const handleStateSelect = useCallback(async (state: State) => {
     setSelectedState(state);
     await loadCities(state.id);
   }, [loadCities]);
 
   const handleCitySelect = useCallback((city: City) => {
-    if (!selectedState || !selectedCountry) return;
+    if (!selectedState) return;
     
-    const locationString = `${city.name}|${selectedState.name}|${selectedCountry.name}|${city.latitude}|${city.longitude}|${city.id}|${selectedState.id}|${selectedCountry.id}`;
+    const locationString = `${city.name}|${selectedState.name}|${city.latitude}|${city.longitude}|${city.id}`;
     onChange(locationString);
     setOpen(false);
-    resetSelections();
-  }, [selectedState, selectedCountry, onChange]);
-
-  const resetSelections = () => {
     setCities([]);
-    setStates([]);
     setSelectedState(null);
-    setSelectedCountry(null);
-    setLevel('country');
-  };
+  }, [selectedState, onChange]);
 
   return (
     <Popover open={open} onOpenChange={(isOpen) => {
       setOpen(isOpen);
       if (isOpen) {
-        loadCountries();
+        loadStates();
       }
     }}>
       <PopoverTrigger asChild>
@@ -165,7 +121,7 @@ const LocationSelector = ({ value, onChange }: { value: string | null, onChange:
                   Loading...
                 </p>
               </CommandEmpty>
-            ) : level === 'city' ? (
+            ) : selectedState ? (
               <>
                 <div className="p-2">
                   <Button
@@ -174,14 +130,11 @@ const LocationSelector = ({ value, onChange }: { value: string | null, onChange:
                     onClick={() => {
                       setSelectedState(null);
                       setCities([]);
-                      setLevel('state');
-                      if (selectedCountry) {
-                        loadStates(selectedCountry.id);
-                      }
+                      loadStates();
                     }}
                   >
                     <ArrowLeft className="mr-2 h-4 w-4" />
-                    Back to States in {selectedCountry?.name}
+                    Back to States
                   </Button>
                 </div>
                 <div className="py-2">
@@ -196,48 +149,15 @@ const LocationSelector = ({ value, onChange }: { value: string | null, onChange:
                   ))}
                 </div>
               </>
-            ) : level === 'state' ? (
-              <>
-                <div className="p-2">
-                  <Button
-                    variant="ghost"
-                    className="w-full justify-start font-normal hover:bg-primary hover:text-white"
-                    onClick={() => {
-                      setSelectedCountry(null);
-                      setStates([]);
-                      setLevel('country');
-                      loadCountries();
-                    }}
-                  >
-                    <ArrowLeft className="mr-2 h-4 w-4" />
-                    Back to Countries
-                  </Button>
-                </div>
-                <div className="py-2">
-                  {states.map((state) => (
-                    <div
-                      key={state.id}
-                      className="px-2 py-1.5 cursor-pointer hover:bg-primary hover:text-white flex items-center justify-between"
-                      onClick={() => handleStateSelect(state)}
-                    >
-                      <span>{state.name}</span>
-                      <ChevronRight className="h-4 w-4" />
-                    </div>
-                  ))}
-                </div>
-              </>
             ) : (
               <div className="py-2">
-                {countries.map((country) => (
+                {states.map((state) => (
                   <div
-                    key={country.id}
+                    key={state.id}
                     className="px-2 py-1.5 cursor-pointer hover:bg-primary hover:text-white flex items-center justify-between"
-                    onClick={() => handleCountrySelect(country)}
+                    onClick={() => handleStateSelect(state)}
                   >
-                    <div className="flex items-center gap-2">
-                      <span>{country.name}</span>
-                      <span className="text-xs text-muted-foreground">{country.code}</span>
-                    </div>
+                    <span>{state.name}</span>
                     <ChevronRight className="h-4 w-4" />
                   </div>
                 ))}

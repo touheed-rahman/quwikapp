@@ -1,5 +1,5 @@
 
-import { Heart, Share2, MapPin, Calendar, Copy, Eye, ShoppingCart } from "lucide-react";
+import { Heart, Share2, MapPin, Calendar, Copy, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
@@ -7,9 +7,6 @@ import { ProductCondition } from "@/types/categories";
 import { useToast } from "@/components/ui/use-toast";
 import { useState } from "react";
 import ProductSpecsCard from "./ProductSpecsCard";
-import { useCart } from "@/contexts/CartContext";
-import { supabase } from "@/integrations/supabase/client";
-import { useNavigate } from "react-router-dom";
 
 interface ProductInfoProps {
   title: string;
@@ -24,8 +21,6 @@ interface ProductInfoProps {
   viewCount?: number;
   brand?: string | null;
   specs?: Record<string, any> | null;
-  images?: string[];
-  userId?: string;
 }
 
 const ProductInfo = ({
@@ -40,15 +35,10 @@ const ProductInfo = ({
   id,
   viewCount = 0,
   brand,
-  specs,
-  images = [],
-  userId
+  specs
 }: ProductInfoProps) => {
   const { toast } = useToast();
-  const navigate = useNavigate();
-  const { addToCart } = useCart();
   const [copying, setCopying] = useState(false);
-  const [addingToCart, setAddingToCart] = useState(false);
   
   // Extract just the area name
   const displayLocation = location?.split(/[|,]/)[0].trim() || 'Location not specified';
@@ -89,64 +79,6 @@ const ProductInfo = ({
         });
         setCopying(false);
       });
-  };
-
-  const handleAddToCart = async () => {
-    try {
-      setAddingToCart(true);
-      
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      if (!user) {
-        toast({
-          title: "Authentication required",
-          description: "Please sign in to add items to cart",
-          variant: "destructive",
-        });
-        navigate('/profile');
-        return;
-      }
-      
-      if (user.id === userId) {
-        toast({
-          title: "Cannot purchase your own item",
-          description: "You cannot purchase your own listing",
-          variant: "destructive",
-        });
-        return;
-      }
-      
-      await addToCart({
-        listingId: id || '',
-        title,
-        price,
-        image: images[0] || '',
-        quantity: 1,
-        userId: user.id,
-        sellerId: userId || ''
-      });
-      
-      toast({
-        title: "Added to cart",
-        description: "Item added to your cart",
-      });
-      
-    } catch (error) {
-      console.error('Error adding to cart:', error);
-      toast({
-        title: "Error",
-        description: "Failed to add item to cart",
-        variant: "destructive",
-      });
-    } finally {
-      setAddingToCart(false);
-    }
-  };
-
-  // Handle "Buy Now" click
-  const handleBuyNow = async () => {
-    await handleAddToCart();
-    navigate('/cart');
   };
 
   return (
@@ -217,31 +149,6 @@ const ProductInfo = ({
             {brand}
           </Badge>
         )}
-      </div>
-
-      <div className="flex flex-col sm:flex-row gap-3">
-        <Button 
-          className="w-full"
-          onClick={handleBuyNow}
-          disabled={addingToCart}
-        >
-          Buy Now
-        </Button>
-        <Button 
-          variant="outline" 
-          className="w-full flex items-center gap-2"
-          onClick={handleAddToCart}
-          disabled={addingToCart}
-        >
-          <ShoppingCart className="h-4 w-4" />
-          {addingToCart ? 'Adding...' : 'Add to Cart'}
-        </Button>
-      </div>
-      
-      <div className="bg-muted/40 p-4 rounded-md border border-muted-foreground/10">
-        <p className="text-xs text-muted-foreground">
-          <strong>Note:</strong> This platform charges a 10% commission fee on all sales. The seller receives 90% of the listed price. All items are verified by our team before being dispatched.
-        </p>
       </div>
 
       {/* Product Specifications Card */}

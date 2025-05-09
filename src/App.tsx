@@ -1,76 +1,150 @@
+import { Toaster } from "@/components/ui/toaster";
+import { Toaster as Sonner } from "@/components/ui/sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { supabase } from "./integrations/supabase/client";
+import { LocationProvider } from "./contexts/LocationContext";
+import ScrollToTop from "./components/utils/ScrollToTop";
+import ErrorBoundary from "./components/utils/ErrorBoundary";
+import Index from "./pages/Index";
+import Sell from "./pages/Sell";
+import Product from "./pages/Product";
+import Categories from "./pages/Categories";
+import ChatDetail from "./pages/ChatDetail";
+import Profile from "./pages/Profile";
+import AdminPanel from "./pages/Admin";
+import MyAds from "./pages/MyAds";
+import Wishlist from "./pages/Wishlist";
+import Subcategory from "./pages/Subcategory";
+import AdminLogin from "./pages/AdminLogin";
+import FreshRecommendations from "./pages/FreshRecommendations";
+import RecentSubcategoryListings from "./pages/RecentSubcategoryListings";
+import React from 'react';
+import CategorySubcategories from "./pages/CategorySubcategories";
+import SellerProfile from "./pages/SellerProfile";
+import MyOrders from "./pages/MyOrders";
+import ServiceDetail from "./pages/ServiceDetail";
 
-import { useState, useEffect } from 'react'
-import { Routes, Route, BrowserRouter, Navigate } from 'react-router-dom'
-import { ThemeProvider } from "./components/ui/theme-provider"
-import { useTheme } from "next-themes"
-import { Toaster } from "@/components/ui/toaster"
-import Index from './pages/Index'
-import CategorySubcategories from './pages/CategorySubcategories'
-import Subcategory from './pages/Subcategory'
-import Sell from './pages/Sell'
-import Product from './pages/Product'
-import Profile from './pages/Profile'
-import MyAds from './pages/MyAds'
-import Notifications from './pages/Notifications'
-import Wishlist from './pages/Wishlist'
-import ChatDetail from './pages/ChatDetail'
-import Admin from './pages/Admin'
-import AdminLogin from './pages/AdminLogin'
-import SellerProfile from './pages/SellerProfile'
-import FloatingSellButton from './components/navigation/FloatingSellButton'
-import ScrollToTop from './components/utils/ScrollToTop'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { ErrorBoundary } from 'react-error-boundary'
-import { LocationProvider } from './contexts/LocationContext'
-import { CartProvider } from './contexts/CartContext'
-import Cart from './pages/Cart'
-import MyOrders from './pages/MyOrders'
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      meta: {
+        onError: (error: Error) => {
+          console.error('Query error:', error);
+        },
+      },
+    },
+  },
+});
 
-function App() {
-  const [isMounted, setIsMounted] = useState(false)
-  const { resolvedTheme, setTheme } = useTheme()
+const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
+  const [session, setSession] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    setIsMounted(true)
-  }, [])
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setLoading(false);
+    });
 
-  const queryClient = new QueryClient()
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+    });
 
-  return (
-    <QueryClientProvider client={queryClient}>
-      <ThemeProvider defaultTheme="light" storageKey="preferred-theme">
-        <LocationProvider>
-          <CartProvider>
-            <BrowserRouter>
-              <ErrorBoundary fallback={<div>Something went wrong</div>}>
-                <Toaster />
-                <ScrollToTop />
-                <Routes>
-                  <Route path="/" element={<Index />} />
-                  <Route path="/category/:categoryId" element={<CategorySubcategories />} />
-                  <Route path="/category/:category/:subcategory" element={<Subcategory />} />
-                  <Route path="/sell" element={<Sell />} />
-                  <Route path="/product/:id" element={<Product />} />
-                  <Route path="/profile" element={<Profile />} />
-                  <Route path="/my-ads" element={<MyAds />} />
-                  <Route path="/my-orders" element={<MyOrders />} />
-                  <Route path="/cart" element={<Cart />} />
-                  <Route path="/notifications" element={<Notifications />} />
-                  <Route path="/wishlist" element={<Wishlist />} />
-                  <Route path="/chat/:id" element={<ChatDetail />} />
-                  <Route path="/admin" element={<Admin />} />
-                  <Route path="/admin-login" element={<AdminLogin />} />
-                  <Route path="/seller/:id" element={<SellerProfile />} />
-                  <Route path="*" element={<Navigate to="/" />} />
-                </Routes>
-                <FloatingSellButton />
-              </ErrorBoundary>
-            </BrowserRouter>
-          </CartProvider>
-        </LocationProvider>
-      </ThemeProvider>
-    </QueryClientProvider>
-  );
-}
+    return () => subscription.unsubscribe();
+  }, []);
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  if (!session) {
+    return <Navigate to="/profile" />;
+  }
+
+  return <>{children}</>;
+};
+
+const App = () => (
+  <QueryClientProvider client={queryClient}>
+    <TooltipProvider>
+      <LocationProvider>
+        <BrowserRouter>
+          <ErrorBoundary>
+            <ScrollToTop />
+            <Toaster />
+            <Sonner />
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/category/:categoryId" element={<CategorySubcategories />} />
+              <Route path="/category/:category/:subcategory" element={<Subcategory />} />
+              <Route path="/fresh-recommendations" element={<FreshRecommendations />} />
+              <Route path="/recent-listings/:category" element={<RecentSubcategoryListings />} />
+              <Route path="/seller/:id" element={<SellerProfile />} />
+              <Route path="/services/:categoryId/:serviceId" element={<ServiceDetail />} />
+              <Route
+                path="/sell"
+                element={
+                  <PrivateRoute>
+                    <Sell />
+                  </PrivateRoute>
+                }
+              />
+              <Route path="/product/:id" element={<Product />} />
+              <Route path="/categories" element={<Categories />} />
+              <Route
+                path="/chat/:id"
+                element={
+                  <PrivateRoute>
+                    <ChatDetail />
+                  </PrivateRoute>
+                }
+              />
+              <Route path="/profile" element={<Profile />} />
+              <Route path="/admin/login" element={<AdminLogin />} />
+              <Route
+                path="/admin"
+                element={
+                  <PrivateRoute>
+                    <AdminPanel />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/my-ads"
+                element={
+                  <PrivateRoute>
+                    <MyAds />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/my-orders"
+                element={
+                  <PrivateRoute>
+                    <MyOrders />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/wishlist"
+                element={
+                  <PrivateRoute>
+                    <Wishlist />
+                  </PrivateRoute>
+                }
+              />
+            </Routes>
+          </ErrorBoundary>
+        </BrowserRouter>
+      </LocationProvider>
+    </TooltipProvider>
+  </QueryClientProvider>
+);
 
 export default App;

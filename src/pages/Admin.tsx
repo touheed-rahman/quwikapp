@@ -1,124 +1,47 @@
-import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
+
+import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/components/ui/use-toast";
+import { Tabs, TabsContent } from "@/components/ui/tabs";
+import { motion, AnimatePresence } from "framer-motion";
+
+// Import refactored components
 import AdminHeader from "@/components/admin/AdminHeader";
 import AdminNavTabs from "@/components/admin/AdminNavTabs";
+import AdminMobileMenu from "@/components/admin/AdminMobileMenu";
+import AdminContentHeader from "@/components/admin/AdminContentHeader";
+import AdminAnalytics from "@/components/admin/AdminAnalytics";
 import DashboardMetrics from "@/components/admin/DashboardMetrics";
 import ListingManagement from "@/components/admin/ListingManagement";
 import UserManagement from "@/components/admin/UserManagement";
-import AdminContentHeader from "@/components/admin/AdminContentHeader";
-import AdminMobileMenu from "@/components/admin/AdminMobileMenu";
-import AdminAnalytics from "@/components/admin/AdminAnalytics";
-import AdvancedAnalytics from "@/components/admin/AdvancedAnalytics";
-import { useToast } from "@/hooks/use-toast";
-import { motion } from "framer-motion";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Button } from "@/components/ui/button";
+import ServiceLeadsManagement from "@/components/admin/ServiceLeadsManagement";
 
 const AdminPanel = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const [currentTab, setCurrentTab] = useState("dashboard");
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [notifications, setNotifications] = useState(3);
-  const [userData, setUserData] = useState({
-    name: "Admin User",
-    avatar: "",
-  });
-
+  const [activeTab, setActiveTab] = useState('dashboard');
+  
+  // Check if there's a filter passed from dashboard metrics
   useEffect(() => {
-    if (location.state?.tab) {
-      setCurrentTab(location.state.tab);
+    if (location.state?.filter) {
+      if (location.state.filter === 'users') {
+        setActiveTab('users');
+      } else if (location.state.filter === 'service-leads') {
+        setActiveTab('service-leads');
+      } else {
+        setActiveTab('listings');
+      }
     }
   }, [location.state]);
 
-  const handleLogout = async () => {
-    try {
-      await supabase.auth.signOut();
-      toast({
-        title: "Logged out successfully",
-        description: "You have been logged out of the admin panel.",
-      });
-      navigate("/admin/login");
-    } catch (error) {
-      console.error("Error logging out:", error);
-      toast({
-        title: "Error logging out",
-        description: "There was a problem signing you out.",
-        variant: "destructive",
-      });
-    }
-  };
-
+  // Listen for custom event to change tabs
   useEffect(() => {
-    const checkAdminStatus = async () => {
-      setIsLoading(true);
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        
-        if (!session?.user) {
-          navigate("/admin/login");
-          return;
-        }
-        
-        const { data: adminData, error } = await supabase
-          .from("admins")
-          .select("*")
-          .eq("user_id", session.user.id)
-          .single();
-        
-        if (error || !adminData) {
-          toast({
-            title: "Access denied",
-            description: "You don't have admin privileges.",
-            variant: "destructive",
-          });
-          navigate("/");
-          return;
-        }
-        
-        const { data: profileData } = await supabase
-          .from("profiles")
-          .select("full_name, avatar_url")
-          .eq("id", session.user.id)
-          .single();
-        
-        if (profileData) {
-          setUserData({
-            name: profileData.full_name || "Admin User",
-            avatar: profileData.avatar_url || "",
-          });
-        }
-        
-        setIsAdmin(true);
-        
-        const { data: notificationData } = await supabase
-          .from("notifications")
-          .select("count")
-          .eq("user_id", session.user.id)
-          .single();
-          
-        if (notificationData) {
-          setNotifications(notificationData.count || 0);
-        }
-      } catch (error) {
-        console.error("Error checking admin status:", error);
-      } finally {
-        setIsLoading(false);
-      }
+    const handleTabChange = (event: CustomEvent<string>) => {
+      setActiveTab(event.detail);
     };
-    
-    checkAdminStatus();
-  }, [navigate, toast]);
 
-  useEffect(() => {
-    const handleTabChange = (e: CustomEvent) => {
-      setCurrentTab(e.detail);
-    };
-    
     window.addEventListener('adminTabChange', handleTabChange as EventListener);
     
     return () => {
@@ -126,113 +49,115 @@ const AdminPanel = () => {
     };
   }, []);
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gray-50 pt-20">
-        <div className="container max-w-7xl mx-auto px-4">
-          <div className="bg-white p-6 rounded-lg shadow-sm mb-6 animate-pulse">
-            <Skeleton className="h-8 w-64 mb-2" />
-            <Skeleton className="h-4 w-32" />
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {[1, 2, 3, 4, 5, 6].map((i) => (
-              <Skeleton key={i} className="h-40 rounded-lg" />
-            ))}
-          </div>
-        </div>
-      </div>
-    );
-  }
+  useEffect(() => {
+    const checkAdminAccess = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        
+        if (!user) {
+          navigate('/admin/login');
+          return;
+        }
 
-  if (!isAdmin) {
-    return <div className="flex h-screen items-center justify-center">Access denied</div>;
-  }
+        const { data: isAdmin, error: fnError } = await supabase
+          .rpc('is_admin', { user_uid: user.id });
+
+        if (fnError || !isAdmin) {
+          console.error('Error checking admin status:', fnError);
+          toast({
+            title: "Access Denied",
+            description: "You don't have permission to access the admin panel",
+            variant: "destructive"
+          });
+          navigate('/admin/login');
+          return;
+        }
+      } catch (error) {
+        console.error('Error in admin check:', error);
+        navigate('/admin/login');
+      }
+    };
+
+    checkAdminAccess();
+  }, [navigate, toast]);
+
+  const handleLogout = async () => {
+    try {
+      await supabase.auth.signOut();
+      toast({
+        title: "Logged out successfully",
+        description: "You have been logged out of the admin panel"
+      });
+      navigate('/admin/login');
+    } catch (error) {
+      console.error('Error logging out:', error);
+      toast({
+        title: "Error",
+        description: "Failed to log out. Please try again.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  // Determine if we should show the back button
+  const shouldShowBackButton = activeTab !== 'dashboard';
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <AdminHeader 
-        handleLogout={handleLogout} 
-        isMobileMenuOpen={isMobileMenuOpen} 
-        setIsMobileMenuOpen={setIsMobileMenuOpen}
-        userAvatar={userData.avatar}
-        userName={userData.name} 
-      />
+    <div className="min-h-screen bg-gray-50 flex flex-col">
+      {/* Top navbar */}
+      <AdminHeader handleLogout={handleLogout} />
       
-      <AdminMobileMenu 
-        isOpen={isMobileMenuOpen} 
-        currentTab={currentTab} 
-        setCurrentTab={(tab) => {
-          setCurrentTab(tab);
-          setIsMobileMenuOpen(false);
-        }}
-        notificationCount={notifications}
-      />
+      <div className="flex items-center absolute left-4 top-0 h-16 md:relative md:left-0 md:top-0">
+        <AdminMobileMenu activeTab={activeTab} setActiveTab={setActiveTab} />
+        <AdminNavTabs 
+          activeTab={activeTab} 
+          setActiveTab={setActiveTab} 
+          showBackButton={shouldShowBackButton}
+        />
+      </div>
       
-      <motion.main 
-        className="container max-w-7xl mx-auto px-4 py-6 pt-20"
+      {/* Main content */}
+      <motion.div 
+        className="flex-1 p-4 md:p-6 transition-all duration-300 pt-20"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.3 }}
       >
-        <AdminContentHeader activeTab={currentTab} />
-        
-        <div className="mt-6">
-          <AdminNavTabs 
-            currentTab={currentTab} 
-            setCurrentTab={setCurrentTab} 
-            notificationCount={notifications} 
-          />
-        </div>
-        
-        <motion.div 
-          className="mt-6"
-          key={currentTab}
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3 }}
-        >
-          {currentTab === "dashboard" && <DashboardMetrics />}
-          {currentTab === "analytics" && <AdvancedAnalytics />}
-          {currentTab === "listings" && <ListingManagement />}
-          {currentTab === "users" && <UserManagement />}
-          {currentTab === "notifications" && (
-            <div className="bg-white rounded-lg p-6 shadow-sm">
-              <h2 className="text-2xl font-bold mb-4">Notifications</h2>
-              <div className="space-y-4">
-                {[1, 2, 3].map((i) => (
-                  <div key={i} className="p-4 border rounded-lg hover:bg-gray-50 transition-colors cursor-pointer">
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <h3 className="font-medium">New listing submission</h3>
-                        <p className="text-sm text-gray-500">A new product listing requires your approval</p>
-                      </div>
-                      <Button className="w-full sm:w-auto">Mark as Read</Button>
-                    </div>
-                    <div className="text-xs text-gray-400 mt-2">2 hours ago</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-          {currentTab === "settings" && (
-            <div className="bg-white rounded-lg p-6 shadow-sm">
-              <h2 className="text-2xl font-bold mb-4">Admin Settings</h2>
-              <div className="grid md:grid-cols-2 gap-6">
-                <div className="border rounded-lg p-4">
-                  <h3 className="font-medium mb-2">Site Configuration</h3>
-                  <p className="text-sm text-gray-500 mb-4">Adjust global site settings</p>
-                  <Button className="w-full sm:w-auto">Manage Settings</Button>
-                </div>
-                <div className="border rounded-lg p-4">
-                  <h3 className="font-medium mb-2">User Permissions</h3>
-                  <p className="text-sm text-gray-500 mb-4">Manage admin access and roles</p>
-                  <Button className="w-full sm:w-auto">Manage Permissions</Button>
-                </div>
-              </div>
-            </div>
-          )}
-        </motion.div>
-      </motion.main>
+        <AdminContentHeader activeTab={activeTab} />
+
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={activeTab}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.2 }}
+            className="space-y-6"
+          >
+            <Tabs value={activeTab} className="w-full">
+              <TabsContent value="dashboard">
+                <DashboardMetrics />
+              </TabsContent>
+              
+              <TabsContent value="listings">
+                <ListingManagement />
+              </TabsContent>
+              
+              <TabsContent value="users">
+                <UserManagement />
+              </TabsContent>
+              
+              <TabsContent value="analytics">
+                <AdminAnalytics />
+              </TabsContent>
+              
+              <TabsContent value="service-leads">
+                <ServiceLeadsManagement />
+              </TabsContent>
+            </Tabs>
+          </motion.div>
+        </AnimatePresence>
+      </motion.div>
     </div>
   );
 };

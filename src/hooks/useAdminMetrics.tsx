@@ -11,29 +11,21 @@ export interface DashboardMetrics {
   featuredListings: number;
   rejectedListings: number;
   featuredRequests: number;
+  serviceLeads: number;
 }
 
 export function useAdminMetrics() {
   const { data: metrics, isLoading, refetch } = useQuery<DashboardMetrics>({
     queryKey: ['admin-metrics'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .rpc('get_dashboard_metrics') as { 
-          data: DashboardMetrics | null; 
-          error: Error | null 
-        };
+      // Get the metrics from the view
+      const { data: viewData, error: viewError } = await supabase
+        .from('dashboard_metrics')
+        .select('*')
+        .single();
 
-      if (error) {
-        console.error('Error fetching metrics:', error);
-        return {
-          totalListings: 0,
-          pendingListings: 0,
-          approvedListings: 0,
-          totalUsers: 0,
-          featuredListings: 0,
-          rejectedListings: 0,
-          featuredRequests: 0
-        };
+      if (viewError) {
+        console.error('Error fetching metrics from view:', viewError);
       }
 
       // Fetch featuredRequests separately
@@ -44,17 +36,24 @@ export function useAdminMetrics() {
         .single();
 
       const featuredRequests = featuredError ? 0 : (featuredRequestsData?.count || 0);
+      
+      // Fetch service leads count
+      const { count: serviceLeadsCount, error: serviceLeadsError } = await supabase
+        .from('service_leads')
+        .select('count', { count: 'exact', head: true });
+      
+      const serviceLeads = serviceLeadsError ? 0 : (serviceLeadsCount || 0);
 
+      // Map the database column names to our interface property names
       return {
-        ...(data || {
-          totalListings: 0,
-          pendingListings: 0,
-          approvedListings: 0,
-          totalUsers: 0,
-          featuredListings: 0,
-          rejectedListings: 0
-        }),
-        featuredRequests
+        totalListings: viewData?.total_listings || 0,
+        pendingListings: viewData?.pending_listings || 0,
+        approvedListings: viewData?.approved_listings || 0,
+        totalUsers: viewData?.total_users || 0,
+        featuredListings: viewData?.featured_listings || 0,
+        rejectedListings: viewData?.rejected_listings || 0,
+        featuredRequests,
+        serviceLeads
       };
     },
     staleTime: 1000, // Data considered fresh for 1 second
@@ -95,6 +94,18 @@ export function useAdminMetrics() {
         },
         () => {
           console.log('Profiles changed, triggering debounced refetch...');
+          debouncedRefetch();
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'service_leads'
+        },
+        () => {
+          console.log('Service leads changed, triggering debounced refetch...');
           debouncedRefetch();
         }
       )

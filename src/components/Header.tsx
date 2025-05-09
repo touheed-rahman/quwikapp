@@ -1,364 +1,185 @@
-
-import React, { useState, useEffect } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Button } from './ui/button';
-import {
-  Bell,
-  Heart,
-  Menu,
-  Search,
-  ShoppingBag,
-  User,
-  X,
-  LogOut,
-  Settings,
-} from 'lucide-react';
-import { CartButton } from './Header';
-import { supabase } from '@/integrations/supabase/client';
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetClose,
-} from '@/components/ui/sheet';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { Badge } from './ui/badge';
-import { useToast } from './ui/use-toast';
+import { Bell, MessageSquare, User, HelpCircle, ListOrdered } from "lucide-react";
+import { Button } from "./ui/button";
+import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { Badge } from "./ui/badge";
+import { useIsMobile } from "@/hooks/use-mobile";
+import ChatWindow from "@/components/chat/ChatWindow";
+import FeedbackDialog from "@/components/feedback/FeedbackDialog";
+import { toast } from "@/hooks/use-toast";
+import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 
 const Header = () => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [user, setUser] = useState<any>(null);
-  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
-  const [notificationCount, setNotificationCount] = useState(0);
-  const navigate = useNavigate();
-  const location = useLocation();
-  const { toast } = useToast();
+  const [session, setSession] = useState<any>(null);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
+  const isMobile = useIsMobile();
 
   useEffect(() => {
-    const getUser = async () => {
-      const { data } = await supabase.auth.getUser();
-      setUser(data.user);
-
-      if (data.user) {
-        const { data: profileData } = await supabase
-          .from('profiles')
-          .select('avatar_url')
-          .eq('id', data.user.id)
-          .single();
-
-        if (profileData?.avatar_url) {
-          setAvatarUrl(profileData.avatar_url);
-        }
-      }
-    };
-
-    getUser();
-
-    const authListener = supabase.auth.onAuthStateChange(async (event, session) => {
-      setUser(session?.user || null);
-      
-      if (session?.user) {
-        const { data: profileData } = await supabase
-          .from('profiles')
-          .select('avatar_url')
-          .eq('id', session.user.id)
-          .single();
-
-        if (profileData?.avatar_url) {
-          setAvatarUrl(profileData.avatar_url);
-        }
-      } else {
-        setAvatarUrl(null);
-      }
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
     });
 
-    return () => {
-      authListener.data.subscription.unsubscribe();
-    };
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
-  const handleSignOut = async () => {
-    await supabase.auth.signOut();
+  useEffect(() => {
+    if (!session?.user) return;
+
+    const fetchUnreadCount = async () => {
+      const { data, error } = await supabase
+        .from('notifications')
+        .select('unread_count')
+        .eq('user_id', session.user.id);
+
+      if (error) {
+        console.error('Error fetching notifications:', error);
+        return;
+      }
+
+      const total = data.reduce((sum, notification) => sum + notification.unread_count, 0);
+      setUnreadCount(total);
+    };
+
+    fetchUnreadCount();
+
+    const channel = supabase
+      .channel('notifications')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'notifications',
+          filter: `user_id=eq.${session.user.id}`
+        },
+        () => {
+          fetchUnreadCount();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [session?.user]);
+
+  const handleNotificationClick = () => {
     toast({
-      title: "Signed out",
-      description: "You have been signed out of your account",
+      title: "Coming Soon",
+      description: "Notifications feature will be available soon!",
+      duration: 3000,
     });
-    navigate('/');
   };
-
-  const closeMenu = () => setIsMenuOpen(false);
-
-  const getInitials = (name: string) => {
-    if (!name) return 'U';
-    return name
-      .split(' ')
-      .map((n) => n[0])
-      .join('')
-      .toUpperCase()
-      .substring(0, 2);
-  };
-
-  const userInitials = user?.user_metadata?.full_name
-    ? getInitials(user.user_metadata.full_name)
-    : 'U';
 
   return (
-    <header className="fixed top-0 left-0 right-0 bg-background/80 backdrop-blur-md z-40 border-b">
-      <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-        <div className="flex items-center">
-          <Link to="/" className="font-bold text-xl text-primary">
+    <header className="fixed top-0 left-0 right-0 bg-white border-b z-50">
+      <div className="container mx-auto px-4 h-16 flex items-center gap-4">
+        <Link to="/" className="shrink-0">
+          <h1 className="text-2xl font-semibold bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent">
             Quwik
-          </Link>
-        </div>
+          </h1>
+        </Link>
 
-        <div className="hidden md:flex items-center space-x-1">
-          <Link to="/sell">
-            <Button variant="default" className="bg-accent hover:bg-accent/90">
-              Sell
-            </Button>
-          </Link>
-
-          <Link to="/wishlist">
-            <Button variant="ghost" size="icon">
-              <Heart className="h-5 w-5" />
-            </Button>
-          </Link>
-
-          <Link to="/notifications">
-            <Button variant="ghost" size="icon" className="relative">
-              <Bell className="h-5 w-5" />
-              {notificationCount > 0 && (
-                <Badge className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center p-0 bg-primary text-white rounded-full text-xs">
-                  {notificationCount}
-                </Badge>
-              )}
-            </Button>
-          </Link>
-
-          <CartButton />
-          
-          {user ? (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="rounded-full">
-                  <Avatar className="h-8 w-8">
-                    {avatarUrl ? (
-                      <AvatarImage 
-                        src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/avatars/${avatarUrl}`} 
-                        alt="User avatar" 
-                      />
-                    ) : (
-                      <AvatarFallback>{userInitials}</AvatarFallback>
-                    )}
-                  </Avatar>
+        <div className="flex items-center gap-2 ml-auto">
+          {session ? (
+            <>
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="relative hidden md:flex flex-col items-center justify-center h-16 w-16 gap-0.5"
+                onClick={handleNotificationClick}
+              >
+                <Bell className="h-5 w-5" />
+                <span className="text-[10px]">Notifications</span>
+                {unreadCount > 0 && (
+                  <Badge 
+                    className="absolute top-2 right-2 h-5 w-5 flex items-center justify-center bg-destructive hover:bg-destructive p-0"
+                  >
+                    {unreadCount}
+                  </Badge>
+                )}
+              </Button>
+              <div className="relative hidden md:block">
+                <Button 
+                  variant="ghost" 
+                  size="icon"
+                  onClick={() => setIsChatOpen(true)}
+                  className="flex flex-col items-center justify-center h-16 w-16 gap-0.5"
+                >
+                  <MessageSquare className="h-5 w-5" />
+                  <span className="text-[10px]">Chats</span>
                 </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuLabel>My Account</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => navigate('/profile')}>
-                  <User className="mr-2 h-4 w-4" />
-                  <span>Profile</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => navigate('/my-ads')}>
-                  <ShoppingBag className="mr-2 h-4 w-4" />
-                  <span>My Ads</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => navigate('/my-orders')}>
-                  <ShoppingBag className="mr-2 h-4 w-4" />
-                  <span>My Orders</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => navigate('/profile?tab=settings')}>
-                  <Settings className="mr-2 h-4 w-4" />
-                  <span>Settings</span>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleSignOut}>
-                  <LogOut className="mr-2 h-4 w-4" />
-                  <span>Log out</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+                {unreadCount > 0 && (
+                  <Badge 
+                    className="absolute top-2 right-2 h-5 w-5 flex items-center justify-center bg-destructive hover:bg-destructive p-0"
+                  >
+                    {unreadCount}
+                  </Badge>
+                )}
+              </div>
+              <Link to="/my-ads" className="hidden md:block">
+                <Button variant="ghost" size="icon" className="flex flex-col items-center justify-center h-16 w-16 gap-0.5">
+                  <ListOrdered className="h-5 w-5" />
+                  <span className="text-[10px]">My Ads</span>
+                </Button>
+              </Link>
+              <Link to="/profile">
+                <Button variant="ghost" size="icon" className="flex flex-col items-center justify-center h-16 w-16 gap-0.5">
+                  <User className="h-5 w-5" />
+                  <span className="text-[10px]">Profile</span>
+                </Button>
+              </Link>
+              <Button 
+                variant="ghost" 
+                size="icon"
+                onClick={() => setIsFeedbackOpen(true)}
+                className="flex flex-col items-center justify-center h-16 w-16 gap-0.5"
+              >
+                <HelpCircle className="h-5 w-5" />
+                <span className="text-[10px]">Help</span>
+              </Button>
+              <Link to="/sell" className="hidden md:block shrink-0">
+                <Button className="hover:bg-primary hover:text-white whitespace-nowrap">Sell Now</Button>
+              </Link>
+            </>
           ) : (
-            <Button variant="ghost" onClick={() => navigate('/profile')}>
-              Sign in
-            </Button>
+            <>
+              <Button 
+                variant="ghost" 
+                size="icon"
+                onClick={() => setIsFeedbackOpen(true)}
+                className="flex flex-col items-center justify-center h-16 w-16 gap-0.5"
+              >
+                <HelpCircle className="h-5 w-5" />
+                <span className="text-[10px]">Help</span>
+              </Button>
+              <Link to="/profile">
+                <Button>Sign In</Button>
+              </Link>
+            </>
           )}
         </div>
-
-        <Button
-          variant="ghost"
-          size="icon"
-          className="md:hidden"
-          onClick={() => setIsMenuOpen(true)}
-        >
-          <Menu className="h-6 w-6" />
-        </Button>
       </div>
 
-      <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
-        <SheetContent side="right" className="w-[300px] sm:w-[350px]">
-          <SheetHeader>
-            <SheetTitle>Menu</SheetTitle>
-            <SheetClose asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="absolute right-4 top-4"
-              >
-                <X className="h-5 w-5" />
-              </Button>
-            </SheetClose>
-          </SheetHeader>
+      {isChatOpen && (
+        <div className="fixed inset-0 bg-black/20 z-50">
+          <ChatWindow isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} />
+        </div>
+      )}
 
-          <div className="py-6 flex flex-col space-y-2">
-            {user ? (
-              <div className="flex items-center p-4 bg-muted rounded-lg mb-4">
-                <Avatar className="h-10 w-10 mr-3">
-                  {avatarUrl ? (
-                    <AvatarImage 
-                      src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/avatars/${avatarUrl}`} 
-                      alt="User avatar" 
-                    />
-                  ) : (
-                    <AvatarFallback>{userInitials}</AvatarFallback>
-                  )}
-                </Avatar>
-                <div>
-                  <p className="text-sm font-medium">
-                    {user?.user_metadata?.full_name || 'User'}
-                  </p>
-                  <p className="text-xs text-muted-foreground">{user.email}</p>
-                </div>
-              </div>
-            ) : (
-              <Button
-                variant="default"
-                className="w-full mb-4"
-                onClick={() => {
-                  navigate('/profile');
-                  closeMenu();
-                }}
-              >
-                Sign In
-              </Button>
-            )}
-
-            <Button
-              variant="accent"
-              className="w-full bg-accent hover:bg-accent/90"
-              onClick={() => {
-                navigate('/sell');
-                closeMenu();
-              }}
-            >
-              Sell Now
-            </Button>
-
-            {user && (
-              <>
-                <Button
-                  variant="ghost"
-                  className="justify-start"
-                  onClick={() => {
-                    navigate('/profile');
-                    closeMenu();
-                  }}
-                >
-                  <User className="mr-2 h-5 w-5" />
-                  Profile
-                </Button>
-
-                <Button
-                  variant="ghost"
-                  className="justify-start"
-                  onClick={() => {
-                    navigate('/my-ads');
-                    closeMenu();
-                  }}
-                >
-                  <ShoppingBag className="mr-2 h-5 w-5" />
-                  My Ads
-                </Button>
-                
-                <Button
-                  variant="ghost"
-                  className="justify-start"
-                  onClick={() => {
-                    navigate('/my-orders');
-                    closeMenu();
-                  }}
-                >
-                  <ShoppingBag className="mr-2 h-5 w-5" />
-                  My Orders
-                </Button>
-              </>
-            )}
-
-            <Button
-              variant="ghost"
-              className="justify-start"
-              onClick={() => {
-                navigate('/wishlist');
-                closeMenu();
-              }}
-            >
-              <Heart className="mr-2 h-5 w-5" />
-              Wishlist
-            </Button>
-
-            <Button
-              variant="ghost"
-              className="justify-start"
-              onClick={() => {
-                navigate('/notifications');
-                closeMenu();
-              }}
-            >
-              <Bell className="mr-2 h-5 w-5" />
-              Notifications
-              {notificationCount > 0 && (
-                <Badge className="ml-auto bg-primary">{notificationCount}</Badge>
-              )}
-            </Button>
-            
-            <Button
-              variant="ghost"
-              className="justify-start"
-              onClick={() => {
-                navigate('/cart');
-                closeMenu();
-              }}
-            >
-              <ShoppingCart className="mr-2 h-5 w-5" />
-              Cart
-            </Button>
-
-            {user && (
-              <Button
-                variant="ghost"
-                className="justify-start text-destructive hover:text-destructive"
-                onClick={() => {
-                  handleSignOut();
-                  closeMenu();
-                }}
-              >
-                <LogOut className="mr-2 h-5 w-5" />
-                Sign out
-              </Button>
-            )}
-          </div>
-        </SheetContent>
-      </Sheet>
+      <FeedbackDialog 
+        open={isFeedbackOpen} 
+        onOpenChange={setIsFeedbackOpen} 
+      />
     </header>
   );
 };
