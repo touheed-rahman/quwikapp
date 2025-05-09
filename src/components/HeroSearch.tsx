@@ -56,7 +56,8 @@ const HeroSearch = () => {
         .ilike('title', `%${trimmedQuery}%`);
 
       if (selectedLocation) {
-        query = query.eq('location', selectedLocation);
+        const cityName = selectedLocation.split('|')[0];
+        query = query.ilike('location', `%${cityName}%`);
       }
 
       const { data: matches } = await query;

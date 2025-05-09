@@ -21,7 +21,12 @@ interface CityDetails {
   latitude: number;
   longitude: number;
   states: {
+    id: string;
     name: string;
+    countries: {
+      id: string;
+      name: string;
+    };
   };
 }
 
@@ -38,7 +43,8 @@ export const LocationProvider = ({ children }: { children: React.ReactNode }) =>
       if (!user) return;
 
       if (location) {
-        const cityId = location.split('|')[4];
+        const locationParts = location.split('|');
+        const cityId = locationParts[5]; // New format has cityId at index 5
         
         const { error } = await supabase
           .from('user_location_preferences')
@@ -71,12 +77,12 @@ export const LocationProvider = ({ children }: { children: React.ReactNode }) =>
           .eq('user_id', user.id)
           .single();
 
-        if (prefError) throw prefError;
+        if (prefError && prefError.code !== 'PGRST116') throw prefError;
 
         if (locationPref?.city_id) {
           const { data: cityDetails, error: cityError } = await supabase
             .from('cities')
-            .select('*, states(name)')
+            .select('*, states(id, name, countries(id, name))')
             .eq('id', locationPref.city_id)
             .single();
 
@@ -84,7 +90,7 @@ export const LocationProvider = ({ children }: { children: React.ReactNode }) =>
 
           if (cityDetails) {
             const details = cityDetails as CityDetails;
-            const locationString = `${details.name}|${details.states.name}|${details.latitude}|${details.longitude}|${details.id}`;
+            const locationString = `${details.name}|${details.states.name}|${details.states.countries.name}|${details.latitude}|${details.longitude}|${details.id}|${details.states.id}|${details.states.countries.id}`;
             setLocationState(locationString);
           }
         }
