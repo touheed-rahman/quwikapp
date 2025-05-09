@@ -1,6 +1,7 @@
+
 import { useState, useEffect } from 'react'
 import { Routes, Route, BrowserRouter, Navigate } from 'react-router-dom'
-import { ThemeProvider } from "@/components/theme-provider"
+import { ThemeProvider } from "./components/ui/theme-provider"
 import { useTheme } from "next-themes"
 import { Toaster } from "@/components/ui/toaster"
 import Index from './pages/Index'
@@ -16,17 +17,18 @@ import ChatDetail from './pages/ChatDetail'
 import Admin from './pages/Admin'
 import AdminLogin from './pages/AdminLogin'
 import SellerProfile from './pages/SellerProfile'
-import FloatingSellButton from './components/FloatingSellButton'
-import ScrollToTop from './components/ScrollToTop'
+import FloatingSellButton from './components/navigation/FloatingSellButton'
+import ScrollToTop from './components/utils/ScrollToTop'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { ErrorBoundary } from 'react-error-boundary';
-import { LocationProvider } from './contexts/LocationContext';
-import { CartProvider } from './contexts/CartContext';
-import Cart from './pages/Cart';
+import { ErrorBoundary } from 'react-error-boundary'
+import { LocationProvider } from './contexts/LocationContext'
+import { CartProvider } from './contexts/CartContext'
+import Cart from './pages/Cart'
+import MyOrders from './pages/MyOrders'
 
 function App() {
   const [isMounted, setIsMounted] = useState(false)
-  const { themeMode, setThemeMode } = useTheme()
+  const { resolvedTheme, setTheme } = useTheme()
 
   useEffect(() => {
     setIsMounted(true)
@@ -40,7 +42,7 @@ function App() {
         <LocationProvider>
           <CartProvider>
             <BrowserRouter>
-              <ErrorBoundary>
+              <ErrorBoundary fallback={<div>Something went wrong</div>}>
                 <Toaster />
                 <ScrollToTop />
                 <Routes>
