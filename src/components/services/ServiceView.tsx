@@ -131,6 +131,7 @@ const ServiceView = () => {
         initial="hidden"
         animate="visible"
         variants={staggerContainer}
+        className="max-w-full overflow-x-hidden"
       >
         <motion.div variants={fadeIn}>
           <ServiceHero 
@@ -158,7 +159,7 @@ const ServiceView = () => {
             />
           </motion.div>
         ) : (
-          <motion.div variants={staggerContainer} className="space-y-12">
+          <motion.div variants={staggerContainer} className="space-y-12 px-0 sm:px-4">
             <motion.div variants={fadeIn}>
               <ServiceFilterBar 
                 activeFilter={activeFilter} 

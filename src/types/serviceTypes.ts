@@ -13,6 +13,8 @@ export const formSchema = z.object({
   name: z.string().min(2, { message: "Please provide your name" }),
   phone: z.string().min(10, { message: "Please provide a valid phone number" }),
   urgent: z.boolean().default(false),
+  service_type: z.enum(["onsite", "pickup"]).default("onsite"),
+  additional_notes: z.string().optional(),
 });
 
 export type FormValues = z.infer<typeof formSchema>;
@@ -33,6 +35,8 @@ export interface ServiceLead {
   urgent: boolean;
   created_at: string;
   updated_at?: string;
+  service_delivery_type: "onsite" | "pickup";
+  additional_notes?: string;
 }
 
 // Service pricing for different service types (keeping prices 50 Rs lower than competitors)

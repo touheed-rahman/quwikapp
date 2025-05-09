@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { motion } from "framer-motion";
 
@@ -13,13 +13,22 @@ type TabViewProps = {
 }
 
 const TabView = ({ children, defaultTab = "classified", tabs }: TabViewProps) => {
-  const [activeTab, setActiveTab] = useState(defaultTab);
+  // Get the stored tab from localStorage or use the default
+  const [activeTab, setActiveTab] = useState(() => {
+    const storedTab = localStorage.getItem("activeTab");
+    return storedTab || defaultTab;
+  });
+
+  // Update localStorage when activeTab changes
+  useEffect(() => {
+    localStorage.setItem("activeTab", activeTab);
+  }, [activeTab]);
 
   return (
     <div className="w-full">
       <div className="container mx-auto px-4 pt-4">
         <Tabs 
-          defaultValue={defaultTab} 
+          defaultValue={activeTab} 
           className="w-full"
           onValueChange={setActiveTab}
         >

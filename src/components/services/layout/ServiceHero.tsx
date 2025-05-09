@@ -1,10 +1,8 @@
-
 import { motion } from "framer-motion";
 import { Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import LocationSelector from "@/components/LocationSelector";
-import { ServiceLocation } from "@/types/serviceTypes";
 
 interface ServiceHeroProps {
   searchQuery: string;
