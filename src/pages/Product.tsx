@@ -1,127 +1,114 @@
-
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
 import Header from "@/components/Header";
-import ChatWindow from "@/components/chat/ChatWindow";
-import { supabase } from "@/integrations/supabase/client";
-import ImageGallery from "@/components/product/ImageGallery";
+import ProductGallery from "@/components/product/ProductGallery";
 import ProductInfo from "@/components/product/ProductInfo";
 import SellerInfo from "@/components/product/SellerInfo";
 import RelatedProducts from "@/components/product/RelatedProducts";
-import FeatureDialog from "@/components/product/FeatureDialog";
-import ProductLoader from "@/components/product/ProductLoader";
-import ProductNotFound from "@/components/product/ProductNotFound";
 import { useProductDetails } from "@/hooks/useProductDetails";
-import { useRelatedProducts } from "@/hooks/useRelatedProducts";
 import { useProductActions } from "@/hooks/useProductActions";
+import { supabase } from "@/integrations/supabase/client";
+import { Loader2 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
-import MobileNavigation from "@/components/navigation/MobileNavigation";
-import { motion } from "framer-motion";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import OfferForm from "@/components/product/OfferForm";
+import ChatWindow from "@/components/chat/ChatWindow";
 
-interface Seller {
-  id: string;
-  full_name: string;
-  created_at: string;
-}
-
-const ProductPage = () => {
-  const { id } = useParams();
+const Product = () => {
+  const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const { toast } = useToast();
   const [session, setSession] = useState<any>(null);
   const [isChatOpen, setIsChatOpen] = useState(false);
-  const [isFeatureDialogOpen, setIsFeatureDialogOpen] = useState(false);
-  const { toast } = useToast();
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
-
-  const { data: product, isLoading, isError } = useProductDetails(id);
-  const { data: relatedProducts = [] } = useRelatedProducts(id, product?.category, product?.subcategory);
-  const {
-    isOfferDialogOpen,
-    setIsOfferDialogOpen,
+  
+  const { data: product, isLoading, error } = useProductDetails(id);
+  
+  const { 
+    isOfferDialogOpen, 
+    setIsOfferDialogOpen, 
     currentConversationId,
     handleChatWithSeller,
     handleMakeOffer
   } = useProductActions(id, product?.user_id);
 
-  // Fetch seller data
-  const { data: seller } = useQuery({
-    queryKey: ['seller', product?.user_id],
-    queryFn: async () => {
-      if (!product?.user_id) return null;
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', product.user_id)
-        .single();
-      
-      if (error) throw error;
-      return data as Seller;
-    },
-    enabled: !!product?.user_id
-  });
-
   useEffect(() => {
     const getSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       setSession(session);
-      setCurrentUserId(session?.user?.id || null);
     };
+    
     getSession();
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-      setCurrentUserId(session?.user?.id || null);
-    });
-
-    return () => subscription.unsubscribe();
   }, []);
 
-  useEffect(() => {
-    if (currentConversationId) {
-      navigate(`/chat/${currentConversationId}`);
-    }
-  }, [currentConversationId, navigate]);
-
-  const isCurrentUserSeller = !!currentUserId && currentUserId === product?.user_id;
-
   if (isLoading) {
-    return <ProductLoader />;
+    return (
+      <div className="min-h-screen bg-background">
+        <Header />
+        <div className="container mx-auto px-4 pt-24 pb-16 flex justify-center">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      </div>
+    );
   }
 
-  if (isError || !product) {
-    return <ProductNotFound />;
+  if (error || !product) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header />
+        <div className="container mx-auto px-4 pt-24 pb-16">
+          <div className="text-center">
+            <h2 className="text-xl font-semibold mb-2">Product not found</h2>
+            <p className="text-muted-foreground mb-4">
+              The product you're looking for doesn't exist or has been removed.
+            </p>
+            <button 
+              onClick={() => navigate('/')}
+              className="text-primary hover:underline"
+            >
+              Return to homepage
+            </button>
+          </div>
+        </div>
+      </div>
+    );
   }
+
+  const isCurrentUserSeller = session?.user?.id === product.user_id;
+
+  const handleChatClick = () => {
+    if (session) {
+      handleChatWithSeller(session);
+      setIsChatOpen(true);
+    } else {
+      toast({
+        title: "Sign in required",
+        description: "Please sign in to chat with the seller",
+        variant: "destructive"
+      });
+      navigate('/profile');
+    }
+  };
+
+  const handleOfferClick = () => {
+    if (session) {
+      handleMakeOffer(session);
+    } else {
+      toast({
+        title: "Sign in required",
+        description: "Please sign in to make an offer",
+        variant: "destructive"
+      });
+      navigate('/profile');
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-primary/5">
+    <div className="min-h-screen bg-background">
       <Header />
-      <main className="container mx-auto px-2 sm:px-4 pt-20 pb-20 overflow-x-hidden max-w-full">
-        <motion.div 
-          className="grid lg:grid-cols-2 gap-4 lg:gap-8"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.4 }}
-        >
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5 }}
-          >
-            <ImageGallery
-              images={product.images}
-              currentImageIndex={currentImageIndex}
-              setCurrentImageIndex={setCurrentImageIndex}
-            />
-          </motion.div>
-
-          <motion.div 
-            className="space-y-4 lg:space-y-6"
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5 }}
-          >
+      <div className="container mx-auto px-4 pt-24 pb-16">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2 space-y-6">
+            <ProductGallery images={product.images} />
             <ProductInfo
               title={product.title}
               price={product.price}
@@ -135,38 +122,50 @@ const ProductPage = () => {
               viewCount={product.view_count}
               brand={product.brand}
               specs={product.specs}
+              images={product.images}
+              userId={product.user_id}
             />
-
-            {seller && (
-              <SellerInfo
-                seller={seller}
-                currentUserId={currentUserId}
-                isCurrentUserSeller={isCurrentUserSeller}
-                onChatClick={() => handleChatWithSeller(session)}
-                onMakeOffer={() => setIsFeatureDialogOpen(true)}
-              />
-            )}
-          </motion.div>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3, duration: 0.5 }}
-        >
-          <RelatedProducts products={relatedProducts} />
-        </motion.div>
-      </main>
-
-      <FeatureDialog
-        isOpen={isFeatureDialogOpen}
-        onClose={() => setIsFeatureDialogOpen(false)}
-      />
+          </div>
+          
+          <div className="space-y-6">
+            <SellerInfo 
+              seller={product.profiles} 
+              currentUserId={session?.user?.id}
+              isCurrentUserSeller={isCurrentUserSeller}
+              onChatClick={handleChatClick}
+              onMakeOffer={handleOfferClick}
+            />
+            <RelatedProducts 
+              category={product.category}
+              subcategory={product.subcategory}
+              currentProductId={product.id}
+            />
+          </div>
+        </div>
+      </div>
       
-      <MobileNavigation onChatOpen={() => setIsChatOpen(true)} />
-      <ChatWindow isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} />
+      <Dialog open={isOfferDialogOpen} onOpenChange={setIsOfferDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <OfferForm 
+            productId={product.id}
+            productTitle={product.title}
+            productPrice={product.price}
+            sellerId={product.user_id}
+            conversationId={currentConversationId}
+            onClose={() => setIsOfferDialogOpen(false)}
+          />
+        </DialogContent>
+      </Dialog>
+      
+      {isChatOpen && (
+        <ChatWindow 
+          isOpen={isChatOpen} 
+          onClose={() => setIsChatOpen(false)} 
+          initialConversationId={currentConversationId}
+        />
+      )}
     </div>
   );
 };
 
-export default ProductPage;
+export default Product;
