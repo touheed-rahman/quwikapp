@@ -1,102 +1,111 @@
 
-import { Gauge, LayoutGrid, Users, BarChart3, Menu, X } from "lucide-react";
+import { LayoutDashboard, PieChart, ListFilter, Users, Bell, Settings, Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
-import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
+import { useToast } from "@/hooks/use-toast";
 
 interface AdminMobileMenuProps {
-  activeTab: string;
-  setActiveTab: (tab: string) => void;
+  isOpen: boolean;
+  currentTab: string;
+  setCurrentTab: (tab: string) => void;
+  notificationCount?: number;
 }
 
-const AdminMobileMenu = ({ activeTab, setActiveTab }: AdminMobileMenuProps) => {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+const AdminMobileMenu = ({ 
+  isOpen, 
+  currentTab, 
+  setCurrentTab, 
+  notificationCount = 3 
+}: AdminMobileMenuProps) => {
+  const { toast } = useToast();
 
   const handleTabChange = (tab: string) => {
-    setActiveTab(tab);
-    setMobileMenuOpen(false);
+    setCurrentTab(tab);
+    
+    toast({
+      title: "Tab Changed",
+      description: `You're now viewing the ${tab} section`,
+      duration: 2000,
+    });
   };
+  
+  const menuItems = [
+    {
+      id: "dashboard",
+      label: "Dashboard",
+      icon: LayoutDashboard,
+      badge: { type: "info", text: "Overview" }
+    },
+    {
+      id: "analytics",
+      label: "Analytics", 
+      icon: PieChart,
+      badge: { type: "info", text: "Reports" }
+    },
+    {
+      id: "listings",
+      label: "Listings",
+      icon: ListFilter,
+      badge: { type: "count", value: 12 }
+    },
+    {
+      id: "users",
+      label: "Users",
+      icon: Users,
+      badge: { type: "count", value: 6 }
+    },
+    {
+      id: "notifications",
+      label: "Notifications",
+      icon: Bell,
+      badge: { type: "count", value: notificationCount }
+    },
+    {
+      id: "settings",
+      label: "Settings",
+      icon: Settings
+    }
+  ];
 
   return (
-    <>
-      <Button 
-        variant={mobileMenuOpen ? "default" : "ghost"} 
-        size="icon" 
-        className="md:hidden relative"
-        onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-        aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
-      >
-        {mobileMenuOpen ? (
-          <X className="h-5 w-5" />
-        ) : (
-          <>
-            <Menu className="h-5 w-5" />
-            <Badge className="absolute -top-1 -right-1 bg-primary text-[10px] h-4 w-4 flex items-center justify-center p-0">
-              4
-            </Badge>
-          </>
-        )}
-      </Button>
-      
-      <AnimatePresence>
-        {mobileMenuOpen && (
-          <motion.div 
-            className="fixed top-16 left-0 right-0 bg-white shadow-lg z-40 md:hidden border-b border-primary/10"
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.2 }}
-          >
-            <div className="p-3 space-y-1">
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div 
+          className="fixed top-16 left-0 right-0 bg-white shadow-lg z-40 md:hidden border-b border-primary/10"
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: 'auto' }}
+          exit={{ opacity: 0, height: 0 }}
+          transition={{ duration: 0.2 }}
+        >
+          <div className="p-3 space-y-1">
+            {menuItems.map((item) => (
               <Button 
-                variant={activeTab === 'dashboard' ? "default" : "ghost"} 
+                key={item.id}
+                variant={currentTab === item.id ? "default" : "ghost"} 
                 className="w-full justify-start text-base font-medium rounded-lg h-12"
-                onClick={() => handleTabChange('dashboard')}
+                onClick={() => handleTabChange(item.id)}
               >
-                <Gauge className="w-5 h-5 mr-3" />
-                Dashboard
-                <div className="ml-auto bg-primary/10 text-primary text-xs font-medium px-2 py-0.5 rounded-full">
-                  Overview
-                </div>
+                <item.icon className="w-5 h-5 mr-3" />
+                {item.label}
+                
+                {item.badge?.type === "info" && (
+                  <div className="ml-auto bg-primary/10 text-primary text-xs font-medium px-2 py-0.5 rounded-full">
+                    {item.badge.text}
+                  </div>
+                )}
+                
+                {item.badge?.type === "count" && (
+                  <Badge className="ml-auto bg-amber-500/90 hover:bg-amber-500 text-white">
+                    {item.badge.value}
+                  </Badge>
+                )}
               </Button>
-              
-              <Button 
-                variant={activeTab === 'listings' ? "default" : "ghost"} 
-                className="w-full justify-start text-base font-medium rounded-lg h-12"
-                onClick={() => handleTabChange('listings')}
-              >
-                <LayoutGrid className="w-5 h-5 mr-3" />
-                Listings
-                <Badge className="ml-auto bg-amber-500/90 hover:bg-amber-500 text-white">12</Badge>
-              </Button>
-              
-              <Button 
-                variant={activeTab === 'users' ? "default" : "ghost"} 
-                className="w-full justify-start text-base font-medium rounded-lg h-12"
-                onClick={() => handleTabChange('users')}
-              >
-                <Users className="w-5 h-5 mr-3" />
-                Users
-                <Badge className="ml-auto bg-green-500/90 hover:bg-green-500 text-white">6</Badge>
-              </Button>
-              
-              <Button 
-                variant={activeTab === 'analytics' ? "default" : "ghost"} 
-                className="w-full justify-start text-base font-medium rounded-lg h-12"
-                onClick={() => handleTabChange('analytics')}
-              >
-                <BarChart3 className="w-5 h-5 mr-3" />
-                Analytics
-                <div className="ml-auto bg-primary/10 text-primary text-xs font-medium px-2 py-0.5 rounded-full">
-                  Reports
-                </div>
-              </Button>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </>
+            ))}
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 };
 

@@ -26,9 +26,8 @@ import React from 'react';
 import CategorySubcategories from "./pages/CategorySubcategories";
 import SellerProfile from "./pages/SellerProfile";
 import MyOrders from "./pages/MyOrders";
-import ServiceDetail from "./pages/ServiceDetail";
-import FloatingSellButton from "./components/navigation/FloatingSellButton"; // Fixed path
 
+// Create a client outside of the component to avoid recreating it on every render
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -88,7 +87,6 @@ const App = () => (
               <Route path="/fresh-recommendations" element={<FreshRecommendations />} />
               <Route path="/recent-listings/:category" element={<RecentSubcategoryListings />} />
               <Route path="/seller/:id" element={<SellerProfile />} />
-              <Route path="/services/:categoryId/:serviceId" element={<ServiceDetail />} />
               <Route
                 path="/sell"
                 element={
