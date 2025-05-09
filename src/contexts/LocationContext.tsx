@@ -15,6 +15,7 @@ interface UserLocationPreference {
   updated_at: string;
 }
 
+// Update the interface to properly handle potential error from Supabase
 interface CityDetails {
   id: string;
   name: string;
@@ -26,7 +27,7 @@ interface CityDetails {
     countries: {
       id: string;
       name: string;
-    };
+    } | null; // Make countries nullable to handle potential errors
   };
 }
 
@@ -89,9 +90,16 @@ export const LocationProvider = ({ children }: { children: React.ReactNode }) =>
           if (cityError) throw cityError;
 
           if (cityDetails) {
-            const details = cityDetails as CityDetails;
-            const locationString = `${details.name}|${details.states.name}|${details.states.countries.name}|${details.latitude}|${details.longitude}|${details.id}|${details.states.id}|${details.states.countries.id}`;
-            setLocationState(locationString);
+            // Check if we have a valid city with states and countries data
+            const details = cityDetails as unknown as CityDetails;
+            
+            // Handle the case where countries data might be missing or have an error
+            if (details && details.states && details.states.countries) {
+              const locationString = `${details.name}|${details.states.name}|${details.states.countries.name}|${details.latitude}|${details.longitude}|${details.id}|${details.states.id}|${details.states.countries.id}`;
+              setLocationState(locationString);
+            } else {
+              console.error('Missing countries data in city details:', details);
+            }
           }
         }
       } catch (error) {
