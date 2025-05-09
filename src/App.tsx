@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -26,6 +27,7 @@ import CategorySubcategories from "./pages/CategorySubcategories";
 import SellerProfile from "./pages/SellerProfile";
 import MyOrders from "./pages/MyOrders";
 import ServiceDetail from "./pages/ServiceDetail";
+import FloatingSellButton from "./components/navigation/FloatingSellButton"; // Fixed path
 
 const queryClient = new QueryClient({
   defaultOptions: {

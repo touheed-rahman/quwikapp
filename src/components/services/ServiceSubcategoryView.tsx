@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -15,16 +15,36 @@ import { useToast } from "@/components/ui/use-toast";
 type ServiceSubcategoryViewProps = {
   categoryId: string;
   onBack: () => void;
+  initialService?: string | null;
+  directBooking?: boolean;
 };
 
-const ServiceSubcategoryView = ({ categoryId, onBack }: ServiceSubcategoryViewProps) => {
-  const [selectedSubservice, setSelectedSubservice] = useState<string | null>(null);
+const ServiceSubcategoryView = ({ 
+  categoryId, 
+  onBack, 
+  initialService = null,
+  directBooking = false
+}: ServiceSubcategoryViewProps) => {
+  const [selectedSubservice, setSelectedSubservice] = useState<string | null>(initialService);
   const [selectedSubserviceName, setSelectedSubserviceName] = useState<string>("");
-  const [bookingStep, setBookingStep] = useState<number>(0);
+  const [bookingStep, setBookingStep] = useState<number>(directBooking && initialService ? 1 : 0);
   const navigate = useNavigate();
   const { toast } = useToast();
   
   const categoryDetails = serviceCategories.find(c => c.id === categoryId);
+  
+  useEffect(() => {
+    if (initialService && categoryDetails) {
+      const subservice = categoryDetails.subservices.find(s => s.id === initialService);
+      if (subservice) {
+        setSelectedSubserviceName(subservice.name);
+        setSelectedSubservice(initialService);
+        if (directBooking) {
+          setBookingStep(1);
+        }
+      }
+    }
+  }, [initialService, categoryDetails, directBooking]);
   
   if (!categoryDetails) {
     return (
@@ -38,6 +58,13 @@ const ServiceSubcategoryView = ({ categoryId, onBack }: ServiceSubcategoryViewPr
   const handleSubserviceSelect = (subserviceId: string, subserviceName: string) => {
     // Navigate to the individual service page
     navigate(`/services/${categoryId}/${subserviceId}`);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleDirectBooking = (subserviceId: string, subserviceName: string) => {
+    setSelectedSubservice(subserviceId);
+    setSelectedSubserviceName(subserviceName);
+    setBookingStep(1);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -63,11 +90,34 @@ const ServiceSubcategoryView = ({ categoryId, onBack }: ServiceSubcategoryViewPr
     "06:00 PM - 08:00 PM"
   ];
 
+  // Animation variants
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: { 
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { 
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.4,
+        ease: "easeOut"
+      }
+    }
+  };
+
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
+      initial="hidden"
+      animate="visible"
+      variants={containerVariants}
       className="space-y-6"
     >
       {bookingStep === 0 ? (
@@ -86,7 +136,7 @@ const ServiceSubcategoryView = ({ categoryId, onBack }: ServiceSubcategoryViewPr
             </Badge>
           </div>
           
-          <div className="space-y-4">
+          <motion.div variants={itemVariants} className="space-y-4">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
               <h2 className="text-2xl font-semibold">{categoryDetails.name} Services</h2>
               <div className="flex items-center gap-2">
@@ -96,7 +146,10 @@ const ServiceSubcategoryView = ({ categoryId, onBack }: ServiceSubcategoryViewPr
             </div>
             <p className="text-muted-foreground">Select a specific service to book a professional</p>
           
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-6">
+            <motion.div 
+              variants={containerVariants}
+              className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-6"
+            >
               {categoryDetails.subservices.map((subservice) => {
                 const pricing = getEstimatedAmount(subservice.id);
                 const IconComponent = categoryDetails.icon;
@@ -104,13 +157,11 @@ const ServiceSubcategoryView = ({ categoryId, onBack }: ServiceSubcategoryViewPr
                 return (
                   <motion.div 
                     key={subservice.id} 
-                    whileHover={{ scale: 1.03 }} 
-                    whileTap={{ scale: 0.98 }}
+                    variants={itemVariants}
                     className="h-full"
                   >
                     <Card 
-                      className="h-full overflow-hidden border cursor-pointer transition-all duration-300 hover:shadow-md hover:border-primary/30 group"
-                      onClick={() => handleSubserviceSelect(subservice.id, subservice.name)}
+                      className="h-full overflow-hidden border transition-all duration-300 hover:shadow-md hover:border-primary/30 group"
                     >
                       <div className={`bg-gradient-to-br ${categoryDetails.color} p-4 aspect-[3/2] flex items-center justify-center`}>
                         {IconComponent && <IconComponent className="h-12 w-12 text-primary group-hover:scale-110 transition-transform" />}
@@ -133,17 +184,31 @@ const ServiceSubcategoryView = ({ categoryId, onBack }: ServiceSubcategoryViewPr
                               <span>4.8 (120+)</span>
                             </div>
                           </div>
-                          <Button className="w-full mt-2 text-xs" size="sm">
-                            View Details <ArrowRight className="ml-1 h-3 w-3" />
-                          </Button>
+                          <div className="grid grid-cols-2 gap-2 mt-2">
+                            <Button 
+                              className="w-full text-xs" 
+                              size="sm"
+                              onClick={() => handleSubserviceSelect(subservice.id, subservice.name)}
+                            >
+                              View Details
+                            </Button>
+                            <Button 
+                              className="w-full text-xs" 
+                              variant="outline" 
+                              size="sm"
+                              onClick={() => handleDirectBooking(subservice.id, subservice.name)}
+                            >
+                              Book Now <ArrowRight className="ml-1 h-3 w-3" />
+                            </Button>
+                          </div>
                         </div>
                       </CardContent>
                     </Card>
                   </motion.div>
                 );
               })}
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
         </>
       ) : (
         <ServiceBookingForm
